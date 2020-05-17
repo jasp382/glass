@@ -1,0 +1,176 @@
+/*_________________ LANDING _________________*/
+
+
+#landing {
+    z-index: 1;
+    height: 100%;
+    margin-top: 15%;
+    color: white;
+}
+
+#landing h1 {
+    font-size: 90px;
+}
+
+#landing h3 {
+    margin-top: 8%;
+    font-size: 23px;
+}
+
+#landing img {
+    margin-top: 5%;
+    width: 5%;
+}
+
+#background {
+    width: 100%;
+    z-index: -1;
+    top:65px;
+    left: 0px;
+    position: absolute;
+}
+
+
+/*_________________ ABOUT _________________*/
+
+#about {
+    background-image: url("/static/vgijs/img/vgi-home/paperBackgroundTexture.png");
+}
+
+#about h2 {
+    padding-top: 9%;
+}
+
+#about p {
+    width: 50%;
+    margin: 0 auto;
+    padding: 8%;
+}
+
+#Credits {
+    padding: 2%;
+    font-size: 20px;
+    background-color: rgba(193,193,193,.74);
+}
+
+#about div div {
+    margin: 4% auto;
+    display: block;
+    width: 80%;
+    background-color: rgba(255,255,255,.85);
+    text-align: left;
+}
+
+#about div p {
+    padding-left: 0%;
+    padding-right: 0%;
+    width: 90%;
+}
+
+#credits-people h4 {
+    text-align: center;
+    font-size: 15px;
+    padding : 2%;
+}
+
+#credits-people p {
+    padding: 0%;
+}
+
+#credits-people a {
+    color: navy;
+}
+
+/*_________________ SERVICES _________________*/
+#services {
+    margin-top: 15%;
+    background-image: url("/static/vgijs/img/vgi-home/paperBackgroundTexture.png");
+    background-size: cover;
+}
+
+#services h2 {
+    padding-top: 8%;
+}
+
+#services img {
+    width: 25%;
+}
+
+
+#services div {
+    display: inline-block;
+    width: 30%;
+    margin: 6%;
+}
+
+#services div a{
+    color: black;
+}
+
+#services div a:hover{
+    color: white;
+}
+
+.button {
+    background-color: #80AECD;
+    border-radius: 25px;
+    margin-right: 2%;
+}
+
+
+
+
+/*_________________ PARTNERS _________________*/
+
+#partners h2 {
+    padding-top: 8%;
+}
+
+#partners img {
+    display: inline-block;
+    width: 20%;
+    margin: 3%;
+    vertical-align: middle;
+}
+
+
+/*_________________ COLLABORATIONS _________________*/
+
+#collaborations h2 {
+    padding-top: 8%;
+}
+
+#collaborations img {
+    display: inline-block;
+    width: 20%;
+    margin: 3%;
+}
+
+
+/*_________________ FOOTER / CONTACTS _________________*/
+
+#contacts h2{
+    padding-top: 8%;
+}
+
+#contacts div{
+    display: inline-block;
+    padding: 4%;
+    margin-left: 4%;
+    width: 35%;
+    vertical-align: top;
+    font-size: 13px;
+}
+
+#contacts div h4{
+    font-size: 15px;
+}
+
+#footerEmail{
+    padding-top: 3%;
+    font-size: 19px;
+}
+
+#imgEmail{
+    padding-right: 4%;
+}

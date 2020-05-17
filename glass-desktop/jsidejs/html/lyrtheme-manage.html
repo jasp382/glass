@@ -1,0 +1,99 @@
+<div id="left-box" ng-if="!vm.addIndicator && !vm.addIndicators && !vm.colsFileForm">
+	<h1>Indicadores já adicionados:</h1>
+	
+	<hr>
+	
+	<ul>
+		<li ng-repeat="ind in vm.indicators">
+			{{ ind.slug }} | {{ ind.name }}
+			<span>
+				<a type="button" 
+					href="/pt/atlas/lyr-themes/del/{{ ind.fid }}/">Apagar</a>
+			</span>
+		</li>
+	</ul>
+	
+	<hr>
+	<span>
+		<button type="button" ng-click="vm.enableAddIndicator('one')">
+			Adicionar novo Indicador
+		</button>
+	</span>
+	<span>
+		<button type="button" ng-click="vm.enableAddIndicator('many')">
+			Adicionar vários Indicadores
+		</button>
+	</span>
+</div>
+<div id="left-box" ng-if="vm.addIndicator">
+	<h1>Adicionar novo Indicador:</h1>
+	
+	<form id="add-indicator" method="POST" class="add-indicator-form ng-cloak"
+		enctype="multipart/form-data" action="/pt/atlas/lyr-themes/add/">
+		<h3>Sigla do indicador:</h3>
+		<input type="text" name="slug-indicator" />
+		
+		<h3>Nome do indicador:</h3>
+		<input type="text" name="name-indicator" />
+		
+		<h3>Unidade de medida do indicador:</h3>
+		<input type="text" name="unit-indicator" />
+		
+		<hr>
+		<button id="submitform" type="submit">Submeter...</button>
+	</form>
+</div>
+
+<div id="left-box" ng-if="vm.addIndicators">
+	<h1>Adicionar novos indicadores:</h1>
+	
+	<form id="add-indicators" method="POST" class="add-indicators-form ng-cloak"
+		enctype="multipart/form-data" action="/pt/atlas/lyr-themes/addmulti/">
+		<h3>Ficheiro</h3>
+		<input type="file" name="new-themes" multiple required>
+		
+		<hr>
+		
+		<button id="submitform" type="submit">Submeter...</button>
+	</form>
+</div>
+
+<div id="left-box" ng-if="vm.colsFileForm">
+	<h1>Adicionar novos indicadores:</h1>
+	
+	<form id="add-indicators" method="POST" class="add-indicators-form ng-cloak"
+		enctype="multipart/form-data" action="/pt/atlas/lyr-themes/addmulti2/">
+		<h3>Coluna com o nome dos Indicadores:</h3>
+		<select name="col-name" form="add-indicators">
+			<option disabled selected value> -- select an option -- </option>
+			<option ng-repeat="col in vm.dataset.cols" value="{{ col.name_col }}">
+				{{ col.name_col }}
+			</option>
+		</select>
+		
+		<h3>Coluna com a unidade dos Indicadores:</h3>
+		<select name="col-unit" form="add-indicators">
+			<option disabled selected value> -- select an option -- </option>
+			<option ng-repeat="col in vm.dataset.cols" value="{{ col.name_col }}">
+				{{ col.name_col }}
+			</option>
+		</select>
+		
+		<h3>Coluna com a abreviatura dos Indicadores:</h3>
+		<select name="col-slug" form="add-indicators">
+			<option disabled selected value> -- select an option -- </option>
+			<option ng-repeat="col in vm.dataset.cols" value="{{ col.name_col }}">
+				{{ col.name_col }}
+			</option>
+		</select>
+		
+		<hr>
+		<div style="display:none;">
+			<input type="text" name="rqst-fid" ng-model="vm.rqstid" />
+			<input type="text" name="file-name" ng-model="vm.dataset.filename" />
+		</div>
+		
+		<button id="submitform" type="submit">Submeter...</button>
+	</form>
+</div>
+<div ng-transclude></div>

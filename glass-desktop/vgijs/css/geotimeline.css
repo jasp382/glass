@@ -1,0 +1,17 @@
+/*_________________ MAP _________________*/
+#content-container {
+    position: fixed;
+    width: 100%;
+    height: calc(100% - (65px + 35px + 55px));
+    top: calc(65px + 35px + 55px);
+    left: 0px;
+    z-index: -1;
+}
+
+#geotimeline-chart {
+	position : absolute;
+	width : 75%;
+	height : 50%;
+	left: 0%;
+	background-color: white;
+}
