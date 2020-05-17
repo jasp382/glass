@@ -1,0 +1,37 @@
+{
+    "1" : {
+        "ndbi" : {"operator" : ">", "value":   0, "all": false},
+        "ndvi" : {"operator" : "<", "value": 0.3, "all": true},
+        "ndwi_nir" : {"operator" : "<", "value":   0, "all": true}
+    },
+    "2" : {
+        "ndbi" : null,
+        "ndvi" : {"operator" : ">", "value": 0.3, "all": true},
+        "ndwi_nir" : {"operator" : "<", "value":   0, "all": true}
+    },
+    "3" : {
+        "ndbi" : null,
+        "ndvi" : {"operator" : ">", "value": 0.3, "all": true},
+        "ndwi_nir" : {"operator" : "<", "value":   0, "all": true}
+    },
+    "4" : {
+        "ndbi" : null,
+        "ndvi" : {"operator" : ">", "value": 0.3, "all": true},
+        "ndwi_nir" : {"operator" : "<", "value":   0, "all": true}
+    },
+    "5" : {
+        "ndbi" : null,
+        "ndvi" : {"operator" : ">", "value": 0, "all": false},
+        "ndwi_nir" : {"operator" : "<", "value":   0, "all": false}
+    },
+    "6" : {
+        "ndbi" : null,
+        "ndvi" : {"operator" : ">", "value": 0, "all": false},
+        "ndwi_nir" : {"operator" : "<", "value": 0, "all": false}
+    },
+    "7" : {
+        "ndbi" : null,
+        "ndvi" : {"operator" : "<", "value": 0.3, "all": false},
+        "ndwi_nir" : {"operator" : ">", "value": 0, "all": true}
+    }
+}
