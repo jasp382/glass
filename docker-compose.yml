@@ -1,0 +1,60 @@
+# docker-compose build
+version: '3.8'
+volumes:
+    glass-dbbackups:
+    glass-postgis:
+    glass-geoserver-data:
+
+services:
+    glasspsql:
+        build: ./docker/db/psqlimg
+        image: glasspsqlimg:latest
+    
+    glassdb:
+        build: ./docker/db
+        image: glassdb:latest
+        shm_size: 1gb
+        container_name: glass-db
+        volumes:
+            - glass-postgis:/var/lib/postgresql
+            - glass-dbbackups:/backups
+        env_file:
+            - ./docker/db/.env
+        ports:
+            - 1212:5432
+        restart: on-failure
+        healthcheck:
+            test: "exit 0"
+    
+    glassbackups:
+        build: ./docker/db/pg-backup
+        image: glassbackup:latest
+        container_name: glass-backup
+        hostname: glass-pg-backups
+        volumes:
+            - glass-dbbackups:/backups
+        env_file:
+            - ./docker/db/pg-backup/.env
+        restart: on-failure
+        depends_on:
+            - glassdb
+    
+    glassgeoserver:
+        build: ./docker/gsrv
+        image: glassgeosrv:latest
+        container_name: glass-geoserver
+        volumes:
+            - glass-geoserver-data:/opt/geoserver/data-dir
+            - ./docker/sdi/ssl:/etc/letsencrypt
+        ports:
+            - "1213:8080"
+            - "1214:8443"
+        env_file:
+            - ./docker/gsrv/.env
+        depends_on:
+            - glassdb
+        healthcheck:
+            test: curl --fail -s http://localhost:8080 || exit 1
+            interval: 1m30s
+            timeout: 10s
+            retries: 3
