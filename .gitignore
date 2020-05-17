@@ -1,0 +1,16 @@
+# glass distribution
+dist/*
+build/*
+glass.egg-info
+# .pyc files
+*.pyc
+# Hide notebooks checkpoints
+.ipynb*
+# Scripts
+scripts/usee/obs_to_txt_nc.json
+# Configuration json
+glass/cons/*.json
+!glass/cons/con-geoserver_sample.json
+!glass/cons/con-postgresql_sample.json
+!glass/cons/sentinel-ex.json
+!glass/cons/api-keys-sample.json
