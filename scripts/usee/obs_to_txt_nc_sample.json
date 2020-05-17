@@ -1,0 +1,13 @@
+{
+	"DBCON" : {
+		"HOST" : "localhost", "PORT" : "3306",
+		"USER" : "jasp", "PASSWORD" : "jasppP@1",
+		"DATABASE" : "undersee"
+	},
+	"USERS" : {
+		"diaryobs" : ["49:50:59:51:05:29"]
+	},
+	"DATA_TABLE" : "buoys",
+	"TIME_COL"   : "created_at",
+	"TEMP_COL"   : "value1"
+}

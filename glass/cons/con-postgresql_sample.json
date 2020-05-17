@@ -1,0 +1,15 @@
+{
+	"default" : {
+		"HOST"     : "localhost",
+		"USER"     : "postgres",
+		"PORT"     : "5432",
+		"PASSWORD" : "admin",
+		"TEMPLATE" : "postgis_template"
+	},
+	"flainar"  : {
+		"HOST"     : "37.97.148.252",
+		"PORT"     : "5433",
+		"USER"     : "localuser",
+		"PASSWORD" : "localpass"
+	}
+}
