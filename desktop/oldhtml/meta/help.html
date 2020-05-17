@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block title %}{{ service.header }}{% endblock %}
+{% block body_contents %}
+{% if service.name == 'mapsearch' or service.name == 'hazardid' or service.name == 'osmtolulc' %}
+<div id="help" ng-controller="HelpController as mapVm" ng-cloak>
+    <h2 id="about">About this Service</h2>
+    <p>Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum </p>
+
+    <h2 id="webMap"> Website Map</h2>
+    <img alt="Website Map Image" src="{% static 'vgijs/img/webMap.png' %}" style="width:70%;">
+
+
+    <h2>Instructions Manual</h2>
+
+    <div id="HelpIndex">
+        <h3 id="Credits">Index</h2>
+
+        <p><a href="#HelpMapControls">1 - Map Controls</a></p>
+        <p><a href="#HelpKeyword">2 - Keyword</a></p>
+        <p><a href="#HelpFilters">3 - Filters</a></p>
+        <p><a href="#HelpSearchZone">4 - Search Zone</a></p>
+        <p><a href="#HelpValidation">5 - Validation</a></p>
+        <p><a href="#HelpResultLayer">6 - Edit Result Layer</a></p>
+    </div>
+
+    <div id="HelpMapControls">
+        <h3 id="Credits">1 - Map Controls</h2>
+
+        <p>Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum </p>
+
+    </div>
+
+    <div id="HelpKeyword">
+        <h3 id="Credits">2 - Keyword</h2>
+
+        <p>Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum </p>
+    </div>
+
+    <div id="HelpFilters">
+        <h3 id="Credits">3 - Filters</h2>
+
+            <p>Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum </p>
+
+    </div>
+
+    <div id="HelpSearchZone">
+        <h3 id="Credits">4 - Search Zone</h2>
+
+        <p>Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum </p>
+
+    </div>
+
+    <div id="HelpValidation">
+        <h3 id="Credits">5 - Validation</h2>
+
+            <p>Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum </p>
+
+    </div>
+
+    <div id="HelpResultLayer">
+        <h3 id="Credits">6 - Edit Result Layer</h2>
+
+            <p>Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum </p>
+
+    </div>
+</div>
+{% endif %}
+{% endblock %}

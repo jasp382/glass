@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}JustSide - Fridão{% endblock %}
+{% block body_contents %}
+<div id="content-container" ng-cloak>
+	<mapping-compare
+		caseid="{{ mapsett.fid }}"
+		ctop="{{ mapsett.top }}"
+		cbottom="{{ mapsett.bottom }}"
+		cleft="{{ mapsett.left }}"
+		cright="{{ mapsett.right }}"
+	</mapping-compare>
+</div>
+{% endblock %}

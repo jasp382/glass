@@ -1,0 +1,76 @@
+<div id="sidebar-header">
+	<h3>OpenStreetMap to Land Use Maps</h3>
+</div>
+
+<div class="sidebar-div">
+	<h4>Convert OSM data into a LULC Map in two steps:</h4>
+</div>
+
+<div class="sidebar-div" ng-if="vm.servname==='osm2lulc_f'">
+	<h4>1. Select an area of interest:</h4>
+	
+	<span class="input-group-btn">
+		<button type="button"
+			ng-click="vm.activeDrawBBox()"
+			class="searchButtons"
+			title="Draw Interest Area">Draw Interest Area
+		</button>
+	</span>
+</div>
+
+<div class="sidebar-div" ng-if="vm.servname==='osm2lulc_s'">
+	<h4>2. Select LULC Classes Nomenclature for the output:</h4>
+	
+	<div ng-repeat="d in vm.Nomenclatures"
+		class="check-container">
+		<label>
+			{{ d.label }}
+			<input type="checkbox"
+				ng-change="vm.selectingNomenclature(d)"
+				ng-model="d.select">
+			<span class="checkmark"></span>
+		</label>
+	</div>
+</div>
+
+<br>
+
+<div class="sidebar-div" ng-if="vm.servname==='osm2lulc_f'">
+	<button ng-if="vm.drawout==='default'"
+		class="searchButtons"
+		ng-click="vm.pleaseDraw()"
+		title="Submit interest area"
+		type="button">Submit interest area
+	</button>
+	<button ng-if="vm.drawout!=='default'"
+		class="searchButtons"
+		title="Submit interest area"
+		ng-click="vm.submitForm()"
+		type="button">Submit interest area
+	</button>
+	<button type="button" onclick="reload()"
+		title="Refresh form..."
+		ng-click="mapVm.delDrawed()"
+		class="searchButtons">Reset
+	</button>
+</div>
+
+<div class="sidebar-div" ng-if="vm.servname==='osm2lulc_s'">
+	<button ng-if="vm.nomenclature===''"
+		class="searchButtons"
+		ng-click="vm.pleaseSelectNom()"
+		title="Run Procedure"
+		type="button">Run Procedure
+	</button>
+	<button ng-if="vm.nomenclature!==''"
+		class="searchButtons"
+		title="Run Procedure"
+		ng-click="vm.submitForm()"
+		type="button">Run Procedure
+	</button>
+	<button type="button" onclick="reload()"
+		title="Refresh form..."
+		ng-click="mapVm.delDrawed()"
+		class="searchButtons">Reset
+	</button>
+</div>

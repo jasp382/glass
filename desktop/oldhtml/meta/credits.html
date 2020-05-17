@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block title %}{{ service.header }}{% endblock %}
+{% block body_contents %}
+	{% if service.name == 'mapsearch' or service.name == 'hazardid' or service.name == 'osmtolulc' %}
+	<div class="about" id="aboutService" ng-controller="CreditsController as mapVm" ng-cloak>
+    	<h2>Credits</h2>
+
+    	<h3 id="Credits">Mentors</h2>
+
+    	<div id="collaborations">
+        	<div>
+            	<p>Nome e Informacao do Colaborador</p>
+        	</div>
+
+        	<div>
+            	<p>Nome e Informacao do Colaborador</p>
+        	</div>
+    	</div>
+
+    	<h3 id="Credits">Development</h2>
+
+    	<div id="collaborations">
+        	<div>
+            	<p>Nome e Informacao do Colaborador</p>
+        	</div>
+
+        	<div>
+            	<p>Nome e Informacao do Colaborador</p>
+        	</div>
+    	</div>
+
+    	<h3 id="Credits">Design</h2>
+
+    	<div id="collaborations">
+        	<div>
+            	<p>Nome e Informacao do Colaborador</p>
+        	</div>
+
+        	<div>
+            	<p>Nome e Informacao do Colaborador</p>
+        	</div>
+    	</div>
+
+    	<h3 id="Credits">Sponsors</h2>
+
+    	<div id="collaborations">
+        	<div>
+            	<p>Nome e Informacao do Colaborador</p>
+        	</div>
+
+        	<div>
+            	<p>Nome e Informacao do Colaborador</p>
+        	</div>
+    	</div>
+
+    	<h3 id="Credits">Others</h2>
+
+    	<div id="collaborations">
+        	<div>
+            	<p>Nome e Informacao do Colaborador</p>
+        	</div>
+
+        	<div>
+            	<p>Nome e Informacao do Colaborador</p>
+        	</div>
+    	</div>
+	</div>
+	{% endif %}
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}JustSide - Fridão{% endblock %}
+{% block body_contents %}
+<div id="content-container" ng-cloak>
+	<viewer-mapping
+		caseid="{{ mapsett.fid }}"
+		ctop="{{ mapsett.top }}"
+		cbottom="{{ mapsett.bottom }}"
+		cleft="{{ mapsett.left }}"
+		cright="{{ mapsett.right }}"
+		ctxtop="{{ mapsett.top_ctx }}"
+		ctxbot="{{ mapsett.bot_ctx }}"
+		ctxlef="{{ mapsett.left_ctx }}"
+		ctxrig="{{ mapsett.right_ctx }}">
+	</viewer-mapping>
+</div>
+{% endblock %}

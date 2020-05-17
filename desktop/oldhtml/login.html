@@ -1,0 +1,171 @@
+<html>
+{% load static %}
+{% load widget_tweaks %}
+{% load vgi_tags %}
+{% debug as debug %}
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Login - Exploring VGI</title>
+    <link rel="icon" href="{% static 'vgijs/img/logos/icon_tab.png' %}">
+
+    <link href="https://fonts.googleapis.com/css?family=Muli" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="{% static 'font-awesome/css/font-awesome.min.css' %}" />
+
+    <!-- CSS Styles - Custom styles for this template -->
+    <style> .ng-cloak { display: none !important; } </style>
+    {% if debug %}
+    <link rel="stylesheet" type="text/css" href="{% static 'vgijs/css/vgi-body.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'vgijs/css/vgi-home.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'vgijs/css/vgi-nav.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'vgijs/css/login.css' %}" />
+    {% else %}
+    <link rel="stylesheet" type="text/css" href="{% static 'vgijs/vgipublications.min.css' %}" />
+    {% endif %}
+</head>
+<body ng-app="vgijs">
+    <header id="header-home">
+        <nav ng-controller="VgiHeaderContent as headVm" ng-cloak>
+            <a href="">
+                <img src="{% static 'vgijs/img/logos/logo-main.png' %}" alt="Project's Logo - Exploring VGI" id="logo">
+            </a>
+
+            <h1 id="navServices">
+                <span>
+                    <i class="fa fa-chevron-circle-down" id="navArrowServices" style="font-size:24px; color:#FFFFFF;" ng-click="headVm.toggleServices()"></i>
+                </span>
+                <a href="/expvgi/#!#services">Services</a>
+            </h1>
+            <div id="dropdownServices" ng-if="headVm.dropdowns.services"
+                ng-mouseenter="headVm.dropdowns.services=true"
+                ng-mouseleave="headVm.dropdowns.services=false"
+                class="ng-cloak">
+                <a href="/expvgi/osm/osm2lulc/">
+                    <h3>OSM to LULC Maps</h3>
+                </a>
+                <a href="/expvgi/dsn/search/">
+                    <h3>Mapping Social Network Data</h3>
+                </a>
+            </div>
+
+            <h1 id="navPartners">
+                <span>
+                    <i class="fa fa-chevron-circle-down"
+                        style="font-size:24px; color:#FFFFFF;"
+                        id="navArrowPartners"
+                        ng-click="headVm.togglePartners()">
+                    </i>
+                </span>
+                <a href="/expvgi/#!#partners">Partners</a>
+            </h1>
+            <div id="dropdownPartners" ng-if="headVm.dropdowns.partners"
+                ng-mouseenter="headVm.dropdowns.partners=true"
+                ng-mouseleave="headVm.dropdowns.partners=false"
+                class="ng-cloak">
+                <a href="http://www.uc.pt/" target="_blank">
+                    <h3>University of Coimbra<i class="fa fa-external-link" aria-hidden="true"></i></h3>
+                </a>
+                <a href="http://www.uc.pt/en/org/inescc" target="_blank">
+                    <h3>INESC Coimbra<i class="fa fa-external-link" aria-hidden="true"></i></h3>
+                </a>
+                <a href="https://www.cisuc.uc.pt/" target="_blank">
+                    <h3>CISUC<i class="fa fa-external-link" aria-hidden="true"></i></h3>
+                </a>
+            </div>
+
+            <h1 id="navContacts">
+                <a href="/expvgi/#!#contacts">
+                    Contacts
+                </a>
+            </h1>
+
+            <h1 id="navAbout">
+                <span>
+                    <i class="fa fa-chevron-circle-down"
+                        style="font-size:24px; color:#FFFFFF;"
+                        id="navArrowAbout"
+                        ng-click="headVm.toggleAbout()">
+                    </i>
+                </span>
+                <a href="/expvgi/#!#about">About</a>
+            </h1>
+
+            <div id="dropdownAbout" ng-if="headVm.dropdowns.about"
+                ng-mouseenter="headVm.dropdowns.about=true"
+                ng-mouseleave="headVm.dropdowns.about=false"
+                class="ng-cloak">
+                <a href="/expvgi/#!#about"><h3>About the Project</h3></a>
+                <a href="/expvgi/Credits"><h3>Credits</h3></a>
+                <a href="/expvgi/Credits"><h3>History</h3></a>
+            </div>
+
+            {% if user.is_authenticated %}
+            <a href="{% url 'logout' %}?next={{ service.url }}">
+                <h1 id="navRegister">Logout</h1>
+            </a>
+            {% else %}
+            <a href="{% url 'login' %}?next={{ service.url }}">
+                <h1 id="navRegister">Login/Register</h1>
+            </a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <div id="log-container">
+        <div id="logIn">
+            <h1>Sign in</h1>
+            <form method="post" action="/expvgi/login/">
+                {% csrf_token %}
+                <!--<label><b>Username</b></label>-->
+                {{ form.username|attr:"placeholder:Username" }}
+                <!--<label><b>Password</b></label>-->
+                {{ form.password|attr:"placeholder:Password" }}
+
+                <button type="submit">Login</button>
+                <!--<input type="hidden" name="next" value="{{ next }}" /> -->
+            </form>
+        </div>
+
+        <div id="verticalLine"></div>
+
+        <div id="register">
+            <h1>Register</h1>
+			 
+            <form method="post" action="/expvgi/register/">
+                {% csrf_token %}
+                <input type="text" name="fname" placeholder="First Name">
+                <input type="text" name="lname" placeholder="Last Name">
+                <input type="text" name="email" placeholder="E-Mail">
+                <input type="text" name="user" placeholder="Username">
+                <input type="text" name="pass" placeholder="Password">
+                <input type="text" name="repeat" placeholder="Repeat Password">
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+    </div>
+</body>
+<!-- Placed at the end of the document so the pages load faster -->
+<!-- Import jQuery -->
+<script type="text/javascript" src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+<!-- Charge Angular into it-->
+<script type="text/javascript" src="{% static 'angular/angular.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'angular-resource/angular-resource.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'angular-route/angular-route.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'angular-sanitize/angular-sanitize.min.js' %}"></script>
+<script type="text/javascript" src="{% static 're-tree/re-tree.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'ng-device-detector/ng-device-detector.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'ua-device-detector/ua-device-detector.min.js' %}"></script>
+<!-- VGIJS Angular App-->
+{% if debug %}
+<script type="text/javascript" src="{% static 'vgijs/vgijs.module.js' %}"></script>
+<script type="text/javascript" src="{% static 'vgijs/constants/constants.module.js' %}"></script>
+<script type="text/javascript" src="{% static 'vgijs/api/api.module.js' %}"></script>
+<script type="text/javascript" src="{% static 'vgijs/services/services.module.js' %}"></script>
+<script type="text/javascript" src="{% static 'vgijs/controllers/controllers.module.js' %}"></script>
+<script type="text/javascript" src="{% static 'vgijs/controllers/header.controller.js' %}"></script>
+<script type="text/javascript" src="{% static 'vgijs/directives/directives.module.js' %}"></script>
+{% else %}
+<script type="text/javascript" src="{% static 'vgijs/vgipublications.min.js' %}"></script>
+{% endif %}
+</html>
