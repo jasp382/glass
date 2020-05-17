@@ -1,0 +1,2 @@
+include glass/sds/osm2lulc/osmtolulc.sqlite
+include glass/cons/con-postgresql.json

@@ -1,0 +1,16 @@
+{
+    "default": {
+        "HOST": "localhost",
+        "PORT": "5432",
+        "USER": "postgres",
+        "PASSWORD": "admin",
+        "TEMPLATE": "postgis_template"
+    },
+    "local": {
+        "HOST": "localhost",
+        "PORT": "5432",
+        "USER": "postgres",
+        "PASSWORD": "admin",
+        "TEMPLATE": "postgis_template"
+    }
+}
