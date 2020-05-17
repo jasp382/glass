@@ -1,0 +1,43 @@
+{
+    "PSQL" : {
+        "default" : {
+            "DATABASE" : "glassdb",
+            "USER"     : "glassuser",
+            "PASSWORD" : "glasspass",
+            "HOST"     : "localhost",
+            "PORT"     : "1212",
+            "TEMPLATE" : "glassuser",
+            "DPORT"    : "1212",
+            "DHOST"    : "glassdb"
+        }
+    },
+
+    "MYSQL" : {
+        "default" : {
+            "HOST"     : "localhost",
+            "USER"     : "jasp",
+            "PORT"     : "3306",
+            "PASSWORD" : "admin0012"
+        }
+    },
+
+    "GEOSERVER" : {
+        "PROTOCOL" : "http",
+        "HOST"     : "localhost",
+        "USER"     : "admin",
+        "PASSWORD" : "geoserver",
+        "PORT"     : "1213"
+    },
+
+    "SENTINEL" : {
+        "USER"     : "username",
+        "PASSWORD" : "userpassword"
+    },
+
+    "TWITTER" : [{
+        "TOKEN"           : "",
+        "SECRET"          : "",
+        "CONSUMER_KEY"    : "",
+        "CONSUMER_SECRET" : ""
+    }]
+}

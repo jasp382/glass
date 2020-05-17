@@ -1,0 +1,27 @@
+/*_________________ PUBLICATIONS _________________*/
+
+#publications{
+    padding-top: calc(65px + 35px + 55px);
+    background-image: url("/static/vgijs/img/vgi-home/paperBackgroundTexture.png");
+    padding-bottom: 2%;
+}
+
+#publications div {
+    margin-top: 4%;
+    margin-bottom: 4%;
+}
+
+#publications div {
+    background-color: white;
+    padding: 1.5%;
+    width: 80%;
+    position: relative;
+    left: 8%;
+    margin: 2%;
+    box-sizing: border-box;
+    text-align: left;
+}
+
+#publications a {
+	color: blue;
+}

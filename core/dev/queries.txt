@@ -1,0 +1,87 @@
+-- populacao por freguesia
+CREATE TABLE freg_cmb1 AS
+SELECT mtbl.*, jtbl.popres FROM freg_cmb AS mtbl
+LEFT JOIN (
+	SELECT idfreg, SUM(popres) AS popres FROM bgri
+	GROUP BY idfreg
+) AS jtbl
+ON mtbl.idfreg = jtbl.idfreg
+;
+
+-- farmacia por 10000 hab
+CREATE TABLE freg_cmb2 AS
+SELECT mtbl.*, 
+CASE 
+	WHEN jtbl.nfarmacia IS NULL
+	THEN 0 else jtbl.nfarmacia
+END AS nfarmacia,
+CASE
+	WHEN jtbl.nfarmacia IS NULL
+	THEN 0 ELSE (jtbl.nfarmacia /mtbl.popres) * 10000
+END AS farmbypop
+FROM freg_cmb1 AS mtbl
+LEFT JOIN (
+	SELECT freg_pop.idfreg, COUNT(idfreg) AS nfarmacia
+	FROM freg_pop, farmacias
+	WHERE ST_Contains(freg_pop.geom, farmacias.geom) = TRUE
+	GROUP BY idfreg
+) AS jtbl
+ON mtbl.idfreg = jtbl.idfreg
+;
+
+-- tempo medio que se demora a chegar ao hospital mais proximo
+CREATE TABLE freg_cmb3 AS
+SELECT mtbl.*, jtbl.timehosp FROM 
+freg_cmb2 AS mtbl 
+LEFT JOIN (
+	SELECT bgri.idfreg,
+	SUM(((wthgen_nd * popres) / bgri_j.icol) * wthgen_nd) AS timehosp
+	FROM bgri
+	INNER JOIN (
+		SELECT idfreg, SUM(wthgen_nd * popres) AS icol
+		FROM bgri
+		GROUP BY idfreg
+	) AS bgri_j ON bgri.idfreg = bgri_j.idfreg
+	GROUP BY bgri.idfreg
+) AS jtbl
+ON mtbl.idfreg = jtbl.idfreg
+;
+
+-- numero ecopontos a menos de 100 metros
+
+CREATE TABLE freg_cmb4 AS
+SELECT mb.*, jb.neco
+FROM freg_cmb3 AS mb
+LEFT JOIN (
+	SELECT b.idfreg, COUNT(b.idfreg) AS neco
+	FROM bgri AS b
+	INNER JOIN ecopontos19 AS n
+	ON ST_DWithin(ST_Centroid(b.geom), n.geom, 100)
+	GROUP BY b.idfreg
+) AS jb ON mb.idfreg = jb.idfreg
+;
+
+-- percentagem de floresta por freguesia
+
+CREATE TABLE freg_cmb5 AS
+SELECT mfreg.*,
+(jfreg.iarea / ST_Area(mfreg.geom)) * 100 AS forestarea
+FROM freg_cmb4 AS mfreg
+LEFT JOIN (
+	SELECT mtbl.idfreg,
+	SUM(ST_Area(ST_Intersection(mtbl.geom, jtbl.geom))) AS iarea
+	FROM freg_cmb4 AS mtbl
+	LEFT JOIN (
+		SELECT cos2018_n1, n1, (ST_Dump(geom)).geom AS geom
+		FROM (
+			SELECT cos2018_n1, n1,
+			ST_UnaryUnion(ST_Collect(geom)) AS geom
+			FROM lulc_coimbra
+			WHERE n1='5'
+			GROUP BY cos2018_n1, n1
+		) AS foo
+	) AS jtbl
+	ON ST_Intersects(mtbl.geom, jtbl.geom)
+	GROUP BY mtbl.idfreg
+) AS jfreg ON mfreg.idfreg = jfreg.idfreg
+;
