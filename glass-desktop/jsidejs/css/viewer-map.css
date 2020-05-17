@@ -1,0 +1,380 @@
+/*_________________ FONTS _________________*/
+
+.txt-specs {
+	font-family : sans-serif;
+	font-size : 12px;
+	color : #3f798e;
+}
+
+/*_________________ MAP _________________*/
+
+#content-container {
+    position: fixed;
+    width: 100%;
+    height : calc(100% - 100px);
+    top: 100px;
+    left: 0px;
+    z-index: 0;
+}
+
+.map-complementar {
+	position: absolute;
+	height: 70%;
+	left: 0%;
+	width: 20%;
+	background-color: white;
+}
+
+.map-principal {
+	position: absolute;
+	height: 70%;
+	left: 20%;
+	width: 45%;
+	background-color: white;
+}
+
+.map-full-page { 
+	width:96%;
+	height: 100%;
+	position: absolute;
+	left: 0%
+}
+
+.map-with-sidebar {
+	width: 75%;
+	height: 100%;
+	position: absolute;
+	right: 30%
+}
+
+.map-bass-div {
+	position: absolute;
+	height: 100%;
+	left:0%;
+	width:20%;
+	background-color: black;
+	opacity: 0.4;
+	z-index: 10000;
+	text-align: center;
+	color : white;
+}
+
+.complementar-bass-div {
+	position: absolute;
+	height: 70%;
+	left:20%;
+	width:45%;
+	background-color: black;
+	opacity: 0.4;
+	z-index: 10000;
+	text-align: center;
+	color : white;
+}
+
+.indicators-info {
+	position: absolute;
+	height: 30%;
+	top: 70%;
+	left: 0%;
+	width: 20%;
+	background-color: white;
+	overflow: auto;
+	padding: 10px;
+}
+
+.indicators-info p {
+	padding : 0;
+	margin  : 0;
+	line-height : 130%;
+}
+
+/*_________________ CONTROLS FOR THE MAP _________________*/
+.caixa-zoom {
+	float: left;
+    position: absolute;
+    left: 1%;
+    top: 2%;
+    z-index: 1000;   
+	width:35px; 
+}
+.caixa-zoom a:link img {width:25px; margin:5px; opacity:0.5;}
+.caixa-zoom a:hover img {width:25px; margin:5px; opacity:0.7;}
+.caixa-zoom a:active img {width:25px; margin:5px; opacity:1;}
+
+/*_________________ SIDEBAR ON RIGHT _________________*/
+
+#table-contents {
+	position: absolute;
+	right    : 15%;
+	width    : 20%;
+	height   : 70%;
+	overflow : auto;
+	padding  : 10px;
+}
+
+#table-contents h1 { font-size: 17px; }
+#table-contents h2 { font-size: 16px; }
+#table-contents h3 { font-size: 15px; }
+#table-contents h4 { font-size: 14px; }
+#table-contents h5 { font-size: 13px; }
+
+#table-contents select {
+	color: #3f798e;
+	padding:3px;
+	margin-bottom: 3px;
+	border: 1px solid #3f798e;
+	border-radius: 3px;
+}
+
+#table-contents option { color: #3f798e; }
+
+#sel-years, #sel-layers {
+	width: 100%;
+	text-overflow: ellipsis;
+}
+
+.layer-box {
+	position: absolute;
+	top: 0%;
+	height: 50%;
+	width: 100%;
+	background-color: white;
+	overflow: auto;
+}
+
+.indicators-box {
+	position: absolute;
+	top: 50%;
+	height: 50%;
+	width: 100%;
+	background-color: white;
+	overflow: auto;
+}
+
+/* Layer Tree Styles */
+
+.sidebar-tree-div a {
+    color: black;
+}
+
+ul.select-tree, ul.select-tree ul {
+    list-style-type: none;
+    background: url('/static/jsidejs/img/tree-nodes/vline.png') repeat-y;
+    margin: 0;
+    padding: 0;
+    text-align: left;
+}
+
+ul.select-tree ul {
+    margin-left: 10px;
+}
+
+ul.select-tree li {
+	margin: 0;
+	padding: 0 12px;
+	line-height: 20px;
+	background: url('/static/jsidejs/img/tree-nodes/node.png') no-repeat;
+	font-family : sans-serif;
+}
+
+ul.select-tree li:last-child {
+    background: #f0f5f3 url('/static/jsidejs/img/tree-nodes/lastnode.png') no-repeat;
+}
+
+ul.select-tree li:last-child:before {
+    border-left:1px solid rgb(100,100,100);   
+}
+
+/*_________________ Legend Right Sidebar _________________*/
+
+#legend-contents {
+	position: absolute;
+	right    : 0px;
+	width    : 15%;
+	height   : 100%;
+	overflow : auto;
+	padding  : 10px;
+}
+
+#legend-contents h1 { font-size: 17px; }
+#legend-contents h2 { font-size: 16px; }
+#legend-contents h3 { font-size: 15px; }
+#legend-contents h4 { font-size: 14px; }
+#legend-contents h5 { font-size: 13px; }
+
+/*_________________ Table for Alphanumerics _________________*/
+
+.data-table {
+	position: absolute;
+	left: 20%;
+	top: 70%;
+	height: 30%;
+	width: 65%;
+	background-color: white;
+	overflow: auto;
+	padding: 10px;
+}
+
+.table {
+	padding: 10px;
+}
+
+.table th {
+	padding: 3px; text-align: left;
+}
+
+.table td { padding: 3px; }
+
+.table-fixed tbody {
+    overflow-y: auto;
+    width: 100%;
+}
+
+.table-fixed thead,
+.table-fixed tbody,
+.table-fixed tr,
+.table-fixed td,
+.table-fixed th {
+    display: block;
+}
+
+.table-fixed tbody td,
+.table-fixed tbody th,
+.table-fixed thead > tr > th {
+    float: left;
+    position: relative;
+
+    &::after {
+        content: '';
+        clear: both;
+        display: block;
+    }
+}
+
+.lyr-data-table {
+	width: 750px;
+	table-layout: fixed;
+	border-collapse: collapse;
+	
+	td:nth-child(1), th:nth-child(1) { min-width: 200px; }
+	td:nth-child(2), th:nth-child(2) { min-width: 200px; }
+	td:nth-child(3), th:nth-child(3) { width: 350px; }
+	
+	thead {
+		background-color: #333;
+		color: #FDFDFD;;
+		tr {
+			display: block;
+			position: relative;
+		}
+	}
+	
+	tbody {
+		display: block;
+		overflow: auto;
+		width: 100%;
+		height: 300px;
+		tr:nth-child(even) {
+			background-color: #DDD;
+		}
+	}
+}
+
+.lyr-data-table th {
+	text-decoration: underline;
+}
+
+.lyr-data-table th, .lyr-data-table td {
+	padding: 5px;
+	text-align: left;
+}
+
+/*
+#lyr-data-table {
+	font-family: arial, sans-serif;
+	border-collapse: collapse;
+	width: 100%;
+	table-layout: fixed;
+}
+
+#lyr-data-table tbody {
+	display: block;
+	width: 100%;
+	overflow: auto;
+	height: 100%;
+}
+
+#lyr-data-table thead tr {
+	display: block;
+}
+
+#lyr-data-table td, th {
+	border: 1px solid #dddddd;
+	text-align: left;
+	padding: 8px;
+}
+
+tr:nth-child(even) {
+	background-color: #dddddd;
+}
+*/
+
+.chart-area {
+  padding-top: 30px;
+  padding-bottom: 30px;
+}
+
+.chart-area span.big-value {
+  font-size: 1.2em;
+  padding-left: 5px;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke-width: 1px;
+  stroke: #a5a5a5;
+  shape-rendering: crispEdges;
+  z-index: 2;
+}
+
+.x.axis text {
+    font-size: 1.3em;
+}
+
+.y.axis text {
+    font-size: 1.3em;
+}
+
+circle {
+  stroke: #000;
+  stroke-opacity: 1;
+  stroke-width: 1px;
+}
+
+jside-thermometer {
+	display: block;
+}
+
+jside-thermometer .axis path {
+	stroke-width: 0px;
+}
+
+jside-thermometer text.axis {
+  font-size: 0.85em;
+}
+
+jside-thermometer .background,
+jside-thermometer-detail .background {
+  stroke: #a8a8a8;
+  stroke-width: 1px;
+  fill: #fefefe;
+  shape-rendering: crispEdges;
+}
+
+jside-thermometer .line.ref {
+  fill: none;
+  stroke: #4d4d4d;
+  stroke-width: 2px;
+  stroke-dasharray: 4;
+}

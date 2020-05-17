@@ -1,0 +1,1 @@
+https://github.com/acgeospatial/awesome-earthobservation-code?fbclid=IwAR1s_s1jimIkkxthbgumofzLL_ZQnAaWiM8qttvykx0uDGJ-oGoXF3Ci3CE

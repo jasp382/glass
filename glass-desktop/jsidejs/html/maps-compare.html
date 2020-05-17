@@ -1,0 +1,45 @@
+<div id="left-screen">
+	<select id="sel-years" ng-model="vm.leftYear">
+		<option ng-repeat="(year, lyrs) in vm.lyrLeft">{{ year }}</option>
+	</select>
+	<select id="sel-layers" ng-model="vm.newLeftLayer">
+		<option ng-repeat="lyr in vm.lyrListLeft" value="{{ $index }}">
+			{{ lyr.name }}
+		</option>
+	</select>
+	<div class="map-box" ng-cloak>
+		<div id="left-map"></div>
+	</div>
+	<div ng-if="vm.leftLegend" class="legend-box txt-specs">
+		<a>{{ vm.leftName }} ({{ vm.leftYear }})</a>
+		<ul class="select-tree">
+			<li ng-repeat="leg in vm.leftLegend">
+				<i style="background:{{ leg.color }};color:{{ leg.color }}">class</i>
+				{{ leg.cat_val }}
+			</li>
+		</ul>
+	</div>
+</div>
+
+<div id="right-screen">
+	<select id="sel-years" ng-model="vm.rightYear">
+		<option ng-repeat="(year, lyrs) in vm.lyrRight">{{ year }}</option>
+	</select>
+	<select id="sel-layers" ng-model="vm.newRightLayer">
+		<option ng-repeat="lyr in vm.lyrListRight" value="{{ $index }}">
+			{{ lyr.name }}
+		</option>
+	</select>
+	<div class="map-box" ng-cloak>
+		<div id="right-map"></div>
+	</div>
+	<div ng-if="vm.rightLegend" class="legend-box txt-specs">
+		<a>{{ vm.rightName }} ({{ vm.rightYear }})</a>
+		<ul class="select-tree">
+			<li ng-repeat="leg in vm.rightLegend">
+				<i style="background:{{ leg.color }};color:{{ leg.color }}">class</i>
+				{{ leg.cat_val }}
+			</li>
+		</ul>
+	</div>
+</div>

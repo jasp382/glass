@@ -1,0 +1,142 @@
+<div id="right-box" ng-cloak>
+	<div id="MapControls" class="caixa-zoom" ng-animate>
+		<a href="#">
+			<img src="/static/jsidejs/img/maps/zoom-in.png" alt="Zoom In Icon" ng-click="vm.activateZoomIn()">
+		</a>
+	
+		<a href="#">
+			<img src="/static/jsidejs/img/maps/zoom-out.png" alt="Zoom Out Icon" ng-click="vm.activateZoomOut()">
+		</a>
+	
+		<a href="#">
+			<img src="/static/jsidejs/img/maps/zoom-fe.png" alt="Zoom Out Icon" ng-click="vm.zoomToFullExtent()">
+		</a>
+	</div>
+</div>
+
+<div id="left-box" ng-if="vm.initial && !vm.addForm">
+	<div class="container">
+		<h1>Grupos de Unidades Estatísticas</h1>
+		
+		<div ng-repeat="row in vm.countriesLst" class="list-group">
+			<span>
+				<a href="#" class="list-group-item list-group-item-action"
+					ng-click="vm.selectCountry(row)">
+					{{ row.slug }} || {{ row.descricao }}
+				</a>
+				
+				<div ng-if="vm.scalesLyr === row.fid">
+					<h3>Escalas disponíveis:</h3>
+					
+					<ul class="select-tree">
+						<li ng-repeat="scl in row.scale">
+							<input type="checkbox" ng-change="vm.addNewLyr(scl)" 
+								ng-model="scl.status"> {{ scl.desig }}
+						</li>
+					</ul>
+				</div>
+				
+				<a type="button" href="/api/su/delsu/{{ row.fid }}/">
+					Apagar grupo
+				</a>
+			</span>
+		</div>
+	</div>
+	
+	<hr>
+	
+	<button type="button" ng-click="vm.showAddForm()">
+		Adicionar novo grupo
+	</button>
+</div>
+
+<div id="right-box" ng-if="vm.statsLst">
+	<h1>Unidades estatísticas no groupo {{ vm.statsLst.descricao }}</h1>
+	
+	<div>
+		<p ng-repeat="stat in vm.statsLst">
+			{{ stat.id_unit }} || {{ stat.design }}
+		</p>
+	</div>
+</div>
+
+<div id="left-box" ng-if="vm.addForm">
+	<h1>Adicionar Novas Unidades Estatísticas:</h1>
+	<form id="add-stat-units" method="POST" class="add-stat-form ng-cloak"
+		enctype="multipart/form-data" action="/api/su/addsu/">
+		<h3>Nome Grupo Unidades Estatísticas</h3>
+		<input type="text" name="slug" required/>
+		
+		<h3>Descrição</h3>
+		<input type="text" name="descricao" required/>
+		
+		<h3>Geometrias</h3>
+		<input type="file" name="shp-file" multiple required/>
+		
+		<hr>
+		<button id="submitform" type="submit">Submeter...</button>
+	</form>
+</div>
+
+<div id="left-box" ng-if="vm.addStatGeom">
+	<h1>Adicionar geometrias:</h1>
+	
+	<form id="add-stats-geom" method="POST" class="add-stats-geom-form ng-cloak"
+		enctype="multipart/form-data" action="/api/su/mapsucols/">
+		<h3>FID da Unidade estatística (código dicofre):</h3>
+		<select name="col-fid" form="add-stats-geom">
+			<option disabled selected value> -- select an option -- </option>
+			<option ng-repeat="col in vm.dataset.cols" value="{{ col.name_col }}">
+				{{ col.name_col }}
+			</option>
+		</select>
+		
+		<h3>Nome da Unidade estatística</h3>
+		<select name="col-name" form="add-stats-geom">
+			<option disabled selected value> -- select an option -- </option>
+			<option ng-repeat="col in vm.dataset.cols" value="{{ col.name_col }}">
+				{{ col.name_col }}
+			</option>
+		</select>
+		
+		<h3>Escala da Unidade Estatística</h3>
+		<select name="col-scale" form="add-stats-geom">
+			<option disabled selected value> -- select an option -- </option>
+			<option ng-repeat="col in vm.dataset.cols" value="{{ col.name_col }}">
+				{{ col.name_col }}
+			</option>
+		</select>
+		
+		<h3>FID da Unidade estatística relacionada:</h3>
+		<select name="col-fid-rel" form="add-stats-geom">
+			<option disabled selected value> -- select an option -- </option>
+			<option ng-repeat="col in vm.dataset.cols" value="{{ col.name_col }}">
+				{{ col.name_col }}
+			</option>
+		</select>
+		
+		<h3>Nome da Unidade estatística relacionada</h3>
+		<select name="col-name-rel" form="add-stats-geom">
+			<option disabled selected value> -- select an option -- </option>
+			<option ng-repeat="col in vm.dataset.cols" value="{{ col.name_col }}">
+				{{ col.name_col }}
+			</option>
+		</select>
+		
+		<h3>Escala da Unidade Estatística relacionada</h3>
+		<select name="col-scale-rel" form="add-stats-geom">
+			<option disabled selected value> -- select an option -- </option>
+			<option ng-repeat="col in vm.dataset.cols" value="{{ col.name_col }}">
+				{{ col.name_col }}
+			</option>
+		</select>
+		
+		<input type="text" name="fid-rqst" ng-model="vm.rqstid"/>
+		<input type="text" name="file-name" ng-model="vm.dataset.filename" />
+		
+		<hr>
+		
+		<button id="submitform" type="submit">Enviar...</button>
+	</form>
+</div>
+<div ng-transclude></div>
