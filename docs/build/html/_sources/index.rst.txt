@@ -1,0 +1,37 @@
+.. GLASS - Geoscientific Library for Analysis of Spatial Systems documentation master file, created by
+   sphinx-quickstart on Sun May 17 18:11:01 2020.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+Welcome to GLASS documentation!
+=========================================================================================
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+The Geoscientific Library for Analysis of Spatial Systems (GLASS) is a free and open source library for geospatial data science.
+It consistes of a set of Python Methods to support the automatization of spatial data science activities based on Geographic Information Systems Software. These Python Methods could be included in any high-level spatial analysis application.
+
+
+
+How to use?
+==================
+
+* :ref:`Install everything`
+* :ref:`Use GLASS docker image`
+
+Which tools are available?
+==================
+
+* :ref:`Install everything`
+* :ref:`Use GLASS docker image`
+
+Bug reports
+====================
+<b>If a bug is found or if there is any problem during GASP setup, please send an email to the administrator of this repository (jpatriarca@mat.uc.pt).</b>
+
+License information
+====================
+
+See the file \"LICENSE\" for information about the terms & conditions and a DISCLAIMER OF ALL WARRANTIES.
