@@ -6,8 +6,8 @@ if __name__ == '__main__':
     import os
     import codecs
     import datetime as dt
-    from gasp.sds.osm2lulc.utils import record_time_consumed
-    from gasp.pyt.oss import fprop
+    from glass.geo.osm2lulc.utils import record_time_consumed
+    from glass.pyt.oss import fprop
 
     """
     Input Parameters
@@ -26,7 +26,7 @@ if __name__ == '__main__':
     time_a = dt.datetime.now().replace(microsecond=0)
 
     if VERSION == 'v14':
-        from gasp.sds.osm2lulc.num import osm2lulc
+        from glass.geo.osm2lulc.num import osm2lulc
 
         result, timeobj = osm2lulc(
             OSMDATA, NOMENCLATURE, REF_FILE, LULC_RESULT,
@@ -34,7 +34,7 @@ if __name__ == '__main__':
         )
     
     elif VERSION == 'v13':
-        from gasp.sds.osm2lulc.grs import raster_based
+        from glass.geo.osm2lulc.grs import raster_based
 
         result, timeobj = raster_based(
             OSMDATA, NOMENCLATURE, REF_FILE, LULC_RESULT,
@@ -42,7 +42,7 @@ if __name__ == '__main__':
         )
     
     else:
-        from gasp.sds.osm2lulc.grs import vector_based
+        from glass.geo.osm2lulc.grs import vector_based
 
         result, timeobj = vector_based(
             OSMDATA, NOMENCLATURE, REF_FILE, LULC_RESULT,

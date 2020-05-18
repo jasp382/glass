@@ -3,18 +3,18 @@ Produce train from OSM2LULC results
 """
 
 import os
-import pandas            as pd
-import multiprocessing   as mp
-from gasp.gt.sample      import create_fishnet
-from gasp.gt.prop.rst    import get_cellsize
-from gasp.pyt.oss        import lst_ff, mkdir, fprop, cpu_cores
-from gasp.gt.toshp.coord import shpext_to_boundshp
-from gasp.gt.wenv.grs    import run_grass
-from gasp.gt.torst       import shp_to_rst
-from gasp.pyt.df.split   import df_split
-from gasp.gt.sample      import nfishnet_fm_rst
-from gasp.gt.fmshp       import shp_to_obj
-from gasp.gt.toshp       import df_to_shp
+import pandas                 as pd
+import multiprocessing        as mp
+from glass.geo.gt.sample      import create_fishnet
+from glass.geo.gt.prop.rst    import get_cellsize
+from glass.pyt.oss            import lst_ff, mkdir, fprop, cpu_cores
+from glass.geo.gt.toshp.coord import shpext_to_boundshp
+from glass.geo.wenv.grs       import run_grass
+from glass.geo.gt.torst       import shp_to_rst
+from glass.pyt.df.split       import df_split
+from glass.geo.gt.sample      import nfishnet_fm_rst
+from glass.geo.gt.fmshp       import shp_to_obj
+from glass.geo.gt.toshp       import df_to_shp
 
 def lulc_by_cell(tid, boundary, lulc_shps, fishnet, result, workspace):
     bname = fprop(boundary, 'fn')

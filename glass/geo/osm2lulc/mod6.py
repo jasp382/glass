@@ -3,7 +3,7 @@ Rule 6
 """
 
 import os
-from glass.sds.osm2lulc import DB_SCHEMA
+from glass.geo.osm2lulc import DB_SCHEMA
 
 def rst_pnt_to_build(osmdb, pntTable, polyTable, api_db='SQLITE'):
     """

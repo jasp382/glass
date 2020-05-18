@@ -2,7 +2,7 @@
 Generic method to select all osm features to be used in a certain rule
 """
 
-from glass.sds.osm2lulc import DB_SCHEMA, PROCEDURE_DB
+from glass.geo.osm2lulc import DB_SCHEMA, PROCEDURE_DB
 
 
 def record_time_consumed(timeData, outXls):
@@ -67,7 +67,7 @@ def osm_project(osmDb, srs_epsg, api='SQLITE', isGlobeLand=None):
     else:
         from glass.sql.to      import q_to_ntbl as proj
         from glass.geo.gql.idx import idx_for_geom
-    from glass.sds.osm2lulc    import osmTableData, GEOM_AREA
+    from glass.geo.osm2lulc    import osmTableData, GEOM_AREA
     
     osmtables = {}
     
@@ -177,7 +177,7 @@ def add_lulc_to_osmfeat(osmdb, osmTbl, nomenclature, api='SQLITE'):
     """
     
     from glass.sql.q        import exec_write_q
-    from glass.sds.osm2lulc import DB_SCHEMA
+    from glass.geo.osm2lulc import DB_SCHEMA
     
     KEY_COL   = DB_SCHEMA["OSM_FEATURES"]["OSM_KEY"]
     VALUE_COL = DB_SCHEMA["OSM_FEATURES"]["OSM_VALUE"]
@@ -279,8 +279,8 @@ def add_lulc_to_osmfeat(osmdb, osmTbl, nomenclature, api='SQLITE'):
 
 def osmlulc_rsttbl(nomenclature, outpath):
     
-    import pandas;         import dbf
-    from glass.sds.osm2lulc import LEGEND
+    import pandas;          import dbf
+    from glass.geo.osm2lulc import LEGEND
     
     __legend = LEGEND[nomenclature]
     

@@ -106,9 +106,9 @@ def bnds_to_mosaic(bands, outdata, ref_raster, loc=None):
     """
     
     import os
-    from glass.pyt.oss     import fprop
+    from glass.pyt.oss         import fprop
     from glass.geo.gt.prop.prj import get_rst_epsg
-    from glass.geo.gt.wenv.grs import run_grass
+    from glass.geo.wenv.grs    import run_grass
 
     # Get EPSG from refRaster
     epsg = get_rst_epsg(ref_raster, returnIsProj=None)
@@ -127,8 +127,8 @@ def bnds_to_mosaic(bands, outdata, ref_raster, loc=None):
     # ************************************************************************ #
     # GRASS MODULES #
     # ************************************************************************ #
-    from glass.geo.gt.torst   import rst_to_grs, grs_to_rst
-    from glass.geo.gt.wenv.grs import rst_to_region
+    from glass.geo.gt.torst import rst_to_grs, grs_to_rst
+    from glass.geo.wenv.grs import rst_to_region
     # ************************************************************************ #
     # SET GRASS GIS LOCATION EXTENT #
     # ************************************************************************ #

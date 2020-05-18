@@ -19,12 +19,12 @@ def snap_points_to_near_line(lineShp, pointShp, epsg, workGrass,
         Uses GRASS GIS to find near lines.
         """
         
-        import os;            import numpy
-        from geopandas        import GeoDataFrame
-        from glass.pyt.oss     import fprop
-        from glass.geo.gt.wenv.grs import run_grass
-        from glass.geo.gt.fmshp    import shp_to_obj
-        from glass.geo.gt.toshp    import df_to_shp
+        import os;              import numpy
+        from geopandas          import GeoDataFrame
+        from glass.pyt.oss      import fprop
+        from glass.geo.wenv.grs import run_grass
+        from glass.geo.gt.fmshp import shp_to_obj
+        from glass.geo.gt.toshp import df_to_shp
     
         # Create GRASS GIS Location
         grassBase = run_grass(workGrass, location=location, srs=epsg)

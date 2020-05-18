@@ -45,29 +45,29 @@ def osm2lulc(osmdata, nomenclature, refRaster, lulcRst,
     # ************************************************************************ #
     # Dependencies #
     # ************************************************************************ #
-    from glass.geo.gt.fmrst              import rst_to_array
-    from glass.geo.gt.prop.ff            import check_isRaster
-    from glass.geo.gt.prop.rst           import get_cellsize
-    from glass.geo.gt.prop.prj           import get_rst_epsg
+    from glass.geo.gt.fmrst          import rst_to_array
+    from glass.geo.gt.prop.ff        import check_isRaster
+    from glass.geo.gt.prop.rst       import get_cellsize
+    from glass.geo.gt.prop.prj       import get_rst_epsg
     from glass.pyt.oss               import mkdir, copy_file
     from glass.pyt.oss               import fprop
     if roadsAPI == 'POSTGIS':
         from glass.sql.db            import create_db
-        from glass.geo.gql.to.osm        import osm_to_psql
-        from glass.sds.osm2lulc.mod2 import pg_num_roads
+        from glass.geo.gql.to.osm    import osm_to_psql
+        from glass.geo.osm2lulc.mod2 import pg_num_roads
         from glass.sql.fm            import dump_db
         from glass.sql.db            import drop_db
     else:
-        from glass.geo.gt.toshp.osm      import osm_to_sqdb
-        from glass.sds.osm2lulc.mod2 import num_roads
-    from glass.sds.osm2lulc.utils    import osm_project, add_lulc_to_osmfeat
-    from glass.sds.osm2lulc.utils    import osmlulc_rsttbl
-    from glass.sds.osm2lulc.utils    import get_ref_raster
-    from glass.sds.osm2lulc.mod1     import num_selection
-    from glass.sds.osm2lulc.m3_4     import num_selbyarea
-    from glass.sds.osm2lulc.mod5     import num_base_buffer
-    from glass.sds.osm2lulc.mod6     import num_assign_builds
-    from glass.geo.gt.torst              import obj_to_rst
+        from glass.geo.gt.toshp.osm  import osm_to_sqdb
+        from glass.geo.osm2lulc.mod2 import num_roads
+    from glass.geo.osm2lulc.utils    import osm_project, add_lulc_to_osmfeat
+    from glass.geo.osm2lulc.utils    import osmlulc_rsttbl
+    from glass.geo.osm2lulc.utils    import get_ref_raster
+    from glass.geo.osm2lulc.mod1     import num_selection
+    from glass.geo.osm2lulc.m3_4     import num_selbyarea
+    from glass.geo.osm2lulc.mod5     import num_base_buffer
+    from glass.geo.osm2lulc.mod6     import num_assign_builds
+    from glass.geo.gt.torst          import obj_to_rst
     # ************************************************************************ #
     # Global Settings #
     # ************************************************************************ #
@@ -104,7 +104,7 @@ def osm2lulc(osmdata, nomenclature, refRaster, lulcRst,
     refRaster, epsg = get_ref_raster(refRaster, workspace, cellsize=2)
     CELLSIZE = get_cellsize(refRaster, gisApi='gdal')
         
-    from glass.sds.osm2lulc import osmTableData, PRIORITIES
+    from glass.geo.osm2lulc import osmTableData, PRIORITIES
     
     time_b = datetime.datetime.now().replace(microsecond=0)
     # ************************************************************************ #
