@@ -8,16 +8,41 @@ It consistes of a set of Python Methods to support the automatization of spatial
 How to use?
 ==================
 
-* Install everything
-* Use GLASS docker image
+1 - Install GLASS from scratch:
 
-Which tools are available?
+- GASP dependencies installation:
+
+    - [Ubuntu 20 LTS;](install/install_ubuntu20.md)
+    - [Ubuntu 18 LTS;](install/install_ubuntu18.md)
+
+2 - Use GLASS Docker Image:
+
+- TODO
+
+GLASS Modules:
 ==================
 
-* glass
-* Use GLASS docker image
+- glass.pyt - Basic Python tools to support operations of other modules;
 
-Support
+- glass.i - Data interoperability tools;
+
+- glass.acq - Data acquisition tools;
+
+- glass.sql - Tools to support data processing inside relational databases;
+
+- glass.geo - Tools to support geodata processing and analysis:
+
+    - ..geo.gt - Tools for processing Geographic Data stored in files;
+    - ..geo.gm - Tools to geometry objects handling;
+    - ..geo.gql - Tools for deadling with geometries inside relational databases;
+    - ..geo.wenv - Setup GEO computional working environments; 
+
+- glass.da - Data analysis tools for standard Python objects;
+
+- glass.webgis - Tools to support development of WebGIS applications;
+
+
+Support:
 ====================
 If you are having issues, please let us know.
 Just send an email to jpatriarca@mat.uc.pt

@@ -1,0 +1,2 @@
+include gasp/sds/osm2lulc/osmtolulc.sqlite
+include gasp/cons/con-postgresql.json

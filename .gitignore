@@ -1,0 +1,13 @@
+# gasp distribution
+dist/*
+build/*
+gasp.egg-info
+# .pyc files
+*.pyc
+# Hide notebooks checkpoints
+.ipynb*
+# Scripts
+scripts/usee/obs_to_txt_nc.json
+# Configuration json
+gasp/cons/*.json
+!gasp/cons/sentinel-ex.json
