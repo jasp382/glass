@@ -238,7 +238,7 @@ def rst_to_grs(rst, grsRst, lmtExt=None, as_cmd=None):
         m()
     
     else:
-        from glass import execmd
+        from glass.pyt import execmd
         
         rcmd = execmd((
             "r.in.gdal input={} output={} -o{} --overwrite "
