@@ -20,25 +20,25 @@ def raster_based(osmdata, nomenclature, refRaster, lulcRst,
     # ************************************************************************ #
     # Gasp dependencies #
     # ************************************************************************ #
-    from glass.pyt.oss                import mkdir, fprop
-    from glass.geo.gt.prop.ff             import check_isRaster
-    from glass.geo.gt.prop.prj            import get_rst_epsg
-    from glass.geo.gt.wenv.grs            import run_grass
+    from glass.pyt.oss               import mkdir, fprop
+    from glass.geo.gt.prop.ff        import check_isRaster
+    from glass.geo.gt.prop.prj       import get_rst_epsg
+    from glass.geo.wenv.grs          import run_grass
     if roadsAPI == 'POSTGIS':
-        from glass.sql.db             import create_db
-        from glass.geo.gql.to.osm         import osm_to_psql 
-        from glass.sds.osm2lulc.mod2  import roads_sqdb
-        from glass.sql.fm             import dump_db
-        from glass.sql.db             import drop_db
+        from glass.sql.db            import create_db
+        from glass.geo.gql.to.osm    import osm_to_psql 
+        from glass.geo.osm2lulc.mod2 import roads_sqdb
+        from glass.sql.fm            import dump_db
+        from glass.sql.db            import drop_db
     else:
-        from glass.geo.gt.toshp.osm       import osm_to_sqdb
-        from glass.sds.osm2lulc.mod2  import grs_rst_roads
-    from glass.sds.osm2lulc.utils     import osm_project, add_lulc_to_osmfeat, osmlulc_rsttbl
-    from glass.sds.osm2lulc.utils     import get_ref_raster
-    from glass.sds.osm2lulc.mod1      import grs_rst
-    from glass.sds.osm2lulc.m3_4      import rst_area
-    from glass.sds.osm2lulc.mod5      import basic_buffer
-    from glass.sds.osm2lulc.mod6      import rst_pnt_to_build
+        from glass.geo.gt.toshp.osm  import osm_to_sqdb
+        from glass.geo.osm2lulc.mod2 import grs_rst_roads
+    from glass.geo.osm2lulc.utils    import osm_project, add_lulc_to_osmfeat, osmlulc_rsttbl
+    from glass.geo.osm2lulc.utils    import get_ref_raster
+    from glass.geo.osm2lulc.mod1     import grs_rst
+    from glass.geo.osm2lulc.m3_4     import rst_area
+    from glass.geo.osm2lulc.mod5     import basic_buffer
+    from glass.geo.osm2lulc.mod6     import rst_pnt_to_build
     # ************************************************************************ #
     # Global Settings #
     # ************************************************************************ #
@@ -74,7 +74,7 @@ def raster_based(osmdata, nomenclature, refRaster, lulcRst,
     # Get Ref Raster
     refRaster, epsg = get_ref_raster(refRaster, workspace, cellsize=2)
     
-    from glass.sds.osm2lulc import PRIORITIES, osmTableData, LEGEND
+    from glass.geo.osm2lulc import PRIORITIES, osmTableData, LEGEND
     
     __priorites = PRIORITIES[nomenclature]
     __legend    = LEGEND[nomenclature]
@@ -116,9 +116,9 @@ def raster_based(osmdata, nomenclature, refRaster, lulcRst,
     # ************************************************************************ #
     # IMPORT SOME GASP MODULES FOR GRASS GIS #
     # ************************************************************************ #
-    from glass.geo.gt.torst    import rst_to_grs, grs_to_rst
-    from glass.geo.gt.nop.mos  import rsts_to_mosaic
-    from glass.geo.gt.wenv.grs import rst_to_region
+    from glass.geo.gt.torst   import rst_to_grs, grs_to_rst
+    from glass.geo.gt.nop.mos import rsts_to_mosaic
+    from glass.geo.wenv.grs   import rst_to_region
     # ************************************************************************ #
     # SET GRASS GIS LOCATION EXTENT #
     # ************************************************************************ #
@@ -370,26 +370,26 @@ def vector_based(osmdata, nomenclature, refRaster, lulcShp,
     # GASP dependencies #
     # ************************************************************************ #
     from glass.pyt.oss               import fprop, mkdir
-    from glass.geo.gt.wenv.grs           import run_grass
+    from glass.geo.wenv.grs          import run_grass
     if RoadsAPI == 'POSTGIS':
         from glass.sql.db            import create_db
-        from glass.geo.gql.to.osm        import osm_to_psql
+        from glass.geo.gql.to.osm    import osm_to_psql
         from glass.sql.db            import drop_db
         from glass.sql.fm            import dump_db
     else:
-        from glass.geo.gt.toshp.osm      import osm_to_sqdb
-    from glass.sds.osm2lulc.utils    import osm_project, add_lulc_to_osmfeat, get_ref_raster
-    from glass.geo.gt.toshp.mtos         import shps_to_shp
-    from glass.sds.osm2lulc.mod1     import grs_vector
+        from glass.geo.gt.toshp.osm  import osm_to_sqdb
+    from glass.geo.osm2lulc.utils    import osm_project, add_lulc_to_osmfeat, get_ref_raster
+    from glass.geo.gt.toshp.mtos     import shps_to_shp
+    from glass.geo.osm2lulc.mod1     import grs_vector
     if RoadsAPI == 'SQLITE' or RoadsAPI == 'POSTGIS':
-        from glass.sds.osm2lulc.mod2 import roads_sqdb
+        from glass.geo.osm2lulc.mod2 import roads_sqdb
     else:
-        from glass.sds.osm2lulc.mod2 import grs_vec_roads
-    from glass.sds.osm2lulc.m3_4     import grs_vect_selbyarea
-    from glass.sds.osm2lulc.mod5     import grs_vect_bbuffer
-    from glass.sds.osm2lulc.mod6     import vector_assign_pntags_to_build
-    from glass.geo.gt.toshp.mtos         import same_attr_to_shp
-    from glass.geo.gt.prj                import def_prj
+        from glass.geo.osm2lulc.mod2 import grs_vec_roads
+    from glass.geo.osm2lulc.m3_4     import grs_vect_selbyarea
+    from glass.geo.osm2lulc.mod5     import grs_vect_bbuffer
+    from glass.geo.osm2lulc.mod6     import vector_assign_pntags_to_build
+    from glass.geo.gt.toshp.mtos     import same_attr_to_shp
+    from glass.geo.gt.prj            import def_prj
     # ************************************************************************ #
     # Global Settings #
     # ************************************************************************ #
@@ -426,7 +426,7 @@ def vector_based(osmdata, nomenclature, refRaster, lulcShp,
     # Get Reference Raster
     refRaster, epsg = get_ref_raster(refRaster, workspace, cellsize=10)
     
-    from glass.sds.osm2lulc import osmTableData, PRIORITIES, LEGEND
+    from glass.geo.osm2lulc import osmTableData, PRIORITIES, LEGEND
     
     __priorities = PRIORITIES[nomenclature]
     __legend     = LEGEND[nomenclature]
@@ -473,7 +473,7 @@ def vector_based(osmdata, nomenclature, refRaster, lulcShp,
     # IMPORT SOME GASP MODULES FOR GRASS GIS #
     # ************************************************************************ #
     from glass.geo.gt.gop.ovlay import erase
-    from glass.geo.gt.wenv.grs  import rst_to_region
+    from glass.geo.wenv.grs     import rst_to_region
     from glass.geo.gt.gop.genze import dissolve
     from glass.geo.gt.tbl.grs   import add_and_update, reset_table, update_table
     from glass.geo.gt.tbl.fld   import add_fields

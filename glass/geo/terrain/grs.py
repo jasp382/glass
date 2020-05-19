@@ -50,8 +50,8 @@ def make_dem(grass_workspace, data, field, output, extent_template,
     * CONTOUR;
     """
 
-    from glass.pyt.oss     import fprop
-    from glass.geo.gt.wenv.grs import run_grass
+    from glass.pyt.oss         import fprop
+    from glass.geo.wenv.grs    import run_grass
     from glass.geo.gt.prop.prj import get_epsg
     
     LOC_NAME = fprop(data, 'fn', forceLower=True)[:5] + "_loc"
@@ -87,7 +87,7 @@ def make_dem(grass_workspace, data, field, output, extent_template,
     # IMPORT GRASS GIS MODULES #
     from glass.geo.gt.torst     import rst_to_grs, grs_to_rst
     from glass.geo.gt.toshp.cff import shp_to_grs
-    from glass.geo.gt.wenv.grs  import rst_to_region
+    from glass.geo.wenv.grs     import rst_to_region
     
     # Configure region
     rst_to_grs(ref_template, 'extent')

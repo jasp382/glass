@@ -2,7 +2,7 @@
 Rule 3 and 4 - Area upper than and less than
 """
 
-from glass.sds.osm2lulc import DB_SCHEMA
+from glass.geo.osm2lulc import DB_SCHEMA
 
 def rst_area(db, polygonTable, UPPER=True, api='SQLITE'):
     """
@@ -12,10 +12,10 @@ def rst_area(db, polygonTable, UPPER=True, api='SQLITE'):
     """
     
     import datetime
-    from glass.sql.fm       import q_to_obj
-    from glass.geo.gt.toshp.db  import dbtbl_to_shp as db_to_grs
-    from glass.geo.gt.torst     import shp_to_rst
-    from glass.sds.osm2lulc import GEOM_AREA
+    from glass.sql.fm          import q_to_obj
+    from glass.geo.gt.toshp.db import dbtbl_to_shp as db_to_grs
+    from glass.geo.gt.torst    import shp_to_rst
+    from glass.geo.osm2lulc    import GEOM_AREA
     
     RULE_COL = 'area_upper' if UPPER else 'area_lower'
     OPERATOR = " > " if UPPER else " < "
@@ -72,7 +72,7 @@ def grs_vect_selbyarea(osmdb, polyTbl, UPPER=True, apidb='SQLITE'):
     import datetime
     from glass.geo.gt.gop.genze import dissolve
     from glass.geo.gt.tbl.grs   import add_table
-    from glass.sds.osm2lulc import GEOM_AREA
+    from glass.geo.osm2lulc import GEOM_AREA
     from glass.sql.i        import row_num as cnt_row
     from glass.geo.gt.toshp.db  import dbtbl_to_shp as db_to_shp
     
@@ -131,7 +131,7 @@ def num_selbyarea(db, polyTbl, folder, cellsize, srscode, rstTemplate,
     else:
         from glass.geo.gt.toshp.db import dbtbl_to_shp as sel_by_attr
     from glass.geo.gt.torst        import shp_to_rst
-    from glass.sds.osm2lulc    import GEOM_AREA
+    from glass.geo.osm2lulc    import GEOM_AREA
     
     # Get OSM Features to be selected for this rule
     RULE_COL = 'area_upper' if UPPER else 'area_lower'

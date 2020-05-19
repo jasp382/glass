@@ -129,7 +129,7 @@ def v_break_at_points(workspace, loc, lineShp, pntShp, db, srs, out_correct,
     import os
     from glass.geo.gql.to      import shp_to_psql
     from glass.geo.gt.toshp.db import dbtbl_to_shp
-    from glass.geo.gt.wenv.grs import run_grass
+    from glass.geo.wenv.grs import run_grass
     from glass.pyt.oss      import fprop
     from glass.sql.db       import create_db
     from glass.sql.to       import q_to_ntbl

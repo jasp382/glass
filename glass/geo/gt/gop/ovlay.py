@@ -237,10 +237,10 @@ def optimized_union_anls(lyr_a, lyr_b, outShp, ref_boundary,
     """
     
     import os
-    from glass.pyt.oss       import fprop, lst_ff
-    from glass.pyt.oss       import cpu_cores
+    from glass.pyt.oss           import fprop, lst_ff
+    from glass.pyt.oss           import cpu_cores
     from glass.geo.gt.sample     import create_fishnet
-    from glass.geo.gt.wenv.grs   import run_grass
+    from glass.geo.wenv.grs      import run_grass
     from glass.geo.gt.toshp      import eachfeat_to_newshp
     from glass.geo.gt.toshp.mtos import shps_to_shp
     from glass.geo.gt.attr       import split_shp_by_attr
@@ -580,7 +580,7 @@ def check_shape_diff(SHAPES_TO_COMPARE, OUT_FOLDER, REPORT, DB,
     else:
         raise ValueError('{} already exists!'.format(OUT_FOLDER))
         
-    from glass.geo.gt.wenv.grs import run_grass
+    from glass.geo.wenv.grs import run_grass
         
     gbase = run_grass(
         OUT_FOLDER, grassBIN='grass78', location='shpdif',
@@ -817,7 +817,7 @@ def shp_diff_fm_ref(refshp, refcol, shps, out_folder,
 
     import os
     from glass.geo.gt.prop.ff   import check_isRaster
-    from glass.geo.gt.wenv.grs  import run_grass
+    from glass.geo.wenv.grs     import run_grass
     from glass.pyt.oss          import fprop
     from glass.geo.gt.tbl.tomtx import tbl_to_areamtx
 
