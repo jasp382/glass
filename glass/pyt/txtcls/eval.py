@@ -16,8 +16,8 @@ def binary_eval(refTbl, refId, refCol, tstTbl, tstId,
     
     import numpy  as np
     import pandas;import math
-    from glass.fm  import tbl_to_obj
-    from glass.to  import obj_to_tbl
+    from glass.dct.fm import tbl_to_obj
+    from glass.dct.to import obj_to_tbl
     
     # Data to Pandas Dataframe
     ref_df = tbl_to_obj(
@@ -208,8 +208,8 @@ def model_conf_matrix(tblFile, refCol, clsCol, outMxt):
     """
     
     import pandas        as pd
-    from glass.fm         import tbl_to_obj
-    from glass.to         import obj_to_tbl
+    from glass.dct.fm    import tbl_to_obj
+    from glass.dct.to    import obj_to_tbl
     from sklearn.metrics import confusion_matrix, classification_report
     
     data = tbl_to_obj(tblFile)

@@ -3,7 +3,7 @@ Rule 5 - Basic buffer
 """
 
 import os
-from glass.sds.osm2lulc import DB_SCHEMA
+from glass.geo.osm2lulc import DB_SCHEMA
 
 def basic_buffer(osmdb, lineTable, dataFolder, apidb='SQLITE'):
     """

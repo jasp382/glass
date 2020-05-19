@@ -52,7 +52,7 @@ def def_prj(shp, epsg=None, template=None, api='ogr'):
                 "TO use epsgio option, epsg parameter must be given"
             ))
         
-        from glass.to.web  import get_file
+        from glass.dct.to.web  import get_file
         from glass.pyt.oss import del_file
 
         url = 'https://epsg.io/{}.wkt?download'

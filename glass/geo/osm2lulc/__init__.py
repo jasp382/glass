@@ -207,7 +207,7 @@ def osm_to_lulc(__VERSION, OSM_DATA, NOMENCLATURE, REF_RASTER, RESULT,
     """
     
     if __VERSION == "GRASS_RASTER":
-        from glass.sds.osm2lulc.grs import raster_based
+        from glass.geo.osm2lulc.grs import raster_based
         
         rr = raster_based(
             OSM_DATA, NOMENCLATURE, REF_RASTER, RESULT,
@@ -215,7 +215,7 @@ def osm_to_lulc(__VERSION, OSM_DATA, NOMENCLATURE, REF_RASTER, RESULT,
         )
     
     elif __VERSION == "GRASS_VECTOR":
-        from glass.sds.osm2lulc.grs import vector_based
+        from glass.geo.osm2lulc.grs import vector_based
         
         rr = vector_based(
             OSM_DATA, NOMENCLATURE, REF_RASTER, RESULT,
@@ -224,7 +224,7 @@ def osm_to_lulc(__VERSION, OSM_DATA, NOMENCLATURE, REF_RASTER, RESULT,
         )
     
     elif __VERSION == "GRASS_SQLITE_VECTOR":
-        from glass.sds.osm2lulc.grs import vector_based
+        from glass.geo.osm2lulc.grs import vector_based
         
         rr = vector_based(
             OSM_DATA, NOMENCLATURE, REF_RASTER, RESULT,
@@ -233,7 +233,7 @@ def osm_to_lulc(__VERSION, OSM_DATA, NOMENCLATURE, REF_RASTER, RESULT,
         )
     
     elif __VERSION == "NUMPY_RASTER":
-        from glass.sds.osm2lulc.num import osm2lulc
+        from glass.geo.osm2lulc.num import osm2lulc
         
         rr = osm2lulc(
             OSM_DATA, NOMENCLATURE, REF_RASTER, RESULT,

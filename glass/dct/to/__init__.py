@@ -106,7 +106,7 @@ def tbl_to_tbl(inTbl, outTbl, inSheet=None, txtDelimiter=None,
     Convert data format
     """
     
-    from glass.fm import tbl_to_obj
+    from glass.dct.fm import tbl_to_obj
     
     data = tbl_to_obj(
         inTbl, sheet=inSheet,

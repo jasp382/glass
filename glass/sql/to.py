@@ -173,7 +173,7 @@ def tbl_to_db(tblFile, db, sqlTbl, delimiter=None, encoding_='utf-8',
     import os
     from glass.pyt     import obj_to_lst
     from glass.pyt.oss import fprop
-    from glass.fm      import tbl_to_obj
+    from glass.dct.fm  import tbl_to_obj
     
     if os.path.isdir(tblFile):
         from glass.pyt.oss import lst_ff

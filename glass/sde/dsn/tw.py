@@ -378,7 +378,7 @@ def tweets_to_xls(outxls, searchword=None, searchGeom=None, srs=None, lng='pt',
     Search for Tweets and Export them to XLS
     """
     
-    from glass.to import obj_to_tbl
+    from glass.dct.to import obj_to_tbl
     
     data = tweets_to_df(
         keyword=searchword, inGeom=searchGeom, epsg=srs,

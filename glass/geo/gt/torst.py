@@ -47,7 +47,7 @@ def obj_to_rst(inArray, outRst, template, noData=None, geotrans=None):
         out.SetGeoTransform(geo_transform)
         outBand       = out.GetRasterBand(1)
     
-        if noData:
+        if noData or noData==0:
             outBand.SetNoDataValue(noData)
         
         outBand.WriteArray(inArray)
@@ -238,7 +238,7 @@ def rst_to_grs(rst, grsRst, lmtExt=None, as_cmd=None):
         m()
     
     else:
-        from glass import execmd
+        from glass.pyt import execmd
         
         rcmd = execmd((
             "r.in.gdal input={} output={} -o{} --overwrite "
@@ -715,7 +715,7 @@ def bands_to_rst(inRst, outFolder):
     if rst.RasterCount == 1:
         return
     
-    nodata = get_nodata(inRst, gisApi='gdal')
+    nodata = get_nodata(inRst)
     
     for band in range(rst.RasterCount):
         band += 1
@@ -732,3 +732,39 @@ def bands_to_rst(inRst, outFolder):
                 )), inRst, noData=nodata
             )
 
+
+def rstval_to_binrst(rst, outfld, fileformat=None):
+    """
+    Export all values in a raster to new binary raster
+    """
+
+    import os
+    import numpy as np
+    from osgeo import gdal
+    from glass.geo.gt.torst import obj_to_rst
+    from glass.pyt.oss      import fprop
+
+    fileformat = fileformat if fileformat else '.tif'
+
+    rst_src = gdal.Open(rst, gdal.GA_ReadOnly)
+
+    # Get Nodata
+    nd = rst_src.GetRasterBand(1).GetNoDataValue()
+
+    # Data To Array
+    rst_num = rst_src.GetRasterBand(1).ReadAsArray()
+
+    # Get Unique values in Raster
+    val = np.unique(rst_num)
+    val = list(val[val != nd])
+
+    fn = fprop(rst, 'fn')
+    for v in val:
+        # Create new binary array
+        val_a = np.zeros(rst_num.shape, dtype=np.uint8)
+        np.place(val_a, rst_num == v, 1)
+
+        # Export to new raster
+        obj_to_rst(val_a, os.path.join(
+            outfld, fn + '_val' + str(v) + fileformat
+        ), rst_src, noData=0)

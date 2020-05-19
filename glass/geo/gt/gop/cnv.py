@@ -285,8 +285,8 @@ def lnh_to_polygons(inShp, outShp, api='saga', db=None):
         # Do it using GRASS GIS
         
         import os
-        from glass.geo.gt.wenv.grs import run_grass
-        from glass.pyt.oss         import fprop
+        from glass.geo.wenv.grs import run_grass
+        from glass.pyt.oss      import fprop
         
         # Create GRASS GIS Session
         wk = os.path.dirname(outShp)

@@ -16,7 +16,7 @@ def select_using_excel_refs(db_name, excel_file, sheet_name,
     TODO: Check if it's works. 
     """
     
-    from glass.fm     import tbl_to_obj
+    from glass.dct.fm import tbl_to_obj
     from glass.sql.i  import cols_type
     from glass.sql.to import q_to_ntbl
     

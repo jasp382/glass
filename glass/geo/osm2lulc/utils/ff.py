@@ -11,11 +11,11 @@ def osm_countries(out_shp):
     import os; import codecs
     import pandas as pd
     import geopandas as gpd
-    from shapely.geometry import MultiPolygon, Polygon
-    from glass.cons.osm    import osm_files
-    from glass.to.web      import get_file
-    from glass.geo.gt.toshp    import df_to_shp
-    from glass.pyt.oss     import del_file
+    from shapely.geometry   import MultiPolygon, Polygon
+    from glass.cons.osm     import osm_files
+    from glass.dct.to.web   import get_file
+    from glass.geo.gt.toshp import df_to_shp
+    from glass.pyt.oss      import del_file
     
     url = 'http://download.geofabrik.de/{}/{}.poly'
     url_russia = 'http://download.geofabrik.de/russia.poly'

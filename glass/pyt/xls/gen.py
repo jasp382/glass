@@ -9,8 +9,8 @@ def merge_xls_in_folder(tbl_folder, out_table):
     
     import pandas
     from glass.pyt.oss import lst_ff
-    from glass.fm      import tbl_to_obj
-    from glass.to      import obj_to_tbl
+    from glass.dct.fm  import tbl_to_obj
+    from glass.dct.to  import obj_to_tbl
     
     tables = lst_ff(tbl_folder, file_format=['.xls', '.xlsx'])
     

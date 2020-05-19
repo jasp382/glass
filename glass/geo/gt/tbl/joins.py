@@ -26,11 +26,11 @@ def join_attr_by_distance(mainTable, joinTable, workGrass, epsg_code,
     """
     
     import os
-    from glass.geo.gt.wenv.grs import run_grass
-    from glass.geo.gt.fmshp    import shp_to_obj
-    from glass.geo.gm.to        import df_to_geodf
-    from glass.geo.gt.toshp    import df_to_shp
-    from glass.pyt.oss     import fprop
+    from glass.geo.wenv.grs import run_grass
+    from glass.geo.gt.fmshp import shp_to_obj
+    from glass.geo.gm.to    import df_to_geodf
+    from glass.geo.gt.toshp import df_to_shp
+    from glass.pyt.oss      import fprop
     
     # Create GRASS GIS Location
     grassBase = run_grass(workGrass, location='join_loc', srs=epsg_code)
@@ -87,17 +87,17 @@ def joinLines_by_spatial_rel_raster(mainLines, mainId, joinLines,
     An raster based approach
     """
     
-    import os;               import pandas;
-    from geopandas           import GeoDataFrame
+    import os;                    import pandas
+    from geopandas                import GeoDataFrame
     from glass.geo.gt.fmshp       import shp_to_obj
     from glass.geo.gt.toshp       import df_to_shp
     from glass.geo.gt.toshp.coord import shpext_to_boundshp
     from glass.geo.gt.torst       import shp_to_rst
-    from glass.geo.gm.to           import df_to_geodf
-    from glass.geo.gt.wenv.grs    import run_grass
-    from glass.pyt.df.joins   import join_dfs
-    from glass.pyt.df.agg     import df_groupBy
-    from glass.pyt.oss        import fprop, mkdir
+    from glass.geo.gm.to          import df_to_geodf
+    from glass.geo.wenv.grs       import run_grass
+    from glass.pyt.df.joins       import join_dfs
+    from glass.pyt.df.agg         import df_groupBy
+    from glass.pyt.oss            import fprop, mkdir
     
     workspace = mkdir(os.path.join(
         os.path.dirname(mainLines, 'tmp_dt')
@@ -193,7 +193,7 @@ def join_xls_table(main_table, fid_main, join_table, fid_join, copy_fields, out_
     """
     
     import xlwt
-    from glass.fm          import tbl_to_obj
+    from glass.dct.fm      import tbl_to_obj
     from glass.pyt.xls.fld import col_name
     
     copy_fields = [copy_fields] if type(copy_fields) == str else \
@@ -275,9 +275,9 @@ def join_tables_in_table(mainTable, mainIdField, joinTables, outTable):
     """
     
     # Modules
-    import os;   import pandas
-    from glass.fm import tbl_to_obj
-    from glass.to import obj_to_tbl
+    import os;        import pandas
+    from glass.dct.fm import tbl_to_obj
+    from glass.dct.to import obj_to_tbl
     
     # Get table format
     tableType = os.path.splitext(mainTable)[1]
@@ -339,8 +339,8 @@ def field_sum_two_tables(tableOne, tableTwo,
     4 |  15
     """
     
-    from glass.fm           import tbl_to_obj
-    from glass.to           import obj_to_tbl
+    from glass.dct.fm       import tbl_to_obj
+    from glass.dct.to       import obj_to_tbl
     from glass.pyt.df.joins import sum_field_of_two_tables
     
     # Open two tables

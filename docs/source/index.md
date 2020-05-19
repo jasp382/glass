@@ -24,7 +24,7 @@ GLASS Modules:
 
 - glass.pyt - Basic Python tools to support operations of other modules;
 
-- glass.i - Data interoperability tools;
+- glass.dct - Data conversion tools;
 
 - glass.acq - Data acquisition tools;
 

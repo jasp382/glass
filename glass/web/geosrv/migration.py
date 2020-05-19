@@ -85,7 +85,7 @@ def pgtables_to_layer_withStyle_by_col(
     """
     
     import os; from glass.pyt    import obj_to_lst
-    from glass.fm                import tbl_to_obj
+    from glass.dct.fm            import tbl_to_obj
     from glass.pyt.oss           import mkdir
     from glass.sql.i             import cols_name
     from glass.web.geosrv.ws     import create_ws

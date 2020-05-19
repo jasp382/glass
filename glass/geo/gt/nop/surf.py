@@ -266,10 +266,10 @@ def thrd_viewshed(dem, pnt_obs, obs_id, out_folder):
 
     import os
     import multiprocessing as mp
-    from glass.geo.gt.fmshp     import shp_to_obj
+    from glass.geo.gt.fmshp import shp_to_obj
     from glass.pyt.oss      import cpu_cores
     from glass.pyt.df.split import df_split
-    from glass.geo.gt.wenv.grs  import run_grass
+    from glass.geo.wenv.grs import run_grass
     
     # Points to DataFrame
     obs_df = shp_to_obj(pnt_obs)
@@ -335,7 +335,7 @@ def thrd_viewshed_v2(dbname, dem, pnt_obs, obs_id):
     from glass.geo.gt.fmshp    import shp_to_obj
     from glass.pyt.oss         import cpu_cores, mkdir
     from glass.pyt.df.split    import df_split
-    from glass.geo.gt.wenv.grs import run_grass
+    from glass.geo.wenv.grs    import run_grass
     from glass.geo.gt.prop.prj import get_epsg_shp
     from glass.sql.to          import df_to_db
     from glass.pyt.oss         import del_file

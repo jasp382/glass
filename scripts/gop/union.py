@@ -27,9 +27,9 @@ if __name__ == '__main__':
     import os
     import multiprocessing as mp
     import pandas as pd
-    from gasp.gt.wenv.grs  import run_grass
-    from gasp.pyt.oss      import fprop, cpu_cores
-    from gasp.pyt.df.split import df_split
+    from glass.geo.wenv.grs import run_grass
+    from glass.pyt.oss      import fprop, cpu_cores
+    from glass.pyt.df.split import df_split
 
     shp_pairs = [
         ['/home/jasp/mrgis/cos_union/cos18/shape1.shp', '/home/jasp/mrgis/cos_union/cos95/shape1.shp'],

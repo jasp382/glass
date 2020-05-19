@@ -37,7 +37,7 @@ def ID_rows_with_temporal_proximity_by_entities(db, table, entity_field,
     from glass.pyt    import obj_to_lst
     from glass.sql.fm import q_to_obj
     from glass.sql.i  import cols_type
-    from glass.to     import obj_to_tbl
+    from glass.dct.to import obj_to_tbl
     
     entity_field = obj_to_lst(entity_field)
     COLS = entity_field + [day_field, hour_field]

@@ -17,7 +17,7 @@ def email_exists(email):
     Verify if a email exists using MailBoxLayer API
     """
     
-    from glass.fm.web import http_to_json
+    from glass.dct.fm.web import http_to_json
     
     API_KEY = "b7bee0fa2b3ceb3408bd8245244b1479"
     

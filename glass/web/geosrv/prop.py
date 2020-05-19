@@ -7,11 +7,11 @@ def get_capabilities():
     Get GetCapabilities XML Data
     """
 
-    import os;          import xmltodict
-    from glass.to.web    import get_file
-    from glass.cons.gsrv import con_gsrv
-    from glass.pyt.char  import random_str
-    from glass.pyt.oss   import del_file
+    import os;            import xmltodict
+    from glass.dct.to.web import get_file
+    from glass.cons.gsrv  import con_gsrv
+    from glass.pyt.char   import random_str
+    from glass.pyt.oss    import del_file
 
     conparam = con_gsrv()
 
