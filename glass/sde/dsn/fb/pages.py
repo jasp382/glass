@@ -54,7 +54,7 @@ def extract_by_page(face_page, data_type='posts', nposts=100, returnNext=None,
     """
     
     import pandas
-    from glass.fm.web import http_to_json
+    from glass.dct.fm.web import http_to_json
     
     if not apiKeyToUse:
         KEY_ID, KEY_SECRET = FACEBOOK_TOKEN['APP_ID'], FACEBOOK_TOKEN['APP_SECRET']
@@ -136,7 +136,7 @@ def extract_from_url_and_next(url, Nnext=None, returnNext=None):
     """
     
     import pandas
-    from glass.fm.web import http_to_json
+    from glass.dct.fm.web import http_to_json
     
     raw_data = http_to_json(url)
     

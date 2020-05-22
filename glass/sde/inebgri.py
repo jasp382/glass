@@ -14,8 +14,8 @@ def join_bgrishp_with_bgridata(bgriShp, bgriCsv, outShp,
     Join BGRI ESRI Shapefile with the CSV with the BGRI Data
     """
     
-    from glass.pyt      import obj_to_lst
-    from glass.fm       import tbl_to_obj
+    from glass.pyt          import obj_to_lst
+    from glass.dct.fm       import tbl_to_obj
     from glass.geo.gt.fmshp import shp_to_obj
     from glass.geo.gt.toshp import df_to_shp
     

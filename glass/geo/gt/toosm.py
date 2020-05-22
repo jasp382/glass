@@ -11,9 +11,9 @@ def download_by_boundary(input_boundary, folder_out, osm_name, epsg,
     """
     
     import os
-    from osgeo        import ogr
-    from glass.to.web  import get_file
-    from glass.pyt.oss import os_name
+    from osgeo            import ogr
+    from glass.dct.to.web import get_file
+    from glass.pyt.oss    import os_name
     
     OS_NAME = os_name()
     
@@ -158,9 +158,9 @@ def osm_from_geofabrik(out_folder):
     """
     
     import os
-    from glass.to.web   import get_file
-    from glass.cons.osm import osm_files
-    from glass.pyt.oss  import mkdir
+    from glass.dct.to.web import get_file
+    from glass.cons.osm   import osm_files
+    from glass.pyt.oss    import mkdir
 
     main_url = "http://download.geofabrik.de/{}/{}-latest.osm.pbf"
 

@@ -28,9 +28,9 @@ def split_attr(xls_path, sheet, interest_column, rule, out_path, overwrite=None)
 	"""
     
     import xlrd
-    from glass.fm      import tbl_to_obj
+    from glass.dct.fm  import tbl_to_obj
     from glass.pyt.oss import del_file
-    from glass.to      import dict_to_xls
+    from glass.dct.to  import dict_to_xls
     
 	if overwrite:
 		del_file(out_path)
@@ -64,8 +64,8 @@ def replace_char(xls_path, interest_columns, charToReplace, _replacement, outXls
 	"""
 	
 	import os
-	from glass.fm          import tbl_to_obj
-    from glass.to          import dict_to_xls
+	from glass.dct.fm      import tbl_to_obj
+    from glass.dct.to      import dict_to_xls
     from glass.pyt.xls.fld import col_name
 	
 	interest_columns = [interest_columns] if type(interest_columns) == str else \

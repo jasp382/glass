@@ -83,7 +83,7 @@ def http_to_json(url, ojson):
     """
 
     import json
-    from glass.fm.web import data_from_get
+    from glass.dct.fm.web import data_from_get
 
     data = data_from_get(url)
 

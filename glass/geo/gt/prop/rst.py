@@ -573,7 +573,7 @@ def sanitize_report(report):
 
 
 def san_report_combine(report):
-    from glass.fm         import tbl_to_obj
+    from glass.dct.fm     import tbl_to_obj
     from glass.pyt.df.fld import splitcol_to_newcols
     
     repdata = tbl_to_obj(report, _delimiter="z")

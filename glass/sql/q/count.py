@@ -2,9 +2,9 @@
 Execute queries to extract data from a PGSQL Database
 """
 
-import os;       import pandas
+import os;        import pandas
 from glass.sql.fm import q_to_obj
-from glass.to     import obj_to_tbl
+from glass.dct.to import obj_to_tbl
 
 
 def count_by_periods_with_certain_duration(db, PERIOD_INTERVAL, pgtable,
@@ -250,10 +250,10 @@ def count_rows_by_entity_and_shpJoin(dbn, PG_TABLE, PG_ENTITY, PG_PIVOT_COL,
     TODO: See if PGSQL crosstab works to solve this problem
     """
     
-    from glass.fm           import tbl_to_obj
+    from glass.dct.fm       import tbl_to_obj
     from glass.sql.fm       import q_to_obj
     from glass.pyt.df.to    import series_to_list
-    from glass.geo.gt.toshp     import df_to_shp
+    from glass.geo.gt.toshp import df_to_shp
     from glass.pyt.df.joins import combine_dfs
     from glass.sql.to       import q_to_ntbl
     from glass.sql.tbl      import del_tables

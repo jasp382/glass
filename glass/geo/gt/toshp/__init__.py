@@ -182,7 +182,7 @@ def pointXls_to_shp(xlsFile, outShp, x_col, y_col, epsg, sheet=None):
     Excel table with Point information to ESRI Shapefile
     """
     
-    from glass.fm           import tbl_to_obj
+    from glass.dct.fm       import tbl_to_obj
     from glass.geo.gm.to    import pnt_dfwxy_to_geodf
     from glass.geo.gt.toshp import df_to_shp
     

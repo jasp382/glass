@@ -8,8 +8,8 @@ def export_cells_not_in(inTable, noTable, outTable, inSheet, noSheet, inFID,
     Export to a new file the cells of in Table not in noTable
     """
     
-    import xlrd;           import xlwt
-    from glass.fm           import tbl_to_obj
+    import xlrd;            import xlwt
+    from glass.dct.fm       import tbl_to_obj
     from glass.pyt.xls.fld  import col_name, get_columns_position
     from glass.pyt.xls.summ import list_unique_values_column
     

@@ -12,7 +12,7 @@ def record_time_consumed(timeData, outXls):
     """
     
     import pandas
-    from glass.to import obj_to_tbl
+    from glass.dct.to import obj_to_tbl
     
     # Produce main table - Time consumed by rule
     main = [{

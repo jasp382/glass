@@ -12,9 +12,9 @@ def correlated_words(dataFile, refCol, dataCol, outTbl, lang='english', N=2,
     """
     
     from sklearn.feature_selection import chi2
-    from glass.to                   import obj_to_tbl
-    from glass.fm                   import tbl_to_obj
-    from glass.pyt.txtcls           import txt_to_num_representation
+    from glass.dct.to              import obj_to_tbl
+    from glass.dct.fm              import tbl_to_obj
+    from glass.pyt.txtcls          import txt_to_num_representation
     
     # Data to DataFrame
     trainDf = tbl_to_obj(

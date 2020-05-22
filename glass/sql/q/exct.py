@@ -62,7 +62,7 @@ def run_query_for_values_in_col(db, query,
     import os
     from glass.sql.fm import q_to_obj
     from glass.sql.i  import cols_type
-    from glass.to     import obj_to_tbl
+    from glass.dct.to import obj_to_tbl
     
     fields_types = cols_type(db, table_interest_col)
     
