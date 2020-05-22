@@ -732,3 +732,74 @@ def bands_to_rst(inRst, outFolder):
                 )), inRst, noData=nodata
             )
 
+
+def rst_to_tiles(rst, n_tiles_x, n_tiles_y, out_folder):
+    """
+    Raster file to tiles
+    """
+
+    import os
+    from glass.pyt.oss import fprop
+    from osgeo import gdal
+
+    rstprop = fprop(rst, ['fn', 'ff'])
+    rstn, rstf = rstprop['filename'], rstprop['fileformat']
+
+    # Open Raster
+    img = gdal.Open(rst, gdal.GA_ReadOnly)
+
+    # Get raster Geo Properties
+    geotrans = img.GetGeoTransform()
+
+    # Get rows and columns number of original raster
+    nrows, ncols = img.RasterYSize, img.RasterXSize
+
+    # Get rows and columns number for the tiles
+    tile_rows = int(nrows / n_tiles_y)
+    tile_cols = int(ncols / n_tiles_x)
+
+    if tile_rows == nrows / n_tiles_y:
+        remain_rows = 0
+    else:
+        remain_rows = nrows - (tile_rows * n_tiles_y)
+    
+    if tile_cols == ncols / n_tiles_x:
+        remain_cols = 0
+    else:
+        remain_cols = ncols - (tile_cols * n_tiles_x)
+    
+    # Create news raster
+    rst_num = img.GetRasterBand(1).ReadAsArray()
+    nd = img.GetRasterBand(1).GetNoDataValue()
+
+    for tr in range(n_tiles_y):
+        if tr + 1 == n_tiles_y:
+            __tile_rows = tile_rows + remain_rows
+        else:
+            __tile_rows = tile_rows
+        
+        top = geotrans[3] + (geotrans[5] * (tr * tile_rows))
+
+        for tc in range(n_tiles_x):
+            if tc + 1 == n_tiles_x:
+                __tile_cols = tile_cols + remain_cols
+            
+            else:
+                __tile_cols = tile_cols
+            
+            left = geotrans[0] + (geotrans[1] * (tc * tile_cols))
+
+            nr = rst_num[
+                tr * tile_rows : tr * tile_rows + __tile_rows,
+                tc * tile_cols : tc * tile_cols + __tile_cols
+            ]
+
+            # New array to file
+            obj_to_rst(nr, os.path.join(
+                out_folder, rstn + '_' + str(tr) + '_' + str(tc) + rstf 
+            ), img, noData=nd, geotrans=(
+                left, geotrans[1], geotrans[2], top, geotrans[4], geotrans[5]
+            ))
+
+    return out_folder
+
