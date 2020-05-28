@@ -1,7 +1,7 @@
-Install GASP
+Install GLASS
 ====================
 
-1 - Clone GASP repository from github.com:
+1 - Clone GLASS repository from github.com:
 
 	mkdir ~/code
 	cd ~/code
@@ -24,7 +24,7 @@ Install GASP
 	sudo rm /usr/local/share/gdal/osmconf.ini
 	sudo cp ~/code/gasp/conf/osmconf-gdal.ini /usr/local/share/gdal/osmconf.ini
 
-6 - Create Python Virtual Environment for GASP:
+6 - Create Python Virtual Environment for GLASS:
 
 	sudo -H pip3 install virtualenv virtualenvwrapper
 
@@ -44,4 +44,4 @@ Install GASP
     cd ~/code/glass && pip install -r requirements.txt
 
     user="$(whoami)"
-    echo "/home/$user/code/glass" | sudo tee ~/.virtualenvs/glassenv/lib/python3.8/site-packages/glass.pth
+    echo "/home/$user/code/glass" | sudo tee ~/.virtualenvs/glassenv/lib/python3.6/site-packages/glass.pth
