@@ -40,7 +40,7 @@ def tbl_to_areamtx(inShp, col_a, col_b, outXls, db=None, with_metrics=None):
         import pandas as pd
         import numpy as np
         from glass.geo.gt.fmshp import shp_to_obj
-        from glass.to       import obj_to_tbl
+        from glass.dct.to       import obj_to_tbl
     
         # Open data
         df = shp_to_obj(inShp)
@@ -88,12 +88,12 @@ def tbl_to_areamtx(inShp, col_a, col_b, outXls, db=None, with_metrics=None):
         return obj_to_tbl(outDf, outXls)
     
     else:
-        from glass.pyt.oss   import fprop
-        from glass.sql.db    import create_db
-        from glass.sql.i     import db_exists
+        from glass.pyt.oss       import fprop
+        from glass.sql.db        import create_db
+        from glass.sql.i         import db_exists
         from glass.geo.gql.to    import shp_to_psql
         from glass.geo.gql.tomtx import tbl_to_area_mtx
-        from glass.to        import db_to_tbl
+        from glass.dct.to        import db_to_tbl
 
         # Create database if not exists
         is_db = db_exists(db)

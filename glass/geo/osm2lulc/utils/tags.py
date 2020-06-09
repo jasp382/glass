@@ -9,11 +9,11 @@ def get_not_used_tags(OSM_FILE, OUT_TBL):
     """
     
     import os
-    from glass.to           import obj_to_tbl
+    from glass.dct.to           import obj_to_tbl
     from glass.geo.gt.attr      import sel_by_attr
-    from glass.sql.fm       import q_to_obj
-    from glass.pyt.df.split import df_split
-    from glass.pyt.oss      import fprop
+    from glass.sql.fm           import q_to_obj
+    from glass.pyt.df.split     import df_split
+    from glass.pyt.oss          import fprop
     from glass.geo.gt.toshp.osm import osm_to_gpkg
     
     OSM_TAG_MAP = {

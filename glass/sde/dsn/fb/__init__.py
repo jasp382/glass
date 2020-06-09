@@ -41,7 +41,7 @@ def get_location(facebook_id):
     Return the absolute location (x, y) of some facebook id
     """
     
-    from glass.fm.web import http_to_json
+    from glass.dct.fm.web import http_to_json
     
     url = '{grph}{__id}?fields=location&access_token={t_id}|{scret}'.format(
         grph=FACEBOOK_GRAPH_URL, __id=str(facebook_id),
@@ -58,7 +58,7 @@ def get_all_fields_by_id(facebook_id, data_type):
     Return all data avaiable for a post, photo, video, etc.
     """
     
-    from glass.fm.web import http_to_json
+    from glass.dct.fm.web import http_to_json
     
     url = '{base}{_id_}/?fields={fld}&access_token={t_id}|{scret}'.format(
         base=FACEBOOK_GRAPH_URL, _id_=str(facebook_id),

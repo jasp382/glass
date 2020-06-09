@@ -44,4 +44,4 @@ Install GLASS
     cd ~/code/glass && pip install -r requirements.txt
 
     user="$(whoami)"
-    echo "/home/$user/code/glass" | sudo tee ~/.virtualenvs/glassenv/lib/python3.6/site-packages/glass.pth
+    echo "/home/$user/code/glass" | sudo tee ~/.virtualenvs/glassenv/lib/python3.8/site-packages/glass.pth

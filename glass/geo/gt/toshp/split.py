@@ -56,8 +56,8 @@ def split_table_by_number(xlsTable, row_number, output,
     TODO: Do it with Pandas
     """
     
-    import xlrd;          import xlwt
-    from glass.fm          import tbl_to_obj
+    import xlrd;           import xlwt
+    from glass.dct.fm      import tbl_to_obj
     from glass.pyt.xls.fld import col_name
     
     COLUMNS_ORDER = col_name(

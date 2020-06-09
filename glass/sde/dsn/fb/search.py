@@ -22,8 +22,8 @@ def by_query(search_type,
     """
     
     import pandas
-    from glass.pyt    import obj_to_lst
-    from glass.fm.web import http_to_json
+    from glass.pyt        import obj_to_lst
+    from glass.dct.fm.web import http_to_json
     
     # Deal with spaces in the keyword expression and with special characters
     keyword = keyword.replace(' ', '%20') if keyword and ' ' in keyword \

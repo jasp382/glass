@@ -413,3 +413,109 @@ def extract_random_features(inshp, nfeat, outshp, is_percentage=None):
     # Save result
     epsg = get_epsg_shp(inshp)
     return obj_to_shp(rnd_df, 'geometry', epsg, outshp)
+
+
+"""
+Extract Cells from Raster
+"""
+
+def proprndcells_to_rst(inrst, class_proportion, out_rst,
+    sample_dim, cls_sample_min=None):
+    """
+    Extract some cells from one raster and save them into a new raster
+
+    The cells are extracted in a random way for each class in inrst.
+    The number of cells extracted for each class are based on the values
+    in class_proportion object
+    """
+
+    from osgeo import gdal, gdal_array
+    import numpy as np
+    from glass.geo.gt.torst import obj_to_rst
+
+    img = gdal.Open(inrst, gdal.GA_ReadOnly)
+
+    nd_val = img.GetRasterBand(1).GetNoDataValue()
+
+    # Image to array
+    num_ref = img.GetRasterBand(1).ReadAsArray()
+
+    # Reshape array
+    oned_ref = num_ref.reshape(num_ref.shape[0] * num_ref.shape[1])
+
+    # Get classes in inrst array
+    id_cls = list(np.unique(oned_ref))
+
+    # Remove nodata value from id_cls
+    if nd_val in id_cls:
+        id_cls.remove(nd_val)
+    
+    # All classes in class_proportion must be in id_cls
+    ks = list(class_proportion.keys())
+    for k in ks:
+        if k not in id_cls:
+            del class_proportion[k]
+
+    # Exclude values not in ks
+    ks = list(class_proportion.keys())
+    __id_cls = id_cls.copy()
+    for c in __id_cls:
+        if c not in ks:
+            id_cls.remove(c)
+    
+    # Get absolute frequencies of inrst
+    # Exclude no data values
+    ref_sem_nd = oned_ref[oned_ref != nd_val]
+    freq = np.bincount(ref_sem_nd)
+    freq = freq[freq != 0]
+
+    # Get number of cells for each class based on class_proportions
+    class_cells = {c : int(round(
+        class_proportion[c] * sample_dim /100, 0
+    )) for c in class_proportion}
+
+    # The n_cells for each class could not be lesser than
+    # cls_sample_min
+    for c in class_cells:
+        if cls_sample_min:
+            if class_cells[c] < cls_sample_min:
+                class_cells[c] = cls_sample_min
+        
+        # n_cells for each class could not be larger than the class frequency
+        for e in range(len(id_cls)):
+            if id_cls[e] == c:
+                if freq[e] < class_cells[c]:
+                    class_cells[c] = freq[e]
+                
+                break
+    
+    # Get index array
+    idx_ref = np.arange(oned_ref.size)
+
+    # Get indexes for cells of each class
+    idx_cls = [idx_ref[oned_ref == c] for c in id_cls]
+
+    # Get indexes to be selected for each class
+    sel_cls = [np.random.choice(
+        idx_cls[e], size=class_cells[id_cls[e]],
+        replace=False
+    ) for e in range(len(id_cls))]
+
+    # Create result
+    res = np.zeros(oned_ref.shape, dtype=oned_ref.dtype)
+
+    # Place selected cells in result array
+    for c in range(len(id_cls)):
+        res[sel_cls[c]] = id_cls[c]
+    
+    # Place nodata
+    np.place(res, oned_ref == nd_val, nd_val)
+    np.place(res, res == 0, nd_val)
+
+    # Reshape
+    res = res.reshape(num_ref.shape)
+
+    # Save result
+    obj_to_rst(res, out_rst, img, noData=nd_val)
+
+    return out_rst

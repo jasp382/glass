@@ -193,7 +193,7 @@ def join_xls_table(main_table, fid_main, join_table, fid_join, copy_fields, out_
     """
     
     import xlwt
-    from glass.fm          import tbl_to_obj
+    from glass.dct.fm      import tbl_to_obj
     from glass.pyt.xls.fld import col_name
     
     copy_fields = [copy_fields] if type(copy_fields) == str else \
@@ -275,9 +275,9 @@ def join_tables_in_table(mainTable, mainIdField, joinTables, outTable):
     """
     
     # Modules
-    import os;   import pandas
-    from glass.fm import tbl_to_obj
-    from glass.to import obj_to_tbl
+    import os;        import pandas
+    from glass.dct.fm import tbl_to_obj
+    from glass.dct.to import obj_to_tbl
     
     # Get table format
     tableType = os.path.splitext(mainTable)[1]
@@ -339,8 +339,8 @@ def field_sum_two_tables(tableOne, tableTwo,
     4 |  15
     """
     
-    from glass.fm           import tbl_to_obj
-    from glass.to           import obj_to_tbl
+    from glass.dct.fm       import tbl_to_obj
+    from glass.dct.to       import obj_to_tbl
     from glass.pyt.df.joins import sum_field_of_two_tables
     
     # Open two tables

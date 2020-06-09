@@ -19,15 +19,15 @@ def model_selection(dataFile, refCol, dataCol, outTbl, lang='english', CV=5):
     """
     
     import os
-    from glass.pyt.oss                    import fprop
-    from glass.fm                         import tbl_to_obj
+    from glass.pyt.oss                   import fprop
+    from glass.dct.fm                    import tbl_to_obj
     from sklearn.feature_extraction.text import TfidfVectorizer
     from sklearn.linear_model            import LogisticRegression
     from sklearn.ensemble                import RandomForestClassifier
     from sklearn.svm                     import LinearSVC
     from sklearn.naive_bayes             import MultinomialNB
     from sklearn.model_selection         import cross_val_score
-    from glass.to                         import obj_to_tbl
+    from glass.dct.to                    import obj_to_tbl
     
     # Data to DataFrame
     trainDf = tbl_to_obj(dataFile)
@@ -102,8 +102,8 @@ def text_prediction(trainData, classData, trainRefCol, trainClsCol, clsDataCol,
     """
     
     import pandas as pd
-    from glass.fm import tbl_to_obj
-    from glass.to import obj_to_tbl
+    from glass.dct.fm import tbl_to_obj
+    from glass.dct.to import obj_to_tbl
     
     # Data to Dataframe
     trainDf = tbl_to_obj(trainData) if type(trainData) != pd.DataFrame else  trainData
@@ -229,7 +229,7 @@ def txtclsmdl_to_file(train, tRef, tData, outMdl, outTf,
     
     import pandas as pd
     import joblib
-    from glass.fm import tbl_to_obj
+    from glass.dct.fm import tbl_to_obj
     
     # Data to Dataframe
     trainDf = tbl_to_obj(train) if type(train) != pd.DataFrame else  train
@@ -308,7 +308,7 @@ def predict_fm_mdl(mdlFile, vFile, data, txtCol, method='NaiveBayes'):
     
     from joblib import load
     import pandas as pd
-    from glass.fm import tbl_to_obj
+    from glass.dct.fm import tbl_to_obj
     
     classDf = tbl_to_obj(data) if type(data) != pd.DataFrame else data
     classDf = classDf[pd.notnull(classDf[txtCol])]
@@ -368,8 +368,8 @@ def get_rows_related_with_event(db, tblSchema, words, resultTbl,
     NOTE: only works for PostgreSQL
     """
     
-    from glass.pyt import obj_to_lst
-    from glass.to  import db_to_tbl
+    from glass.pyt    import obj_to_lst
+    from glass.dct.to import db_to_tbl
     
     if "TNAME" not in tblSchema or "TEXTCOL" not in tblSchema:
         raise ValueError((
