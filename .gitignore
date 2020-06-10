@@ -9,5 +9,7 @@ gasp.egg-info
 # Scripts
 scripts/usee/obs_to_txt_nc.json
 # Configuration json
-gasp/cons/*.json
-!gasp/cons/sentinel-ex.json
+glass/cons/*.json
+!glass/cons/con-geoserver_sample.json
+!glass/cons/con-postgresql_sample.json
+!glass/cons/sentinel-ex.json

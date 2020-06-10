@@ -5,7 +5,8 @@ Tools for sampling
 """
 Fishnets
 """
-def create_fishnet(boundary, shpfishnet, x, y, xy_row_col=None, srs=None):
+def create_fishnet(boundary, shpfishnet, x, y,
+    xy_row_col=None, srs=None, outepsg=None):
     """
     Create a Fishnet
     """
@@ -20,9 +21,10 @@ def create_fishnet(boundary, shpfishnet, x, y, xy_row_col=None, srs=None):
         raise ValueError('The path for the output doesn\'t exist')
     
     # Get boundary extent
-    xmin, xmax, ymin, ymax = get_ext(boundary)
+    xmin, xmax, ymin, ymax = get_ext(boundary, outEpsg=outepsg)
     # Get SRS
-    epsg = get_epsg(boundary) if not srs else int(srs)
+    epsg = int(outepsg) if outepsg else get_epsg(
+        boundary) if not srs else int(srs)
     
     return fishnet(
         (xmin, ymax), (xmax, ymin),

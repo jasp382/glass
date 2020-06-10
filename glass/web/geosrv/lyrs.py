@@ -32,10 +32,10 @@ def pub_pglyr(workspace, store, pg_table, title=None):
     Publish PostGIS table in geoserver
     """
     
-    import os;         import requests
-    from glass.pyt.char import random_str
-    from glass.pyt.Xml  import write_xml_tree
-    from glass.pyt.oss  import mkdir, del_folder
+    import os;           import requests
+    from glass.pyt.char  import random_str
+    from glass.pyt.Xml   import write_xml_tree
+    from glass.pyt.oss   import mkdir, del_folder
     from glass.cons.gsrv import con_gsrv
 
     gs_con = con_gsrv()

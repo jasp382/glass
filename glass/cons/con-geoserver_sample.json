@@ -1,7 +1,7 @@
 {
     "USER"     : "admin",
     "PASSWORD" : "geoserver",
-    "HOST"     : "geoserver.flainar.com",
-    "PORT"     : "80",
+    "HOST"     : "localhost",
+    "PORT"     : "8080",
     "PROTOCOL" : "http"
 }
