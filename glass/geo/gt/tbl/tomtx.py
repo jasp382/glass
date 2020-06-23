@@ -36,6 +36,8 @@ def tbl_to_areamtx(inShp, col_a, col_b, outXls, db=None, with_metrics=None):
     * psql;
     """
 
+    # TODO: check if col_a and col_b exists in table
+
     if not db:
         import pandas as pd
         import numpy as np

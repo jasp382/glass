@@ -185,7 +185,7 @@ PostGIS stores creation
 """
 
 
-def create_pgstore(store, workspace, pg_con):
+def create_pgstore(store, workspace, db):
     """
     Create a store for PostGIS data
     """
@@ -195,8 +195,10 @@ def create_pgstore(store, workspace, pg_con):
     from glass.pyt.Xml   import write_xml_tree
     from glass.pyt.oss   import mkdir, del_folder
     from glass.cons.gsrv import con_gsrv
+    from glass.cons.psql import con_psql
     
     gs_con = con_gsrv()
+    pg_con = con_psql()
     
     # Create folder to write xml
     wTmp = mkdir(
@@ -227,13 +229,13 @@ def create_pgstore(store, workspace, pg_con):
                 "name"  : workspace
             },
             "connectionParameters" : {
-                ("entry", "key", "port") : pg_con["PORT"],
-                ("entry", "key", "user") : pg_con["USER"],
-                ("entry", "key", "passwd") : pg_con["PASSWORD"],
-                ("entry", "key", "dbtype") : "postgis",
-                ("entry", "key", "host") : pg_con["HOST"],
-                ("entry", "key", "database") : pg_con["DATABASE"],
-                ("entry", "key", "schema") : "public"
+                ("entry", "key", "port")     : pg_con["PORT"],
+                ("entry", "key", "user")     : pg_con["USER"],
+                ("entry", "key", "passwd")   : pg_con["PASSWORD"],
+                ("entry", "key", "dbtype")   : "postgis",
+                ("entry", "key", "host")     : pg_con["HOST"],
+                ("entry", "key", "database") : db,
+                ("entry", "key", "schema")   : "public"
             },
             "__default" : "false"
         }
