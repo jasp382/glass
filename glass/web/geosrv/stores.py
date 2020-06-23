@@ -190,7 +190,7 @@ def create_pgstore(store, workspace, db):
     Create a store for PostGIS data
     """
     
-    import os;          import requests
+    import os;           import requests
     from glass.pyt.char  import random_str
     from glass.pyt.Xml   import write_xml_tree
     from glass.pyt.oss   import mkdir, del_folder
