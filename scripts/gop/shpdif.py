@@ -4,7 +4,7 @@ Shape difference to matrices
 
 if __name__ == '__main__':
     from glass.geo.gt.gop.ovlay import shp_diff_fm_ref
-
+    
     params = [
         {
             'ref'  : '/home/jasp/mrgis/eval_lsb/lsb_cos18_l1.shp',
