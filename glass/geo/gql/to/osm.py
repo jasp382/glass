@@ -89,7 +89,9 @@ def osm_to_relationaldb(osmData, inSchema, osmGeoTbl, osmCatTbl, osmRelTbl,
     inSchema["TBL"] = obj_to_lst(inSchema["TBL"])
     
     # Create DB
-    db = create_db(fprop(osmData, 'fn') if not db_name else db_name, api='psql')
+    osm_fn = fprop(osmData, 'fn')
+    osm_fn = osm_fn.replace('-', '').replace('.', '')
+    db = create_db(osm_fn if not db_name else db_name, api='psql')
     
     # Send OSM data to Database
     osm_to_psql(osmData, db)

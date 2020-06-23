@@ -103,7 +103,7 @@ def dump_tbls(db, tables, outsql, startWith=None):
     Dump one table into a SQL File
     """
     
-    from glass.pyt       import execmds
+    from glass.pyt       import execmd
     from glass.pyt       import obj_to_lst
     from glass.cons.psql import con_psql
     
