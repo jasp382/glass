@@ -28,3 +28,22 @@ def distance_line_point(lx1, ly1, lx2, ly2, px, py):
     
     return distance
 
+
+def get_minmax_fm_seq_values(a):
+    """
+    Return Minimum and Maximum values from sequential values in array
+
+    For this input array:
+    a = [ 1  8  9 10 11 12 13 14 15 22 23 24 25]
+    The result will be:
+    b = [[1, 1], [8, 15], [22, 25]]
+    """
+
+    import numpy as np
+
+    b = np.array(np.split(a, np.where(np.diff(a) != 1)[0]+1))
+
+    min_b = np.array([[np.amin(_b)] for _b in b])
+    max_b = np.array([[np.amax(_b)] for _b in b])
+
+    return np.hstack((min_b, max_b))

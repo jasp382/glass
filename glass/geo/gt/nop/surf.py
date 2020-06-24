@@ -340,6 +340,7 @@ def thrd_viewshed_v2(dbname, dem, pnt_obs, obs_id):
     from glass.sql.to          import df_to_db
     from glass.pyt.oss         import del_file
     from glass.sql.db          import create_db
+    from glass.pyt.num import get_minmax_fm_seq_values
     
     # Get Work EPSG
     epsg = get_epsg_shp(pnt_obs)
@@ -403,19 +404,32 @@ def thrd_viewshed_v2(dbname, dem, pnt_obs, obs_id):
             # Get Indexes with visibility
             visnum = np.arange(numone.shape[0]).astype(np.uint32)
             visnum = visnum[numone == 1]
+
+            # Get Indexes intervals
+            visint = get_minmax_fm_seq_values(visnum)
             
             # Get rows indexes
-            visrow = visnum / num.shape[0]
+            _visint = visint.reshape(visint.shape[0] * visint.shape[1])
+            visrow = _visint / num.shape[1]
             visrow = visrow.astype(np.uint32)
             
             # Get cols indexes
-            viscol = visnum - (visrow * num.shape[1])
+            viscol = _visint - (visrow * num.shape[1])
+
+            # Reshape
+            visrow = visrow.reshape(visint.shape)
+            viscol = viscol.reshape(visint.shape)
+
+            # Split array
+            irow, erow = np.vsplit(visrow.T, 1)[0]
+            icol, ecol = np.vsplit(viscol.T, 1)[0]
             
             # Visibility indexes to Pandas DataFrame
-            idxnum = np.full(visrow.shape, row[obs_id])
+            idxnum = np.full(irow.shape, row[obs_id])
+            
             visdf = pd.DataFrame({
-                'pntid' : idxnum, 'rowi' : visrow,
-                'coli': viscol
+                'pntid' : idxnum, 'rowi' : irow, 'rowe' : erow,
+                'coli': icol, 'cole' : ecol
             })
             
             # Pandas DF to database
@@ -427,12 +441,18 @@ def thrd_viewshed_v2(dbname, dem, pnt_obs, obs_id):
             )
             
             # Delete all variables
-            numone = None
-            visnum = None
-            visrow = None
-            viscol = None
-            idxnum = None
-            visdf = None
+            numone  = None
+            visnum  = None
+            visint  = None
+            _visint = None
+            visrow  = None
+            viscol  = None
+            irow    = None
+            erow    = None
+            icol    = None
+            ecol    = None
+            idxnum  = None
+            visdf   = None
             del img
             
             # Delete GRASS GIS File
@@ -445,7 +465,7 @@ def thrd_viewshed_v2(dbname, dem, pnt_obs, obs_id):
     thrds = [mp.Process(
         target=run_viewshed_by_cpu, name='th-{}'.format(str(i+1)),
         args=(i+1, dbname, dfs[i], dem, epsg,
-            'vistoburn', 10000, 200)
+            'vistoburn', 10000, 500)
     ) for i in range(len(dfs))]
 
     for t in thrds:
