@@ -29,7 +29,7 @@ Which tools are available?
 
 Bug reports
 ====================
-<b>If a bug is found or if there is any problem during GASP setup, please send an email to the administrator of this repository (jpatriarca@mat.uc.pt).</b>
+<b>If a bug is found or if there is any problem during glass setup, please send an email to the administrator of this repository (jpatriarca@mat.uc.pt).</b>
 
 License information
 ====================

@@ -18,11 +18,11 @@ if __name__ == '__main__':
     ]
 
     import os
-    from gasp.sql import psql_cmd
-    from gasp.pyt.oss import lst_ff, fprop
-    from gasp.sql.q import exec_write_q
-    from gasp.sql.fm import dump_db
-    from gasp.sql.db import create_db, drop_db
+    from glass.sql import psql_cmd
+    from glass.pyt.oss import lst_ff, fprop
+    from glass.sql.q import exec_write_q
+    from glass.sql.fm import dump_db
+    from glass.sql.db import create_db, drop_db
 
     sqls = lst_ff(sql_fld)
 

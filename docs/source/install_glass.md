@@ -22,7 +22,7 @@ Install GLASS
 
 	# For CentOS
 	sudo rm /usr/local/share/gdal/osmconf.ini
-	sudo cp ~/code/gasp/conf/osmconf-gdal.ini /usr/local/share/gdal/osmconf.ini
+	sudo cp ~/code/glass/conf/osmconf-gdal.ini /usr/local/share/gdal/osmconf.ini
 
 6 - Create Python Virtual Environment for GLASS:
 

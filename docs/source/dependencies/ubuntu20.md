@@ -1,4 +1,4 @@
-Install GASP Dependencies in Ubuntu 20 LTS
+Install glass Dependencies in Ubuntu 20 LTS
 ====================
 
 ## 1 - Install Python and PIP:

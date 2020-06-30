@@ -1,4 +1,4 @@
-Install GASP Dependencies in Ubuntu 18.04
+Install glass Dependencies in Ubuntu 18.04
 ====================
 
 ## 1 - Install Python and Pip:

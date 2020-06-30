@@ -1,7 +1,7 @@
-# gasp distribution
+# glass distribution
 dist/*
 build/*
-gasp.egg-info
+glass.egg-info
 # .pyc files
 *.pyc
 # Hide notebooks checkpoints

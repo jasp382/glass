@@ -10,7 +10,7 @@ How to use?
 
 1 - Install GLASS from scratch:
 
-- GASP dependencies installation:
+- glass dependencies installation:
 
     - [Ubuntu 20 LTS;](install/install_ubuntu20.md)
     - [Ubuntu 18 LTS;](install/install_ubuntu18.md)

@@ -109,7 +109,7 @@ def serialize_by_query(model, query, dataType):
     """
     
     from django.core.serializers import serialize
-    from gasp                    import __import
+    from glass                    import __import
     
     appAndModel = model.split('_')
     djgModel = __import('{}.models.{}'.format(
@@ -130,7 +130,7 @@ def mdl_serialize_to_json(model, dataType, filePath, filterQ=None):
     """
     
     from django.core.serializers import get_serializer
-    from gasp import __import
+    from glass import __import
     
     # Get Model object
     app_model = model.split('_')
