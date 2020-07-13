@@ -2,6 +2,8 @@
 Reclassify Raster files
 """
 
+import os
+
 def rcls_rst(inrst, rclsRules, outrst, api='gdal', maintain_ext=True):
     """
     Reclassify a raster (categorical and floating points)

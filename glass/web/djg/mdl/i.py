@@ -102,9 +102,9 @@ def lst_mdl_no_fk(tables, proj_path=None):
     """
     
     if proj_path:
-        from glass.web.djg import open_Django_Proj
+        from glass.web.djg import get_djgprj
         
-        application = open_Django_Proj(proj_path)
+        application = get_djgprj(proj_path)
     
     result = []
     for mdl in tables:
@@ -124,9 +124,9 @@ def lst_mdl_proj(path, thereIsApp=None, returnClassName=None):
     """
     
     if not thereIsApp:
-        from glass.web.djg import open_Django_Proj
+        from glass.web.djg import get_djgprj
         
-        application = open_Django_Proj(path)
+        application = get_djgprj(path)
     
     from glass.web.djg.i import list_djg_apps
     
