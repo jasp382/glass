@@ -1,2 +1,2 @@
 #/bin/bash
-cd ~/code/gasp3/scripts && ~/.virtualenvs/gaspenv/bin/python osm2lulc.py
+cd ~/code/glass3/scripts && ~/.virtualenvs/glassenv/bin/python osm2lulc.py

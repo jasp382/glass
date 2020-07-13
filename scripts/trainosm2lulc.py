@@ -33,10 +33,10 @@ def lulc_by_cell(tid, boundary, lulc_shps, fishnet, result, workspace):
     gsetup.init(gbase, workspace, loc_name, 'PERMANENT')
     
     # GRASS GIS Modules
-    from gasp.gt.toshp.cff import shp_to_grs, grs_to_shp
-    from gasp.gt.gop.ovlay import intersection
-    from gasp.gt.tbl.attr  import geomattr_to_db
-    from gasp.gt.prop.feat import feat_count
+    from glass.gt.toshp.cff import shp_to_grs, grs_to_shp
+    from glass.gt.gop.ovlay import intersection
+    from glass.gt.tbl.attr  import geomattr_to_db
+    from glass.gt.prop.feat import feat_count
     
     # Send Fishnet to GRASS GIS
     fnet = shp_to_grs(fishnet, fprop(fishnet, 'fn'), asCMD=True)
@@ -83,11 +83,11 @@ def lulc_by_cell(tid, boundary, lulc_shps, fishnet, result, workspace):
                     ist_shp.append(ishp)
         
         if len(ist_shp):
-            from gasp.gt.gop.genze import dissolve
-            from gasp.gt.tbl.grs import reset_table
+            from glass.gt.gop.genze import dissolve
+            from glass.gt.tbl.grs import reset_table
 
             if len(ist_shp) > 1:
-                from gasp.gt.toshp.mtos import shps_to_shp
+                from glass.gt.toshp.mtos import shps_to_shp
 
                 # Export shapes
                 _ist_shp = [grs_to_shp(s, os.path.join(
@@ -233,7 +233,7 @@ if __name__ == '__main__':
         df_to_shp(fish_df, os.path.join(results, os.path.basename(fishp)))
     
     # Write List of Fishnet
-    from gasp.to import obj_to_tbl
+    from glass.to import obj_to_tbl
 
     obj_to_tbl(df_fnet, os.path.join(results, 'fishnet_list.xlsx'))
 

@@ -1,3 +1,3 @@
 #/bin/bash
 export PGPASSWORD='admin'
-cd ~/code/gasp3/scripts && ~/.virtualenvs/gaspenv/bin/python run_query.py
+cd ~/code/glass3/scripts && ~/.virtualenvs/glassenv/bin/python run_query.py

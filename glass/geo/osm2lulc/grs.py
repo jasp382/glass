@@ -18,7 +18,7 @@ def raster_based(osmdata, nomenclature, refRaster, lulcRst,
     # ************************************************************************ #
     import datetime; import os; import pandas; import copy
     # ************************************************************************ #
-    # Gasp dependencies #
+    # glass dependencies #
     # ************************************************************************ #
     from glass.pyt.oss               import mkdir, fprop
     from glass.geo.gt.prop.ff        import check_isRaster
@@ -114,7 +114,7 @@ def raster_based(osmdata, nomenclature, refRaster, lulcRst,
     gsetup.init(grass_base, workspace, 'grloc', 'PERMANENT')
     
     # ************************************************************************ #
-    # IMPORT SOME GASP MODULES FOR GRASS GIS #
+    # IMPORT SOME glass MODULES FOR GRASS GIS #
     # ************************************************************************ #
     from glass.geo.gt.torst   import rst_to_grs, grs_to_rst
     from glass.geo.gt.nop.mos import rsts_to_mosaic
@@ -367,7 +367,7 @@ def vector_based(osmdata, nomenclature, refRaster, lulcShp,
     # ************************************************************************ #
     import datetime; import os; import copy
     # ************************************************************************ #
-    # GASP dependencies #
+    # glass dependencies #
     # ************************************************************************ #
     from glass.pyt.oss               import fprop, mkdir
     from glass.geo.wenv.grs          import run_grass
@@ -470,7 +470,7 @@ def vector_based(osmdata, nomenclature, refRaster, lulcShp,
     gsetup.init(grass_base, workspace, 'grloc', 'PERMANENT')
     
     # ************************************************************************ #
-    # IMPORT SOME GASP MODULES FOR GRASS GIS #
+    # IMPORT SOME glass MODULES FOR GRASS GIS #
     # ************************************************************************ #
     from glass.geo.gt.gop.ovlay import erase
     from glass.geo.wenv.grs     import rst_to_region

@@ -181,8 +181,8 @@ def db_to_srm(db, TABLE, TIME, TEMP, DAY, COLS_ORDER, COL_MAP, OUT_SRM,
     """
     
     import codecs
-    from gasp.sql.fm   import q_to_obj
-    from gasp.gt.toshp import df_to_shp
+    from glass.sql.fm   import q_to_obj
+    from glass.gt.toshp import df_to_shp
     
     # Get Data from the Database
     q = (
@@ -297,7 +297,7 @@ def db_to_nc_v2(db, tbl, daystr, _dimCols, _varCols, tempCol, timeCol, outNc,
     
     import netCDF4
     import numpy as np
-    from gasp.sql.fm import q_to_obj
+    from glass.sql.fm import q_to_obj
     
     dimCols = _dimCols.copy()
     varCols = _varCols.copy()
@@ -586,7 +586,7 @@ if __name__ == '__main__':
     
     """ Processing Day or Days """
     if ARGS.firstday and ARGS.lastday:
-        from gasp.pyt.tm import timerange
+        from glass.pyt.tm import timerange
         
         day = timerange(ARGS.firstday, ARGS.lastday)
     
@@ -595,7 +595,7 @@ if __name__ == '__main__':
     
     elif ARGS.firstday and not ARGS.lastday:
         # Create time range from firstday to yesterday
-        from gasp.pyt.tm import timerange
+        from glass.pyt.tm import timerange
 
         day = timerange(ARGS.firstday, str(
             dt.datetime.now().replace(

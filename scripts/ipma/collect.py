@@ -15,7 +15,7 @@ if __name__ == '__main__':
 
     import os
     import datetime as dt
-    from gasp.to.web import http_to_json
+    from glass.to.web import http_to_json
 
     urls = {
         # Previsao Meteorologica Diaria ate 3 dias, informação agregada por dia - Hoje
