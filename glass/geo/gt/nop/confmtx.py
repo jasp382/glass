@@ -86,3 +86,72 @@ def confmtx_twrst(ref_rst, cls_rst, out_tbl):
 
     return out_tbl
 
+
+def confmtx_fm_pntsample(pnt, idcol, refcol, rst, clscol, out_mtx):
+    """
+    Confusion matrix using classified raster and point feature class with
+    reference values
+    """
+
+    import pandas as pd
+    import numpy as np
+    from glass.geo.gt.fmshp   import shp_to_obj
+    from glass.dct.to         import obj_to_tbl
+    from glass.pyt.dtcls.eval import get_measures_for_mtx
+    from glass.geo.gt.tbl.fld import add_fields, update_cols
+    from glass.geo.gt.sample  import rst_val_to_points
+
+    # Extract raster values to points
+    rval = rst_val_to_points(pnt, rst)
+
+    # Add field to shape
+    add_fields(pnt, {clscol : 'INTEGER'}, api='ogrinfo')
+
+    # Update point table
+    edit = {}
+    for k in rval:
+        if int(rval[k]) not in edit:
+            edit[int(rval[k])] = ["{}={}".format(idcol, str(k))]
+        else:
+            edit[int(rval[k])].append("{}={}".format(idcol, str(k)))
+    
+    update_cols(pnt, clscol, edit)
+
+    # Produce confusion matrix
+    df = shp_to_obj(pnt)
+
+    df[clscol] = df[clscol].astype(int)
+    df[refcol] = df[refcol].astype(int)
+
+    # Remove nan values
+    df = df[pd.notnull(df[refcol])]
+    df = df[pd.notnull(df[clscol])]
+
+    # Get rows and Cols
+    rows = df[clscol].unique()
+    cols = df[refcol].unique()
+    refval = list(np.sort(np.unique(np.append(rows, cols))))
+
+    # Produce matrix
+    outdf = []
+    for row in refval:
+        newcols = [row]
+        for col in refval:
+            newdf = df[(df[clscol] == row) & (df[refcol] == col)]
+
+            if not newdf.shape[0]:
+                newcols.append(0)
+            
+            else:
+                newcols.append(newdf.shape[0])
+        
+        outdf.append(newcols)
+    
+    outcols = ['class'] + refval
+
+    outdf = pd.DataFrame(outdf, columns=outcols)
+
+    out_df = get_measures_for_mtx(outdf, 'class')
+
+    return obj_to_tbl(out_df, out_mtx)
+

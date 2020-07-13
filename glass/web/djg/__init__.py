@@ -2,7 +2,7 @@
 Tools for Django
 """
 
-def open_Django_Proj(path_to_proj):
+def get_djgprj(path_to_proj):
     """
     To run methods related with django objects, we
     need to make our python recognize the Django Project
