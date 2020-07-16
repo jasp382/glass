@@ -44,7 +44,7 @@ def db_exists(db):
 Tables Info
 """
 
-def lst_views(db, schema='public', basename=None):
+def lst_views(db, schema='public', basename=None, dbset='default'):
     """
     List Views in database
     """
@@ -65,13 +65,13 @@ def lst_views(db, schema='public', basename=None):
         "WHERE table_schema='{}'{}"
     ).format(schema, "" if not basename else " AND ({})".format(
         basenameStr
-    )), db_api='psql')
+    )), db_api='psql', dbset=dbset)
     
     return views.table_name.tolist()
 
 
 def lst_tbl(db, schema='public', excludeViews=None, api='psql',
-            basename=None):
+            basename=None, db_set='default'):
     """
     list tables in a database
     
@@ -100,10 +100,10 @@ def lst_tbl(db, schema='public', excludeViews=None, api='psql',
         ).format(schema, "" if not basename else " AND ({})".format(
             basenameStr))
     
-        tbls = q_to_obj(db, Q, db_api='psql')
+        tbls = q_to_obj(db, Q, db_api='psql', dbset=db_set)
     
         if excludeViews:
-            views = lst_views(db, schema=schema)
+            views = lst_views(db, schema=schema, dbset=db_set)
         
             __tbls = [i for i in tbls.table_name.tolist() if i not in views]
     
@@ -179,13 +179,13 @@ def row_num(db, table, where=None, api='psql'):
 Info about fields in table
 """
 
-def cols_name(dbname, table, sanitizeSpecialWords=True, api='psql'):
+def cols_name(dbname, table, sanitizeSpecialWords=True, api='psql', dbset='default'):
     """
     Return the columns names of a table in one Database
     """
     
     if api == 'psql':
-        c = sqlcon(dbname, sqlAPI='psql')
+        c = sqlcon(dbname, sqlAPI='psql', dbset=dbset)
     
         cursor = c.cursor()
         cursor.execute("SELECT * FROM {} LIMIT 1;".format(table))

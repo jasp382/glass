@@ -60,7 +60,7 @@ def create_ws(name, overwrite=True):
     Create a new Geoserver Workspace
     """
     
-    import requests;    import json
+    import requests;     import json
     from glass.cons.gsrv import con_gsrv
 
     conf = con_gsrv()

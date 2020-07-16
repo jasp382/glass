@@ -3,7 +3,7 @@ Connect to Databases
 """
 
 
-def sqlcon(db, sqlAPI='psql'):
+def sqlcon(db, sqlAPI='psql', dbset='default'):
     """
     Connect to PostgreSQL Database
     """
@@ -12,7 +12,7 @@ def sqlcon(db, sqlAPI='psql'):
         import psycopg2
         from glass.cons.psql import con_psql
 
-        conparam = con_psql()
+        conparam = con_psql(db_set=dbset)
     
         try:
             if not db:
@@ -53,7 +53,7 @@ def sqlcon(db, sqlAPI='psql'):
         raise ValueError("{} API is not available".format(sqlAPI))
 
 
-def alchemy_engine(db, api='psql'):
+def alchemy_engine(db, api='psql', dbset='default'):
     """
     SQLAlchemy Enignes
     
@@ -73,7 +73,7 @@ def alchemy_engine(db, api='psql'):
 
         from glass.cons.psql import con_psql
 
-        conparam = con_psql()
+        conparam = con_psql(db_set=dbset)
     
         return create_engine(
             'postgresql+psycopg2://{user}:{password}@{host}:{port}/{db}'.format(

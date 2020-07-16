@@ -2,7 +2,7 @@
 Sampling tools
 """
 
-def fishnet(top_left, bottom_right, outfishnet, x, y, epsg=None, xy_row_col=None):
+def fishnet(top_left, bottom_right, x, y, outfishnet=None, epsg=None, xy_row_col=None):
     """
     Produce fishnet from extent
 
@@ -81,6 +81,9 @@ def fishnet(top_left, bottom_right, outfishnet, x, y, epsg=None, xy_row_col=None
         crs='EPSG:{}'.format(str(epsg)) if epsg else None
     )
     
-    # GeoDataFrame to File
-    return df_to_shp(fishtbl, outfishnet)
+    if outfishnet:
+        # GeoDataFrame to File
+        return df_to_shp(fishtbl, outfishnet)
+    else:
+        return fishtbl
 

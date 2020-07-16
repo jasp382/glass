@@ -3,7 +3,7 @@ Database data to Python Object/Array
 """
 
 def q_to_obj(dbname, query, db_api='psql', geomCol=None, epsg=None, of='df',
-    cols=None):
+    cols=None, dbset='default'):
     """
     Query database and convert data to Pandas Dataframe/GeoDataFrame
     
@@ -35,7 +35,7 @@ def q_to_obj(dbname, query, db_api='psql', geomCol=None, epsg=None, of='df',
         import pandas
         from glass.sql.c import alchemy_engine
     
-        pgengine = alchemy_engine(dbname, api=db_api)
+        pgengine = alchemy_engine(dbname, api=db_api, dbset=dbset)
     
         df = pandas.read_sql(query, pgengine, columns=None)
     
@@ -43,11 +43,11 @@ def q_to_obj(dbname, query, db_api='psql', geomCol=None, epsg=None, of='df',
         from geopandas  import GeoDataFrame
         from glass.sql.c import sqlcon
         
-        con = sqlcon(dbname, sqlAPI='psql')
+        con = sqlcon(dbname, sqlAPI='psql', dbset=dbset)
         
         df = GeoDataFrame.from_postgis(
             query, con, geom_col=geomCol,
-            crs="epsg:{}".format(str(epsg)) if epsg else None
+            crs="EPSG:{}".format(str(epsg)) if epsg else None
         )
     
     if of == 'dict':

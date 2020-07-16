@@ -20,7 +20,7 @@ def col_distinct(df, col):
     return list(df[col].unique())
 
 
-def del_fld_notin_geodf(df, flds, geomCol=None):
+def del_cols_notin_ref(df, flds, geomCol=None):
     """
     Delete columns not in flds
     """

@@ -31,7 +31,7 @@ def restore_db(conDB, sqlScript, api='psql'):
     return conDB["DATABASE"]
 
 
-def restore_tbls(dbn, sql, tablenames=None):
+def restore_tbls(dbn, sql, tablenames=None, dbset='default'):
     """
     Restore tables from a sql Script
     
@@ -42,7 +42,7 @@ def restore_tbls(dbn, sql, tablenames=None):
     from glass.cons.psql import con_psql
     from glass.pyt       import obj_to_lst
 
-    condb = con_psql()
+    condb = con_psql(db_set=dbset)
     
     tbls = obj_to_lst(tablenames)
     
@@ -62,7 +62,7 @@ def restore_tbls(dbn, sql, tablenames=None):
 ###############################################################################
 ###############################################################################
 
-def q_to_ntbl(db, outbl, query, ntblIsView=None, api='psql'):
+def q_to_ntbl(db, outbl, query, ntblIsView=None, api='psql', db__set='default'):
     """
     Create table by query
     
@@ -74,7 +74,7 @@ def q_to_ntbl(db, outbl, query, ntblIsView=None, api='psql'):
     if api == 'psql':
         from glass.sql.c import sqlcon
     
-        con = sqlcon(db)
+        con = sqlcon(db, dbset=db__set)
     
         curs = con.cursor()
     
@@ -116,7 +116,7 @@ def q_to_ntbl(db, outbl, query, ntblIsView=None, api='psql'):
 
 
 def df_to_db(db, df, table, append=None, api='psql',
-             epsg=None, geomType=None, colGeom='geometry'):
+             epsg=None, geomType=None, colGeom='geometry', dbset='default'):
     """
     Pandas Dataframe/GeoDataFrame to PGSQL table
     
@@ -130,7 +130,7 @@ def df_to_db(db, df, table, append=None, api='psql',
     
     from glass.sql.c import alchemy_engine
     
-    pgengine = alchemy_engine(db, api=api)
+    pgengine = alchemy_engine(db, api=api, dbset=dbset)
     
     if epsg and geomType:
         from geoalchemy2 import Geometry, WKTElement

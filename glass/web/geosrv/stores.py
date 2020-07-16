@@ -8,7 +8,7 @@ def shp_to_store(shape, store_name, workspace):
     Create a new datastore
     """
 
-    import os;          import requests
+    import os;           import requests
     from glass.pyt.oss   import lst_ff, fprop
     from glass.cons.gsrv import con_gsrv
 
@@ -185,7 +185,7 @@ PostGIS stores creation
 """
 
 
-def create_pgstore(store, workspace, db):
+def create_pgstore(store, workspace, db, dbset='default'):
     """
     Create a store for PostGIS data
     """
@@ -198,7 +198,7 @@ def create_pgstore(store, workspace, db):
     from glass.cons.psql import con_psql
     
     gs_con = con_gsrv()
-    pg_con = con_psql()
+    pg_con = con_psql(db_set=dbset)
     
     # Create folder to write xml
     wTmp = mkdir(

@@ -3,7 +3,7 @@ Shape To some Python Object
 """
 
 def shp_to_obj(shp, geom_col=None, fields=None, output='df', srs_to=None,
-    colsAsArray=None, geom_as_wkt=None, lyr=None):
+    colsAsArray=None, geom_as_wkt=None, lyr=None, outgeom=None):
     """
     Feature Class to Python Object
 
@@ -26,15 +26,18 @@ def shp_to_obj(shp, geom_col=None, fields=None, output='df', srs_to=None,
     
     # Get Fields to Mantain
     if fields:
-        from glass.pyt.df.fld import del_fld_notin_geodf
+        from glass.pyt.df.fld import del_cols_notin_ref
 
-        df = del_fld_notin_geodf(df, fields, geomCol=geom_col)
+        df = del_cols_notin_ref(df, fields, geomCol=geom_col)
     
     # Project if necessary
     if srs_to and type(srs_to) == int:
         from glass.geo.gm.prj import df_prj
 
         df = df_prj(df, srs_to)
+    
+    if outgeom:
+        df.rename(columns={geom_col : outgeom}, inplace=True)
     
     # Produce output
     if output != 'df':

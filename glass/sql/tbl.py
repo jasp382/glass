@@ -100,7 +100,7 @@ def rename_tbl(db, tblNames):
 Delete Tables
 """
 
-def del_tables(db, pg_table_s, isViews=None, isBasename=None):
+def del_tables(db, pg_table_s, isViews=None, isBasename=None, db_set='default'):
     """
     Delete all tables in pg_table_s
     """
@@ -114,13 +114,13 @@ def del_tables(db, pg_table_s, isViews=None, isBasename=None):
         if not isViews:
             from glass.sql.i import lst_tbl
         
-            pg_table_s = lst_tbl(db, api='psql', basename=pg_table_s)
+            pg_table_s = lst_tbl(db, api='psql', basename=pg_table_s, db_set=db_set)
         else:
             from glass.sql.i import lst_views
             
-            pg_table_s = lst_views(db, basename=pg_table_s)
+            pg_table_s = lst_views(db, basename=pg_table_s, dbset=db_set)
         
-    con = sqlcon(db)
+    con = sqlcon(db, dbset=db_set)
     
     l = []
     for i in range(0, len(pg_table_s), 100):
@@ -136,14 +136,14 @@ def del_tables(db, pg_table_s, isViews=None, isBasename=None):
     con.close()
 
 
-def drop_tbldata(db, table, where=None):
+def drop_tbldata(db, table, where=None, dbset='default'):
     """
     Delete all data on a PGSQL Table
     """
     
     from glass.sql.c import sqlcon
     
-    con = sqlcon(db)
+    con = sqlcon(db, dbset=dbset)
     
     cursor = con.cursor()    
     

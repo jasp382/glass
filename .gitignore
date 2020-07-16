@@ -13,3 +13,4 @@ glass/cons/*.json
 !glass/cons/con-geoserver_sample.json
 !glass/cons/con-postgresql_sample.json
 !glass/cons/sentinel-ex.json
+!glass/cons/api-keys-sample.json

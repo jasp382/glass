@@ -5,7 +5,7 @@ Tools for sampling
 """
 Fishnets
 """
-def create_fishnet(boundary, shpfishnet, x, y,
+def create_fishnet(boundary, x, y, shpfishnet=None,
     xy_row_col=None, srs=None, outepsg=None):
     """
     Create a Fishnet
@@ -17,8 +17,9 @@ def create_fishnet(boundary, shpfishnet, x, y,
     from glass.geo.gm.smp      import fishnet
 
     # Check Path
-    if not os.path.exists(os.path.dirname(shpfishnet)):
-        raise ValueError('The path for the output doesn\'t exist')
+    if shpfishnet:
+        if not os.path.exists(os.path.dirname(shpfishnet)):
+            raise ValueError('The path for the output doesn\'t exist')
     
     # Get boundary extent
     xmin, xmax, ymin, ymax = get_ext(boundary, outEpsg=outepsg)
@@ -28,7 +29,7 @@ def create_fishnet(boundary, shpfishnet, x, y,
     
     return fishnet(
         (xmin, ymax), (xmax, ymin),
-        shpfishnet, x, y, xy_row_col=xy_row_col, epsg=epsg
+        x, y, xy_row_col=xy_row_col, epsg=epsg, outfishnet=shpfishnet
     )
 
 

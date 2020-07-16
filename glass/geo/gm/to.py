@@ -82,7 +82,7 @@ def pnt_dfwxy_to_geodf(df, colX, colY, epsg):
     geoms = [Point(xy) for xy in zip(df[colX], df[colY])]
     df.drop([colX, colY], axis=1, inplace=True)
     gdata = GeoDataFrame(
-        df, crs={'init' : 'epsg:' + str(epsg)},
+        df, crs='EPSG:' + str(epsg),
         geometry=geoms
     )
     
@@ -97,7 +97,7 @@ def df_to_geodf(df, colGeom, epsg):
     from geopandas import GeoDataFrame
     
     return GeoDataFrame(
-        df, crs={'init' : 'epsg:{}'.format(epsg)},
+        df, crs='EPSG:{}'.format(epsg),
         geometry=colGeom
     )
 
