@@ -99,7 +99,7 @@ Merge Databases
 """
 
 def merge_dbs(destinationDb, dbs,
-              tbls_to_merge=None, ignoreCols=None):
+              tbls_to_merge=None, ignoretbls=None):
     """
     Put several database into one
     
@@ -118,10 +118,10 @@ def merge_dbs(destinationDb, dbs,
     
     # Prepare database
     fdb = fprop(destinationDb, ['fn', 'ff'])
-    if os.path.isfile(destinationDb):
+    if fdb['fileformat'] != '':
         if fdb['fileformat'] == '.sql':
             newdb = create_db(fdb['filename'], 
-                overwrite=True, api='psql')
+                overwrite=None, api='psql')
             
             psql_cmd(newdb, destinationDb)
             
@@ -134,6 +134,11 @@ def merge_dbs(destinationDb, dbs,
             ))
     
     else:
+        if os.path.isdir(destinationDb):
+            raise ValueError(
+                'destinationdb is a dir. It must be a DB name or a SQL Script'
+            )
+        
         # Check if destination db exists
         if not db_exists(destinationDb):
             create_db(destinationDb, overwrite=None, api='psql')
@@ -158,17 +163,22 @@ def merge_dbs(destinationDb, dbs,
     TABLES = {}
     
     for i in range(len(dbs)):
-        # Create DB
-        DB_NAME = fprop(dbs[i], 'fn')
-        create_db(DB_NAME, overwrite=True, api='psql')
+        # Check if DB is a file or a db
+        fp = fprop(dbs[i], ['fn', 'ff'])
+        DB_NAME = fp['filename']
+
+        if fp['fileformat'] == '.sql':
+            # Create DB        
+            create_db(DB_NAME, overwrite=True, api='psql')
         
-        # Restore DB
-        psql_cmd(DB_NAME, dbs[i])
+            # Restore DB
+            psql_cmd(DB_NAME, dbs[i])
         
         # List Tables
         if not tbls_to_merge:
             tbls__ = lst_tbl(DB_NAME, excludeViews=True, api='psql')
-            tbls   = [t for t in tbls__ if t not in ignoreCols]
+
+            tbls = tbls__ if not ignoretbls else [t for t in tbls__ if t not in ignoretbls]
         else:
             tbls   = tbls_to_merge
         
@@ -185,14 +195,16 @@ def merge_dbs(destinationDb, dbs,
         
         # Dump Tables
         SQL_DUMP = os.path.join(
-            os.path.dirname(dbs[i]), 'tbl_{}.sql'.format(DB_NAME)
+            os.path.dirname(os.path.abspath(__file__)),
+            'tbl_{}.sql'.format(DB_NAME)
         ); dump_tbls(DB_NAME, newTbls, SQL_DUMP)
         
         # Restore Tables in the destination Database
         restore_tbls(destinationDb, SQL_DUMP, newTbls)
         
         # Delete Temp Database
-        drop_db(DB_NAME)
+        if fp['fileformat'] == '.sql':
+            drop_db(DB_NAME)
         
         # Delete SQL File
         del_file(SQL_DUMP)

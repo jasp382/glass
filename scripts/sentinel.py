@@ -3,7 +3,7 @@ Download Sentinel-2 IMG
 """
 
 if __name__ == '__main__':
-    from gasp.gt.fmweb.sentinel import down_imgs
+    from glass.gt.fmweb.sentinel import down_imgs
 
     in_shp = '/home/osmtolulc/mrgis/sentinel_pt/imgs_pt.shp'
     out_folder = '/home/osmtolulc/mrgis/sentinel_pt'

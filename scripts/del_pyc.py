@@ -1,5 +1,5 @@
 if __name__ == "__main__":
-    from gasp.pyt.oss import del_file_folder_tree
+    from glass.pyt.oss import del_file_folder_tree
     import os
     
     del_file_folder_tree(

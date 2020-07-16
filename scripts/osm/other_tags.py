@@ -6,7 +6,7 @@ if __name__ == '__main__':
     )
     out_tbl = '/home/osmtolulc/mrgis/other_tags.xlsx'
 
-    from gasp.to import db_to_tbl
+    from glass.to import db_to_tbl
 
     db_to_tbl(db, Q, out_tbl)
 

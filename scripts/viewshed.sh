@@ -1,2 +1,2 @@
 #/bin/bash
-cd ~/code/gasp3/scripts && ~/.virtualenvs/gaspenv/bin/python viewshed.py
+cd ~/code/glass3/scripts && ~/.virtualenvs/glassenv/bin/python viewshed.py
