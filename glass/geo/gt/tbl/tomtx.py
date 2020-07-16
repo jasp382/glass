@@ -47,7 +47,7 @@ def tbl_to_areamtx(inShp, col_a, col_b, outXls, db=None, with_metrics=None):
         # Open data
         df = shp_to_obj(inShp)
 
-        # Remove nan values by -9999
+        # Remove nan values
         df = df[pd.notnull(df[col_a])]
         df = df[pd.notnull(df[col_b])]
     

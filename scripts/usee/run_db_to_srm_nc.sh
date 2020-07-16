@@ -1,8 +1,8 @@
 #!/bin/bash
 yesterday=$(date +'%Y%m%d' --date='1 day ago')
 yesterdayy=$(date +'%Y-%m-%d' --date='1 day ago')
-cd /home/admin/jasp/gasp/scripts/usee && /home/admin/jasp/pypenv/bin/python obs_to_txt_nc.py /home/admin/jasp/srm --day $yesterdayy --user diaryobs
-cd /home/admin/jasp/gasp/scripts/usee && /home/admin/jasp/pypenv/bin/python obs_to_txt_nc.py /home/admin/jasp/nc --netcdf --day $yesterdayy --user diaryobs
+cd /home/admin/jasp/glass/scripts/usee && /home/admin/jasp/pypenv/bin/python obs_to_txt_nc.py /home/admin/jasp/srm --day $yesterdayy --user diaryobs
+cd /home/admin/jasp/glass/scripts/usee && /home/admin/jasp/pypenv/bin/python obs_to_txt_nc.py /home/admin/jasp/nc --netcdf --day $yesterdayy --user diaryobs
 
 # FTP DIR
 year=$(date +'%Y' --date='1 day ago')

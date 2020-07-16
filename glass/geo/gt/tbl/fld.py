@@ -49,7 +49,7 @@ def add_fields(tbl, fields, lyrN=1, api='ogr'):
             raise ValueError('File path does not exist')
     
     elif api == 'ogrinfo':
-        from glass.pyt     import execmds
+        from glass.pyt     import execmd
         from glass.pyt.oss import fprop
 
         tname = fprop(tbl, 'fn')
@@ -214,9 +214,14 @@ def rn_cols(inShp, columns, api="ogr2ogr"):
 Update data in Table Field
 """
 
-def update_cols(table, new_values, ref_values=None):
+def update_cols(table, upcol, nval):
     """
     Update a feature class table with new values
+
+    new_values = {
+        new_value : where statment
+        new_value : None # if no where statment
+    }
     
     Where with OR condition
     new_values and ref_values are dict with fields as keys and values as 
@@ -225,29 +230,22 @@ def update_cols(table, new_values, ref_values=None):
     
     import os
     from glass.pyt import execmd
+    from glass.pyt.oss import fprop
+
+    tn = fprop(table, 'fn')
     
-    if ref_values:
-        update_query = 'UPDATE {tbl} SET {pair_new} WHERE {pair_ref};'.format(
-            tbl=os.path.splitext(os.path.basename(table))[0],
-            pair_new=','.join(["{fld}={v}".format(
-                fld=x, v=new_values[x]) for x in new_values]),
-            pair_ref=' OR '.join(["{fld}='{v}'".format(
-                fld=x, v=ref_values[x]) for x in ref_values])
+    for v in nval:
+        q = "UPDATE {} SET {}={}{}".format(
+            tn, upcol, str(v) if type(v) != str else "'{}'".format(str(v)),
+            "" if not nval[v] else " WHERE {}".format(
+                nval[v] if type(nval[v]) != list else " OR ".join(nval[v])
+            )
         )
     
-    else:
-        update_query = 'UPDATE {tbl} SET {pair};'.format(
-            tbl=os.path.splitext(os.path.basename(table))[0],
-            pair=','.join(["{fld}={v}".format(
-                fld=x, v=new_values[x]) for x in new_values])
-        )
+        ogrinfo = 'ogrinfo {} -dialect sqlite -sql "{}"'.format(table, q)
     
-    ogrinfo = 'ogrinfo {i} -dialect sqlite -sql "{s}"'.format(
-        i=table, s=update_query
-    )
-    
-    # Run command
-    outcmd = execmd(ogrinfo)
+        # Run command
+        outcmd = execmd(ogrinfo)
 
 
 def filename_to_col(tables, new_field, table_format='.dbf'):

@@ -7,12 +7,12 @@ def shp_to_djg_mdl(in_shp, app, mdl, cols_map, djg_proj):
     Add Geometries to Django Model
     """
     
-    from django.contrib.gis.geos import GEOSGeometry
-    from django.contrib.gis.db   import models
-    from glass.pyt                    import __import
-    from glass.web.djg            import open_Django_Proj
-    from glass.geo.gt.fmshp           import shp_to_obj
-    from glass.geo.gt.prop.prj        import get_epsg_shp
+    from django.contrib.gis.geos       import GEOSGeometry
+    from django.contrib.gis.db         import models
+    from glass.pyt                     import __import
+    from glass.web.djg                 import get_djgprj
+    from glass.geo.gt.fmshp            import shp_to_obj
+    from glass.geo.gt.prop.prj         import get_epsg_shp
     from shapely.geometry.multipolygon import MultiPolygon
 
     def force_multi(geom):
@@ -21,7 +21,7 @@ def shp_to_djg_mdl(in_shp, app, mdl, cols_map, djg_proj):
         else:
             return geom
 
-    application = open_Django_Proj(djg_proj)
+    application = get_djgprj(djg_proj)
     
     mdl_cls = __import('{}.models.{}'.format(app, mdl))
     mdl_obj = mdl_cls()
@@ -82,6 +82,59 @@ def shp_to_djg_mdl(in_shp, app, mdl, cols_map, djg_proj):
     return 1
 
 
+def pgtbl_to_mdl(djg_proj, app, model, datadb, datatbl, geom=None, epsg=None):
+    """
+    Import data from one PostgreSQL Table into Django Model
+    """
+
+    from glass.sql.fm            import q_to_obj
+    from glass.pyt               import __import
+    from django.contrib.gis.geos import GEOSGeometry
+    from django.contrib.gis.db   import models
+    from glass.web.djg           import get_djgprj
+
+    # Get data
+    data = q_to_obj(datadb, "SELECT * FROM {}".format(datatbl), geomCol=geom, epsg=epsg)
+
+    cols = data.columns.values
+
+    # Get Django Application
+    application = get_djgprj(djg_proj)
+
+    # Get Model
+    mdl_cls = __import('{}.models.{}'.format(app, model))
+    mdl_obj = mdl_cls()
+
+    def upmdl(row):
+        for col in cols:
+            if geom and col == geom:
+                # Add geometry
+                setattr(mdl_obj, col, GEOSGeometry(row[col].wkt, srid=epsg))
+        
+            else:
+                # Check if field is foreign key
+                field_obj = mdl_cls._meta.get_field(col)
+            
+                if not isinstance(field_obj, models.ForeignKey):
+                    setattr(mdl_obj, col, row[col])
+            
+                else:
+                    related_name = field_obj.related_model.__name__
+                
+                    related_model = __import('{}.models.{}'.format(
+                        app, related_name
+                    ))
+                
+                    related_obj = related_model.objects.get(
+                        pk=int(row[col])
+                    )
+                
+                    setattr(mdl_obj, col, related_obj)
+        mdl_obj.save()
+
+    data.apply(lambda x: upmdl(x), axis=1)
+
+
 def txt_to_db(txt, proj_path=None, delimiter='\t', encoding_='utf-8'):
     """
     Read a txt with table data and import it to the database using
@@ -121,9 +174,9 @@ def txt_to_db(txt, proj_path=None, delimiter='\t', encoding_='utf-8'):
     
     # Open Django Project
     if proj_path:
-        from glass.web.djg import open_Django_Proj
+        from glass.web.djg import get_djgprj
         
-        application = open_Django_Proj(proj_path)
+        application = get_djgprj(proj_path)
     
     from django.contrib.gis.db import models
     
@@ -201,8 +254,8 @@ def txts_to_db(folder, delimiter='\t', _encoding_='utf-8', proj_path=None):
     
     # Open Django Project
     if proj_path:
-        from glass.web.djg import open_Django_Proj
-        application = open_Django_Proj(proj_path)
+        from glass.web.djg import get_djgprj
+        application = get_djgprj(proj_path)
     
     # List txt files
     if not os.path.exists(folder) and not os.path.isdir(folder):
@@ -274,8 +327,8 @@ def psql_to_djgdb(sql_dumps, db_name, djg_proj=None, mapTbl=None, userDjgAPI=Non
     
     # Open Django Project
     if djg_proj:
-        from glass.web.djg import open_Django_Proj
-        application = open_Django_Proj(djg_proj)
+        from glass.web.djg import get_djgprj
+        application = get_djgprj(djg_proj)
     
     # List models in project
     app_mdls = lst_mdl_proj(djg_proj, thereIsApp=True, returnClassName=True)

@@ -95,112 +95,36 @@ def rstcalc(expression, output, api='saga', grids=None):
     return output
 
 
-def floatrst_to_intrst(in_rst, out_rst):
+"""
+Expression's
+"""
+
+def repnd_by_rstval(ref_rst, val_rst, out_rst):
     """
-    Raster with float data to Raster with Integer Values
+    Replace NoData Values with values from another raster
     """
 
-    import numpy         as np
-    from osgeo           import gdal
-    from glass.geo.gm.prop.img import get_nd
-    from glass.geo.gt.torst  import obj_to_rst
+    import numpy as np
+    from osgeo import gdal
+    from glass.geo.gt.torst import obj_to_rst
 
-    nds = {
-        'int8' : -128, 'int16' : -32768, 'int32' : -2147483648,
-        'uint8' : 255, 'uint16' : 65535, 'uint32' : 4294967295
-    }
+    # TODO check if shape of two rasters are the same
 
-    # Open Raster
-    img = gdal.Open(in_rst)
+    # Open Rasters and Get data as array
+    refsrc = gdal.Open(ref_rst, gdal.GA_ReadOnly)
+    popsrc = gdal.Open(val_rst, gdal.GA_ReadOnly)
 
-    # Raster to Array
-    rstnum = img.ReadAsArray()
+    nd_val = refsrc.GetRasterBand(1).GetNoDataValue()
+    nd_pop = refsrc.GetRasterBand(1).GetNoDataValue()
 
-    # Round data
-    rstint = np.around(rstnum, decimals=0)
+    refnum = refsrc.GetRasterBand(1).ReadAsArray()
+    popnum = popsrc.GetRasterBand(1).ReadAsArray()
 
-    # Get min and max
-    tstmin = rstint.min()
-    tstmax = rstint.max()
+    # Replace NoData Values
+    np.copyto(refnum, popnum, where=refnum==nd_val)
 
-    try:
-        nd = int(round(get_nd(img), 0))
-    except:
-        nd = None
+    # Export to file
+    obj_to_rst(refnum, out_rst, refsrc, noData=nd_pop)
 
-    if tstmin == nd:
-        np.place(rstint, rstint == nd, np.nan)
-        rstmin = rstint.min()
-        rstmax = tstmax
-    else:
-        rstmin = tstmin
-    
-        if tstmax == nd:
-            np.place(rstint, rstint == nd, np.nan)
-            rstmax = rstint.max()
-        else:
-            rstmax = tstmax
-    
-    # Get dtype for output raster
-    if rstmin < 0:
-        if rstmin <= -128:
-            if rstmin <= -32768:
-                tmin = 'int32'
-            else:
-                tmin = 'int16'
-        else:
-            tmin = 'int8'
-    else:
-        tmin = 'u'
-    
-    if tmin == 'u':
-        if rstmax >= 255:
-            if rstmax >= 65535:
-                tmax = 'uint32'
-            else:
-                tmax = 'uint16'
-        else:
-            tmax = 'uint8'
+    return out_rst
 
-    else:
-        if tmin == 'int8':
-            if rstmax >= 127:
-                if rstmax >= 32767:
-                    tmax = 'int32'
-                else:
-                    tmax = 'int16'
-            else:
-                tmax = 'int8'
-    
-        elif tmin == 'int16':
-            if rstmax >= 32767:
-                tmax = 'int32'
-            else:
-                tmax = 'int16'
-        else:
-            tmax = 'int32'
-    
-    if tmax == 'int8':
-        nt = np.int8
-    elif tmax == 'int16':
-        nt = np.int16
-    elif tmax == 'int32':
-        nt = np.int32
-    elif tmax == 'uint8':
-        nt = np.uint8
-    elif tmax == 'uint16':
-        nt = np.uint16
-    else:
-        nt = np.uint32
-    
-    # Get nodata for new raster
-    new_nd = nds[tmax]
-    
-    # Place NoData value
-    np.nan_to_num(rstint, copy=False, nan=new_nd)
-
-    # Convert array type to integer
-    rstint = rstint.astype(nt)
-
-    # Export result to file and return
-    return obj_to_rst(rstint, out_rst, img, noData=new_nd)

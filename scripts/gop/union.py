@@ -9,8 +9,8 @@ def multi_run(ti, df, ofolder):
     import grass.script.setup as gsetup
     gsetup.init(grsbase, ofolder, loc_name, 'PERMANENT')
     
-    from gasp.gt.toshp.cff import shp_to_grs, grs_to_shp
-    from gasp.gt.gop.ovlay import union
+    from glass.gt.toshp.cff import shp_to_grs, grs_to_shp
+    from glass.gt.gop.ovlay import union
     
     for idx, row in df.iterrows():
         # Import data into GRASS GIS
