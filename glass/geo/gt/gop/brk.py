@@ -13,13 +13,13 @@ def shply_break_lines_on_points(lineShp, pointShp, lineIdInPntShp, splitedShp):
     lineIDInPntShp is a reference to the FID of lineShp
     """
     
-    from shapely.ops      import split
-    from shapely.geometry import Point, LineString
+    from shapely.ops           import split
+    from shapely.geometry      import Point, LineString
     from glass.geo.gt.fmshp    import shp_to_obj
-    from glass.pyt.df.mng  import col_list_val_to_row
+    from glass.pyt.df.mng      import col_list_val_to_row
     from glass.geo.gt.prop.prj import get_epsg_shp
     from glass.geo.gt.toshp    import df_to_shp
-    from glass.pyt.df.to   import dict_to_df
+    from glass.pyt.df          import dict_to_df
     
     srs_code = get_epsg_shp(lineShp)
     
@@ -129,10 +129,10 @@ def v_break_at_points(workspace, loc, lineShp, pntShp, db, srs, out_correct,
     import os
     from glass.geo.gql.to      import shp_to_psql
     from glass.geo.gt.toshp.db import dbtbl_to_shp
-    from glass.geo.wenv.grs import run_grass
-    from glass.pyt.oss      import fprop
-    from glass.sql.db       import create_db
-    from glass.sql.to       import q_to_ntbl
+    from glass.geo.wenv.grs    import run_grass
+    from glass.pyt.oss         import fprop
+    from glass.sql.db          import create_db
+    from glass.dct.to.sql      import q_to_ntbl
     
     tmpFiles = os.path.join(workspace, loc)
     

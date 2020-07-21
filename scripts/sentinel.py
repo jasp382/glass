@@ -3,10 +3,10 @@ Download Sentinel-2 IMG
 """
 
 if __name__ == '__main__':
-    from glass.gt.fmweb.sentinel import down_imgs
+    from glass.geo.dat.sentinel import down_imgs
 
-    in_shp = '/home/osmtolulc/mrgis/sentinel_pt/imgs_pt.shp'
-    out_folder = '/home/osmtolulc/mrgis/sentinel_pt'
+    in_shp = '/home/jasp/mrgis/sentinel_cmb/sentinel.shp'
+    out_folder = '/home/jasp/mrgis/sentinel_cmb'
 
     down_imgs(in_shp, 'uuid', outFolder=out_folder)
 

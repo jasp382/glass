@@ -8,7 +8,7 @@ def grs_rst(db, polyTbl, api='SQLITE'):
     """
     
     import datetime
-    from glass.sql.fm      import q_to_obj
+    from glass.dct.fm.sql      import q_to_obj
     from glass.geo.gt.toshp.db import dbtbl_to_shp as db_to_grs
     from glass.geo.gt.torst    import shp_to_rst
     
@@ -107,7 +107,7 @@ def num_selection(osmdb, polyTbl, folder,
         from glass.geo.gt.attr     import sel_by_attr
     else:
         from glass.geo.gt.toshp.db import dbtbl_to_shp as sel_by_attr
-    from glass.sql.fm          import q_to_obj
+    from glass.dct.fm.sql          import q_to_obj
     from glass.geo.gt.torst        import shp_to_rst
     
     # Get classes in data

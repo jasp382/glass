@@ -64,8 +64,8 @@ def multiCols_FK_to_singleCol(db, tbl_wPk, pkCol, tbl_multiFk,
             "fkCols parameter should be a dict"
         )
     
-    from glass.pyt    import obj_to_lst
-    from glass.sql.to import q_to_ntbl
+    from glass.pyt        import obj_to_lst
+    from glass.dct.to.sql import q_to_ntbl
     
     colsSel = obj_to_lst(colsSel)
     

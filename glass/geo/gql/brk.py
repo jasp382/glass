@@ -9,7 +9,7 @@ def split_lines_on_pnt(db, inTbl, pntTbl, outTbl, idlnhPnt,
     """
     
     from glass.sql.i  import cols_name
-    from glass.sql.to import q_to_ntbl
+    from glass.dct.to.sql import q_to_ntbl
     
     # Get cols of lnhTbl
     cols = ", ".join([c for c in cols_name(

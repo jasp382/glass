@@ -69,7 +69,7 @@ def dfcolstorows(inDf, colField, valField, colFid=None):
     7 | id_unit | 3618
     """
 
-    from glass.pyt.df.to import merge_df
+    from glass.pyt.df import merge_df
     
     newDfs = []
     cols = list(inDf.columns.values)

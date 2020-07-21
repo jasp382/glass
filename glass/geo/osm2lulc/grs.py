@@ -28,7 +28,7 @@ def raster_based(osmdata, nomenclature, refRaster, lulcRst,
         from glass.sql.db            import create_db
         from glass.geo.gql.to.osm    import osm_to_psql 
         from glass.geo.osm2lulc.mod2 import roads_sqdb
-        from glass.sql.fm            import dump_db
+        from glass.dct.fm.sql        import dump_db
         from glass.sql.db            import drop_db
     else:
         from glass.geo.gt.toshp.osm  import osm_to_sqdb
@@ -375,7 +375,7 @@ def vector_based(osmdata, nomenclature, refRaster, lulcShp,
         from glass.sql.db            import create_db
         from glass.geo.gql.to.osm    import osm_to_psql
         from glass.sql.db            import drop_db
-        from glass.sql.fm            import dump_db
+        from glass.dct.fm.sql        import dump_db
     else:
         from glass.geo.gt.toshp.osm  import osm_to_sqdb
     from glass.geo.osm2lulc.utils    import osm_project, add_lulc_to_osmfeat, get_ref_raster

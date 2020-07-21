@@ -107,14 +107,14 @@ def merge_dbs(destinationDb, dbs,
     """
     
     import os
-    from glass.pyt.oss import fprop, del_file
-    from glass.sql     import psql_cmd
-    from glass.sql.i   import db_exists, lst_tbl
-    from glass.sql.db  import create_db, drop_db
-    from glass.sql.tbl import rename_tbl, tbls_to_tbl
-    from glass.sql.fm  import dump_tbls
-    from glass.sql.to  import restore_tbls
-    from glass.sql.tbl import distinct_to_table, del_tables
+    from glass.pyt.oss    import fprop, del_file
+    from glass.sql        import psql_cmd
+    from glass.sql.i      import db_exists, lst_tbl
+    from glass.sql.db     import create_db, drop_db
+    from glass.sql.tbl    import rename_tbl, tbls_to_tbl
+    from glass.dct.fm.sql import dump_tbls
+    from glass.dct.to.sql import restore_tbls
+    from glass.sql.tbl    import distinct_to_table, del_tables
     
     # Prepare database
     fdb = fprop(destinationDb, ['fn', 'ff'])

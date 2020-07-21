@@ -65,7 +65,7 @@ def dbtbl_to_shp(db, tbl, geom_col, outShp, where=None, inDB='psql',
             ))
         
         elif api == 'psql' or api == 'sqlite':
-            from glass.sql.fm import q_to_obj
+            from glass.dct.fm.sql import q_to_obj
             
             q = "SELECT * FROM {}".format(tbl) if not tableIsQuery else tbl
             

@@ -3,7 +3,7 @@ Manage fields
 """
 
 from glass.sql.c  import sqlcon
-from glass.sql.to import q_to_ntbl
+from glass.dct.to.sql import q_to_ntbl
 
 
 """

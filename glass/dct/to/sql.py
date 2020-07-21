@@ -250,9 +250,9 @@ def db_to_db(db_a, db_b, typeDBA, typeDBB):
     """
     
     import os
-    from glass.sql.fm import q_to_obj
-    from glass.sql.i  import lst_tbl
-    from glass.sql.db import create_db
+    from glass.dct.fm.sql import q_to_obj
+    from glass.sql.i      import lst_tbl
+    from glass.sql.db     import create_db
     
     # List Tables in DB A
     tbls = lst_tbl(db_a, excludeViews=True, api=typeDBA)
@@ -281,7 +281,7 @@ def tbl_fromdb_todb(from_db, to_db, tables, qForTbl=None, api='pandas'):
     tables = obj_to_lst(tables)
     
     if api == 'pandas':
-        from glass.sql.fm import q_to_obj
+        from glass.dct.fm.sql import q_to_obj
     
         for table in tables:
             if not qForTbl:
@@ -300,9 +300,9 @@ def tbl_fromdb_todb(from_db, to_db, tables, qForTbl=None, api='pandas'):
     
     else:
         import os
-        from glass.pyt.oss import mkdir, del_folder
-        from glass.sql.fm  import dump_tbls
-        from glass.sql.to  import restore_tbls
+        from glass.pyt.oss    import mkdir, del_folder
+        from glass.dct.fm.sql import dump_tbls
+        from glass.dct.to.sql import restore_tbls
         
         tmpFolder = mkdir(
             os.path.dirname(os.path.abspath(__file__)), randName=True
@@ -320,22 +320,16 @@ def tbl_fromdb_todb(from_db, to_db, tables, qForTbl=None, api='pandas'):
 
 
 def apndtbl_in_otherdb(db_a, db_b, tblA, tblB, mapCols,
-                       geomCol=None, srsEpsg=None):
+                       geomCol=None, srsEpsg=None, con_a=None, con_b=None):
     """
     Append data of one table to another table in other database.
     """
     
-    from glass.sql.fm import q_to_obj
+    from glass.dct.fm.sql import q_to_obj
     
-    if geomCol and srsEpsg:
-        df = q_to_obj(db_a, "SELECT {} FROM {}".format(
-            ", ".join(list(mapCols.keys())), tblA
-        ), db_api='psql', geomCol=geomCol, epsg=srsEpsg)
-    
-    else:
-        df = q_to_obj(db_b, "SELECT {} FROM {}".format(
-            ", ".join(list(mapCols.keys())), tblA
-        ), db_api='psql', geomCol=None, epsg=None)
+    df = q_to_obj(db_a, "SELECT {} FROM {}".format(
+        ", ".join(list(mapCols.keys())), tblA
+    ), db_api='psql', geomCol=geomCol, epsg=srsEpsg, dbset=con_a)
     
     # Change Names
     df.rename(columns=mapCols, inplace=True)
@@ -355,11 +349,11 @@ def apndtbl_in_otherdb(db_a, db_b, tblA, tblB, mapCols,
         
         df_to_db(
             db_b, df, tblB, append=True, api='psql', epsg=srsEpsg,
-            geomType=gType, colGeom=geomCol
+            geomType=gType, colGeom=geomCol, dbset=con_b
         )
     
     else:
-        df_to_db(db_b, df, tblB, append=True, api='psql')
+        df_to_db(db_b, df, tblB, append=True, api='psql', dbset=con_b)
     
     return tblB
 

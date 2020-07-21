@@ -8,8 +8,8 @@ def distinct_val(db, pgtable, column):
     Get distinct values in one column of one pgtable
     """
     
-    from glass.pyt    import obj_to_lst
-    from glass.sql.fm import q_to_obj
+    from glass.pyt        import obj_to_lst
+    from glass.dct.fm.sql import q_to_obj
     
     data = q_to_obj(db,
         "SELECT {col} FROM {t} GROUP BY {col};".format(
@@ -60,9 +60,9 @@ def run_query_for_values_in_col(db, query,
     """
     
     import os
-    from glass.sql.fm import q_to_obj
-    from glass.sql.i  import cols_type
-    from glass.dct.to import obj_to_tbl
+    from glass.dct.fm.sql import q_to_obj
+    from glass.sql.i      import cols_type
+    from glass.dct.to     import obj_to_tbl
     
     fields_types = cols_type(db, table_interest_col)
     
@@ -96,7 +96,7 @@ def rows_notin_q(db, tblA, tblB, joinCols, newTable,
     """
     
     from glass.pyt    import obj_to_lst
-    from glass.sql.to import q_to_ntbl
+    from glass.dct.to.sql import q_to_ntbl
     
     cols_to_mantain = obj_to_lst(cols_to_mantain)
     

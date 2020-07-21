@@ -557,9 +557,9 @@ def check_shape_diff(SHAPES_TO_COMPARE, OUT_FOLDER, REPORT, DB,
     
     import datetime
     import os;                  import pandas
-    from glass.sql.fm           import q_to_obj
+    from glass.dct.fm.sql       import q_to_obj
     from glass.dct.to           import db_to_tbl
-    from glass.sql.to           import df_to_db
+    from glass.dct.to.sql       import df_to_db
     from glass.geo.gt.toshp.cff import shp_to_shp
     from glass.geo.gt.toshp.db  import dbtbl_to_shp
     from glass.geo.gt.toshp.rst import rst_to_polyg
@@ -569,7 +569,7 @@ def check_shape_diff(SHAPES_TO_COMPARE, OUT_FOLDER, REPORT, DB,
     from glass.pyt.oss          import fprop
     from glass.sql.db           import create_db
     from glass.sql.tbl          import tbls_to_tbl
-    from glass.sql.to           import q_to_ntbl
+    from glass.dct.to.sql       import q_to_ntbl
     from glass.geo.gql.cln      import fix_geom
     from glass.dct.to           import db_to_tbl
     

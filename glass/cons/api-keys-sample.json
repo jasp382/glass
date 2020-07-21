@@ -1,8 +1,8 @@
 {
-    "TWITTER" : {
+    "TWITTER" : [{
         "TOKEN"           : "",
         "SECRET"          : "",
         "CONSUMER_KEY"    : "",
         "CONSUMER_SECRET" : ""
-    }
+    }]
 }

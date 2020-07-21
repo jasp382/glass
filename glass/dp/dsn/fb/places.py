@@ -24,10 +24,10 @@ def places_by_query(bfShp, epsgIn, keyword=None, epsgOut=4326,
     """
     
     import pandas
-    from geopandas              import GeoDataFrame
-    from shapely.geometry       import Polygon, Point
-    from glass.geo.gt.prop.feat.bf   import getBufferParam
-    from glass.sde.dsn.fb.search import by_query
+    from geopandas                 import GeoDataFrame
+    from shapely.geometry          import Polygon, Point
+    from glass.geo.gt.prop.feat.bf import getBufferParam
+    from glass.dp.dsn.fb.search    import by_query
     
     search_type = 'place'
     

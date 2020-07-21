@@ -2,17 +2,9 @@
 Methods to extract data from Twitter
 """
 
-# Twitter
-TWITTER_TOKEN = {
-    'TOKEN'           : "3571004715-NiOnRpRrQZVGpQFvgT2B5zYB6vm3ey01ZBk9QT9",
-    'SECRET'          : "WhKkqFzshpFLzRIsS9puPTVZZgKYWhOYcf8JPcAbBFKMI",
-    'CONSUMER_KEY'    : "zuDY4LEW37TCesUfObKMeMBPf",
-    'CONSUMER_SECRET' : "os60OvpWjb9TLW1ABaiZeRZy8QWcOfwknwYGLBgJOGBE5tQfrM"
-}
-
 def search_tweets(lat=None, lng=None, radius=None, keyword=None,
                   NR_ITEMS=500, only_geo=None, __lang=None, key=None,
-                  resultType='mixed'):
+                  resultType='mixed', drop_cols=None, in_geom=None, epsg=None):
     """
     Basic tool to extract data from Twitter using a keyword and/or a buffer
     
@@ -22,15 +14,42 @@ def search_tweets(lat=None, lng=None, radius=None, keyword=None,
     Returns an array with the encountered data
     """
     
-    import tweepy;       import pandas
+    import tweepy;        import pandas as pd
     from glass.pyt.df.fld import listval_to_newcols
+    from glass.pyt        import obj_to_lst
+
+    if not lat and not lng and not radius and not in_geom and not keyword:
+        raise ValueError('No query parameters were provided. Nothing to do')
+
+    if in_geom and not epsg:
+        raise ValueError('inGeom implies epsg')
+
+    if lat:
+        if not lng or not radius:
+            raise ValueError('lat implies lng and radius')
+    
+    if lng:
+        if not lat or not radius:
+            raise ValueError('lng implies lat and radius')
+    
+    if radius:
+        if not lat or not lng:
+            raise ValueError('radius implies lat and lng')
+    
+    if in_geom:
+        from glass.geo.gt.prop.feat.bf import getBufferParam
+
+        lng, lat, radius = getBufferParam(in_geom, epsg, outSRS=4326)
+
+        radius = float(radius) / 1000
     
     if not key:
-        TOKEN, SECRET, CONSUMER_KEY, CONSUMER_SECRET = TWITTER_TOKEN['TOKEN'],\
-            TWITTER_TOKEN['SECRET'], TWITTER_TOKEN['CONSUMER_KEY'],\
-            TWITTER_TOKEN['CONSUMER_SECRET']
-    else:
-        TOKEN, SECRET, CONSUMER_KEY, CONSUMER_SECRET = key
+        from glass.cons.dsn import tw_key
+
+        key = tw_key(allkeys=False)
+
+    TOKEN, SECRET, CONSUMER_KEY, CONSUMER_SECRET = key['TOKEN'],\
+        key['SECRET'], key['CONSUMER_KEY'], key['CONSUMER_SECRET']
     
     resultType = None if resultType == 'mixed' else resultType
     
@@ -60,7 +79,7 @@ def search_tweets(lat=None, lng=None, radius=None, keyword=None,
             count=50, result_type=resultType
         ).items(NR_ITEMS)]
     
-    data = pandas.DataFrame(data)
+    data = pd.DataFrame(data)
     
     if not data.shape[0]:
         return None
@@ -102,10 +121,10 @@ def search_tweets(lat=None, lng=None, radius=None, keyword=None,
         data.rename(columns=colsRename, inplace=True)
         
         if 'bounding_box' in data.columns.values:
-            data["place_box"] = data.bounding_box.apply(get_wkt)
+            data.loc[:, "place_box"] = data.bounding_box.apply(get_wkt)
         
         else:
-            data["place_box"] = 'None'
+            data.loc[:, "place_box"] = 'None'
     
     cols = list(data.columns.values)
     
@@ -119,7 +138,7 @@ def search_tweets(lat=None, lng=None, radius=None, keyword=None,
     
     data.drop(delCols, axis=1, inplace=True)
     
-    dfGeom = data[data["geo"].astype(str) != 'None']
+    dfGeom = data[data.geo.astype(str) != 'None']
     
     if only_geo and not dfGeom.shape[0]:
         return None
@@ -132,14 +151,14 @@ def search_tweets(lat=None, lng=None, radius=None, keyword=None,
         result.drop("geo", axis=1, inplace=True)
     
     else:
-        dfGeom = pandas.concat([
+        dfGeom = pd.concat([
             dfGeom.drop(["geo"], axis=1),
-            dfGeom["geo"].apply(pandas.Series)
+            dfGeom.geo.apply(pd.Series)
         ], axis=1)
         
-        dfGeom = pandas.concat([
+        dfGeom = pd.concat([
             dfGeom.drop(["coordinates"], axis=1),
-            dfGeom["coordinates"].apply(pandas.Series)
+            dfGeom.coordinates.apply(pd.Series)
         ], axis=1)
         
         dfGeom.rename(columns={0 : 'latitude', 1 : 'longitude'}, inplace=True)
@@ -150,7 +169,7 @@ def search_tweets(lat=None, lng=None, radius=None, keyword=None,
             result = dfGeom
         
         else:
-            dfNoGeom = data[data["geo"].astype(str) == 'None']
+            dfNoGeom = data[data.geo.astype(str) == 'None']
             dfNoGeom.loc[:, "latitude"]  = dfNoGeom.geo
             dfNoGeom.loc[:, "longitude"] = dfNoGeom.geo
             
@@ -158,9 +177,9 @@ def search_tweets(lat=None, lng=None, radius=None, keyword=None,
             
             result = dfGeom.append(dfNoGeom, ignore_index=True)
     
-    result = pandas.concat([
+    result = pd.concat([
         result.drop(["user"], axis=1),
-        result["user"].apply(pandas.Series)
+        result["user"].apply(pd.Series)
     ], axis=1)
     
     result.rename(columns={
@@ -177,32 +196,19 @@ def search_tweets(lat=None, lng=None, radius=None, keyword=None,
     
     result.drop(delCols, axis=1, inplace=True)
     
-    result["url"] = 'https://twitter.com/' + \
-        result["user"].astype(str) + '/status/' + \
-        result["fid"].astype(str)
+    result.loc[:, "url"] = 'https://twitter.com/' + \
+        result.user.astype(str) + '/status/' + \
+        result.fid.astype(str)
+    
+    result.loc[:, "keyword"] = keyword if keyword else 'nan'
+
+    # Delete unwanted columns
+    drop_cols = obj_to_lst(drop_cols)
+
+    if drop_cols:
+        result.drop(drop_cols, axis=1, inplace=True)
     
     return result
-
-
-def tweets_to_json(lat, lng, radius, keyword, jsonfile,
-                   NR_ITEMS=500, ONLY_GEO=None):
-    """
-    Search for tweets and save them in a json file
-    """
-
-    import tweepy
-    import json
-
-    if not keyword:
-        keyword=''
-
-    data = search_tweets(lat=lat, lng=lng, radius=float(radius)/1000.0, keyword=keyword,
-                         NR_ITEMS=NR_ITEMS, only_geo=ONLY_GEO)
-
-    with open(jsonfile, mode='w') as f:
-        json.dump(data, f, encoding='utf-8')
-
-    return jsonfile
 
 
 def search_places(_lat, lng, radius):
@@ -322,56 +328,6 @@ def tweets_to_shp(buffer_shp, epsg_in, outshp, keyword=None,
     return outshp
 
 
-def tweets_to_df(keyword=None, inGeom=None, epsg=None, LANG='pt',
-                 NTWEETS=1000, tweetType='mixed', apiKey=None, dropFields=None):
-    """
-    Search for Tweets and Export them to XLS
-    """
-    
-    from glass.pyt import obj_to_lst
-    
-    if not inGeom and not keyword:
-        raise ValueError('inGeom or keyword, one of them are required')
-    
-    if inGeom and not epsg:
-        raise ValueError('inGeom implies epsg')
-    
-    if inGeom:
-        from glass.geo.gt.prop.feat.bf import getBufferParam
-        
-        x, y, dist = getBufferParam(inGeom, epsg, outSRS=4326)
-        
-        dist = float(dist) / 1000
-    
-    else:
-        x, y, dist = None, None, None
-        
-    data = search_tweets(
-        lat=y, lng=x, radius=dist,
-        keyword=keyword, NR_ITEMS=NTWEETS, only_geo=None, __lang=LANG,
-        resultType=tweetType, key=apiKey
-    )
-    
-    try:
-        if not data:
-            return 0
-    except:
-        pass
-    
-    if keyword:
-        data["keyword"] = keyword
-    
-    else:
-        data["keyword"] = 'nan'
-    
-    dropFields = obj_to_lst(dropFields)
-    
-    if dropFields:
-        data.drop(dropFields, axis=1, inplace=True)
-    
-    return data
-
-
 def tweets_to_xls(outxls, searchword=None, searchGeom=None, srs=None, lng='pt',
                   NTW=1000, twType='mixed', Key=None):
     """
@@ -380,9 +336,9 @@ def tweets_to_xls(outxls, searchword=None, searchGeom=None, srs=None, lng='pt',
     
     from glass.dct.to import obj_to_tbl
     
-    data = tweets_to_df(
-        keyword=searchword, inGeom=searchGeom, epsg=srs,
-        LANG=lng, NTWEETS=NTW, tweetType=twType, apiKey=Key
+    data = search_tweets(
+        keyword=searchword, in_geom=searchGeom, epsg=srs,
+        __lang=lng, NR_ITEMS=NTW, resultType=twType, key=Key
     )
     
     try:

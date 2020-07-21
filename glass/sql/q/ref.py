@@ -18,7 +18,7 @@ def select_using_excel_refs(db_name, excel_file, sheet_name,
     
     from glass.dct.fm import tbl_to_obj
     from glass.sql.i  import cols_type
-    from glass.sql.to import q_to_ntbl
+    from glass.dct.to.sql import q_to_ntbl
     
     def to_and(row, cols, ctype):
         def get_equal(_type):

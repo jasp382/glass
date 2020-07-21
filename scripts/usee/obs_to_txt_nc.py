@@ -181,8 +181,8 @@ def db_to_srm(db, TABLE, TIME, TEMP, DAY, COLS_ORDER, COL_MAP, OUT_SRM,
     """
     
     import codecs
-    from glass.sql.fm   import q_to_obj
-    from glass.gt.toshp import df_to_shp
+    from glass.dct.fm.sql import q_to_obj
+    from glass.gt.toshp   import df_to_shp
     
     # Get Data from the Database
     q = (
@@ -297,7 +297,7 @@ def db_to_nc_v2(db, tbl, daystr, _dimCols, _varCols, tempCol, timeCol, outNc,
     
     import netCDF4
     import numpy as np
-    from glass.sql.fm import q_to_obj
+    from glass.dct.fm.sql import q_to_obj
     
     dimCols = _dimCols.copy()
     varCols = _varCols.copy()

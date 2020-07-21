@@ -7,7 +7,7 @@ def tbl_ext(db, table, geomCol):
     Return extent of the geometries in one pgtable
     """
     
-    from glass.sql.fm import q_to_obj
+    from glass.dct.fm.sql import q_to_obj
     
     q = (
         "SELECT MIN(ST_X(pnt_geom)) AS eleft, MAX(ST_X(pnt_geom)) AS eright, "
@@ -30,7 +30,7 @@ def tbl_geomtype(db, table, geomCol='geom'):
     Return the number of geometry types in table
     """
     
-    from glass.sql.fm import q_to_obj
+    from glass.dct.fm.sql import q_to_obj
     
     return int(q_to_obj(db, (
         "SELECT COUNT(*) AS row_count FROM ("
@@ -47,7 +47,7 @@ def select_main_geom_type(db, table, outbl, geomCol='geom'):
     type with more rows
     """
     
-    from glass.sql.to import q_to_ntbl
+    from glass.dct.to.sql import q_to_ntbl
     from glass.sql.i  import cols_name
     
     COLS = [x for x in cols_name(
@@ -82,7 +82,7 @@ def check_endpoint_ispoint(db, lnhTable, pntTable, outTable,
     in other table.
     """
     
-    from glass.sql.to import q_to_ntbl
+    from glass.dct.to.sql import q_to_ntbl
     from glass.sql.i  import cols_name
     
     tCols = [x for x in cols_name(

@@ -8,7 +8,7 @@ def xycols_to_geom(db, intbl, x_col, y_col, outtable,
     X and Y Colums to PostGIS Geom Column
     """
     
-    from glass.sql.to import q_to_ntbl
+    from glass.dct.to.sql import q_to_ntbl
     
     return q_to_ntbl(db, outtable, (
         "SELECT *, ST_SetSRID(ST_MakePoint({}, {}), {}) AS {} "
@@ -27,7 +27,7 @@ def geom_to_points(db, table, geomCol, outTable,
     """
     
     from glass.pyt    import obj_to_lst
-    from glass.sql.to import q_to_ntbl
+    from glass.dct.to.sql import q_to_ntbl
     
     selCols = obj_to_lst(selCols)
     
@@ -56,7 +56,7 @@ def pnts_to_lines(db, inTable, outTable, entityCol, orderCol,
             raise ValueError(
                 'If geomCol is not specified, xCol and ycol must replace it!')
     
-    from glass.sql.to import q_to_ntbl
+    from glass.dct.to.sql import q_to_ntbl
     
     geomRef = geomCol if geomCol else "ST_MakePoint({}, {})".format(xCol, yCol)
     

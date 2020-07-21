@@ -7,7 +7,7 @@ def lnh_to_polg(db, intbl, outtbl):
     Line to Polygons
     """
     
-    from glass.sql.to import q_to_ntbl
+    from glass.dct.to.sql import q_to_ntbl
     
     Q = (
         "SELECT ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS gid, "

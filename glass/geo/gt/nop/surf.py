@@ -337,10 +337,10 @@ def thrd_viewshed_v2(dbname, dem, pnt_obs, obs_id):
     from glass.pyt.df.split    import df_split
     from glass.geo.wenv.grs    import run_grass
     from glass.geo.gt.prop.prj import get_epsg_shp
-    from glass.sql.to          import df_to_db
+    from glass.dct.to.sql      import df_to_db
     from glass.pyt.oss         import del_file
     from glass.sql.db          import create_db
-    from glass.pyt.num import get_minmax_fm_seq_values
+    from glass.pyt.num         import get_minmax_fm_seq_values
     
     # Get Work EPSG
     epsg = get_epsg_shp(pnt_obs)

@@ -21,7 +21,7 @@ if __name__ == '__main__':
     from glass.sql import psql_cmd
     from glass.pyt.oss import lst_ff, fprop
     from glass.sql.q import exec_write_q
-    from glass.sql.fm import dump_db
+    from glass.dct.fm.sql import dump_db
     from glass.sql.db import create_db, drop_db
 
     sqls = lst_ff(sql_fld)

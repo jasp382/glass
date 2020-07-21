@@ -378,7 +378,7 @@ def tbls_to_tbl(db, lst_tables, outTable):
     Append all tables in lst_tables into the outTable
     """
 
-    from glass.sql.to import q_to_ntbl
+    from glass.dct.to.sql import q_to_ntbl
     
     sql = " UNION ALL ".join([
         "SELECT * FROM {}".format(t) for t in lst_tables])

@@ -39,20 +39,20 @@ def dsn_data_collection_by_multibuffer(inBuffers, workspace, db, datasource,
     """
     
     import os; from osgeo import ogr
-    from glass.pyt         import obj_to_lst
-    from glass.sql.db      import create_db
-    from glass.sql.to      import q_to_ntbl
-    from glass.sql.to      import df_to_db
+    from glass.pyt             import obj_to_lst
+    from glass.sql.db          import create_db
+    from glass.dct.to.sql      import q_to_ntbl
+    from glass.dct.to.sql      import df_to_db
     from glass.geo.gql.to      import shp_to_psql
     from glass.geo.gt.toshp    import df_to_shp
     from glass.geo.gt.toshp.db import dbtbl_to_shp
     from glass.geo.gt.prox.bf  import get_sub_buffers, dic_buffer_array_to_shp
     
     if datasource == 'flickr':
-        from glass.sde.dsn.flickr import photos_location
+        from glass.dp.dsn.flickr import photos_location
     
     elif datasource == 'facebook':
-        from glass.sde.dsn.fb.places import places_by_query
+        from glass.dp.dsn.fb.places import places_by_query
     
     keywords = obj_to_lst(keywords)
     keywords = ["None"] if not keywords else keywords
@@ -328,14 +328,14 @@ def dsnsearch_by_cell(GRID_PNT, EPSG, RADIUS, DATA_SOURCE, db, OUTPUT_TABLE):
     """
     
     import time;
-    from glass.geo.gt.fmshp          import shp_to_obj
-    from glass.sql.db            import create_db
-    from glass.sde.dsn.fb.places import places_by_query
-    from glass.geo.gm.prj             import df_prj
-    from glass.pyt.df.to         import merge_df
-    from glass.geo.gt.toshp.db       import dbtbl_to_shp
-    from glass.sql.to            import q_to_ntbl
-    from glass.sql.to            import df_to_db
+    from glass.geo.gt.fmshp     import shp_to_obj
+    from glass.sql.db           import create_db
+    from glass.dp.dsn.fb.places import places_by_query
+    from glass.geo.gm.prj       import df_prj
+    from glass.pyt.df           import merge_df
+    from glass.geo.gt.toshp.db  import dbtbl_to_shp
+    from glass.dct.to.sql       import q_to_ntbl
+    from glass.dct.to.sql       import df_to_db
     
     # Open GRID SHP
     GRID_DF = shp_to_obj(GRID_PNT)

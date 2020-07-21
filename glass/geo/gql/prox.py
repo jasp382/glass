@@ -17,7 +17,7 @@ def st_near(db, inTbl, inGeom, nearTbl, nearGeom, output,
     
     if api == 'psql' and not intbl_pk:
         from glass.pyt    import obj_to_lst
-        from glass.sql.to import q_to_ntbl
+        from glass.dct.to.sql import q_to_ntbl
     
         _out = q_to_ntbl(db, output, (
             "SELECT m.*, ST_Distance(m.{ingeom}, j.geom) AS {distCol} "
@@ -34,7 +34,7 @@ def st_near(db, inTbl, inGeom, nearTbl, nearGeom, output,
     
     elif api == 'psql' and intbl_pk:
         from glass.pyt    import obj_to_lst
-        from glass.sql.to import q_to_ntbl
+        from glass.dct.to.sql import q_to_ntbl
 
         _out = q_to_ntbl(db, output, (
             "SELECT DISTINCT ON (s.{col_pk}) "
@@ -79,7 +79,7 @@ def st_near(db, inTbl, inGeom, nearTbl, nearGeom, output,
             sel_by_attr(db, Q, output, api_gis='ogr')
         
         else:
-            from glass.sql.to import q_to_ntbl
+            from glass.dct.to.sql import q_to_ntbl
 
             q_to_ntbl(db, output, Q, api='ogr2ogr')
     
@@ -121,7 +121,7 @@ def st_buffer(db, inTbl, bfDist, geomCol, outTbl, bufferField="geometry",
     )
     
     if not outTblIsFile:
-        from glass.sql.to import q_to_ntbl
+        from glass.dct.to.sql import q_to_ntbl
         
         outTbl = q_to_ntbl(db, outTbl, Q, api='psql')
     
@@ -174,7 +174,7 @@ def splite_buffer(db, table, dist, geomField, outTbl,
         sel_by_attr(db, sql, outTbl, api_gis='ogr')
     
     else:
-        from glass.sql.to import q_to_ntbl
+        from glass.dct.to.sql import q_to_ntbl
         
         q_to_ntbl(db, outTbl, sql, api='ogr2ogr')
     

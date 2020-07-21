@@ -12,9 +12,9 @@ def meandays_by_entity(db, pgtable, DAY_FIELD, ENTITY_FIELD,
     Day field must be of type text
     """
     
-    import os;        import pandas
-    from glass.sql.fm import q_to_obj
-    from glass.dct.to import obj_to_tbl
+    import os;            import pandas
+    from glass.dct.fm.sql import q_to_obj
+    from glass.dct.to     import obj_to_tbl
     
     # Get days
     VALUES = q_to_obj(db, 
@@ -89,9 +89,9 @@ def meanrowsday_by_entity(psqldb, pgtable, dayField, entityField, out_file,
     """
     
     import pandas
-    from glass.pyt    import obj_to_lst
-    from glass.sql.fm import q_to_obj
-    from glass.dct.to import obj_to_tbl
+    from glass.pyt        import obj_to_lst
+    from glass.dct.fm.sql import q_to_obj
+    from glass.dct.to     import obj_to_tbl
     
     entityField = obj_to_lst(entityField)
     mean_field  = "mean_rows" if not newMeanField else newMeanField
@@ -144,7 +144,7 @@ def meanday_of_periods_by_entity(psqldb, pgtable, DAY_FIELD, HOUR_FIELD,
     import os;              import pandas
     from glass.pyt.tm       import day_to_intervals
     from glass.pyt.df.joins import combine_dfs
-    from glass.sql.fm       import q_to_obj
+    from glass.dct.fm.sql   import q_to_obj
     from glass.dct.to       import obj_to_tbl
     from glass.sql.q.count  import count_by_period_entity
     
@@ -261,9 +261,9 @@ def meanrowsday_of_periods_by_entity(psql_con, pgtable, dayField, hourField,
     """
     
     import pandas
-    from glass.pyt    import obj_to_lst
-    from glass.sql.fm import q_to_obj
-    from glass.dct.to import obj_to_tbl
+    from glass.pyt        import obj_to_lst
+    from glass.dct.fm.sql import q_to_obj
+    from glass.dct.to     import obj_to_tbl
     
     def get_case(PTUPLE, PFIELD):
         return (
@@ -357,7 +357,7 @@ def matrix_od_mean_dist_by_group(MATRIX_OD, ORIGIN_COL, GROUP_ORIGIN_ID,
     from glass.pyt.oss    import fprop
     from glass.geo.gql.to import shp_to_psql
     from glass.sql.db     import create_db
-    from glass.sql.to     import q_to_ntbl
+    from glass.dct.to.sql import q_to_ntbl
     from glass.dct.to     import db_to_tbl
     
     db = create_db(fprop(MATRIX_OD, 'fn'), overwrite=True, api='psql')

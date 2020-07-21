@@ -15,7 +15,7 @@ def bar_chart_by_query(db, query, xaxis_col, chart_data_fld_name,
     "SELECT fld_name FROM t WHERE series_fld={}".format(serie in series)
     """
     
-    from glass.sql.fm         import q_to_obj
+    from glass.dct.fm.sql     import q_to_obj
     from glass.pyt.df.joins   import combine_dfs
     from glass.pyt.xls.charts import barchart_in_xls_from_df
     

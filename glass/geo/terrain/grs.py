@@ -188,8 +188,8 @@ def thrd_dem(countours_folder, ref_folder, dem_folder, attr,
     """
 
     import os
-    import multiprocessing as mp
-    import pandas          as pd
+    import multiprocessing  as mp
+    import pandas           as pd
     from glass.pyt.oss      import cpu_cores, lst_ff, mkdir
     from glass.pyt.df.split import df_split
 

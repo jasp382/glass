@@ -125,10 +125,10 @@ def same_attr_to_shp(inShps, interestCol, outFolder, basename="data_",
     """
     
     import os
-    from glass.pyt       import obj_to_lst
-    from glass.geo.gt.fmshp  import shp_to_obj
-    from glass.pyt.df.to import merge_df
-    from glass.geo.gt.toshp  import df_to_shp
+    from glass.pyt          import obj_to_lst
+    from glass.geo.gt.fmshp import shp_to_obj
+    from glass.pyt.df       import merge_df
+    from glass.geo.gt.toshp import df_to_shp
     
     EXT = os.path.splitext(inShps[0])[1]
     

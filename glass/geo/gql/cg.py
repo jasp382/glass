@@ -11,7 +11,7 @@ def add_endpnt_to_tbl(db, inTable, outTable,
     Add start/end points columns to table
     """
     
-    from glass.sql.to import q_to_ntbl
+    from glass.dct.to.sql import q_to_ntbl
     from glass.sql.i  import cols_name
     
     return q_to_ntbl(db, outTable, (

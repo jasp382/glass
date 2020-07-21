@@ -52,7 +52,7 @@ def feat_within(db, inTbl, inGeom, withinTbl, withinGeom, outTbl,
             sel_by_attr(db, Q, outTbl, api_gis='ogr')
         
         else:
-            from glass.sql.to import q_to_ntbl
+            from glass.dct.to.sql import q_to_ntbl
             
             q_to_ntbl(db, outTbl, Q, api='ogr2ogr')
     
@@ -71,7 +71,7 @@ def feat_within(db, inTbl, inGeom, withinTbl, withinGeom, outTbl,
                 tableIsQuery=True)
         
         else:
-            from glass.sql.to import q_to_ntbl
+            from glass.dct.to.sql import q_to_ntbl
             
             q_to_ntbl(db, outTbl, Q, api='psql')
     
@@ -117,7 +117,7 @@ def feat_not_within(db, inTbl, inGeom, withinTbl, withinGeom, outTbl,
             sel_by_attr(db, Q, outTbl, api_gis='ogr')
         
         else:
-            from glass.sql.to import q_to_ntbl
+            from glass.dct.to.sql import q_to_ntbl
             
             q_to_ntbl(db, outTbl, Q, api='ogr2ogr')
     
@@ -137,7 +137,7 @@ def feat_not_within(db, inTbl, inGeom, withinTbl, withinGeom, outTbl,
             )
         
         else:
-            from glass.sql.to import q_to_ntbl
+            from glass.dct.to.sql import q_to_ntbl
             
             q_to_ntbl(db, outTbl, Q, api='psql')
     
@@ -158,7 +158,7 @@ def intersect_in_same_table(db_name, table, geomA, geomB, outtable,
     """
     
     from glass.pyt    import obj_to_lst
-    from glass.sql.to import q_to_ntbl
+    from glass.dct.to.sql import q_to_ntbl
     
     COLS = obj_to_lst(colsSel)
     
@@ -185,7 +185,7 @@ def line_intersection_pnt(db, inTbl, outTbl):
     intersects.
     """
     
-    from glass.sql.to import q_to_ntbl
+    from glass.dct.to.sql import q_to_ntbl
     
     # Get Points representing intersection
     Q_a = (
@@ -248,7 +248,7 @@ def del_topoerror_shps(db, shps, epsg, outfolder):
     import os
     from glass.pyt         import obj_to_lst
     from glass.sql.i       import cols_name
-    from glass.sql.to      import q_to_ntbl
+    from glass.dct.to.sql      import q_to_ntbl
     from glass.geo.gql.to      import shp_to_psql
     from glass.geo.gt.toshp.db import dbtbl_to_shp
     
@@ -366,7 +366,7 @@ def check_autofc_overlap(checkShp, epsg, dbname, outOverlaps):
     
     import os
     from glass.sql.db      import create_db
-    from glass.sql.to      import q_to_ntbl
+    from glass.dct.to.sql      import q_to_ntbl
     from glass.geo.gql.to      import shp_to_psql
     from glass.geo.gt.toshp.db import dbtbl_to_shp
     
@@ -404,7 +404,7 @@ def pg_erase(db, inTbl, eraseTbl, inGeom, eraseGeom, outTbl):
     """
     
     from glass.sql.i  import cols_name
-    from glass.sql.to import q_to_ntbl
+    from glass.dct.to.sql import q_to_ntbl
     
     cols = ["mtbl.{}".format(
         x) for x in cols_name(db, inTbl, api='psql') if x != inGeom]
@@ -467,7 +467,7 @@ def intersect_point_with_polygon(sqDB, pntTbl, pntGeom,
         sel_by_attr(sqDB, sql, outTbl, api_gis='ogr')
     
     else:
-        from glass.sql.to import q_to_ntbl
+        from glass.dct.to.sql import q_to_ntbl
         
         q_to_ntbl(sqDB, outTbl, sql, api='ogr2ogr')
 
@@ -511,7 +511,7 @@ def disjoint_polygons_rel_points(sqBD, pntTbl, pntGeom,
         sel_by_attr(sqBD, sql, outTbl, api_gis='ogr')
     
     else:
-        from glass.sql.to import q_to_ntbl
+        from glass.dct.to.sql import q_to_ntbl
         
         q_to_ntbl(sqBD, outTbl, sql, api='ogr2ogr')
 

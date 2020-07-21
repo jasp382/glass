@@ -13,7 +13,7 @@ def get_stop_words(inTbl, fidCol, txtCol, outFile,
     from glass.pyt.oss import fprop
     from glass.sql.i   import cols_name
     from glass.sql.db  import create_db
-    from glass.sql.to  import tbl_to_db
+    from glass.dct.to.sql  import tbl_to_db
     from glass.dct.to  import db_to_tbl
     
     FILENAME = fprop(inTbl, 'fn')

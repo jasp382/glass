@@ -9,7 +9,7 @@ def sql_proj(dbname, tbl, otbl, oepsg, cols=None, geomCol=None,
     """
 
     from glass.pyt    import obj_to_lst
-    from glass.sql.to import q_to_ntbl
+    from glass.dct.to.sql import q_to_ntbl
 
     geomCol = 'geom' if not geomCol else geomCol
     newGeom = 'geom' if not newGeom else newGeom

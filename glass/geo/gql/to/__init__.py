@@ -23,7 +23,7 @@ def shp_to_psql(dbname, shpData, pgTable=None, api="pandas",
     
     if api == "pandas":
         from glass.dct.fm           import tbl_to_obj
-        from glass.sql.to           import df_to_db
+        from glass.dct.to.sql           import df_to_db
         from glass.geo.gt.prop.feat import get_gtype
     
     elif api == "shp2pgsql":

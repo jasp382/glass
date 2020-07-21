@@ -32,8 +32,8 @@ def tbl_to_area_mtx(db, tbl, cola, colb, result):
     colb = cols
     """
 
-    from glass.sql.to import q_to_ntbl
-    from glass.sql.fm import q_to_obj
+    from glass.dct.to.sql import q_to_ntbl
+    from glass.dct.fm.sql import q_to_obj
 
     ref_val = q_to_obj(db, (
         "SELECT fcol FROM ("

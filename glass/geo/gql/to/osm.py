@@ -80,11 +80,11 @@ def osm_to_relationaldb(osmData, inSchema, osmGeoTbl, osmCatTbl, osmRelTbl,
     }
     """
     
-    from glass.pyt     import obj_to_lst
-    from glass.pyt.oss import fprop
-    from glass.sql.i   import cols_name
-    from glass.sql.to  import q_to_ntbl
-    from glass.sql.db  import create_db
+    from glass.pyt        import obj_to_lst
+    from glass.pyt.oss    import fprop
+    from glass.sql.i      import cols_name
+    from glass.dct.to.sql import q_to_ntbl
+    from glass.sql.db     import create_db
 
     inSchema["TBL"] = obj_to_lst(inSchema["TBL"])
     
@@ -163,6 +163,6 @@ def osm_to_relationaldb(osmData, inSchema, osmGeoTbl, osmCatTbl, osmRelTbl,
     if not outSQL:
         return osmgeotbl, osmcatbl, osmreltbl
     else:
-        from glass.sql.fm import dump_tbls
+        from glass.dct.fm.sql import dump_tbls
         
         return dump_tbls(db, osmgeotbl + [osmcatbl] + osmreltbl, outSQL)

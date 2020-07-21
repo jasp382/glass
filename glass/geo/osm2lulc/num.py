@@ -55,7 +55,7 @@ def osm2lulc(osmdata, nomenclature, refRaster, lulcRst,
         from glass.sql.db            import create_db
         from glass.geo.gql.to.osm    import osm_to_psql
         from glass.geo.osm2lulc.mod2 import pg_num_roads
-        from glass.sql.fm            import dump_db
+        from glass.dct.fm.sql        import dump_db
         from glass.sql.db            import drop_db
     else:
         from glass.geo.gt.toshp.osm  import osm_to_sqdb

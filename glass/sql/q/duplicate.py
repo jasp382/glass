@@ -10,9 +10,9 @@ def show_duplicates_in_xls(db_name, table, pkCols, outFile,
     """
     
     import pandas
-    from glass.pyt    import obj_to_lst
-    from glass.sql.fm import q_to_obj
-    from glass.dct.to import obj_to_tbl
+    from glass.pyt        import obj_to_lst
+    from glass.dct.fm.sql import q_to_obj
+    from glass.dct.to     import obj_to_tbl
     
     pkCols = obj_to_lst(pkCols)
     

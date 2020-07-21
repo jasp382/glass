@@ -7,8 +7,8 @@ def split_table_by_range(db, table, row_number):
     Split tables in several
     """
     
-    from glass.sql.i  import cols_name, row_num
-    from glass.sql.to import q_to_ntbl
+    from glass.sql.i      import cols_name, row_num
+    from glass.dct.to.sql import q_to_ntbl
     
     rowsN = row_num(db, table, api='psql')
     
@@ -39,9 +39,9 @@ def split_table_entity_number(db, table, entity_field, entity_number):
     """
     
     import pandas
-    from glass.sql.fm import q_to_obj
-    from glass.sql.i  import cols_type
-    from glass.sql.to import q_to_ntbl
+    from glass.dct.fm.sql import q_to_obj
+    from glass.sql.i      import cols_type
+    from glass.dct.to.sql import q_to_ntbl
     
     # Select entities in table
     entities = q_to_obj(db, "SELECT {c} FROM {t} GROUP BY {c}".format(
@@ -86,9 +86,9 @@ def split_table_by_col_distinct(db, tbl, col):
     Create a new table for each value in one column
     """
     
-    from glass.sql.fm import q_to_obj
-    from glass.sql.i  import cols_type
-    from glass.sql.to import q_to_ntbl
+    from glass.dct.fm.sql import q_to_obj
+    from glass.sql.i      import cols_type
+    from glass.dct.to.sql import q_to_ntbl
     
     fields_types = cols_type(db, tbl)
     

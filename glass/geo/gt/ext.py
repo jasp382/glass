@@ -1,7 +1,6 @@
 """
-To tools
+Extent related
 """
-
 
 def fext_to_geof(inF, outF, ocellsize=10):
     """
@@ -46,3 +45,4 @@ def fext_to_geof(inF, outF, ocellsize=10):
                     inF
                 )
             )
+

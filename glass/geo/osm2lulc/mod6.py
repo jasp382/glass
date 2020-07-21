@@ -12,9 +12,9 @@ def rst_pnt_to_build(osmdb, pntTable, polyTable, api_db='SQLITE'):
     Only used for URBAN ATLAS and CORINE LAND COVER
     """
     
-    import datetime       as dt
-    from glass.sql.i       import row_num as cnt_row
-    from glass.sql.fm      import q_to_obj
+    import datetime            as dt
+    from glass.sql.i           import row_num as cnt_row
+    from glass.dct.fm.sql      import q_to_obj
     from glass.geo.gt.toshp.db import dbtbl_to_shp as db_to_shp
     from glass.geo.gql.ovly    import feat_within, feat_not_within
     from glass.geo.gt.torst    import shp_to_rst
@@ -238,7 +238,7 @@ def num_assign_builds(osmdb, pntTbl, polTbl, folder, cells, srscode, rstT,
     else:
         from glass.geo.gt.toshp.db import dbtbl_to_shp as sel_by_attr
     from glass.geo.gql.ovly        import feat_within, feat_not_within
-    from glass.sql.fm              import q_to_obj
+    from glass.dct.fm.sql          import q_to_obj
     from glass.geo.gt.torst        import shp_to_rst
     
     time_a = dt.datetime.now().replace(microsecond=0)

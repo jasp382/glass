@@ -14,11 +14,11 @@ if __name__ == '__main__':
     Parameters
     """
 
-    lmt_fld       = '/home/jasp/mrgis/mdt10_lmt'
-    countours_fld = '/home/jasp/mrgis/srtm30_parts'
-    dem_fld       = '/home/jasp/mrgis/dem_srtm_cubic'
-    elv_fld       = 'elevation'
-    masks         = '/home/jasp/mrgis/mdt10_masks'
+    lmt_fld       = '/home/jasp/mrgis/dem_work/mdt10_lmt'
+    countours_fld = '/home/jasp/mrgis/dem_work/eudem_parts'
+    dem_fld       = '/home/jasp/mrgis/dem_work/dem_eu_cubic'
+    elv_fld       = 'grid_code'
+    masks         = '/home/jasp/mrgis/dem_work/mdt10_masks'
     method        = 'BSPLINE'
 
     """

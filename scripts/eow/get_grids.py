@@ -17,7 +17,7 @@ from glass.geo.gt.torst  import shp_to_rst
 from glass.geo.wenv.grs  import run_grass
 from glass.pyt.oss       import mkdir
 from glass.pyt.df.fld    import del_cols_notin_ref
-from glass.sql.to        import df_to_db
+from glass.dct.to.sql        import df_to_db
 from glass.sql.tbl       import drop_tbldata
 
 if __name__ == '__main__':

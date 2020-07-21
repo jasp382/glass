@@ -8,7 +8,7 @@ def fix_geom(db, table, geom, out_tbl, colsSelect=None, whr=None):
     Remove some topological incorrections on the PostGIS data
     """
     
-    from glass.sql.to import q_to_ntbl
+    from glass.dct.to.sql import q_to_ntbl
     
     if not colsSelect:
         from glass.sql.i import cols_name
@@ -40,7 +40,7 @@ def rm_deadend(db, in_tbl, out_tbl):
     """
     
     from glass.sql.i   import cols_name, row_num
-    from glass.sql.to  import q_to_ntbl
+    from glass.dct.to.sql  import q_to_ntbl
     from glass.sql.tbl import rename_tbl
     
     # Sanitize In table

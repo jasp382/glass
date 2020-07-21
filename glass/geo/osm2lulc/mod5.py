@@ -11,7 +11,7 @@ def basic_buffer(osmdb, lineTable, dataFolder, apidb='SQLITE'):
     """
     
     import datetime
-    from glass.sql.fm       import q_to_obj
+    from glass.dct.fm.sql       import q_to_obj
     if apidb == 'POSTGIS':
         from glass.geo.gql.prox import st_buffer
     else:
@@ -122,8 +122,8 @@ def num_base_buffer(osmdb, lineTbl, folder, cells, srscode, rtemplate,
     """
     
     import datetime
-    from threading         import Thread
-    from glass.sql.fm       import q_to_obj
+    from threading              import Thread
+    from glass.dct.fm.sql       import q_to_obj
     if api=='SQLITE':
         from glass.geo.gql.prox import splite_buffer as st_buffer
     else:

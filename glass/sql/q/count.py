@@ -2,9 +2,9 @@
 Execute queries to extract data from a PGSQL Database
 """
 
-import os;        import pandas
-from glass.sql.fm import q_to_obj
-from glass.dct.to import obj_to_tbl
+import os;            import pandas
+from glass.dct.fm.sql import q_to_obj
+from glass.dct.to     import obj_to_tbl
 
 
 def count_by_periods_with_certain_duration(db, PERIOD_INTERVAL, pgtable,
@@ -204,8 +204,8 @@ def sel_where_groupByIs(db, table, groupByCols, grpByOp, grpByVal, outTable,
     WHERE foo.cnt_day > 1
     """
     
-    from glass.pyt    import obj_to_lst
-    from glass.sql.to import q_to_ntbl
+    from glass.pyt        import obj_to_lst
+    from glass.dct.to.sql import q_to_ntbl
     
     groupByCols = obj_to_lst(groupByCols)
     
@@ -251,11 +251,11 @@ def count_rows_by_entity_and_shpJoin(dbn, PG_TABLE, PG_ENTITY, PG_PIVOT_COL,
     """
     
     from glass.dct.fm       import tbl_to_obj
-    from glass.sql.fm       import q_to_obj
-    from glass.pyt.df.to    import series_to_list
+    from glass.dct.fm.sql   import q_to_obj
+    from glass.pyt.df       import series_to_list
     from glass.geo.gt.toshp import df_to_shp
     from glass.pyt.df.joins import combine_dfs
-    from glass.sql.to       import q_to_ntbl
+    from glass.dct.to.sql   import q_to_ntbl
     from glass.sql.tbl      import del_tables
     
     

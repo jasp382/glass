@@ -40,7 +40,7 @@ def st_dissolve(db, table, geomColumn, outTable, whrClause=None,
             )
     
     else:
-        from glass.sql.to import q_to_ntbl
+        from glass.dct.to.sql import q_to_ntbl
         
         q_to_ntbl(
             db, outTable, sql, api='ogr2ogr' if api == 'sqlite' else 'psql'

@@ -87,7 +87,7 @@ def pgtbl_to_mdl(djg_proj, app, model, datadb, datatbl, geom=None, epsg=None):
     Import data from one PostgreSQL Table into Django Model
     """
 
-    from glass.sql.fm            import q_to_obj
+    from glass.dct.fm.sql        import q_to_obj
     from glass.pyt               import __import
     from django.contrib.gis.geos import GEOSGeometry
     from django.contrib.gis.db   import models
@@ -295,10 +295,10 @@ def psql_to_djgdb(sql_dumps, db_name, djg_proj=None, mapTbl=None, userDjgAPI=Non
     import os
     from glass.pyt             import __import
     from glass.pyt             import obj_to_lst
-    from glass.sql.to          import restore_tbls 
+    from glass.dct.to.sql      import restore_tbls 
     from glass.sql.db          import create_db, drop_db
     from glass.sql.i           import lst_tbl
-    from glass.sql.fm          import q_to_obj
+    from glass.dct.fm.sql      import q_to_obj
     from glass.web.djg.mdl.rel import order_mdl_by_rel
     from glass.web.djg.mdl.i   import lst_mdl_proj
 
@@ -416,8 +416,8 @@ def psql_to_djgdb(sql_dumps, db_name, djg_proj=None, mapTbl=None, userDjgAPI=Non
     else:
         import json
         import pandas as pd
-        from glass.sql.fm import q_to_obj
-        from glass.sql.to import df_to_db
+        from glass.dct.fm.sql import q_to_obj
+        from glass.dct.to.sql import df_to_db
         
         for tbl in orderned_table:
             if tbl not in data_tbl:

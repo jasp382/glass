@@ -8,6 +8,7 @@ glass.egg-info
 .ipynb*
 # Scripts
 scripts/usee/obs_to_txt_nc.json
+scripts/txt/tw_20*
 # Configuration json
 glass/cons/*.json
 !glass/cons/con-geoserver_sample.json

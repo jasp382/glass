@@ -65,7 +65,7 @@ def osm_project(osmDb, srs_epsg, api='SQLITE', isGlobeLand=None):
     if api != 'POSTGIS':
         from glass.geo.gt.prj  import proj
     else:
-        from glass.sql.to      import q_to_ntbl as proj
+        from glass.dct.to.sql  import q_to_ntbl as proj
         from glass.geo.gql.idx import idx_for_geom
     from glass.geo.osm2lulc    import osmTableData, GEOM_AREA
     
@@ -138,7 +138,7 @@ def get_osm_feat_by_rule(nomenclature):
     Return OSM Features By rule
     """
     
-    from glass.sql.fm import q_to_obj
+    from glass.dct.fm.sql import q_to_obj
     
     Q = (
         "SELECT jtbl.{rellulccls} AS {rellulccls}, "

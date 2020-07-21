@@ -130,8 +130,8 @@ def db_to_tbl(db, tables, outTbl, txtDelimiter=None, dbAPI='psql',
     """
     
     import os
-    from glass.pyt    import obj_to_lst
-    from glass.sql.fm import q_to_obj
+    from glass.pyt        import obj_to_lst
+    from glass.dct.fm.sql import q_to_obj
     
     if tables == 'ALL':
         from glass.sql.i import lst_tbl

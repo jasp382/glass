@@ -12,7 +12,7 @@ def rst_area(db, polygonTable, UPPER=True, api='SQLITE'):
     """
     
     import datetime
-    from glass.sql.fm          import q_to_obj
+    from glass.dct.fm.sql      import q_to_obj
     from glass.geo.gt.toshp.db import dbtbl_to_shp as db_to_grs
     from glass.geo.gt.torst    import shp_to_rst
     from glass.geo.osm2lulc    import GEOM_AREA
@@ -123,15 +123,15 @@ def num_selbyarea(db, polyTbl, folder, cellsize, srscode, rstTemplate,
     A field with threshold is needed in the database.
     """
     
-    import datetime;          import os
-    from threading            import Thread
-    from glass.sql.fm          import q_to_obj
+    import datetime;               import os
+    from threading                 import Thread
+    from glass.dct.fm.sql          import q_to_obj
     if api == 'SQLITE':
         from glass.geo.gt.attr     import sel_by_attr
     else:
         from glass.geo.gt.toshp.db import dbtbl_to_shp as sel_by_attr
     from glass.geo.gt.torst        import shp_to_rst
-    from glass.geo.osm2lulc    import GEOM_AREA
+    from glass.geo.osm2lulc        import GEOM_AREA
     
     # Get OSM Features to be selected for this rule
     RULE_COL = 'area_upper' if UPPER else 'area_lower'

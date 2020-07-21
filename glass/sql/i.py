@@ -49,8 +49,8 @@ def lst_views(db, schema='public', basename=None, dbset='default'):
     List Views in database
     """
     
-    from glass.pyt    import obj_to_lst
-    from glass.sql.fm import q_to_obj
+    from glass.pyt        import obj_to_lst
+    from glass.dct.fm.sql import q_to_obj
     
     basename = obj_to_lst(basename)
     
@@ -92,7 +92,7 @@ def lst_tbl(db, schema='public', excludeViews=None, api='psql',
     )
     
     if api == 'psql':
-        from glass.sql.fm import q_to_obj
+        from glass.dct.fm.sql import q_to_obj
         
         Q = (
             "SELECT table_name FROM information_schema.tables "
@@ -160,7 +160,7 @@ def row_num(db, table, where=None, api='psql'):
     * sqlite;
     """
     
-    from glass.sql.fm import q_to_obj
+    from glass.dct.fm.sql import q_to_obj
     
     if not table.startswith('SELECT '):
         Q = "SELECT COUNT(*) AS nrows FROM {}{}".format(
@@ -208,7 +208,7 @@ def cols_name(dbname, table, sanitizeSpecialWords=True, api='psql', dbset='defau
         colnames = list(map(lambda x: x[0], cursor.description))
     
     elif api == 'mysql':
-        from glass.sql.fm import q_to_obj
+        from glass.dct.fm.sql import q_to_obj
         
         data = q_to_obj(
             dbname, "SELECT * FROM {} LIMIT 1".format(table), db_api='mysql')
@@ -258,7 +258,7 @@ def check_last_id(db, pk, table):
     return 0 if there is no data
     """
     
-    from glass.sql.fm import q_to_obj
+    from glass.dct.fm.sql import q_to_obj
     
     q = "SELECT MAX({}) AS fid FROM {}".format(pk, table)
     d = q_to_obj(db, q, db_api='psql').fid.tolist()
