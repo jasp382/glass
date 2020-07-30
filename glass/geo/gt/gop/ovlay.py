@@ -901,3 +901,58 @@ def shp_diff_fm_ref(refshp, refcol, shps, out_folder,
         )
 
     return out_folder
+
+"""
+Indicators from geometries relationships
+"""
+
+def count_geom_inside_polygon(count_geom, polygons, outfile,
+    count_geom_col='cgeom', pop_col=None, geombypop=None):
+    """
+    Count the number of geometries inside each polygon.
+
+    The user can also give a population field. The method will return the number
+    of geometries by person * 1000.
+
+    E.g. Count the number of points (health care centers, sports) by 
+    statistical unit;
+    E.g. Count the number of points by inhabitants in each statistical unit.
+    """
+
+    from shapely.wkt           import loads
+    from glass.geo.gt.fmshp    import shp_to_obj
+    from glass.geo.gt.toshp    import obj_to_shp
+    from glass.geo.gt.prop.prj import get_epsg_shp
+
+    pnt_df = shp_to_obj(count_geom)
+    pol_df = shp_to_obj(polygons)
+
+    count_geom_col = 'cgeom' if not count_geom_col else count_geom_col
+
+    def count_points(row):
+        g = loads(row.geometry.wkt)
+    
+        npnt = 0
+        for idx, pnt in pnt_df.iterrows():
+            pg = loads(pnt.geometry.wkt)
+        
+            if g.contains(pg) == True:
+                npnt += 1
+            else:
+                continue
+    
+        row[count_geom_col] = npnt
+    
+        return row
+    
+    pol_df = pol_df.apply(lambda x : count_points(x), axis=1)
+
+    if pop_col:
+        geombypop = 'cbymil' if not geombypop else geombypop
+
+        pol_df[geombypop] = (pol_df[count_geom_col] / pol_df[pop_col]) * 1000.0
+    
+    obj_to_shp(pol_df, 'geometry', get_epsg_shp(polygons), outfile)
+
+    return outfile
+
