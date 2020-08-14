@@ -21,3 +21,30 @@ def merge_pdf(inputPdf, outPdf):
     
     return outPdf
 
+
+def unsecure(pdfs, out_res):
+    """
+    Unsecure PDF's using qpdf
+
+    Requirements: qpdf must be installed
+    """
+
+    import os
+    from glass.pyt import execmd
+
+    if os.path.isdir(pdfs):
+        from glass.pyt.oss import lst_ff
+
+        pdfs = lst_ff(pdfs, file_format='.pdf')
+    
+    else:
+        from glass.pyt import obj_to_lst
+
+        pdfs = obj_to_lst(pdfs)
+    
+    for pdf in pdfs:
+        execmd("qpdf --decrypt {} {}".format(pdf, os.path.join(
+            out_res, os.path.basename(pdf)
+        )))
+    
+    return out_res
