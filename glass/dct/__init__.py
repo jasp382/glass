@@ -49,16 +49,16 @@ def tbl_to_obj(tblFile, sheet=None, useFirstColAsIndex=None,
         XLS to Pandas Dataframe
         """
         
-        import pandas
+        import pandas as pd
         from glass.pys  import obj_to_lst
         
         sheet = 0 if not sheet else sheet
         
         indexCol = 0 if useFirstColAsIndex else None
         
-        tableDf = pandas.read_excel(
+        tableDf = pd.read_excel(
             tblFile, sheet, index_col=indexCol,
-            encoding='utf-8', dtype='object',
+            dtype='object',
             usecols=obj_to_lst(fields) if fields != "ALL" else None
         )
     

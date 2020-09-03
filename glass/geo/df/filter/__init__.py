@@ -115,12 +115,12 @@ def sel_by_loc(shp, boundary_filter, filtered_output):
     Writes the filter on a new shp
     """
     
-    import os; from osgeo  import ogr
-    from glass.geo.prop.df   import drv_name
-    from glass.geo.prop.feat import get_gtype
-    from glass.geo.obj.lyr.fld    import copy_flds
-    from glass.dct.geo.toshp     import copy_feat
-    from glass.pys.oss      import fprop
+    import os; from osgeo      import ogr
+    from glass.geo.prop.df     import drv_name
+    from glass.geo.prop.feat   import get_gtype
+    from glass.geo.obj.lyr.fld import copy_flds
+    from glass.geo.df.cp       import copy_feat
+    from glass.pys.oss         import fprop
     
     # Open main data
     dtSrc = ogr.GetDriverByName(drv_name(shp)).Open(shp, 0)
@@ -248,7 +248,7 @@ def split_whr_attrIsTrue(osm_fc, outputfolder, fields=None, sel_fields=None,
 
     import os
     from glass.geo.prop.feat import lst_fld
-    from glass.geo.df.attr      import sel_by_attr
+    from glass.geo.df.filter      import sel_by_attr
 
     # List table fields
     tbl_fields = fields if fields else lst_fld(osm_fc)

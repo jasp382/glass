@@ -11,7 +11,7 @@ def splitShp_by_range(shp, nrFeat, outFolder):
     import os
     from glass.pys.oss      import fprop
     from glass.geo.prop.feat import feat_count, lst_fld
-    from glass.geo.df.attr      import sel_by_attr
+    from glass.geo.df.filter      import sel_by_attr
     
     rowsN = feat_count(shp, gisApi='ogr')
     

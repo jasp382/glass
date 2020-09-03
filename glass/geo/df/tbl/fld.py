@@ -148,7 +148,7 @@ def rn_cols(inShp, columns, api="ogr2ogr"):
         from glass.pys         import obj_to_lst
         from glass.pys.oss     import fprop
         from glass.pys.oss     import del_file, lst_ff
-        from glass.geo.df.attr     import sel_by_attr
+        from glass.geo.df.filter     import sel_by_attr
         from glass.geo.prop.col import lst_cols
         
         # List Columns
