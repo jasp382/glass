@@ -79,16 +79,40 @@ def rsts_to_mosaic(inRasterS, o, api="grass", fformat='.tif'):
     return o
 
 
-def rseries(lst, out, meth):
+def rseries(lst, out, meth, as_cmd=None):
+    """
+    r.series - Makes each output cell value a function of the values
+    assigned to the corresponding cells in the input raster map layers.
+
+    Method Options:
+    average, count, median, mode, minimum, min_raster, maximum,
+    max_raster, stddev, range, sum, variance, diversity,
+    slope, offset, detcoeff, tvalue, quart1, quart3, perc90,
+    quantile, skewness, kurtosis
+    """
+
+    if type(lst) != list:
+        raise ValueError("lst must be a list of rasters")
+
+    if not as_cmd:
+        from grass.pygrass.modules import Module
     
-    from grass.pygrass.modules import Module
+        serie = Module(
+            'r.series', input=lst, output=out, method=meth,
+            overwrite=True, quiet=True, run_=False
+        )
     
-    serie = Module(
-        'r.series', input=lst, output=out, method=meth,
-        overwrite=True, quiet=True, run_=False
-    )
+        serie()
     
-    serie()
+    else:
+        from glass.pys import execmd
+
+        rcmd = execmd((
+            "r.series input={} output={} method={} "
+            "--overwrite --quiet"
+        ).format(
+            ",".join(lst), out, meth
+        ))
     
     return out
 
