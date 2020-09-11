@@ -10,6 +10,8 @@ def pop_within_area(mapunits, mapunits_id, outcol, subunits,
     superiores a 65db
     Useful to calculate population a menos de x minutos de um tipo
     de equipamento
+
+    Retuns population % living inside some polygons
     """
 
     import os
@@ -104,11 +106,11 @@ def pop_within_area(mapunits, mapunits_id, outcol, subunits,
 
     subunits_df = subunits_df.merge(
         area_int, how='left', left_on=subunits_id,
-        right='jtblfid'
+        right_on='jtblfid'
     )
     subunits_df.drop(['jtblfid'], axis=1, inplace=True)
 
-    subunits_df.areai = subunits_df.areap.fillna(0)
+    subunits_df.areai = subunits_df.areai.fillna(0)
     subunits_df.areav = subunits_df.areav.fillna(0)
 
     subunits_df['pop_af'] = (subunits_df.areai * subunits_df[pop_col]) / subunits_df.areav
@@ -126,9 +128,66 @@ def pop_within_area(mapunits, mapunits_id, outcol, subunits,
     )
     mapunits_df[outcol] = (mapunits_df.pop_af * 100) / mapunits_df[pop_col]
 
-    mapunits_df.drop(['jtblid'], axis=1, inplace=True)
+    mapunits_df.drop(['jtblid', pop_col, 'pop_af'], axis=1, inplace=True)
 
     obj_to_shp(mapunits_df, 'geometry', w_epsg, output)
+
+    return output
+
+
+def calc_iwpop_agg(mapunits, mapunits_id, subunits, mapunits_fk,
+    indicator_col, pop_col, out_col, output):
+    """
+    Wheight indicator by pop and agregation
+    Useful to calculate:
+    Tempo medio ponderado pela populacao residente
+    a infra-estrutura mais proxima
+    """
+
+    import pandas as pd
+    from glass.dct.geo.fmshp import shp_to_obj
+    from glass.dct.geo.toshp import df_to_shp
+
+    # Read data
+    mapunits_df = shp_to_obj(mapunits)
+    subunits_df = shp_to_obj(subunits)
+
+    # Get population x indicator product
+    subunits_df['prod'] = subunits_df[indicator_col] * subunits_df[pop_col]
+
+    # Get product sum for each mapunit
+    mapunits_prod = pd.DataFrame(subunits_df.groupby([mapunits_fk]).agg({
+        'prod' : 'sum'
+    })).reset_index()
+
+    # Add product sum to subunits df
+    mapunits_prod.rename(columns={
+        mapunits_fk : 'jtblid', 'prod' : 'sumprod'
+    }, inplace=True)
+
+    subunits_df = subunits_df.merge(
+        mapunits_prod, how='left', left_on=mapunits_fk,
+        right_on='jtblid'
+    )
+
+    # Calculate wheighted indicator
+    subunits_df[out_col] = (subunits_df['prod'] / subunits_df['sumprod']) * subunits_df[indicator_col]
+
+    # Sum by mapunit
+    mapunits_i = pd.DataFrame(subunits_df.groupby([mapunits_fk]).agg({
+        out_col : 'sum'
+    })).reset_index()
+    mapunits_i.rename(columns={mapunits_fk : 'jtblid'}, inplace=True)
+
+    mapunits_df = mapunits_df.merge(
+        mapunits_i, how='left', left_on=mapunits_id,
+        right_on='jtblid'
+    )
+
+    mapunits_df.drop(['jtblid'], axis=1, inplace=True)
+
+    # Export result
+    df_to_shp(mapunits_df, output)
 
     return output
 

@@ -10,6 +10,12 @@ SA_URL = (
     'solveServiceArea?'
 )
 
+CF_URL = (
+    'https://route.arcgis.com/arcgis/rest/services/World/'
+    'ClosestFacility/NAServer/ClosestFacility_World/'
+    'solveClosestFacility?'
+)
+
 TV_URL = (
     "https://route.arcgis.com/arcgis/rest/services/World/ServiceAreas"
     "/NAServer/ServiceArea_World/retrieveTravelModes?"
