@@ -36,7 +36,7 @@ setup(
         'glass.ete', 'glass.ete.osm2lulc',
         # ******************************************************************** #
         'glass.geo',
-        'glass.geo.df', 'glass.geo.df.attr', 'glass.geo.df.gop',
+        'glass.geo.df', 'glass.geo.df.filter', 'glass.geo.df.gop',
         'glass.geo.df.nop', 'glass.geo.df.nop.sat',
         'glass.geo.df.prox', 'glass.geo.df.stats', 'glass.geo.df.tbl',
         'glass.geo.gql',

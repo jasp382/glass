@@ -10,7 +10,7 @@ def get_not_used_tags(OSM_FILE, OUT_TBL):
     
     import os
     from glass.dct           import obj_to_tbl
-    from glass.geo.df.attr      import sel_by_attr
+    from glass.geo.df.filter      import sel_by_attr
     from glass.dct.sql.fm       import q_to_obj
     from glass.dp.pd.split     import df_split
     from glass.pys.oss          import fprop

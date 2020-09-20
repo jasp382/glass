@@ -297,7 +297,7 @@ def num_roads(osmdata, nom, lineTbl, polyTbl, folder, cellsize, srs, rstTemplate
     from osgeo         import gdal
     from threading     import Thread
     from glass.dct.geo.fmrst import rst_to_array
-    from glass.geo.df.attr  import sel_by_attr
+    from glass.geo.df.filter  import sel_by_attr
     from glass.geo.gql.prox import splite_buffer
     from glass.dct.geo.torst import shp_to_rst, obj_to_rst
     from glass.sql.prop    import row_num

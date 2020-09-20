@@ -243,7 +243,7 @@ def optimized_union_anls(lyr_a, lyr_b, outShp, ref_boundary,
     from glass.geo.wenv.grs      import run_grass
     from glass.dct.geo.toshp      import eachfeat_to_newshp
     from glass.dct.geo.toshp.mtos import shps_to_shp
-    from glass.geo.df.attr       import split_shp_by_attr
+    from glass.geo.df.filter       import split_shp_by_attr
     from glass.dct.geo.torst      import shpext_to_rst
     from glass.geo.prop.ext   import get_ext
     

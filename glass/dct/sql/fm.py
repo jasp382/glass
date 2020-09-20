@@ -19,7 +19,7 @@ def q_to_obj(dbname, query, db_api='psql', geomCol=None, epsg=None, of='df',
 
     if not query.startswith('SELECT '):
         # Assuming query is a table name
-        from glass.pys    import obj_to_lst
+        from glass.pys      import obj_to_lst
         from glass.sql.prop import cols_name
 
         cols = cols_name(dbname, query) if not cols else \
@@ -40,7 +40,7 @@ def q_to_obj(dbname, query, db_api='psql', geomCol=None, epsg=None, of='df',
         df = pandas.read_sql(query, pgengine, columns=None)
     
     else:
-        from geopandas  import GeoDataFrame
+        from geopandas   import GeoDataFrame
         from glass.sql.c import sqlcon
         
         con = sqlcon(dbname, sqlAPI='psql', dbset=dbset)
@@ -103,8 +103,8 @@ def dump_tbls(db, tables, outsql, startWith=None):
     Dump one table into a SQL File
     """
     
-    from glass.pys        import execmd
-    from glass.pys        import obj_to_lst
+    from glass.pys       import execmd
+    from glass.pys       import obj_to_lst
     from glass.cons.psql import con_psql
     
     tbls = obj_to_lst(tables)

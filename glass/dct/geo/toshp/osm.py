@@ -30,7 +30,7 @@ def osm_to_featcls(xmlOsm, output, fileFormat='.shp', useXmlName=None,
     """
 
     import os
-    from glass.geo.df.attr import sel_by_attr
+    from glass.geo.df.filter import sel_by_attr
     from glass.pys.oss     import fprop, del_file
     
     # Convert xml to sqliteDB

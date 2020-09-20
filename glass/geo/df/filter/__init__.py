@@ -248,7 +248,7 @@ def split_whr_attrIsTrue(osm_fc, outputfolder, fields=None, sel_fields=None,
 
     import os
     from glass.geo.prop.feat import lst_fld
-    from glass.geo.df.attr      import sel_by_attr
+    from glass.geo.df.filter      import sel_by_attr
 
     # List table fields
     tbl_fields = fields if fields else lst_fld(osm_fc)

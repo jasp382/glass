@@ -47,7 +47,7 @@ def feat_within(db, inTbl, inGeom, withinTbl, withinGeom, outTbl,
     
     if apiToUse == "OGR_SPATIALITE":
         if outTblIsFile:
-            from glass.geo.df.attr import sel_by_attr
+            from glass.geo.df.filter import sel_by_attr
             
             sel_by_attr(db, Q, outTbl, api_gis='ogr')
         
@@ -112,7 +112,7 @@ def feat_not_within(db, inTbl, inGeom, withinTbl, withinGeom, outTbl,
     
     if apiToUse == "OGR_SPATIALITE":
         if outTblIsFile:
-            from glass.geo.df.attr import sel_by_attr
+            from glass.geo.df.filter import sel_by_attr
             
             sel_by_attr(db, Q, outTbl, api_gis='ogr')
         
@@ -462,7 +462,7 @@ def intersect_point_with_polygon(sqDB, pntTbl, pntGeom,
     )
     
     if outTblIsFile:
-        from glass.geo.df.attr import sel_by_attr
+        from glass.geo.df.filter import sel_by_attr
         
         sel_by_attr(sqDB, sql, outTbl, api_gis='ogr')
     
@@ -506,7 +506,7 @@ def disjoint_polygons_rel_points(sqBD, pntTbl, pntGeom,
     )
     
     if outTblIsFile:
-        from glass.geo.df.attr import sel_by_attr
+        from glass.geo.df.filter import sel_by_attr
         
         sel_by_attr(sqBD, sql, outTbl, api_gis='ogr')
     

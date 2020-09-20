@@ -234,7 +234,7 @@ def num_assign_builds(osmdb, pntTbl, polTbl, folder, cells, srscode, rstT,
     import datetime           as dt
     from threading            import Thread
     if apidb == 'SQLITE':
-        from glass.geo.df.attr     import sel_by_attr
+        from glass.geo.df.filter     import sel_by_attr
     else:
         from glass.dct.geo.toshp.db import dbtbl_to_shp as sel_by_attr
     from glass.geo.gql.ovly        import feat_within, feat_not_within
