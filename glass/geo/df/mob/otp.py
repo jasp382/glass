@@ -90,3 +90,87 @@ def otp_closest_facility(incidents, facilities, hourday, date, output):
 
     return output
 
+
+def otp_servarea(facilities, hourday, date, breaks, output):
+    """
+    OTP Service Area
+    """
+
+    import requests
+    import os
+    from glass.cons.otp import ISO_URL
+    from glass.dct.geo.fmshp import shp_to_obj
+    from glass.geo.obj.prj import df_prj
+    from glass.geo.prop.prj import get_epsg_shp
+    from glass.dct.geo.toshp import obj_to_shp
+    from glass.pys.oss import fprop
+    from glass.geo.obj.pd import json_obj_to_geodf
+    from glass.dp.pd import merge_df
+    from glass.pys import obj_to_lst
+
+    breaks = obj_to_lst(breaks)
+
+    # Open Data
+    facilities_df = df_prj(shp_to_obj(facilities), 4326)
+
+    # Place request parameters
+    get_params = [
+        ('mode', 'WALK,TRANSIT'),
+        ('date', date),
+        ('time', hourday),
+        ('maxWalkDistance', 50000)
+    ]
+
+    breaks.sort()
+
+    for b in breaks:
+        get_params.append(('cutoffSec', b))
+    
+    # Do the math
+    error_logs = []
+    results    = []
+
+    for i, r in facilities_df.iterrows():
+        fromPlace = str(r.geometry.y) + ',' + str(r.geometry.x)
+
+        if not i:
+            get_params.append(('fromPlace', fromPlace))
+        else:
+            get_params[-1] = ('fromPlace', fromPlace)
+        
+        resp = requests.get(ISO_URL, get_params, headers={'accept' : 'application/json'})
+
+        try:
+            data = resp.json()
+        except:
+            error_logs.append([i, 'Cannot retrieve JSON Response'])
+            continue
+
+        gdf = json_obj_to_geodf(data, 4326)
+        gdf['ffid'] = i
+
+        results.append(gdf)
+    
+    # Merge all Isochrones
+    df_res = merge_df(results)
+
+    out_epsg = get_epsg_shp(facilities)
+
+    if out_epsg != 4326:
+        df_res = df_prj(df_res, out_epsg)
+    
+    obj_to_shp(df_res, "geometry", out_epsg, output)
+
+    # Write logs
+    if len(error_logs):
+        with open(os.path.join(os.path.dirname(output), fprop(output, 'fn') + '.log.txt'), 'w') as txt:
+            for i in error_logs:
+                txt.write((
+                    "Facility_id: {}\n"
+                    "ERROR message:\n"
+                    "{}\n"
+                    "\n\n\n\n\n\n"
+                ).format(str(i[0]), i[1]))
+
+    return output
+
