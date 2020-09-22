@@ -168,3 +168,33 @@ def timerange(firstday, lastday):
     ) for d in all_days]
 
     return all_days
+
+def intervals_in_timerange(min_hour, max_hour, interval_duration):
+    """
+    Return intervals of X minutes in time range
+    """
+
+    import datetime as dt
+
+    now = dt.datetime.now()
+
+    intervals = [dt.datetime(now.year, now.month, now.day, min_hour, 0, 0)]
+    last_dt = dt.datetime(now.year, now.month, now.day, max_hour, 0, 0)
+
+    tst_dt = intervals[0]
+    i  = 0
+
+    while tst_dt < last_dt:
+        intervals.append(intervals[i] + dt.timedelta(minutes=interval_duration))
+
+        i += 1
+
+        tst_dt = intervals[i]
+    
+    if intervals[-1] > last_dt:
+        intervals = intervals[:-1]
+    
+    intervals = [t.time() for t in intervals]
+
+    return intervals
+
