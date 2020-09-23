@@ -22,7 +22,7 @@ def closest_facility(incidents, incidents_id, facilities, output, impedance='Tra
     from glass.geo.obj.prj import df_prj
     from glass.geo.obj.pd import df_to_geodf
     from glass.geo.obj.pd import json_obj_to_geodf
-    from glass.geo.obj.mob.esri import get_tv_by_impedancetype
+    from glass.cons.esri import get_tv_by_impedancetype
 
     # Get API token
     token = rest_token()
@@ -187,6 +187,10 @@ def cf_based_on_relations(incidents, incidents_id, group_incidents_col,
     from glass.pys.oss            import mkdir, fprop
     from glass.dct.geo.toshp.mtos import shps_to_shp
 
+    # Avoid problems when facilities_id == facilities_fk
+    facilities_fk = facilities_fk + '_fk' if facilities_id == facilities_fk else \
+        facilities_fk
+
     # Open data
     incidents_df  = shp_to_obj(incidents)
     facilities_df = shp_to_obj(facilities)
@@ -254,7 +258,7 @@ def service_areas(facilities, breaks, output, impedance='TravelTime'):
     from glass.dct.geo.fmesri import json_to_gjson
     from glass.geo.obj.pd import json_obj_to_geodf
     from glass.dct.geo.toshp import df_to_shp
-    from glass.geo.obj.mob.esri import get_tv_by_impedancetype
+    from glass.cons.esri import get_tv_by_impedancetype
     from glass.dp.pd.split import df_split
     from glass.dp.pd import merge_df
     from glass.geo.prop.prj import get_epsg_shp

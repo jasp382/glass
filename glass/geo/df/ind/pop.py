@@ -191,3 +191,137 @@ def calc_iwpop_agg(mapunits, mapunits_id, subunits, mapunits_fk,
 
     return output
 
+
+def points_by_polutation(pnt, mapunits, popcol, outcol, output, count_pnt=None, inhabitants=1000):
+    """
+    Useful to calculate pharmacies by 1000 inabitants
+    """
+
+    import geopandas         as gp
+    from shapely.wkt         import loads
+    from glass.dct.geo.fmshp import shp_to_obj
+    from glass.geo.prop.prj  import get_epsg_shp
+    from glass.dct.geo.toshp import obj_to_shp
+
+    # Open Data
+    pnt_df   = shp_to_obj(pnt)
+    units_df = shp_to_obj(mapunits)
+
+    cpnt = 'count_pnt' if not count_pnt else count_pnt
+    inhabitants = 1 if not inhabitants else inhabitants
+
+    def count_pnt_inside_mapunits(row):
+        pg = loads(row.geometry.wkt)
+
+        pnts = pnt_df.copy()
+
+        pnts['tst_geom'] = pnts.geometry.intersects(pg)
+
+        pnts = pnts[pnts.tst_geom == True]
+
+        pnts.reset_index(drop=True, inplace=True)
+
+        row[cpnt] = pnts.shape[0]
+
+        return row
+    
+    units_df = units_df.apply(lambda x : count_pnt_inside_mapunits(x), axis=1)
+
+    units_df[outcol] = (units_df[count_pnt] / units_df[popcol]) * inhabitants
+
+    if not count_pnt:
+        units_df.drop([cpnt], axis=1, inplace=True)
+    
+    obj_to_shp(units_df, "geometry", get_epsg_shp(mapunits), output)
+
+    return output
+
+
+
+def shparea_by_mapunitpopulation(polygons, mapunits, units_id, units_pop, outcol, output):
+    """
+    Polygons area by mapunit population
+    """
+
+    import os
+    import pandas as pd
+    from glass.dct.geo.torst  import shpext_to_rst
+    from glass.pys.oss        import mkdir, fprop
+    from glass.geo.df.gop.ovl import intersection
+    from glass.geo.prop.prj   import get_epsg
+    from glass.geo.wenv.grs   import run_grass
+    from glass.dct.geo.fmshp  import shp_to_obj
+    from glass.dct.geo.toshp  import obj_to_shp
+
+    # Prepare GRASS GIS Workspace configuration
+    oname = fprop(output, 'fn')
+
+    gw = mkdir(os.path.join(
+        os.path.dirname(output), 'ww_' + oname
+    ), overwrite=True)
+
+    # Boundary to raster
+    w_epsg = get_epsg(mapunits)
+    ref_rst = shpext_to_rst(
+        mapunits, os.path.join(gw, 'extent.tif'),
+        cellsize=10, epsg=w_epsg
+    )
+
+    # Sanitize columns
+    popunits_df_tmp = shp_to_obj(mapunits)
+
+    drop_cols = [c for c in popunits_df_tmp.columns.values if c != units_id and c != 'geometry']
+    popunits_df_tmp.drop(drop_cols, axis=1, inplace=True)
+
+    popunits_i = obj_to_shp(popunits_df_tmp, 'geometry', w_epsg, os.path.join(
+        gw, 'popunits.shp'
+    ))
+
+    # Create GRASS GIS Session
+    _l = 'loc_' + oname
+
+    gbase = run_grass(gw, location=_l, srs=ref_rst)
+
+    import grass.script as grass
+    import grass.script.setup as gsetup
+
+    gsetup.init(gbase, gw, _l, 'PERMANENT')
+
+    from glass.dct.geo.toshp.cff import shp_to_grs, grs_to_shp
+
+    # Data to GRASS GIS
+    g_popunits = shp_to_grs(popunits_i, fprop(mapunits, 'fn'), asCMD=True)
+    g_polygons = shp_to_grs(polygons, fprop(polygons, 'fn'), asCMD=True)
+
+    # Run intersection
+    i_shp = intersection(
+        g_popunits, g_polygons,
+        'i_{}_{}'.format(g_popunits[:5], g_polygons[:5]),
+        api="grass"
+    )
+
+    # Export result
+    i_res = grs_to_shp(i_shp, os.path.join(gw, i_shp + '.shp'), 'area')
+
+    # Open intersection result and mapunits
+    mapunits_df = shp_to_obj(mapunits)
+    int_df      = shp_to_obj(i_res)
+
+    int_df['garea'] = int_df.geometry.area
+
+    int_gp = pd.DataFrame({
+        'areai' : int_df.groupby(['a_' + units_id])['garea'].agg('sum')
+    }).reset_index()
+
+    mapunits_df = mapunits_df.merge(
+        int_gp, how='left',
+        left_on=units_id, right_on='a_' + units_id
+    )
+
+    mapunits_df[outcol] = mapunits_df.areai / mapunits_df[units_pop]
+    mapunits_df.drop(['a_' + units_id, 'areai'], axis=1, inplace=True)
+
+    obj_to_shp(mapunits_df, 'geometry', w_epsg, output)
+
+    return output
+
