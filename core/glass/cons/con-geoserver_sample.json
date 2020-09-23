@@ -1,0 +1,7 @@
+{
+    "USER"     : "admin",
+    "PASSWORD" : "geoserver",
+    "HOST"     : "localhost",
+    "PORT"     : "8080",
+    "PROTOCOL" : "http"
+}
