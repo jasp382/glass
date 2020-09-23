@@ -7,86 +7,123 @@ def otp_closest_facility(incidents, facilities, hourday, date, output):
     Closest Facility using OTP
     """
 
-    import requests
-    import polyline
+    
     import os
-    import pandas as pd
-    from shapely.geometry import LineString
-    from shapely.ops      import linemerge
-    from geopandas        import GeoDataFrame
-
-    from glass.cons.otp      import PLANNER_URL
-    from glass.dct.geo.fmshp import shp_to_obj
-    from glass.geo.obj.prj   import df_prj
-    from glass.geo.prop.prj  import get_epsg_shp
-    from glass.dct.geo.toshp import obj_to_shp
-    from glass.pys.oss       import fprop
+    from glass.dct.geo.fmshp   import shp_to_obj
+    from glass.geo.prop.prj    import get_epsg_shp
+    from glass.dct.geo.toshp   import obj_to_shp
+    from glass.pys.oss         import fprop
+    from glass.geo.obj.prj     import df_prj
+    from glass.geo.obj.mob.otp import clsfacility
 
     # Open Data
     incidents_df  = df_prj(shp_to_obj(incidents), 4326)
     facilities_df = df_prj(shp_to_obj(facilities), 4326)
 
-    error_logs = []
-    # Results
-    # incident_id, facility_id, minutes, walkmin, tranmin, waitmin, geom
-    results = []
-
-    for i, r in incidents_df.iterrows():
-        duration    = None
-        plan_record = None
-
-        for e, _r in facilities_df.iterrows():
-            fromPlace = str(r.geometry.y) + ',' + str(r.geometry.x)
-            toPlace   = str(_r.geometry.y) + ',' + str(_r.geometry.x)
-
-            resp = requests.get(PLANNER_URL, params={
-                'fromPlace'       : fromPlace,
-                'toPlace'         : toPlace,
-                'time'            : hourday,
-                'date'            : date,
-                'mode'            : 'TRANSIT,WALK',
-                'maxWalkDistance' : 50000,
-                'arriveBy'        : 'false',
-                'numItineraries'  : 1
-            }, headers={'accept'  : 'application/json'})
-
-            # Get Response JSON
-            data = resp.json()
-
-            if "error" in data:
-                error_logs.append([i, e, data["error"]])
-                continue
-
-            # Get Iteneraries
-            it = data['plan']["itineraries"][0]
-
-            if not duration or duration > it["duration"]:
-                duration = it["duration"]
-
-                # Get intenerary geometry
-                geoms = [LineString(polyline.decode(p["legGeometry"]["points"], geojson=True)) for p in it['legs']]
-                
-                geom = linemerge(geoms)
-
-                plan_record = [
-                    i, e, it["duration"] / 60, it["walkTime"] / 60,
-                    it["transitTime"] / 60, it['waitingTime'] / 60,
-                    geom
-                ]
-        
-        results.append(plan_record)
-    
-    # Export result
-    res_df = GeoDataFrame(pd.DataFrame(results, columns=[
-        "iid", "ffid", "minutes", "walkmin", "tranmin", "waitmin", "geom"
-    ]), crs='EPSG:4326', geometry="geom")
-
+    # Run closest facility
     out_epsg = get_epsg_shp(incidents)
+    res, logs = clsfacility(
+        incidents_df, facilities_df, hourday, date,
+        out_epsg=out_epsg
+    )
 
-    if out_epsg != 4326:
-        res_df = df_prj(res_df, out_epsg)
+    # Export result
+    obj_to_shp(res, "geom", out_epsg, output)
+
+    # Write logs
+    if len(logs):
+        with open(os.path.join(os.path.dirname(output), fprop(output, 'fn') + '_log.txt'), 'w') as txt:
+            for i in logs:
+                txt.write((
+                    "Incident_id: {}\n"
+                    "Facility_id: {}\n"
+                    "ERROR message:\n"
+                    "{}\n"
+                    "\n\n\n\n\n\n"
+                ).format(str(i[0]), str(i[1]), str(i[2])))
+
+
+    return output
+
+
+def otp_cf_based_on_rel(incidents, group_incidents_col,
+    facilities, facilities_id, rel_inc_fac, sheet, group_fk, facilities_fk,
+    hour, day, output):
+    """
+    Calculate time travel considering specific facilities
+    for each group of incidents
+
+    Relations between incidents and facilities are in a auxiliar table (rel_inc_fac).
+    Auxiliar table must be a xlsx file
+    """
+
+    import os
+    import pandas as pd
+    from glass.dct             import tbl_to_obj
+    from glass.dct.geo.fmshp   import shp_to_obj
+    from glass.dct.geo.toshp   import obj_to_shp
+    from glass.geo.obj.mob.otp import clsfacility
+    from glass.geo.prop.prj    import get_epsg_shp
+    from glass.dp.pd           import merge_df
+    from glass.pys.oss         import fprop
+    from glass.geo.obj.prj import df_prj
+
+    # Avoid problems when facilities_id == facilities_fk
+    facilities_fk = facilities_fk + '_fk' if facilities_id == facilities_fk else \
+        facilities_fk
+
+    # Open data
+    idf = df_prj(shp_to_obj(incidents), 4326)
+    fdf = df_prj(shp_to_obj(facilities), 4326)
+
+    rel_df = tbl_to_obj(rel_inc_fac, sheet=sheet)
+
+    oepsg = get_epsg_shp(incidents)
+
+    # Relate facilities with incidents groups
+    fdf = fdf.merge(
+        rel_df, how='inner',
+        left_on=facilities_id, right_on=facilities_fk
+    )
+
+    # List Groups
+    grp_df = pd.DataFrame({
+        'cnttemp' : idf.groupby([group_incidents_col])[group_incidents_col].agg('count')
+    }).reset_index()
+
+    # Do calculations
+    res = []
+    logs = []
+    for idx, row in grp_df.iterrows():
+        # Get incidents for that group
+        new_i = idf[idf[group_incidents_col] == row[group_incidents_col]]
+
+        # Get facilities for that group
+        new_f = fdf[fdf[group_fk] == row[group_incidents_col]]
+
+        # calculate closest facility
+        cfres, l = clsfacility(new_i, new_f, hour, day, out_epsg=oepsg)
+
+        res.append(cfres)
+        logs.extend(l)
     
-    obj_to_shp(res_df, "geom", out_epsg, output)
+    # Merge results
+    out_df = merge_df(res)
+
+    # Export result
+    obj_to_shp(out_df, "geom", oepsg, output)
+
+    # Write logs
+    if len(logs) > 0:
+        with open(os.path.join(os.path.dirname(output), fprop(output, 'fn') + '_log.txt'), 'w') as txt:
+            for i in logs:
+                txt.write((
+                    "Incident_id: {}\n"
+                    "Facility_id: {}\n"
+                    "ERROR message:\n"
+                    "{}\n"
+                    "\n\n\n\n\n\n"
+                ).format(str(i[0]), str(i[1]), str(i[2])))
 
     return output
 
