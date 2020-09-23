@@ -40,6 +40,7 @@ setup(
         'glass.geo.df.nop', 'glass.geo.df.nop.sat',
         'glass.geo.df.prox', 'glass.geo.df.stats', 'glass.geo.df.tbl',
         'glass.geo.gql',
+        'glass.geo.gql.mob', 'glass.geo.gql.mob.gtfs',
         'glass.geo.obj',
         'glass.geo.obj.gop', 'glass.geo.obj.lyr', 'glass.geo.obj.nop',
         'glass.geo.prop', 'glass.geo.prop.feat',

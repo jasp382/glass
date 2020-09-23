@@ -167,6 +167,81 @@ def closest_facility(incidents, incidents_id, facilities, output, impedance='Tra
     return output
 
 
+def cf_based_on_relations(incidents, incidents_id, group_incidents_col,
+    facilities, facilities_id, rel_inc_fac, sheet, group_fk, facilities_fk,
+    output, impedante='TravelTime'):
+    """
+    Calculate time travel considering specific facilities
+    for each group of incidents
+
+    Relations between incidents and facilities are in a auxiliar table (rel_inc_fac).
+    Auxiliar table must be a xlsx file
+    """
+
+    import os
+    import pandas as pd
+    from glass.dct                import tbl_to_obj
+    from glass.dct.geo.fmshp      import shp_to_obj
+    from glass.dct.geo.toshp      import obj_to_shp
+    from glass.geo.prop.prj       import get_epsg_shp
+    from glass.pys.oss            import mkdir, fprop
+    from glass.dct.geo.toshp.mtos import shps_to_shp
+
+    # Open data
+    incidents_df  = shp_to_obj(incidents)
+    facilities_df = shp_to_obj(facilities)
+
+    rel_df = tbl_to_obj(rel_inc_fac, sheet=sheet)
+
+    # Get SRS
+    epsg = get_epsg_shp(incidents)
+
+    # Create dir for temporary files
+    tmpdir = mkdir(os.path.join(
+        os.path.dirname(output), fprop(output, 'fn')
+    ), overwrite=True)
+
+    # Relate facilities with incidents groups
+    facilities_df = facilities_df.merge(
+        rel_df, how='inner',
+        left_on=facilities_id, right_on=facilities_fk
+    )
+
+    # List Groups
+    grp_df = pd.DataFrame({
+        'cnttemp' : incidents_df.groupby([group_incidents_col])[group_incidents_col].agg('count')
+    }).reset_index()
+
+    # Do the calculations
+    res = []
+    for idx, row in grp_df.iterrows():
+        # Get incidents for that group
+        new_i = incidents_df[incidents_df[group_incidents_col] == row[group_incidents_col]]
+
+        new_i = obj_to_shp(new_i, 'geometry', epsg, os.path.join(
+            tmpdir, 'i_{}.shp'.format(row[group_incidents_col])
+        ))
+
+        # Get facilities for that group
+        new_f = facilities_df[facilities_df[group_fk] == row[group_incidents_col]]
+        new_f = obj_to_shp(new_f, 'geometry', epsg, os.path.join(
+            tmpdir, 'f_{}.shp'.format(row[group_incidents_col])
+        ))
+
+        # calculate closest facility
+        cf = closest_facility(
+            new_i, incidents_id, new_f,
+            os.path.join(tmpdir, 'cf_{}.shp'.format(row[group_incidents_col]))
+        )
+
+        res.append(cf)
+    
+    # Produce final result
+    shps_to_shp(res, output, api="pandas")
+
+    return output
+
+
 def service_areas(facilities, breaks, output, impedance='TravelTime'):
     """
     Produce Service Areas Polygons
