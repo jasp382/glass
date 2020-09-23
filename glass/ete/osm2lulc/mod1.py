@@ -104,7 +104,7 @@ def num_selection(osmdb, polyTbl, folder,
     import datetime;          import os
     from threading            import Thread
     if api == 'SQLITE':
-        from glass.geo.df.attr     import sel_by_attr
+        from glass.geo.df.filter     import sel_by_attr
     else:
         from glass.dct.geo.toshp.db import dbtbl_to_shp as sel_by_attr
     from glass.dct.sql.fm          import q_to_obj

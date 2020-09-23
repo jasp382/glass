@@ -229,6 +229,71 @@ def join_shp_with_csv(bgriShp, bgriCsv, outShp,
     return outShp
 
 
+def calc_mean_samecol_sevshp(intbls, pk, meancol, output, tformat='.shp'):
+    """
+    Calculate mean of the same column in different tables
+
+    Assume we have N tables with a numerical column with the same name
+
+    This script calculate the mean of all these columns
+    """
+
+    import os
+    from glass.dct import obj_to_tbl
+    from glass.dct.geo.fmshp import shp_to_obj
+
+    if os.path.isdir(intbls):
+        from glass.pys.oss import lst_ff
+
+        tbls = lst_ff(intbls, file_format='.shp' if not tformat else tformat)
+    
+    else:
+        if type(intbls) == list:
+            tbls = intbls
+        else:
+            raise ValueError('intbls has an invalid value')
+    
+    # Read data
+    dfs = [shp_to_obj(t) for t in tbls]
+
+    # Drop uncessary cols
+    mantain_cols = [pk, meancol]
+    for d in range(len(dfs)):
+        dfs[d].drop([
+            c for c in dfs[d].columns.values if c not in mantain_cols
+        ], axis=1, inplace=True)
+
+        if d:
+            dfs[d].rename(columns={
+                pk      : "{}_{}".format(pk, str(d)),
+                meancol : "{}_{}".format(meancol, str(d))
+            }, inplace=True)
+    
+    # Join all DFS
+    main_df = dfs[0]
+
+    for d in range(1, len(dfs)):
+        main_df = main_df.merge(dfs[d], how='outer', left_on=pk, right_on="{}_{}".format(pk, str(d)))
+
+        main_df[meancol] = main_df[meancol] + main_df[meancol + "_" + str(d)]
+    
+    # Get mean
+    main_df[meancol] = main_df[meancol] / len(dfs)
+
+    # Drop uncessary cols
+    drop_cols = []
+    for d in range(1, len(dfs)):
+        drop_cols.append("{}_{}".format(pk, str(d)))
+        drop_cols.append("{}_{}".format(meancol, str(d)))
+    
+    main_df.drop(drop_cols, axis=1, inplace=True)
+
+    # Export Result
+    obj_to_tbl(main_df, output)
+
+    return output
+
+
 def join_xls_table(main_table, fid_main, join_table, fid_join, copy_fields, out_table,
                    main_sheet=None, join_sheet=None):
     """
@@ -388,8 +453,8 @@ def field_sum_two_tables(tableOne, tableTwo,
     4 |  15
     """
     
-    from glass.dct          import tbl_to_obj
-    from glass.dct       import obj_to_tbl
+    from glass.dct         import tbl_to_obj
+    from glass.dct         import obj_to_tbl
     from glass.dp.pd.joins import sum_field_of_two_tables
     
     # Open two tables

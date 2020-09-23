@@ -39,9 +39,13 @@ def get_ext(inFile, outEpsg=None):
             from glass.geo.obj.prj import prj_ogrgeom
             
             bt_left = prj_ogrgeom(new_pnt(
-                extent[0], extent[2]), fileEpsg, outEpsg)
+                extent[0], extent[2]), fileEpsg, outEpsg,
+                api='ogr' if outEpsg != 4326 else 'shapely'
+            )
             top_right = prj_ogrgeom(new_pnt(
-                extent[1], extent[3]), fileEpsg, outEpsg)
+                extent[1], extent[3]), fileEpsg, outEpsg,
+                api='ogr' if outEpsg != 4326 else 'shapely'
+            )
             
             left , bottom = bt_left.GetX(), bt_left.GetY()
             right, top    = top_right.GetX(), top_right.GetY()

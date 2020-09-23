@@ -127,7 +127,7 @@ def num_selbyarea(db, polyTbl, folder, cellsize, srscode, rstTemplate,
     from threading                 import Thread
     from glass.dct.sql.fm          import q_to_obj
     if api == 'SQLITE':
-        from glass.geo.df.attr     import sel_by_attr
+        from glass.geo.df.filter     import sel_by_attr
     else:
         from glass.dct.geo.toshp.db import dbtbl_to_shp as sel_by_attr
     from glass.dct.geo.torst        import shp_to_rst

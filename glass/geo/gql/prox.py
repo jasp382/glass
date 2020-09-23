@@ -74,7 +74,7 @@ def st_near(db, inTbl, inGeom, nearTbl, nearGeom, output,
         )
 
         if outIsFile:
-            from glass.geo.df.attr import sel_by_attr
+            from glass.geo.df.filter import sel_by_attr
 
             sel_by_attr(db, Q, output, api_gis='ogr')
         
@@ -169,7 +169,7 @@ def splite_buffer(db, table, dist, geomField, outTbl,
     )
     
     if outTblIsFile:
-        from glass.geo.df.attr import sel_by_attr
+        from glass.geo.df.filter import sel_by_attr
         
         sel_by_attr(db, sql, outTbl, api_gis='ogr')
     

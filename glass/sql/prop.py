@@ -151,7 +151,7 @@ def lst_tbl(db, schema='public', excludeViews=None, api='psql',
 Counting in table
 """
 
-def row_num(db, table, where=None, api='psql'):
+def row_num(db, table, where=None, api='psql', dbset='default'):
     """
     Return the number of rows in Query
     
@@ -170,7 +170,7 @@ def row_num(db, table, where=None, api='psql'):
     else:
         Q = "SELECT COUNT(*) AS nrows FROM ({}) AS foo".format(table)
     
-    d = q_to_obj(db, Q, db_api=api)
+    d = q_to_obj(db, Q, db_api=api, dbset=dbset)
     
     return int(d.iloc[0].nrows)
 
