@@ -52,6 +52,17 @@ def clsfacility(i, f, hd, d, out_epsg=None):
             data = resp.json()
 
             if "error" in data:
+                if data["error"]["message"] == 'TOO_CLOSE':
+                    plan_record = [
+                        idx, e, 0, 0, 0, 0,
+                        LineString([
+                            (r.geometry.x, r.geometry.y),
+                            (_r.geometry.x, _r.geometry.y)
+                        ])
+                    ]
+
+                    break
+                
                 error_logs.append([idx, e, data["error"]])
                 continue
 

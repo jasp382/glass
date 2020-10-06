@@ -110,6 +110,10 @@ def otp_cf_based_on_rel(incidents, group_incidents_col,
     # Merge results
     out_df = merge_df(res)
 
+    # Recovery facility id
+    fdf.drop([c for c in fdf.columns.values if c != facilities_id], axis=1, inplace=True)
+    out_df = out_df.merge(fdf, how='left', left_on='ffid', right_index=True)
+
     # Export result
     obj_to_shp(out_df, "geom", oepsg, output)
 
