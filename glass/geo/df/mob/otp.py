@@ -132,7 +132,7 @@ def otp_cf_based_on_rel(incidents, group_incidents_col,
     return output
 
 
-def otp_servarea(facilities, hourday, date, breaks, output):
+def otp_servarea(facilities, hourday, date, breaks, output, vel=None):
     """
     OTP Service Area
     """
@@ -159,7 +159,8 @@ def otp_servarea(facilities, hourday, date, breaks, output):
         ('mode', 'WALK,TRANSIT'),
         ('date', date),
         ('time', hourday),
-        ('maxWalkDistance', 50000)
+        ('maxWalkDistance', 50000),
+        ('walkSpeed', 3 if not vel else vel)
     ]
 
     breaks.sort()
