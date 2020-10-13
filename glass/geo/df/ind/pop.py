@@ -192,7 +192,8 @@ def calc_iwpop_agg(mapunits, mapunits_id, subunits, mapunits_fk,
     return output
 
 
-def points_by_polutation(pnt, mapunits, popcol, outcol, output, count_pnt=None, inhabitants=1000):
+def points_by_polutation(pnt, mapunits, popcol, outcol, output,
+    count_pnt=None, inhabitants=1000, pntattr=None):
     """
     Useful to calculate pharmacies by 1000 inabitants
     """
@@ -208,6 +209,8 @@ def points_by_polutation(pnt, mapunits, popcol, outcol, output, count_pnt=None, 
     units_df = shp_to_obj(mapunits)
 
     cpnt = 'count_pnt' if not count_pnt else count_pnt
+    pntattr = None if not pntattr else pntattr \
+        if pntattr in list(pnt_df.columns.values) else None
     inhabitants = 1 if not inhabitants else inhabitants
 
     def count_pnt_inside_mapunits(row):
@@ -221,7 +224,7 @@ def points_by_polutation(pnt, mapunits, popcol, outcol, output, count_pnt=None, 
 
         pnts.reset_index(drop=True, inplace=True)
 
-        row[cpnt] = pnts.shape[0]
+        row[cpnt] = pnts.shape[0] if not pntattr else pnts[pntattr].sum()
 
         return row
     
