@@ -7,18 +7,15 @@ def osm_to_relationaldb(osmData, inSchema, osmGeoTbl, osmCatTbl, osmRelTbl,
     """
     PostgreSQL - OSM Data to Relational Model
     
-    TODO: Just work for one geom table at once
-    
     E.g.
-    osmData = '/home/jasp/flainar/osm_centro.xml'
-    
+    osmData = '/mnt/d/mystuff/flainar/portugal-latest.osm.pbf'
     inSchema = {
         "TBL" : ['points', 'lines', 'multipolygons'],
-        'FID' : 'CAST(osm_id AS bigint)',
+        'FID' : 'ogc_fid',
         "COLS" : [
-            'name',
-            "ST_X(wkb_geometry) AS longitude",
-            "ST_Y(wkb_geometry) AS latitude",
+            'name', 'osm_id',
+            #"ST_X(wkb_geometry) AS longitude",
+            #"ST_Y(wkb_geometry) AS latitude",
             "wkb_geometry AS geom",
             "NULL AS featurecategoryid",
             "NULL AS flainarcategoryid",
@@ -29,24 +26,36 @@ def osm_to_relationaldb(osmData, inSchema, osmGeoTbl, osmCatTbl, osmRelTbl,
         ],
         "NOT_KEYS" : [
             'ogc_fid', 'osm_id', 'name', "wkb_geometry",
-            'healthcare2', 'other_tags'
+            'healthcare2', 'other_tags', 'osm_way_id',
+            'ref', 'sidewalk', 'z_order', 'is_in', 'cuisine',
+            'barrier', 'busway'
         ]
     }
-    
-    osmGeoTbl = {"TBL" : 'position', "FID" : 'positionid'}
-    
+
+    osmGeoTbl = {
+        "points" : {"TBL" : 'osm_position', "FID" : 'positionid'},
+        "multipolygons" : {"TBL" : "osm_polygons", "FID" : 'polygonid'},
+        "lines" : {"TBL" : 'osm_lines', "FID" : 'lineid'}
+    }
+
     osmCatTbl = {
         "TBL" : 'osmcategory', "FID" : "osmcategoryid",
-        "KEY_COL" : "keycategory", "VAL_COL" : "value",
+        "KEY_COL" : "key", "VAL_COL" : "value",
         "COLS" : [
             "NULL AS createdby", "NOW() AS createdon",
             "NULL AS updatedon", "NULL AS deletedon"
         ]
     }
-    
+
     osmRelTbl = {
-        "TBL" : "position_osmcat", "FID" : 'pososmcatid'
+        "points" : {"TBL" : "position_osmcat", "FID" : 'pososmcatid'},
+        "multipolygons" : {"TBL" : "polygons_osmcat", "FID" : 'polygoncatid'},
+        "lines" : {"TBL" : "lines_osmcat", "FID" : 'linecatid'},
     }
+
+    outSQL = '/mnt/d/mystuff/flainar/portugal-osmdb.sql'
+
+    db_name='osm_pt'
     """
     
     from glass.pys         import obj_to_lst

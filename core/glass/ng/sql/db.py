@@ -99,6 +99,23 @@ def drop_db(database):
 
     return 1
 
+def drop_db_like(db_like):
+    """
+    Drop databases with name like db_like
+    """
+
+    from glass.pys import execmd
+
+    rcmd = execmd((
+        "sudo -u postgres psql -c \"copy(SELECT datname FROM "
+        f"pg_database WHERE datname LIKE '{db_like}') "
+        "to stdout\" | while read line; do; sudo -u postgres "
+        "-c \"DROP DATABASE $line;\"; done"
+    ))
+
+    return rcmd
+
+
 """
 Restore Data
 """

@@ -13,8 +13,8 @@ def osm_extraction(boundary, osmdata, output,
     
     import os
     from glass.pys       import execmd
-    from glass.g.prj.obj     import prj_ogrgeom
-    from glass.g.prop import check_isRaster
+    from glass.g.prj.obj import prj_ogrgeom
+    from glass.g.prop    import check_isRaster
 
     # Check if boundary is a file
     if os.path.isfile(boundary):
@@ -25,7 +25,7 @@ def osm_extraction(boundary, osmdata, output,
             # Get Raster EPSG and Extent
             from glass.g.prop.prj import get_rst_epsg
             from glass.g.prop.rst import rst_ext
-            from glass.g.gobj    import create_polygon
+            from glass.g.gobj     import create_polygon
 
             in_epsg = get_rst_epsg(boundary)
             left, right, bottom, top = rst_ext(boundary)
