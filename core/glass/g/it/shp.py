@@ -33,7 +33,7 @@ def shp_to_shp(inshp, outshp, gisApi='ogr', supportForSpatialLite=None):
         # Run command
         cmdout = execmd(cmd)
     
-    if gisApi == 'grass':
+    elif gisApi == 'grass':
         # TODO identify input geometry type
         
         import os
