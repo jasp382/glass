@@ -2,6 +2,42 @@
 Collect data from IPMA
 """
 
+import json
+import requests
+
+def data_from_get(url, getParams=None, auth=None):
+    """
+    GET Request - Access some URL and retrieve JSON
+    data
+    """
+    
+    response = requests.get(
+        url=url, params=getParams,
+        headers={'content-type' : 'application/json'},
+        auth=auth
+    )
+    
+    return json.loads(response.text)
+
+
+def http_to_json(url, ojson=None):
+    """
+    Data from API Endpoint to JSON File
+    """
+
+    import json
+
+    data = data_from_get(url)
+
+    if not ojson:
+        return data
+    
+    else:
+        with open(ojson, 'w') as ff:
+            json.dump(data, ff)
+
+        return ojson
+
 if __name__ == '__main__':
     """
     Parameters
