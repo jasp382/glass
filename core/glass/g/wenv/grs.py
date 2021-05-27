@@ -4,7 +4,6 @@ Start GIS Sessions
 
 
 import os
-import subprocess
 import sys
 from glass.pys     import execmd
 from glass.pys.oss import del_folder
