@@ -147,15 +147,20 @@ def shpext_to_rst(inShp, outRaster, cellsize=None, epsg=None,
     numpy array creation. If False, an error will be raised.
     """
     
-    from glass.g.prop.ext import get_ext
+    import geopandas as gp
+    from glass.g.prop.ext import get_ext, get_dfext
         
     cellsize = 10 if not cellsize else cellsize
     
     # Get extent
-    try:
-        left, right, bottom, top = get_ext(inShp)
-    except:
-        left, right, bottom, top = inShp.GetEnvelope()
+    if type(inShp) == gp.GeoDataFrame:
+        left, right, bottom, top = get_dfext(inShp, 'geometry')
+    
+    else:
+        try:
+            left, right, bottom, top = get_ext(inShp)
+        except:
+            left, right, bottom, top = inShp.GetEnvelope()
     
     return ext_to_rst(
         (left, top), (right, bottom), outRaster,

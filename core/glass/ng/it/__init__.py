@@ -23,7 +23,7 @@ def tbl_to_tbl(inTbl, outTbl, inSheet=None, txtDelimiter=None,
 
 
 def db_to_tbl(db, tables, outTbl, txtDelimiter=None, dbAPI='psql',
-              outTblF=None, sheetsNames=None):
+              outTblF=None, sheetsNames=None, _dbset=None):
     """
     Database data to File table
     
@@ -78,7 +78,8 @@ def db_to_tbl(db, tables, outTbl, txtDelimiter=None, dbAPI='psql',
         )   
     
     DFS = [q_to_obj(db, t if t.startswith(
-        "SELECT") else "SELECT * FROM {}".format(t), db_api=dbAPI
+        "SELECT") else f"SELECT * FROM {t}",
+        db_api=dbAPI, dbset='default' if not _dbset else _dbset
     ) for t in tables]
     
     if os.path.splitext(outTbl)[1] != '':
@@ -87,7 +88,10 @@ def db_to_tbl(db, tables, outTbl, txtDelimiter=None, dbAPI='psql',
         ff = fprop(outTbl, 'ff')
         
         if ff == '.xlsx' or ff == '.xls':
-            obj_to_tbl(DFS, outTbl, sheetsName=sheetsNames, sanitizeUtf8=None)
+            obj_to_tbl(
+                DFS, outTbl,
+                sheetsName=sheetsNames, sanitizeUtf8=None
+            )
             
             return outTbl
     

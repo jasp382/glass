@@ -8,6 +8,7 @@ def download_by_boundary(input_boundary, folder_out, osm_name, epsg,
                          justOneFeature=None):
     """
     Download data from OSM using a bounding box
+    and OSM Overpass API
     """
     
     import os

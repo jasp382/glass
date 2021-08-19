@@ -25,10 +25,10 @@ def create_db(newdb, overwrite=True, api='psql', use_template=True, dbset='defau
         cs = con.cursor()
     
         if newdb in dbs and overwrite:
-            cs.execute("DROP DATABASE {};".format(newdb))
+            cs.execute(f"DROP DATABASE {newdb};")
     
         cs.execute("CREATE DATABASE {}{};".format(
-            newdb, " TEMPLATE={}".format(conparam["TEMPLATE"]) \
+            newdb, f" TEMPLATE={conparam['TEMPLATE']}" \
                 if "TEMPLATE" in conparam and use_template else ""
             )
         )
@@ -36,7 +36,7 @@ def create_db(newdb, overwrite=True, api='psql', use_template=True, dbset='defau
         if not use_template and geosupport:
             ge = ['postgis', 'hstore', 'postgis_topology', 'postgis_raster', 'pgrouting']
             for e in ge:
-                cs.execute("CREATE EXTENSION {};".format(e))
+                cs.execute(f"CREATE EXTENSION {e};")
     
         cs.close()
         con.close()
@@ -120,7 +120,7 @@ def drop_db_like(db_like):
 Restore Data
 """
 
-def restore_db(db, sqlScript, api='psql'):
+def restore_db(db, sqlScript, api='psql', dbset=None):
     """
     Restore Database using SQL Script
     """
@@ -130,7 +130,7 @@ def restore_db(db, sqlScript, api='psql'):
     if api == 'psql':
         from glass.cons.psql import con_psql
 
-        condb = con_psql()
+        condb = con_psql(db_set='default' if not dbset else dbset)
 
         cmd = 'psql -h {} -U {} -p {} -w {} < {}'.format(
             condb['HOST'], condb['USER'], condb['PORT'],

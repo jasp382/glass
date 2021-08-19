@@ -1,4 +1,4 @@
-urllib3==1.25.10
+urllib3==1.26.5
 numpy==1.19.1
 #pygdal==3.1.3.6
 psycopg2-binary==2.8.5
@@ -31,5 +31,6 @@ simpledbf==0.2.6
 #mysqlclient==1.4.6
 xmltodict==0.12.0
 jupyter
+jupyerlab
 polyline==1.4.0
 py_expression_eval==0.3.13

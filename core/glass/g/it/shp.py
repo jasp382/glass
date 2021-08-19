@@ -2,7 +2,7 @@
 Change File Format
 """
 
-def shp_to_shp(inshp, outshp, gisApi='ogr', supportForSpatialLite=None):
+def shp_to_shp(inshp, outshp, gapi='ogr', spatialite=None):
     """
     Convert a vectorial file to another with other file format
     
@@ -10,17 +10,17 @@ def shp_to_shp(inshp, outshp, gisApi='ogr', supportForSpatialLite=None):
     * ogr;
     * grass;
     
-    When using gisApi='ogr' - Set supportForSpatialLite to True if outShp is
+    When using gapi='ogr' - Set supportForSpatialLite to True if outShp is
     a sqlite db and if you want SpatialLite support for that database.
     """
     
-    if gisApi == 'ogr':
+    if gapi == 'ogr':
         from glass.pys    import execmd
         from glass.g.prop import drv_name
         
         out_driver = drv_name(outshp)
     
-        if out_driver == 'SQLite' and supportForSpatialLite:
+        if out_driver == 'SQLite' and spatialite:
             splite = ' -dsco "SPATIALITE=YES"'
         else:
             splite = ''
@@ -33,7 +33,7 @@ def shp_to_shp(inshp, outshp, gisApi='ogr', supportForSpatialLite=None):
         # Run command
         cmdout = execmd(cmd)
     
-    elif gisApi == 'grass':
+    elif gapi == 'grass':
         # TODO identify input geometry type
         
         import os
@@ -58,7 +58,7 @@ def shp_to_shp(inshp, outshp, gisApi='ogr', supportForSpatialLite=None):
         grs_to_shp(gshp, outshp, 'area')
     
     else:
-        raise ValueError('Sorry, API {} is not available'.format(gisApi))
+        raise ValueError(f'Sorry, API {gapi} is not available')
     
     return outshp
 
@@ -85,7 +85,7 @@ def foldershp_to_foldershp(inFld, outFld, destiny_file_format,
         shp_to_shp(f, os.path.join(outFld, '{}.{}'.format(
             fprop(f, 'fn'), destiny_file_format if \
                 destiny_file_format[0] == '.' else '.' + destiny_file_format
-        )), gisApi=useApi)
+        )), gapi=useApi)
     
     return outFld
 

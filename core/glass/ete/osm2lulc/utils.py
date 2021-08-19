@@ -361,7 +361,7 @@ def get_ref_raster(refBoundBox, folder, cellsize=None):
         epsg, isProj = get_rst_epsg(refBoundBox, returnIsProj=True)
         
         if not epsg:
-            raise ValueError('Cannot get epsg code from {}'.format(refBoundBox))
+            raise ValueError(f'Cannot get epsg code from {refBoundBox}')
         
         # Check if Raster has a SRS with projected coordinates
         if not isProj:

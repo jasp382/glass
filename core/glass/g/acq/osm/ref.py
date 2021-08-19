@@ -1,6 +1,7 @@
 """
-Tools related with osm Files
+OSM references
 """
+
 
 def osm_countries(out_shp):
     """
@@ -8,10 +9,10 @@ def osm_countries(out_shp):
     OSM PBF country file in GeoFabrik
     """
 
-    import os; import codecs
+    import os
     import pandas as pd
     import geopandas as gpd
-    from shapely.geometry import MultiPolygon, Polygon
+    from shapely.geometry import MultiPolygon
     from glass.cons.osm   import osm_files
     from glass.pys.web    import get_file
     from glass.g.wt.shp   import df_to_shp
@@ -88,3 +89,4 @@ def osm_countries(out_shp):
     )
 
     return df_to_shp(countries_boundaries, out_shp)
+

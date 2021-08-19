@@ -8,12 +8,12 @@ from glass.ng.sql.c import sqlcon
 Info about databases
 """
 
-def lst_db():
+def lst_db(dbset=None):
     """
     List all PostgreSQL databases
     """
     
-    con = sqlcon(None)
+    con = sqlcon(None, dbset='default' if not dbset else dbset)
     
     cursor = con.cursor()
     

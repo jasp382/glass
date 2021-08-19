@@ -38,7 +38,7 @@ def fprop(__file, prop, forceLower=None, fs_unit=None):
     if 'filename' in prop or 'fn' in prop:
         fn, ff = os.path.splitext(os.path.basename(__file))
 
-        result['filename'] = fn 
+        result['filename'] = fn if not forceLower else fn.lower()
 
         if 'fileformat' in prop or 'fn' in prop:
             result['fileformat'] = ff
@@ -215,17 +215,6 @@ def mkdir(folder, randName=None, overwrite=True):
     return folder
 
 
-def del_folder(folder):
-    """
-    Delete folder if exists
-    """
-    
-    import shutil
-    
-    if os.path.exists(folder) and os.path.isdir(folder):
-        shutil.rmtree(folder)
-
-
 def fld_exists(fld):
     """
     Check if one folder exists!
@@ -242,6 +231,17 @@ def fld_exists(fld):
 """
 Delete things
 """
+
+def del_folder(folder):
+    """
+    Delete folder if exists
+    """
+    
+    import shutil
+    
+    if os.path.exists(folder) and os.path.isdir(folder):
+        shutil.rmtree(folder)
+
 
 def del_file(_file):
     """

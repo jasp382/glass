@@ -167,11 +167,10 @@ def osm_to_psql(osmXml, osmdb):
     con = con_psql()
     
     cmd = (
-        "ogr2ogr -f PostgreSQL \"PG:dbname='{}' host='{}' port='{}' "
-        "user='{}' password='{}'\" {} -lco COLUM_TYPES=other_tags=hstore"
-    ).format(
-        osmdb, con["HOST"], con["PORT"],
-        con["USER"], con["PASSWORD"], osmXml
+        f"ogr2ogr -f PostgreSQL \"PG:dbname="
+        f"'{osmdb}' host='{con['HOST']}' port='{con['PORT']}' "
+        f"user='{con['USER']}' password='{con['PASSWORD']}'\" {osmXml} "
+        "-lco COLUM_TYPES=other_tags=hstore"
     )
     
     cmdout = execmd(cmd)

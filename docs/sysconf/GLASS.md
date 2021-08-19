@@ -19,7 +19,7 @@ Install GLASS
 
 	# For Ubuntu 18.04 and Ubuntu 20
 	sudo rm /usr/share/gdal/osmconf.ini
-	sudo cp ~/code/glass/conf/osmconf-gdal.ini /usr/share/gdal/osmconf.ini
+	sudo cp ~/glass/conf/osmconf-gdal.ini /usr/share/gdal/osmconf.ini
 
 6 - Create Python Virtual Environment for GLASS:
 

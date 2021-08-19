@@ -85,7 +85,7 @@ def get_file(url, output, useWget=None):
         
         from glass.pys  import execmd
         
-        outcmd = execmd("wget -O {} {}".format(output, url))
+        outcmd = execmd(f"wget -O {output} {url}")
     
     return output
 

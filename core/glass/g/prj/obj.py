@@ -39,7 +39,7 @@ def prj_ogrgeom(geom, in_epsg, out_epsg, api='ogr'):
         newg = ogr.CreateGeometryFromWkt(newg.wkt)
     
     else:
-        raise ValueError('API {} is not available'.format(api))
+        raise ValueError(f'API {api} is not available')
 
     return newg
 
@@ -49,6 +49,6 @@ def df_prj(df, out_epsg):
     Project Geometries in Pandas Dataframe
     """
 
-    out_df = df.to_crs('EPSG:{}'.format(str(out_epsg)))
+    out_df = df.to_crs(f'EPSG:{str(out_epsg)}')
 
     return out_df

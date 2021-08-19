@@ -1,5 +1,5 @@
 """
-Geometric Properties
+Table Geometric Properties
 """
 
 def tbl_ext(db, table, geomCol):

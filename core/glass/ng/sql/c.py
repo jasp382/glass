@@ -112,5 +112,5 @@ def alchemy_engine(db, api='psql', dbset='default'):
         ))
     
     else:
-        raise ValueError('API {} is not available!'.format(api))
+        raise ValueError(f'API {api} is not available!')
 

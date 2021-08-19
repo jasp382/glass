@@ -10,7 +10,7 @@ def osm_to_sqdb(osmXml, osmSQLITE):
     from glass.g.it.shp import shp_to_shp
     
     return shp_to_shp(
-        osmXml, osmSQLITE, gisApi='ogr', supportForSpatialLite=True)
+        osmXml, osmSQLITE, gapi='ogr', spatialite=True)
 
 
 def osm_to_gpkg(osm, gpkg):
@@ -41,15 +41,15 @@ def osm_to_featcls(xmlOsm, output, fileFormat='.shp', useXmlName=None,
     TABLES = {'points' : 'pnt', 'lines' : 'lnh',
               'multilinestrings' : 'mlnh', 'multipolygons' : 'poly'}
     
+    bname = "" if not useXmlName else fprop(xmlOsm, 'fn') + "_"
+    fileFormat = fileFormat if fileFormat[0] == '.' else "." + fileFormat
+    oepsg = None if outepsg == 4326 else outepsg
+    
     for T in TABLES:
         sel_by_attr(
-            gpkg, "SELECT * FROM {}".format(T),
-            os.path.join(output, "{}{}{}".format(
-                "" if not useXmlName else fprop(xmlOsm, 'fn') + "_",
-                TABLES[T],
-                fileFormat if fileFormat[0] == '.' else "." + fileFormat
-            )), api_gis='ogr', oEPSG=None if outepsg == 4326 else outepsg,
-            iEPSG=4326
+            gpkg, f"SELECT * FROM {T}",
+            os.path.join(output, f"{bname}{TABLES[T]}{fileFormat}"),
+            api_gis='ogr', oEPSG=oepsg, iEPSG=4326
         )
     
     # Del temp DB

@@ -33,9 +33,9 @@ def df_buffer_extent(inDf, inEpsg, meterTolerance, geomCol="geometry",
     the sum between the feature extent and the Tolerance variable
     """
 
-    from shapely.geometry  import Polygon
-    from geopandas         import GeoDataFrame as gdf
-    from glass.g.gp.ext.pd import featext_to_dfcols
+    from shapely.geometry import Polygon
+    from geopandas        import GeoDataFrame as gdf
+    from glass.g.prop.ext import featext_to_dfcols
 
     inDf = featext_to_dfcols(inDf, geomCol)
 

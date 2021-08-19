@@ -6,16 +6,16 @@ import os
 import pandas as pd
 import geopandas as gp
 
-from glass.g.smp.obj   import fishnet
-from glass.g.rd.shp    import shp_to_obj
-from glass.g.wt.shp    import obj_to_shp
-from glass.g.dp.torst  import shp_to_rst
-from glass.g.wenv.grs  import run_grass
-from glass.pys.oss     import mkdir
-from glass.ng.pd.fld   import del_cols_notin_ref
-from glass.g.wt.sql    import df_to_db
-from glass.ng.sql.tbl  import drop_tbldata
-from glass.g.gp.ext.pd import featext_to_dfcols
+from glass.g.smp.obj  import fishnet
+from glass.g.rd.shp   import shp_to_obj
+from glass.g.wt.shp   import obj_to_shp
+from glass.g.dp.torst import shp_to_rst
+from glass.g.wenv.grs import run_grass
+from glass.pys.oss    import mkdir
+from glass.ng.pd.fld  import del_cols_notin_ref
+from glass.g.wt.sql   import df_to_db
+from glass.ng.sql.tbl import drop_tbldata
+from glass.g.prop.ext import featext_to_dfcols
 
 if __name__ == '__main__':
     # Get parameters

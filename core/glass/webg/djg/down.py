@@ -82,11 +82,11 @@ def mdl_to_kml(mdl, outKml, filter=None):
     Query a database table and convert it to a KML File
     """
     
-    import json;                 import os
-    from django.http             import HttpResponse
-    from glass.pys.oss            import fprop
+    import os
+    from django.http               import HttpResponse
+    from glass.pys.oss             import fprop
     from glass.webg.djg.mdl.serial import mdl_serialize_to_json
-    from glass.g.it.shp   import shp_to_shp
+    from glass.g.it.shp            import shp_to_shp
     
     # Write data in JSON
     JSON_FILE = os.path.join(
@@ -96,7 +96,7 @@ def mdl_to_kml(mdl, outKml, filter=None):
     mdl_serialize_to_json(mdl, 'geojson', JSON_FILE, filterQ=filter)
     
     # Convert JSON into KML
-    shp_to_shp(JSON_FILE, outKml, gisApi='ogr')
+    shp_to_shp(JSON_FILE, outKml, gapi='ogr')
     
     # Create a valid DOWNLOAD RESPONSE
     with open(outKml, 'rb') as f:

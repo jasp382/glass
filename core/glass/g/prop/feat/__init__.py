@@ -141,7 +141,7 @@ def get_ext(shp):
     gisApi = 'ogr'
     
     if gisApi == 'ogr':
-        from osgeo           import ogr
+        from osgeo        import ogr
         from glass.g.prop import drv_name
     
         dt = ogr.GetDriverByName(drv_name(shp)).Open(shp, 0)

@@ -44,11 +44,7 @@ def highways_from_osm(inOsm, outOsm, filter_geom=None, api='osmosis'):
         )
     
     else:
-        raise ValueError(
-            "{} API is not available!".format(api)
-        )
-    
-    print(cmd)
+        raise ValueError(f"{api} API is not available!")
     
     outcmd = execmd(cmd)
     

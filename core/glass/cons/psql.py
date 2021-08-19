@@ -2,8 +2,10 @@
 Constants for PostgreSQL Operations
 """
 
-PG_SPECIAL_WORDS = ['table', 'column', 'natural', 'group', 'left', 'right',
-                    'order']
+PG_SPECIAL_WORDS = [
+    'table', 'column', 'natural', 'group', 'left', 'right',
+    'order'
+]
 
 
 """

@@ -232,6 +232,7 @@ def shparea_by_mapunitpopulation(polygons, mapunits, units_id, outcol, output,
 
     import os
     import pandas as pd
+    import geopandas as gp
     from glass.g.wt.rst   import shpext_to_rst
     from glass.pys.oss    import mkdir, fprop
     from glass.g.gp.ovl   import grsintersection
@@ -251,14 +252,17 @@ def shparea_by_mapunitpopulation(polygons, mapunits, units_id, outcol, output,
     ), overwrite=True)
 
     # Boundary to raster
-    w_epsg = get_epsg(mapunits)
+    w_epsg = get_epsg(mapunits) if type(mapunits) != gp.GeoDataFrame else \
+        get_epsg(polygons)
+    
     ref_rst = shpext_to_rst(
         mapunits, os.path.join(gw, 'extent.tif'),
         cellsize=10, epsg=w_epsg
     )
 
     # Sanitize columns
-    popunits_df_tmp = shp_to_obj(mapunits)
+    popunits_df_tmp = shp_to_obj(mapunits) if type(mapunits) != gp.GeoDataFrame \
+        else mapunits.copy(deep=True)
 
     drop_cols = [c for c in popunits_df_tmp.columns.values if c != units_id and c != 'geometry']
     popunits_df_tmp.drop(drop_cols, axis=1, inplace=True)
@@ -280,7 +284,12 @@ def shparea_by_mapunitpopulation(polygons, mapunits, units_id, outcol, output,
     from glass.g.it.shp import shp_to_grs, grs_to_shp
 
     # Data to GRASS GIS
-    g_popunits = shp_to_grs(popunits_i, fprop(mapunits, 'fn'), asCMD=True)
+    g_popunits = shp_to_grs(
+        popunits_i,
+        fprop(mapunits, 'fn') if type(mapunits) != gp.GeoDataFrame \
+            else 'mapunits_gdf',
+        asCMD=True
+    )
     g_polygons = shp_to_grs(polygons, fprop(polygons, 'fn'), asCMD=True)
 
     # Run intersection
@@ -294,7 +303,8 @@ def shparea_by_mapunitpopulation(polygons, mapunits, units_id, outcol, output,
     i_res = grs_to_shp(i_shp, os.path.join(gw, i_shp + '.shp'), 'area')
 
     # Open intersection result and mapunits
-    mapunits_df = shp_to_obj(mapunits)
+    mapunits_df = shp_to_obj(mapunits) if type(mapunits) != gp.GeoDataFrame \
+        else mapunits
     int_df      = shp_to_obj(i_res)
 
     int_df['garea'] = int_df.geometry.area

@@ -146,16 +146,15 @@ def get_rst_epsg(rst, returnIsProj=None):
     
     import os
     from osgeo import gdal
-    from osgeo import osr
     from glass.g.prop.img import rst_epsg
     
     if not os.path.exists(rst):
         raise ValueError((
-            "{} does not exist! Please give a valid "
+            f"{rst} does not exist! Please give a valid "
             "path to a raster file"
-        ).format(rst))
+        ))
     
-    d    = gdal.Open(rst)
+    d = gdal.Open(rst)
     
     if not returnIsProj:
         epsg = rst_epsg(d, isproj=None)

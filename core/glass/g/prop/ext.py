@@ -54,3 +54,34 @@ def get_ext(inFile, outEpsg=None):
     
     return extent
 
+
+
+"""
+GeoPandas Related
+"""
+
+def featext_to_dfcols(df, geomCol):
+    """
+    Add minx, miny, maxx, maxy to dataframe
+    """
+    
+    return df.merge(
+        df[geomCol].bounds, how='inner',
+        left_index=True, right_index=True
+    )
+
+
+def get_dfext(df, geomCol):
+    """
+    Add minx, miny, maxx, maxy to dataframe
+    """
+
+    ndf = featext_to_dfcols(df, geomCol)
+
+    return [
+        # left, right
+        ndf.minx.min(), ndf.maxx.max(),
+        # Bottom, top
+        ndf.miny.min(), ndf.maxy.max()
+    ]
+
