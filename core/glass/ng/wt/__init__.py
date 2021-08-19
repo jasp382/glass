@@ -94,7 +94,7 @@ def obj_to_tbl(pyObj, outTbl, delimiter=None, wIndex=None,
                 db.write(row)
     
     else:
-        raise ValueError('{} is not a valid table format!'.format(ff))
+        raise ValueError(f'{ff} is not a valid table format!')
     
     return outTbl
 
