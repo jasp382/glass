@@ -156,7 +156,7 @@ def connect_lines_to_near_lines(inLines, nearLines, outLines,
             del lyrNear
 
     outSrc.Destroy()
-    shpPnt.Destroy()
+    shpLines.Destroy()
     shpNear.Destroy()
 
     return outLines
@@ -172,6 +172,8 @@ def connect_points_to_near_line_vertex(inPnt, nearLines, outLines,
     from osgeo             import ogr
     from glass.g.prop      import drv_name
     from glass.g.prop.feat import get_gtype
+    from glass.pys.oss     import fprop
+    from glass.g.gp.prox.bfing.obj import draw_buffer
 
     # Check Geometries
     inPntGeom     = get_gtype(    inPnt, gisApi='ogr')
@@ -194,7 +196,8 @@ def connect_points_to_near_line_vertex(inPnt, nearLines, outLines,
     outSrc = ogr.GetDriverByName(drv_name(outLines)).CreateDataSource(outLines)
 
     outLyr = outSrc.CreateLayer(
-        fprop(outLines, 'fn'), geom_type=ogr.wkbLineString
+        fprop(outLines, 'fn'),
+        geom_type=ogr.wkbLineString
     )
 
     lineDefn = outLyr.GetLayerDefn()
@@ -265,12 +268,13 @@ def connect_points_to_near_line(inPnt, nearLines, outLines,
     Connect all points to the nearest line in the perpendicular
     """
 
-    import os; import numpy as np
+    import os
     from osgeo             import ogr
     from shapely.geometry  import LineString, Point
-    from glass.g.prop   import drv_name
+    from glass.g.prop      import drv_name
     from glass.g.prop.feat import get_gtype
-    from glass.pys.oss      import fprop
+    from glass.pys.oss     import fprop
+    from glass.g.gp.prox.bfing.obj import draw_buffer
 
     # Check Geometries
     inPntGeom     = get_gtype(inPnt, gisApi='ogr')

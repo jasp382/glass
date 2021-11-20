@@ -21,7 +21,7 @@ git clone https://github.com/jasp382/glass ~/glass
 
 ### Setup Python virtual environment:
 
-```
+```Bash
 # Create new virtual env
 mkvirtualenv glassenv
 workon glassenv

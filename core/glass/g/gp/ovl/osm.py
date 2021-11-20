@@ -3,8 +3,8 @@ Overlay operations using OSM Data
 """
 
 
-def osm_extraction(boundary, osmdata, output,
-    each_feat=None, epsg=None):
+def osm_extraction(boundary, osmdata: str, output: str,
+    each_feat=None, epsg=None, outbasename=None):
     """
     Extract OSM Data from a xml file with osmosis
     
@@ -15,6 +15,9 @@ def osm_extraction(boundary, osmdata, output,
     from glass.pys       import execmd
     from glass.g.prj.obj import prj_ogrgeom
     from glass.g.prop    import check_isRaster
+
+    refattr = []
+    outbasename = 'osmexct' if not outbasename else outbasename
 
     # Check if boundary is a file
     if os.path.isfile(boundary):
@@ -44,7 +47,7 @@ def osm_extraction(boundary, osmdata, output,
             if not each_feat:
                 # Get Shape Extent
                 from glass.g.prop.feat import get_ext
-                from glass.g.gobj     import create_polygon
+                from glass.g.gobj      import create_polygon
 
                 left, right, bottom, top = get_ext(boundary)
                 boundaries = [create_polygon([
@@ -54,13 +57,19 @@ def osm_extraction(boundary, osmdata, output,
         
             else:
                 # Get Extent of each feature
-                from osgeo           import ogr
+                from osgeo        import ogr
                 from glass.g.prop import drv_name
 
                 src = ogr.GetDriverByName(drv_name(boundary)).Open(boundary)
                 lyr = src.GetLayer()
 
-                boundaries = [feat.GetGeometryRef() for feat in lyr]
+                boundaries = []
+
+                for feat in lyr:
+                    boundaries.append(feat.GetGeometryRef())
+                    refattr.append(feat.GetField(each_feat) \
+                        if type(each_feat) == str else feat.GetFID())
+                
     else:
         from glass.g.gobj import wkt_to_geom
 
@@ -78,6 +87,7 @@ def osm_extraction(boundary, osmdata, output,
             )
         
         boundaries = [wkt_to_geom(g) for g in wkt_boundaries]
+        refattr = list(range(len(boundaries)))
 
         if None in boundaries:
             raise ValueError((
@@ -90,15 +100,15 @@ def osm_extraction(boundary, osmdata, output,
         if os.path.isdir(output):
             fn, ff = os.path.splitext(os.path.basename(osmdata))
 
-            out_files = [os.path.join(
-                output, "ect_{}.{}".format(fn, ff))]
+            out_files = [os.path.join(output, f"ect_{fn}.{ff}")]
         else:
             out_files = [output]
     else:
         fn, ff = os.path.splitext(os.path.basename(osmdata))
         path = output if os.path.isdir(output) else os.path.dirname(output)
+
         out_files = [os.path.join(
-            path, "ect_{}_{}.{}".format(fn, str(i), ff)
+            path, f"{outbasename}_{str(refattr[i])}.xml"
         ) for i in range(len(boundaries))]
     
     # Extract data using OSMOSIS
