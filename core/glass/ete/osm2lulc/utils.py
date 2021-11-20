@@ -176,7 +176,7 @@ def add_lulc_to_osmfeat(osmdb, osmTbl, nomenclature, api='SQLITE'):
     Add LULC Classes in OSM Data Tables
     """
     
-    from glass.ng.sql.q        import exec_write_q
+    from glass.ng.sql.q     import exec_write_q
     from glass.ete.osm2lulc import DB_SCHEMA
     
     KEY_COL   = DB_SCHEMA["OSM_FEATURES"]["OSM_KEY"]

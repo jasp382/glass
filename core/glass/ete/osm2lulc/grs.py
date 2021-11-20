@@ -472,13 +472,13 @@ def vector_based(osmdata, nomenclature, refRaster, lulcShp,
     # ************************************************************************ #
     # IMPORT SOME glass MODULES FOR GRASS GIS #
     # ************************************************************************ #
-    from glass.g.gp.ovl       import erase
-    from glass.g.wenv.grs     import rst_to_region
-    from glass.g.gp.gen     import dissolve
-    from glass.g.tbl.grs import add_and_update, reset_table, update_table
-    from glass.g.tbl.col import add_fields
-    from glass.g.it.shp import shp_to_grs, grs_to_shp
-    from glass.g.it.rst     import rst_to_grs
+    from glass.g.gp.ovl   import erase
+    from glass.g.wenv.grs import rst_to_region
+    from glass.g.gp.gen   import dissolve
+    from glass.g.tbl.grs  import add_and_update, reset_table
+    from glass.g.tbl.col  import add_fields, cols_calc
+    from glass.g.it.shp   import shp_to_grs, grs_to_shp
+    from glass.g.it.rst   import rst_to_grs
     # ************************************************************************ #
     # SET GRASS GIS LOCATION EXTENT #
     # ************************************************************************ #
@@ -654,11 +654,11 @@ def vector_based(osmdata, nomenclature, refRaster, lulcShp,
         )
         
         add_fields(ds, {'leg': 'varchar(75)'}, api="grass")
-        update_table(ds, 'leg', str(__legend[__priorities[i]]), 'leg is null')
+        cols_calc(ds, 'leg', str(__legend[__priorities[i]]), 'leg is null')
         
         lst_merge.append(grs_to_shp(
             ds, os.path.join(
-                workspace, "lulc_{}.shp".format(str(__priorities[i]))
+                workspace, f"lulc_{str(__priorities[i])}.shp"
             ), 'auto', lyrN=1, asCMD=True, asMultiPart=None
         ))
     

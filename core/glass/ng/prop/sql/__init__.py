@@ -22,12 +22,12 @@ def lst_db(dbset=None):
     return [d[0] for d in cursor.fetchall()]
 
 
-def db_exists(db):
+def db_exists(db, dbset='default'):
     """
     Database exists
     """
 
-    con = sqlcon(None)
+    con = sqlcon(None, dbset=dbset)
         
     cursor = con.cursor()
     

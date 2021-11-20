@@ -13,7 +13,7 @@ def df_dissolve(df, field):
 
 
 def dissolve(inShp, outShp, fld,
-             statistics=None, geomMultiPart=True, api='ogr', inputIsLines=None):
+             statistics=None, api='ogr', inputIsLines=None):
     """
     Dissolve Geometries
     
@@ -66,16 +66,15 @@ def dissolve(inShp, outShp, fld,
         TODO: DISSOLVE WITHOUT FIELD
         """
         
-        import os
-        from glass.pys      import execmd
-        from glass.pys .oss import fprop
+        from glass.pys     import execmd
+        from glass.pys.oss import fprop
         
         if not statistics:
             cmd = (
                 'ogr2ogr {o} {i} -dialect sqlite -sql '
                 '"SELECT ST_Union(geometry), {f} '
                 'FROM {t} GROUP BY {f};"'
-            ).format(o=outShp, i=inShp, f=fld, t=fprop(shp, 'fn'))
+            ).format(o=outShp, i=inShp, f=fld, t=fprop(inShp, 'fn'))
         
         else:
             cmd = (
@@ -84,7 +83,7 @@ def dissolve(inShp, outShp, fld,
                 'FROM {t} GROUP BY {f};"'
             ).format(
                 o=outShp, i=inShp, f=fld,
-                t=fprop(shp, 'fn'),
+                t=fprop(inShp, 'fn'),
                 stat=','.join([
                     '{s}({f}) AS {f}'.format(
                         f=str(fld),

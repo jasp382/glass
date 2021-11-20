@@ -123,8 +123,8 @@ def grs_vec_roads(osmdb, lineTbl, polyTbl):
     time_d = datetime.datetime.now().replace(microsecond=0)
     
     if NB:
-        from glass.g.gp.prox    import grs_near as near
-        from glass.g.tbl.grs import update_table
+        from glass.g.gp.prox import grs_near as near
+        from glass.g.tbl.col import cols_calc
         
         builds = dbtbl_to_shp(
             osmdb, polyTbl, "geometry", "all_builds", where="building IS NOT NULL",
@@ -134,7 +134,7 @@ def grs_vec_roads(osmdb, lineTbl, polyTbl):
         
         near(roadsVect, builds, nearDistCol="todist", maxDist=12, as_cmd=True)
         time_f = datetime.datetime.now().replace(microsecond=0)
-        update_table(
+        cols_calc(
             roadsVect, "bf_roads", "round(todist,0)",
             "\"todist > 0\"",
             lyrN=1, ascmd=True

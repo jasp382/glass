@@ -11,7 +11,7 @@ def pyv():
 
     v = sys.version_info
 
-    return "{}.{}".format(str(v.major), str(v.minor))
+    return f"{str(v.major)}.{str(v.minor)}"
 
 
 def obj_to_lst(obj):

@@ -213,6 +213,30 @@ def rn_cols(inShp, columns, api="ogr2ogr"):
 Update data in Table Field
 """
 
+def cols_calc(shp, col, v, onde, lyrN=1, ascmd=None):
+    """
+    Update Table
+    """
+    
+    if not ascmd:
+        from grass.pygrass.modules import Module
+        
+        fc = Module(
+            'v.db.update', map=shp, column=col, value=v, where=onde,
+            layer=lyrN, run_=False, quiet=True
+        )
+        fc()
+    
+    else:
+        from glass.pys import execmd
+        
+        rcmd = execmd((
+            f"v.db.update map={shp} column={col} "
+            f"value=\"{v}\" where={onde} "
+            f"layer={str(lyrN)} --quiet"
+        ))
+
+
 def update_cols(table, upcol, nval):
     """
     Update a feature class table with new values
@@ -227,7 +251,6 @@ def update_cols(table, upcol, nval):
     keys values.
     """
     
-    import os
     from glass.pys import execmd
     from glass.pys.oss import fprop
 

@@ -148,7 +148,7 @@ def rst_to_psql(rst, srs, dbname, sql_script=None):
     return rst_name
 
 
-def osm_to_psql(osmXml, osmdb):
+def osm_to_psql(osmXml, osmdb, dbsetup='default'):
     """
     Use GDAL to import osmfile into PostGIS database
     """
@@ -157,14 +157,14 @@ def osm_to_psql(osmXml, osmdb):
     from glass.cons.psql   import con_psql
     from glass.ng.prop.sql import db_exists
 
-    is_db = db_exists(osmdb)
+    is_db = db_exists(osmdb, dbset=dbsetup)
 
     if not is_db:
         from glass.ng.sql.db import create_db
 
-        create_db(osmdb, api='psql')
+        create_db(osmdb, api='psql', dbset=dbsetup)
 
-    con = con_psql()
+    con = con_psql(db_set=dbsetup)
     
     cmd = (
         f"ogr2ogr -f PostgreSQL \"PG:dbname="

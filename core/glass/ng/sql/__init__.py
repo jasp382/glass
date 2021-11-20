@@ -15,7 +15,7 @@ def psql_cmd(db_name, sqlfile, dbcon=None):
     cdb = con_psql(db_set=dbcon)
 
     if os.path.isdir(sqlfile):
-        from glass.pys .oss import lst_ff
+        from glass.pys.oss import lst_ff
 
         sqls = lst_ff(sqlfile, file_format='.sql')
     else:

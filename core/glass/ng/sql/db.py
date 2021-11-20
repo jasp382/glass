@@ -19,7 +19,7 @@ def create_db(newdb, overwrite=True, api='psql', use_template=True, dbset='defau
 
         conparam = con_psql(db_set=dbset)
     
-        dbs = lst_db()
+        dbs = lst_db(dbset=dbset)
     
         con = sqlcon(None, sqlAPI='psql', dbset=dbset)
         cs = con.cursor()
@@ -147,7 +147,7 @@ def restore_db(db, sqlScript, api='psql', dbset=None):
             sqlScript
         )
     else:
-        raise ValueError('{} API is not available'.format(api))
+        raise ValueError(f'{api} API is not available')
     
     outcmd = execmd(cmd)
     

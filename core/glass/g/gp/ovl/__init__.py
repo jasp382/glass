@@ -70,8 +70,7 @@ def clip(inFeat, clipFeat, outFeat, api_gis="grass", clip_by_region=None):
 
         gsetup.init(grsbase, work, loc, 'PERMANENT')
 
-        from glass.g.it.shp    import shp_to_grs, grs_to_shp
-        from glass.g.prop.feat import feat_count
+        from glass.g.it.shp import shp_to_grs, grs_to_shp
 
         shp = shp_to_grs(  inFeat, fprop(inFeat, 'fn'))
         clp = shp_to_grs(clipFeat, fprop(clipFeat, 'fn'))
@@ -954,9 +953,9 @@ def shp_diff_fm_ref(refshp, refcol, shps, out_folder,
     """
 
     import os
-    from glass.g.prop   import check_isRaster
-    from glass.g.wenv.grs     import run_grass
-    from glass.pys.oss          import fprop
+    from glass.g.prop      import check_isRaster
+    from glass.g.wenv.grs  import run_grass
+    from glass.pys.oss     import fprop
     from glass.g.tbl.tomtx import tbl_to_areamtx
 
     # Check if folder exists, if not create it
@@ -974,8 +973,8 @@ def shp_diff_fm_ref(refshp, refcol, shps, out_folder,
 
     gsetup.init(gbase, out_folder, 'shpdif', 'PERMANENT')
 
-    from glass.g.it.shp import shp_to_grs, grs_to_shp
-    from glass.g.it.rst     import rst_to_grs
+    from glass.g.it.shp       import shp_to_grs, grs_to_shp
+    from glass.g.it.rst       import rst_to_grs
     from glass.g.tbl.col      import rn_cols
     from glass.g.dp.rst.toshp import rst_to_polyg
 

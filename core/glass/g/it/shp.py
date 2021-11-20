@@ -225,7 +225,7 @@ Database Table to Shape
 
 def dbtbl_to_shp(db, tbl, geom_col, outShp, where=None, inDB='psql',
                  notTable=None, filterByReg=None, outShpIsGRASS=None,
-                 tableIsQuery=None, api='psql', epsg=None):
+                 tableIsQuery=None, api='psql', epsg=None, dbset='default'):
     """
     Database Table to Feature Class file
     
@@ -249,48 +249,53 @@ def dbtbl_to_shp(db, tbl, geom_col, outShp, where=None, inDB='psql',
         from glass.pys       import execmd
         from glass.cons.psql import con_psql
 
-        db_con = con_psql()
+        db_con = con_psql(db_set=dbset)
         
-        whr = "" if not where else " where=\"{}\"".format(where)
-        
+        whr = "" if not where else f" where=\"{where}\""
+        t = " -t" if notTable else ""
+        r = " -r" if filterByReg else ""
+
         cmd_str = (
-            "v.in.ogr input=\"PG:host={} dbname={} user={} password={} "
-            "port={}\" output={} layer={} geometry={}{}{}{} -o --overwrite --quiet"
-        ).format(
-            db_con["HOST"], db, db_con["USER"], db_con["PASSWORD"],
-            db_con["PORT"], outShp, tbl, geom_col, whr,
-            " -t" if notTable else "", " -r" if filterByReg else ""
+            f"v.in.ogr input=\"PG:host={db_con['HOST']} "
+            f"dbname={db} user={db_con['USER']} "
+            f"password={db_con['PASSWORD']} "
+            f"port={db_con['PORT']}\" output={outShp} "
+            f"layer={tbl} geometry={geom_col}"
+            f"{whr}{t}{r} -o --overwrite --quiet"
         ) if inDB == 'psql' else (
-            "v.in.ogr -o input={} layer={} output={}{}{}{}"
-        ).format(db, tbl, outShp, whr,
-            " -t" if notTable else "", " -r" if filterByReg else ""
+            f"v.in.ogr -o input={db} "
+            f"layer={tbl} output={outShp}"
+            f"{whr}{' -t' if notTable else ''}"
+            f"{' -r' if filterByReg else ''}"
         ) if inDB == 'sqlite' else None
         
         rcmd = execmd(cmd_str)
     
     else:
         if api == 'pgsql2shp':
-            from glass.pys  import execmd
+            from glass.pys       import execmd
             from glass.cons.psql import con_psql
 
-            db_con = con_psql()
+            db_con = con_psql(db_set=dbset)
+            geom = '' if not geom_col else f' -g {geom_col}'
+            t    = tbl if not tableIsQuery else f'"{tbl}"'
             
             outcmd = execmd((
-                'pgsql2shp -f {out} -h {hst} -u {usr} -p {pt} -P {pas}{geom} '
-                '{bd} {t}'
-            ).format(
-                hst=db_con['HOST'], usr=db_con["USER"], pt=db_con["PORT"],
-                pas=db_con['PASSWORD'], bd=db, out=outShp,
-                t=tbl if not tableIsQuery else '"{}"'.format(tbl),
-                geom="" if not geom_col else " -g {}".format(geom_col)
+                f"pgsql2shp -f {outShp} -h {db_con['HOST']} "
+                f"-u {db_con['USER']} -p {db_con['PORT']} "
+                f"-P {db_con['PASSWORD']} -k"
+                f"{geom} {db} {t}"
             ))
         
         elif api == 'psql' or api == 'sqlite':
             from glass.ng.sql.q import q_to_obj
             
-            q = "SELECT * FROM {}".format(tbl) if not tableIsQuery else tbl
+            q = f"SELECT * FROM {tbl}" if not tableIsQuery else tbl
             
-            df = q_to_obj(db, q, db_api=api, geomCol=geom_col, epsg=epsg)
+            df = q_to_obj(
+                db, q, db_api=api, geomCol=geom_col, epsg=epsg,
+                dbset=dbset
+            )
             
             outsh = df_to_shp(df, outShp)
         

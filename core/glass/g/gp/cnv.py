@@ -8,7 +8,6 @@ def coords_to_boundary(topLeft, lowerRight, epsg, outEpsg=None):
     Top Left and Lower Right to Boundary
     """
 
-    from osgeo        import ogr
     from glass.g.gobj import create_polygon
 
     boundary_points = [
@@ -31,7 +30,4 @@ def coords_to_boundary(topLeft, lowerRight, epsg, outEpsg=None):
         return poly
     else:
         return polygon
-
-
-
 

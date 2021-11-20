@@ -4,7 +4,7 @@ Tools see which OSM tags are not being used in OSM2LULC
 
 def get_not_used_tags(OSM_FILE, OUT_TBL):
     """
-    Use a file OSM to detect tags not considered in the
+    Use a OSM file to detect tags not considered in the
     OSM2LULC procedure
     """
     
@@ -136,4 +136,81 @@ def get_not_used_tags(OSM_FILE, OUT_TBL):
     obj_to_tbl(newTags, OUT_TBL, sheetsName="new_tags", sanitizeUtf8=True)
     
     return OUT_TBL
+
+
+def get_nusedtags_psqldb(db, outtbl, dbsetup='default'):
+    """
+    ID tags not considered in the OSM2LULC procedure
+    """
+
+    import os
+    from glass.ng.sql.q import q_to_obj
+    from glass.ng.wt    import obj_to_tbl
+
+    OSM_TAG_MAP = {
+        "DB"        : os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            'osmtolulc.sqlite'
+        ),
+        "OSM_FEAT"  : "osm_features",
+        "KEY_COL"   : "key",
+        "VALUE_COL" : "value",
+        "GEOM_COL"  : "geom"
+    }
+
+    # Get Features we are considering
+    our_osm_feat = q_to_obj(OSM_TAG_MAP["DB"], (
+        "SELECT {key} AS key_y, {value} AS value_y, {geom} AS geom_y "
+        "FROM {tbl}"
+    ).format(
+        key=OSM_TAG_MAP["KEY_COL"], value=OSM_TAG_MAP["VALUE_COL"],
+        geom=OSM_TAG_MAP["GEOM_COL"], tbl=OSM_TAG_MAP["OSM_FEAT"]
+    ), db_api='sqlite')
+
+    # Get Features in File
+    ref_tags = {
+        'points'        : ['highway', 'man_made', 'building'],
+        'lines'         : ['highway', 'waterway', 'aerialway', 'barrier',
+                           'man_made', 'railway'],
+        'multipolygons' : ['aeroway', 'amenity', 'barrier', 'building',
+                           'craft', 'historic', 'land_area', ''
+                           'landuse', 'leisure', 'man_made', 'military',
+                           'natural', 'office', 'place', 'shop',
+                           'sport', 'tourism', 'waterway', 'power',
+                           'railway', 'healthcare', 'highway']
+    }
+
+    geom_type = {
+        'points' : 'Point', 'lines' : 'Line', 'multipolygons' : 'Polygon'
+    }
+
+    q_by_geom = [" UNION ALL ".join([(
+        f"SELECT '{c}' AS key, {t}.{c} AS value, "
+        f"'{geom_type[t]}' AS geom "
+        f"FROM {t} "
+        f"WHERE {t}.{c} IS NOT NULL"
+    )for c in ref_tags[t]]) for t in ref_tags]
+
+    q = " UNION ALL ".join(q_by_geom)
+
+    osm_feat = q_to_obj(db, (
+        f"SELECT key, value, geom FROM ({q}) AS foo "
+        "GROUP BY key, value, geom"
+    ), db_api='psql', dbset=dbsetup)
+
+    osm_feat = osm_feat.merge(
+        our_osm_feat, how="left",
+        left_on=["key", "value", "geom"],
+        right_on=["key_y", "value_y", "geom_y"]
+    )
+
+    # Select OSM Features of file without correspondence
+    osm_feat["isnew"] = osm_feat.key_y.fillna(value=1)
+
+    newtags = osm_feat[osm_feat.isnew == 1]
+
+    # Export table with new tags
+    newtags.drop(['key_y', 'value_y', 'geom_y', 'isnew'], axis=1, inplace=True)
+
+    return obj_to_tbl(newtags, outtbl, sheetsName='osmnewtags', sanitizeUtf8=True)
 

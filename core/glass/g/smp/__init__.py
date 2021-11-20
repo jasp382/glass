@@ -43,7 +43,7 @@ def nfishnet_fm_rst(rst, max_row, max_col, out_fld):
     """
 
     import os
-    from osgeo              import gdal
+    from osgeo            import gdal
     from glass.g.prop.img import rst_epsg
     from glass.g.smp.obj  import fishnet
 
@@ -148,16 +148,16 @@ def create_random_points(inShp, nPoints, outShp, gisApi='pygrass'):
     
     elif gisApi == 'ogr':
         from osgeo            import ogr
-        from glass.g.prop  import drv_name
+        from glass.g.prop     import drv_name
         from glass.g.prop.ext import get_ext
         
         # Get extent
-        left, right, bottom, top = get_extent(inShp)
+        left, right, bottom, top = get_ext(inShp)
         
         # To be Continued
         """
         ausences = []
-        shp = ogr.GetDriverByName(GDAL_GetDriverName(all_sample)).Open(all_sample, 0)
+        shp = ogr.GetDriverByName(drv_name(all_sample)).Open(all_sample, 0)
         lyr = shp.GetLayer()
         for i in range(number):
             equal = -1
@@ -176,7 +176,8 @@ def create_random_points(inShp, nPoints, outShp, gisApi='pygrass'):
             ausences.append(random_pnt)
         return ausences
         """
-    return saida
+        
+    return outShp
 
 
 def sample_to_points(points, col_name, rst):
@@ -317,7 +318,7 @@ def rst_val_to_points(pnt, rst):
     }
     """
     
-    from osgeo           import ogr, gdal
+    from osgeo        import ogr, gdal
     from glass.g.prop import drv_name
     
     values_by_point = {}
@@ -346,8 +347,8 @@ def rst_val_to_points2(pntShp, listRasters):
     Pick raster value for each point in pntShp
     """
     
-    from osgeo           import ogr
-    from glass.pys        import obj_to_lst
+    from osgeo        import ogr, gdal
+    from glass.pys    import obj_to_lst
     from glass.g.prop import drv_name
     
     listRasters = obj_to_lst(listRasters)
@@ -433,8 +434,8 @@ def proprndcells_to_rst(inrst, class_proportion, out_rst,
     in class_proportion object
     """
 
-    from osgeo import gdal, gdal_array
-    import numpy as np
+    from osgeo         import gdal
+    import numpy        as np
     from glass.g.wt.rst import obj_to_rst
 
     img = gdal.Open(inrst, gdal.GA_ReadOnly)

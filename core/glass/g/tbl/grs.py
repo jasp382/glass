@@ -2,32 +2,8 @@
 GRASS GIS Tools for table management
 """
 
-def update_table(shp, col, v, onde, lyrN=1, ascmd=None):
-    """
-    Update Table
-    """
-    
-    if not ascmd:
-        from grass.pygrass.modules import Module
-        
-        fc = Module(
-            'v.db.update', map=shp, column=col, value=v, where=onde,
-            layer=lyrN, run_=False, quiet=True
-        )
-        fc()
-    
-    else:
-        from glass.pys import execmd
-        
-        rcmd = execmd((
-            "v.db.update map={} column={} value=\"{}\" where={} "
-            "layer={} --quiet"
-        ).format(
-            shp, col, v, onde, str(lyrN)
-        ))
 
-
-def add_table(shp, fields, lyrN=1, asCMD=None):
+def add_table(shp, fields, lyrN=1, asCMD=None, keyp=None):
     """
     Create table on the GRASS GIS Sqlite Database
     """
@@ -36,18 +12,20 @@ def add_table(shp, fields, lyrN=1, asCMD=None):
         from grass.pygrass.modules import Module
         
         add = Module(
-            "v.db.addtable", map=shp, columns=fields, layer=lyrN, quiet=True
+            "v.db.addtable", map=shp, columns=fields,
+            key=keyp if keyp else 'cat',
+            layer=lyrN, quiet=True
         )
     
     else:
         from glass.pys import execmd
+
+        cols = '' if not fields else f' columns=\"{fields}\"'
+        keyv = '' if not keyp else f' key={keyp}'
         
         rcmd = execmd((
-            "v.db.addtable map={}{} layer={} --quiet"
-        ).format(
-            shp,
-            "" if not fields else " columns=\"{}\"".format(fields),
-            str(lyrN)
+            f"v.db.addtable map={shp}{keyv}"
+            f"{cols} layer={str(lyrN)} --quiet"
         ))
 
 
@@ -69,6 +47,8 @@ def reset_table(table, new_flds, values2write, whr_fields=None):
     """
     Delete table; create new table and update it
     """
+
+    from glass.g.tbl.col import cols_calc
     
     if type(new_flds) != dict:
         raise ValueError("new_flds must be a dict")
@@ -84,17 +64,20 @@ def reset_table(table, new_flds, values2write, whr_fields=None):
         '{} {}'.format(f, new_flds[f]) for f in new_flds]))
     
     for f in values2write:
-        update_table(
+        cols_calc(
             table, f, values2write[f],
-            '{} IS NULL'.format(f) if not whr_fields else \
-                '{} IS NULL'.format(f) if f not in whr_fields else \
+            f'{f} IS NULL' if not whr_fields else \
+                f'{f} IS NULL' if f not in whr_fields else \
                 whr_fields[f]
         )
+
 
 def add_and_update(table, new_flds, val_to_write):
     """
     Create new table and put some values in it
     """
+
+    from glass.g.tbl.col import cols_calc
     
     if type(new_flds) != dict:
         raise ValueError("new_flds must be a dict")
@@ -107,7 +90,7 @@ def add_and_update(table, new_flds, val_to_write):
     ]))
     
     for fld in val_to_write:
-        update_table(
+        cols_calc(
             table, fld, val_to_write[fld],
-            "{} IS NULL".format(fld), ascmd=None
+            f"{fld} IS NULL", ascmd=None
         )

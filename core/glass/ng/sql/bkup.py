@@ -33,7 +33,7 @@ def dump_db(db, outSQL, api='psql'):
         )
     
     else:
-        raise ValueError('{} API is not available'.format(api))
+        raise ValueError(f'{api} API is not available')
     
     outcmd = execmd(cmd)
     
@@ -45,8 +45,7 @@ def dump_tbls(db, tables, outsql, startWith=None):
     Dump one table into a SQL File
     """
     
-    from glass.pys       import execmd
-    from glass.pys       import obj_to_lst
+    from glass.pys       import execmd, obj_to_lst
     from glass.cons.psql import con_psql
     
     tbls = obj_to_lst(tables)
@@ -65,14 +64,13 @@ def dump_tbls(db, tables, outsql, startWith=None):
         tbls = dtbls
     
     condb = con_psql()
+
+    user, host, port = condb["USER"], host=condb["HOST"], condb["PORT"]
+    tbl = " ".join([f"-t {t}" for t in tbls])
     
     outcmd = execmd((
-        "pg_dump -Fc -U {user} -h {host} -p {port} "
-        "-w {tbl} {db} > {out}"
-    ).format(
-        user=condb["USER"], host=condb["HOST"],
-        port=condb["PORT"], db=db, out=outsql,
-        tbl=" ".join(["-t {}".format(t) for t in tbls])
+        f"pg_dump -Fc -U {user} -h {host} -p {port} "
+        f"-w {tbl} {db} > {outsql}"
     ))
     
     return outsql

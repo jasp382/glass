@@ -40,7 +40,8 @@ def distance_between_catpoints(srcShp, facilitiesShp, networkShp, speedLimitCol,
     from glass.g.tbl.attr        import geomattr_to_db
     from glass.g.cp              import copy_insame_vector
     from glass.g.tbl             import category
-    from glass.g.tbl.grs         import add_table, update_table
+    from glass.g.tbl.grs         import add_table
+    from glass.g.tbl.col         import cols_calc
     from glass.g.mob.grstbx.vnet import network_from_arcs
     from glass.g.mob.grstbx.vnet import add_pnts_to_network
     from glass.g.mob.grstbx.vnet import netpath
@@ -74,20 +75,21 @@ def distance_between_catpoints(srcShp, facilitiesShp, networkShp, speedLimitCol,
         createCol=False, unit="meters", lyrN=3
     )
     
-    update_table(newNetwork, "kph", "3.6", "kph IS NULL", lyrN=3)
-    update_table(
+    cols_calc(newNetwork, "kph", "3.6", "kph IS NULL", lyrN=3)
+    cols_calc(
         newNetwork, "ft_minutes",
         "(length * 60) / (kph * 1000.0)",
         "ft_minutes IS NULL", lyrN=3
-    ); update_table(
+    )
+    cols_calc(
         newNetwork, "tf_minutes",
         "(length * 60) / (kph * 1000.0)",
         "tf_minutes IS NULL", lyrN=3
     )
     
     # Exagerate Oneway's
-    update_table(newNetwork, "ft_minutes", "1000", "oneway = 'TF'", lyrN=3)
-    update_table(newNetwork, "tf_minutes", "1000", "oneway = 'FT'", lyrN=3)
+    cols_calc(newNetwork, "ft_minutes", "1000", "oneway = 'TF'", lyrN=3)
+    cols_calc(newNetwork, "tf_minutes", "1000", "oneway = 'FT'", lyrN=3)
     
     # Produce result
     result = netpath(

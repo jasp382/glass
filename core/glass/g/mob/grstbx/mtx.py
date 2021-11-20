@@ -12,8 +12,8 @@ def prod_matrix(origins, destinations, networkGrs, speedLimitCol, onewayCol,
     
     from glass.g.tbl import category
     from glass.g.tbl.filter          import sel_by_attr
-    from glass.g.tbl.col         import add_fields
-    from glass.g.tbl.grs         import add_table, update_table
+    from glass.g.tbl.col         import add_fields, cols_calc
+    from glass.g.tbl.grs         import add_table
     from glass.g.mob.grstbx.vnet import add_pnts_to_network
     from glass.g.mob.grstbx.vnet import run_allpairs
     from glass.g.cp              import copy_insame_vector
@@ -62,22 +62,22 @@ def prod_matrix(origins, destinations, networkGrs, speedLimitCol, onewayCol,
         createCol=False, unit="meters", lyrN=3, ascmd=asCmd
     )
     
-    update_table(newNetwork, "kph", "3.6",  "kph IS NULL", lyrN=3, ascmd=asCmd)
-    update_table(newNetwork, "kph", "3.6", "oneway = 'N'", lyrN=3, ascmd=asCmd)
-    update_table(
+    cols_calc(newNetwork, "kph", "3.6",  "kph IS NULL", lyrN=3, ascmd=asCmd)
+    cols_calc(newNetwork, "kph", "3.6", "oneway = 'N'", lyrN=3, ascmd=asCmd)
+    cols_calc(
         newNetwork, "ft_minutes",
         "(length * 60) / (kph * 1000.0)",
         "ft_minutes IS NULL", lyrN=3, ascmd=asCmd
-    ); update_table(
+    ); cols_calc(
         newNetwork, "tf_minutes",
         "(length * 60) / (kph * 1000.0)",
         "tf_minutes IS NULL", lyrN=3, ascmd=asCmd
     )
     
     # Exagerate Oneway's
-    update_table(
+    cols_calc(
         newNetwork, "ft_minutes", "1000", "oneway = 'TF'", lyrN=3, ascmd=asCmd
-    ); update_table(
+    ); cols_calc(
         newNetwork, "tf_minutes", "1000", "oneway = 'FT'", lyrN=3, ascmd=asCmd)
     
     # Produce matrix
@@ -104,10 +104,11 @@ def prod_matrix(origins, destinations, networkGrs, speedLimitCol, onewayCol,
     add_fields(matrix_sel, "from_fid", "INTEGER", lyrN=3, asCMD=asCmd)
     add_fields(matrix_sel,   "to_fid", "INTEGER", lyrN=3, asCMD=asCmd)
     
-    update_table(
+    cols_calc(
         matrix_sel, "from_fid",
         "from_cat - 1", "from_fid IS NULL", lyrN=3, ascmd=asCmd
-    ); update_table(
+    )
+    cols_calc(
         matrix_sel, "to_fid", 
         "to_cat - {} - 1".format(str(ORIGINS_NFEAT)),
         "to_fid IS NULL", lyrN=3, ascmd=asCmd
