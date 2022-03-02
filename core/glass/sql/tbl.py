@@ -381,7 +381,7 @@ def tbls_to_tbl(db, lst_tables, outTable):
     from glass.sql.q import q_to_ntbl
     
     sql = " UNION ALL ".join([
-        "SELECT * FROM {}".format(t) for t in lst_tables])
+        f"SELECT * FROM {t}" for t in lst_tables])
     
     outTable = q_to_ntbl(db, outTable, sql, api='psql')
     

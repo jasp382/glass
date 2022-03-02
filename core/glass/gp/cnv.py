@@ -25,7 +25,10 @@ def coords_to_boundary(topLeft, lowerRight, epsg, outEpsg=None):
     if outEpsg and epsg != outEpsg:
         from glass.prj.obj import prj_ogrgeom
 
-        poly = prj_ogrgeom(polygon, epsg, outEpsg)
+        poly = prj_ogrgeom(
+            polygon, epsg, outEpsg,
+            api="ogr" if epsg != 4326 else 'shapely'
+        )
 
         return poly
     else:

@@ -8,11 +8,11 @@ def coords_to_boundshp(topLeft, lowerRight, epsg, outshp,
     Top Left and Lower Right to Boundary
     """
     
-    from osgeo import ogr
-    from glass.prop  import drv_name
+    from osgeo          import ogr
+    from glass.prop     import drv_name
     from glass.prop.prj import get_sref_from_epsg
-    from glass.pys.oss    import fprop
-    from glass.pys        import obj_to_lst
+    from glass.pys.oss  import fprop
+    from glass.pys      import obj_to_lst
     from glass.gp.cnv   import coords_to_boundary
 
     toplefts = obj_to_lst(topLeft)
