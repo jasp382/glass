@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block title %}Map Social Networks Data{% endblock %}
+{% block body_contents %}
+<div ng-controller="DsnMapSearchController as mapVm" ng-cloak>
+    <div id="content-container">
+        <vgijs-leaflet-mapping
+            settings="mapVm.settings"
+            rqstid="'{{ rqst_id }}'"
+            servname="'dsn-search'">
+        </vgijs-leaflet-mapping>
+    </div>
+    <form id="search-form" method="POST" class="search-vgi-form ng-cloak"
+    	enctype="multipart/form-data" action="/expvgi/dsn/mapsearch/">
+                
+        {% csrf_token %}
+         <!--<div style="display:none">-->
+         <div style="display:none">
+         	{{ form.keyword|attr:"ng-model:mapVm.settings.text.keyword" }}
+            {{ form.draw_circle|attr:"ng-model:mapVm.settings.draw.output" }}
+            {{ form.data_sources|attr:"ng-model:mapVm.settings.text.datasources" }}
+            <button id="submitform" type="submit"></button>
+         </div>
+    </form>
+
+    <!-- Initial PopUp -->
+    <div id="popUp" ng-if="mapVm.popup && mapVm.status===200" class="ng-cloak">
+        <a class="info-box-close" ng-click="mapVm.togglePopup()"></a>
+        <h3>Mapping Social Network Data</h3>
+        <p>Use the map and the sidebar bar in the right to search for data in four Social Networks: Facebook, Twitter, Flickr
+            and Youtube.</p>
+        <div ng-click="mapVm.togglePopup()" id="closeButton">Close</div>
+    </div>
+
+    <!-- PopUp that will appear if nodata -->
+    <div id="popUp" ng-if="mapVm.status==202" class="ng-cloak">
+        <a class="info-box-close" ng-click="mapVm.notShow()"></a>
+        <p>Your search return an empty result!</p>
+        <p>Please, try again!</p>
+        <div ng-click="mapVm.notShow()" id="closeButton">Ok!</div>
+    </div>
+
+    {% if user.is_anonymous %}
+        <div id="not-login-div"></div>
+        <div class="login-form">
+            <h3>Login to see this page</h3>
+            <form method="post" action="/expvgi/login/">
+                {% csrf_token %}
+                    Username:<br>
+                    {{ auth_form.username|attr:"placeholder:Enter Username"|attr:"type:text" }}<br>
+                    Password<br>
+                    {{ auth_form.password|attr:"placeholder:Enter Password"|attr:"type:password" }}<br>
+                    <br>
+                    <input type="submit" value="Enter">
+                    <input type="hidden" name="next" value="{{ service.url }}" />
+            </form>
+            <div ng-click="mapVm.goBack()" class="buttonBack" id="back">Go Back</div>
+            <div class="buttonBack"><a href="/expvgi/login/?next={{ service.url }}">Register</a></div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+{% block scripting %}
+<script>
+function reload() {
+    document.getElementById("search-form").reset();
+    //location.reload();
+    //location.href = '/expvgi/search/'
+}
+</script>
+{% endblock %}

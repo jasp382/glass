@@ -27,7 +27,7 @@ def rst_to_polyg(inRst, outShp, rstColumn=None, gisApi='gdal', epsg=None):
         src = gdal.Open(inRst)
         bnd = src.GetRasterBand(1)
         
-        output = ogr.GetDriverByName(drv_name(ouShp)).CreateDataSource(outShp)
+        output = ogr.GetDriverByName(drv_name(outShp)).CreateDataSource(outShp)
         
         srs = osr.SpatialReference()
         srs.ImportFromEPSG(epsg)
@@ -68,29 +68,49 @@ def rst_to_polyg(inRst, outShp, rstColumn=None, gisApi='gdal', epsg=None):
         ).format(inRst, outShp, rstField))
     
     else:
-        raise ValueError('Sorry, API {} is not available'.format(gisApi))
+        raise ValueError(f'Sorry, API {gisApi} is not available')
     
     return outShp
 
 
-def rst_to_pnt(in_rst, out_pnt):
+def rst_to_pnt(in_rst, out_pnt, outcol="gridcode", api='pandas'):
     """
     Raster to Point Feature Class
     """
 
-    from glass.wt.shp import df_to_shp
-
-    api = 'pandas'
+    api = 'pandas' if not api else api
 
     if api == 'pandas':
+        from glass.wt.shp import df_to_shp
         from glass.rd.rst import rst_to_geodf
 
         gdf = rst_to_geodf(in_rst)
 
         df_to_shp(gdf, out_pnt)
     
+    elif api == 'pygrass':
+        from grass.pygrass.modules import Module
+        
+        rstcol = "value" if not outcol else outcol
+        
+        rtop = Module(
+            "r.to.vect", input=in_rst, output=out_pnt, type="point",
+            column=rstcol, overwrite=True, run_=False, quiet=True
+        )
+        rtop()
+    
+    elif api == 'grass':
+        from glass.pys import execmd
+        
+        rstcol = "value" if not outcol else outcol
+        
+        rcmd = execmd((
+            f"r.to.vect input={in_rst} output={out_pnt} type=point "
+            f"column={rstcol} --overwrite --quiet"
+        ))
+    
     else:
-        raise ValueError('API {} is not available'.format(api))
+        raise ValueError(f'API {api} is not available')
 
     return out_pnt
 

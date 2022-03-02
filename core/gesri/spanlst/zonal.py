@@ -13,9 +13,10 @@ def mean_rst_by_polygon(polygons, raster, work, resultShp):
     import arcpy
     import os
     
-    from glass.cpu.arcg.lyr          import feat_lyr, rst_lyr
+    from gesri.rd.rst import rst_to_lyr
+    from gesri.rd.shp          import shp_to_lyr
     from glass.prop.rst              import rst_stats
-    from glass.cpu.arcg.mng.fld      import add_field
+    from gesri.tbl.cols      import add_col
     from glass.mng.gen               import copy_feat
     from glass.cpu.arcg.anls.exct    import select_by_attr
     from glass.cpu.arcg.mng.rst.proc import clip_raster
@@ -32,14 +33,14 @@ def mean_rst_by_polygon(polygons, raster, work, resultShp):
     # Copy the Input
     poly_copy = copy_feat(polygons, resultShp, gisApi='arcpy')
     # Create Layers
-    lyrShp = feat_lyr(poly_copy)
-    lyrRst = rst_lyr(raster)
+    lyrShp = shp_to_lyr(poly_copy)
+    lyrRst = rst_to_lyr(raster)
     # Create field for register calculated statistics
     if len(os.path.basename(raster)) <= 10:
         fld_name = os.path.basename(raster)
     else:
         fld_name = os.path.basename(raster)[:10]    
-    add_field(lyrShp, fld_name, "DOUBLE", "20", "3")
+    add_col(lyrShp, fld_name, "DOUBLE", "20", "3")
     # Calculate mean
     c = arcpy.UpdateCursor(lyrShp)
     l = c.next()

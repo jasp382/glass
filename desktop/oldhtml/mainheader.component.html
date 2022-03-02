@@ -1,0 +1,90 @@
+<header id="{{ header_cls }}">
+    <nav>
+        <a href="/expvgi">
+            <img src="assets/img/logos/logo-main.png" alt="Project's Logo - Exploring VGI" id="logo">
+        </a>
+
+        <h1 id="navServices">
+            <span>
+                <i class="fa fa-chevron-circle-down" id="navArrowServices"
+                style="font-size:24px; color:#FFFFFF;"></i>
+            </span>
+
+            <a href="/">Services</a>
+        </h1>
+
+        <div id="dropdownServices" *ngIf="show"
+            ng-mouseenter="headVm.dropdowns.services=true"
+            ng-mouseleave="headVm.dropdowns.services=false">
+            <a href="/expvgi/osm/osm2lulc/">
+                <h3>OSM to LULC Maps</h3>
+            </a>
+            <a href="/expvgi/dsn/mapsearch/">
+                <h3>Mapping Social Network Data</h3>
+            </a>
+        </div>
+
+        <h1 id="navPartners">
+            <span>
+                <i class="fa fa-chevron-circle-down"
+                    style="font-size:24px; color:#FFFFFF;"
+                    id="navArrowPartners"
+                    ng-click="headVm.toggleDropdown('partners')">
+                </i>
+            </span>
+            <a href="/expvgi/#!#partners">
+                Institutions
+            </a>
+        </h1>
+
+        <div id="dropdownPartners" *ngIf="show"
+            ng-mouseenter="headVm.dropdowns.partners=true"
+            ng-mouseleave="headVm.dropdowns.partners=false">
+            <a href="http://www.uc.pt/" target="_blank">
+                <h3>University of Coimbra<i class="fa fa-external-link" aria-hidden="true"></i></h3>
+            </a>
+            <a href="http://www.uc.pt/en/org/inescc" target="_blank">
+                <h3>INESC Coimbra<i class="fa fa-external-link" aria-hidden="true"></i></h3>
+            </a>
+            <a href="https://www.cisuc.uc.pt/" target="_blank">
+                <h3>CISUC<i class="fa fa-external-link" aria-hidden="true"></i></h3>
+            </a>
+        </div>
+
+        <h1 id="navContacts">
+            <a href="/expvgi/#!#contacts">
+                Contacts
+            </a>
+        </h1>
+
+        <h1 id="navAbout">
+            <span>
+                <i class="fa fa-chevron-circle-down"
+                    style="font-size:24px; color:#FFFFFF;"
+                    id="navArrowAbout"
+                    ng-click="headVm.toggleDropdown('about')">
+                </i>
+            </span>
+
+            <a href="/expvgi/#!#about">
+                About
+            </a>
+        </h1>
+
+        <div id="dropdownAbout" *ngIf="show"
+            ng-mouseenter="headVm.dropdowns.about=true"
+            ng-mouseleave="headVm.dropdowns.about=false">
+
+            <a href="/expvgi/#!#about"><h3>About the Project</h3></a>
+            <a href="/expvgi/#!#Credits"><h3>Credits</h3></a>
+            <a href="/expvgi/#!#Credits"><h3>History</h3></a>
+        </div>
+
+        <a href="">
+            <h1 id="navRegister">Login/Register</h1>
+        </a>
+    </nav>
+
+<subheader *ngIf="header_cls == 'header-complete'"
+    current-url="{{ current_url }}"></subheader>
+</header>

@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}JUST Side{% endblock %}
+{% block body_contents %}
+<div class="zona-conteudo">
+	<table width=100%>
+		<tr><td colspan="3">&nbsp;</td></tr>
+		<tr>
+			<td width="15%">&nbsp;</td>
+			<td width="70%">
+				<table class="tab-org">
+					<tbody>
+						<tr class="tab-org-univ">
+							{% if atlas_lang == 'pt' %}
+							<td colspan="2" class="titulo">LIGAÇÕES ÚTEIS</td>
+							{% elif atlas_lang == 'es' %}
+							<td colspan="2" class="titulo">ENLACES ÚTILES</td>
+							{% endif %}
+						</tr>
+						<tr><td colspan="2">&nbsp;</td></tr>
+						<tr class="tab-org-pais">
+							<td colspan="2">
+								{% if atlas_lang == 'pt' %}
+								Projecto JUST Side na rede CYTED:&nbsp;
+								{% elif atlas_lang == 'es' %}
+								Proyecto JUST Side en la red CYTED
+								{% endif %}
+							</td>
+						</tr>
+						<tr class="tab-org-univ">
+							<td colspan="2">
+								<a href="http://www.cyted.org/?q=es/detalle_proyecto&amp;un=955" target="_blanc">http://www.cyted.org/?q=es/detalle_proyecto&amp;un=955</a>
+							</td>
+						</tr>
+						<tr><td>&nbsp;</td></tr>
+						<tr class="tab-org-pais">
+							<td colspan="2">
+								{% if atlas_lang == 'pt' %}
+								Página Aut&oacute;noma do Projecto:&nbsp;
+								{% elif atlas_lang == 'es' %}
+								Página independiente del Proyecto:&nbsp;
+								{% endif %}
+							</td>
+						</tr>
+						<tr class="tab-org-univ">
+							<td colspan="2">
+								<a href="http://www.cyted.org/es/just-side" target="_blanc">http://www.cyted.org/es/just-side</a>
+							</td>
+						</tr>
+						<tr><td>&nbsp;</td></tr>
+						<tr class="tab-org-pais">
+							<td colspan="2">
+								Directiva Inspire:&nbsp;
+							</td>
+						</tr>
+						<tr class="tab-org-univ">
+							<td colspan="2">
+								<a href="https://inspire.ec.europa.eu/" target="_blanc">https://inspire.ec.europa.eu/</a>
+							</td>
+						</tr>
+						<tr><td>&nbsp;</td></tr>
+						<tr class="tab-org-pais">
+							<td colspan="2">
+								{% if atlas_lang == 'pt' %}
+								Geoportais semelhantes ou afins:&nbsp;
+								{% elif atlas_lang == 'es' %}
+								Geoportales similares:&nbsp;
+								{% endif %}
+							</td>
+						</tr>
+						<tr class="tab-org-coord">
+							<td colspan="2">
+								<a href="https://earthzine.org/about/" target="_blanc">https://earthzine.org/about/</a><br>
+								<a href="http://spatialreference.org/" target="_blanc">http://spatialreference.org/</a><br>
+								<a href="https://ejatlas.org/" target="_blanc">https://ejatlas.org/</a><br>
+								<a href="http://www.oecd.org/environment/tools-evaluation/" target="_blanc">http://www.oecd.org/environment/tools-evaluation/</a><br>
+								<a href="http://www.cesr.org/datnav-new-guide-digital-data-human-rights-research%E2%80%A8" target="_blanc">http://www.cesr.org/datnav-new-guide-digital-data-human-rights-research%E2%80%A8</a><br>
+								<a href="https://www.2030spotlight.org/en" target="_blanc">https://www.2030spotlight.org/en</a>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</td>
+			<td width="15%">&nbsp;</td>	
+		</tr>
+		<tr><td colspan="3">&nbsp;</td></tr>
+	</table>
+</div>
+{% endblock %}

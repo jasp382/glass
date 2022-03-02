@@ -1,0 +1,310 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}JUST Side{% endblock %}
+{% block body_contents %}
+<div class="zona-conteudo">
+	<table width="100%">
+		<tr><td colspan="3">&nbsp;</td></tr>
+		<tr>
+			<td width="15%">&nbsp;</td>
+			<td colspan="2">
+				<table class="tab-org" id="tab-coo">
+					<tr class="tab-org-univ">
+						<td colspan="2" class="titulo">
+							{% if atlas_lang == 'pt' %}
+							ORGANOGRAMA
+							{% elif atlas_lang == 'es' %}
+							GRÁFICO
+							{% endif %}
+						</td>
+					</tr>
+					<tr><td colspan="2">&nbsp;</td></tr>
+					<tr class="tab-org-pais">
+						{% if atlas_lang == 'pt' %}
+						<td>Coordena&ccedil;&atilde;o</td>
+						<td>PORTUGAL - Universidade de Coimbra</td>
+						{% elif atlas_lang == 'es' %}
+						<td>coordinaci&oacute;n</td>
+						<td>PORTUGAL - Universidad de Coimbra</td>
+						{% endif %}
+					</tr>
+					<tr class="tab-org-univ">
+						{% if atlas_lang == 'pt' %}
+						<td>Coordenador Geral</td>
+						<td>Professora Doutora Alexandra Arag&atilde;o (FDUC)</td>
+						{% elif atlas_lang == 'es' %}
+						<td>Coordinador general</td>
+						<td>Profesora Doctora Alexandra Arag&atilde;o (FDUC)</td>
+						{% endif %}
+					</tr>
+					<tr class="tab-org-univ">
+						{% if atlas_lang == 'pt' %}
+						<td>Coordenador para a &aacute;rea das IDE</td>
+						<td>Professor Doutor Jos&eacute; Gomes dos Santos (FLUC)</td>
+						{% elif atlas_lang == 'es' %}
+						<td>Coordinador para el área de las IDE</td>
+						<td>Profesor Doctor Jos&eacute; Gomes dos Santos (FLUC)</td>
+						{% endif %}
+					</tr>
+					<tr class="tab-org-colab">
+						<td>Colaboradores</td>
+						{% if atlas_lang == 'pt' %}
+						<td>Professora Doutora Dulce Lopes (UC)
+							<br>Professora Doutora Fernanda Paula Oliveira (UC)
+							<br>Professor Doutor Jos&eacute Eduardo Figueiredo Dias (UC)
+							<br>Professora Doutora Sara Pires (UA)
+						{% elif atlas_lang == 'es' %}
+						<td>Profesora Doctora Dulce Lopes (UC)
+							<br>Profesora Doctora Fernanda Paula Oliveira (UC)
+							<br>Profesor Doctor José Eduardo Figueiredo Dias (UC)
+							<br>Profesora Doctora Sara Pires (UA)
+						{% endif %}
+						</td>
+					</tr>
+				</table>
+				<p>&nbsp;</p>
+			</td>
+			<td width="15%">&nbsp;</td>
+		</tr>
+		<tr>
+			<td width="15%">&nbsp;</td>
+			<td width="35%">
+				<table class="tab-org">
+					<tr class="tab-org-pais"><td colspan="2">ARGENTINA</td></tr>
+					<tr class="tab-org-univ">
+						<td colspan="2">UBA - Universidad de Buenos Aires</td>
+					</tr>
+					<tr class="tab-org-coord">
+						{% if atlas_lang == 'pt' %}
+						<td class="tab-org-1col">Coordenador</td>
+						<td>Professora Doutora Silvia Nonna</td>
+						{% elif atlas_lang == 'es' %}
+						<td class="tab-org-1col">Coordinador</td>
+						<td>Profesora Doctora Silvia Nonna</td>
+						{% endif %}
+					</tr>
+					<tr class="tab-org-colab">
+						<td>Colaboradores</td>
+						{% if atlas_lang == 'pt' %}
+						<td>Professora Doutora Leila Devia</td>
+						{% elif atlas_lang == 'es' %}
+						<td>Profesora Doctora Leila Devia</td>
+						{% endif %}
+					</tr>
+				</table>
+				<p>&nbsp;</p>
+				<table class="tab-org">
+					<tr class="tab-org-pais"><td colspan="2">BRASIL</td></tr>
+						<tr class="tab-org-univ"><td colspan="2">UFSC - Universidade Federal de Santa Catarina</td></tr>
+						<tr class="tab-org-coord">
+							{% if atlas_lang == 'pt' %}
+							<td class="tab-org-1col">Coordenador</td>
+							{% elif atlas_lang == 'es' %}
+							<td class="tab-org-1col">Coordinador</td>
+							{% endif %}
+							<td>Jos&eacute Rubens Morato Leite</td></tr>
+						<tr class="tab-org-colab">
+							<td>Colaboradores</td>
+							<td>Larissa Verri Boratti
+								<br>Maria Leonor Ferreira
+								<br>Melissa Ely de Melo
+							</td>
+						</tr>
+						<tr class="tab-org-univ">
+							<td colspan="2">Geodireito</td>
+						</tr>
+						<tr class="tab-org-coord">
+							{% if atlas_lang == 'pt' %}
+							<td class="tab-org-1col">Coordenador</td>
+							{% elif atlas_lang == 'es' %}
+							<td class="tab-org-1col">Coordinador</td>
+							{% endif %}
+							<td>Luis Ugeda Sanches</td>
+						</tr>
+						<tr class="tab-org-colab">
+							<td>Colaboradora</td>
+							<td>Karine Finn Ugeda Sanches</td>
+						</tr>
+				</table>
+				<p>&nbsp;</p>
+				<table class="tab-org">
+					<tr class="tab-org-pais">
+						<td colspan="2">CHILE</td>
+					</tr>
+					<tr class="tab-org-univ">
+						<td colspan="2">USACH - Universidad de Santiago de Chile</td>
+					</tr>
+					<tr class="tab-org-coord">
+						{% if atlas_lang == 'pt' %}
+						<td class="tab-org-1col">Coordenador</td>
+						{% elif atlas_lang == 'es' %}
+						<td class="tab-org-1col">Coordinador</td>
+						{% endif %}
+						<td>Jos&eacute Antonio Tarrío Mosquera</td>
+					</tr>
+					<tr class="tab-org-colab">
+						<td>Colaboradores</td>
+						<td>Cristian Rojas Caballero
+							<br>Jessica Ugarte Valdivia
+							<br>Jos&eacute Borcosque Díaz
+							<br>Verónica Yañez Romo
+							<br>Víctor Herrera González
+						</td>
+					</tr>
+				</table>
+				<p>&nbsp;</p>
+				<table class="tab-org">
+					<tr class="tab-org-pais">
+						<td colspan="2">COSTA RICA</td>
+					</tr>
+					<tr class="tab-org-univ">
+						<td colspan="2">UPCR - Universidad de Costa Rica</td>
+					</tr>
+					<tr class="tab-org-coord">
+						{% if atlas_lang == 'pt' %}
+						<td class="tab-org-1col">Coordenador</td>
+						{% elif atlas_lang == 'es' %}
+						<td class="tab-org-1col">Coordinador</td>
+						{% endif %}
+						<td>Carlos Eduardo Peralta Montero</td>
+					</tr>
+					<tr class="tab-org-colab">
+						<td>Colaboradores</td>
+						<td>Ariana Macaya Lizano
+							<br>Marcela MarÃ­a Moreno Bujan
+							<br>Rafael GonzÃ¡lez Ballar
+						</td>
+					</tr>
+				</table>
+				<p>&nbsp;</p>
+				<table class="tab-org">
+					<tr class="tab-org-pais">
+						<td colspan="2">CUBA</td>
+					</tr>
+					<tr class="tab-org-univ">
+						<td colspan="2">UCLV - Universidad Marta Abreu de Las Villas</td>
+					</tr>
+					<tr class="tab-org-coord">
+						{% if atlas_lang == 'pt' %}
+						<td colspan="2">Professora Yanelys Delgado Trian</td>
+						{% elif atlas_lang == 'es' %}
+						<td  colspan="2">Profesora Yanelys Delgado Trian</td>
+						{% endif %}
+					</tr>
+				</table>
+			</td>
+			<td width="35%">
+				<table class="tab-org">
+					<tr class="tab-org-pais">
+						<td colspan="2">ESPANHA</td>
+					</tr>
+					<tr class="tab-org-univ">
+						<td colspan="2">UR - Universidad de la Rioja</td>
+					</tr>
+					<tr class="tab-org-coord">
+						{% if atlas_lang == 'pt' %}
+						<td class="tab-org-1col">Coordenador</td>
+						{% elif atlas_lang == 'es' %}
+						<td class="tab-org-1col">Coordinador</td>
+						{% endif %}
+						<td>René Javier Santamaría Arinas</td>
+					</tr>
+					<tr class="tab-org-colab">
+						<td>Colaboradores</td>
+						<td>Agustín Hervías Salinas<br>Antonio Fanlo Loras
+							<br>Ignacio Barriobero Martínez
+						</td>
+					</tr>
+					<tr class="tab-org-univ">
+						<td colspan="2">Gvsig</td>
+					</tr>
+					<tr class="tab-org-coord">
+						{% if atlas_lang == 'pt' %}
+						<td class="tab-org-1col">Coordenador</td>
+						{% elif atlas_lang == 'es' %}
+						<td class="tab-org-1col">Coordinador</td>
+						{% endif %}
+						<td>Álvaro Anguix Alfaro</td>
+					</tr>
+					<tr class="tab-org-colab">
+						<td>Colaboradores</td>
+						<td>Joaquín del Cerro
+							<br>Mario Carrera Rodríguez
+							<br>Óscar Martínez Olmos
+						</td>
+					</tr>
+				</table>
+				<p>&nbsp;</p>
+				<table class="tab-org">
+					<tr class="tab-org-pais">
+						<td colspan="2">MÉXICO</td>
+					</tr>
+					<tr class="tab-org-univ">
+						<td colspan="2">UNAM - Universidad Nacional Autónoma de México</td>
+					</tr>
+					<tr class="tab-org-coord">
+						{% if atlas_lang == 'pt' %}
+						<td class="tab-org-1col">Coordenador</td>
+						{% elif atlas_lang == 'es' %}
+						<td class="tab-org-1col">Coordinador</td>
+						{% endif %}
+						<td>Ana Laura Burgos</td>
+					</tr>
+					<tr class="tab-org-colab">
+						<td>Colaboradores</td>
+						<td>Jean Francois Mas Caussel
+							<br>José Raúl García Barrios
+						</td>
+					</tr>
+				</table>
+				<p>&nbsp;</p>
+				<table class="tab-org">
+					<tr class="tab-org-pais">
+						<td colspan="2">PORTUGAL</td>
+					</tr>
+					<tr class="tab-org-univ">
+						<td colspan="2">UA - Universidade de Aveiro</td>
+					</tr>
+					<tr class="tab-org-coord">
+						{% if atlas_lang == 'pt' %}
+						<td class="tab-org-1col">Coordenador</td>
+						{% elif atlas_lang == 'es' %}
+						<td class="tab-org-1col">Coordinador</td>
+						{% endif %}
+						<td>Sara Moreno Pires</td>
+					</tr>
+					<tr class="tab-org-colab">
+						<td>Colaboradores</td>
+						<td>Filomena Maria Cardoso Pedrosa</td>
+					</tr>
+				</table>
+				<p>&nbsp;</p>
+				<table class="tab-org">
+					<tr class="tab-org-pais"><td colspan="2">URUGUAI</td></tr>
+					<tr class="tab-org-univ">
+						<td colspan="2">Universidad de la República</td>
+					</tr>
+					<tr class="tab-org-coord">
+						{% if atlas_lang == 'pt' %}
+						<td class="tab-org-1col">Coordenador</td>
+						{% elif atlas_lang == 'es' %}
+						<td class="tab-org-1col">Coordinador</td>
+						{% endif %}
+						<td>Virginia Fernández Ramos</td>
+					</tr>
+					<tr class="tab-org-colab">
+						<td>Colaboradores</td>
+						<td>Guillermo D'Angelo Vasilskis
+							<br>Raquel Alvarado Quetgles
+						</td>
+					</tr>
+				</table>
+				<p>&nbsp;</p><p>&nbsp;</p>
+				<p>&nbsp;<br>&nbsp;<br>&nbsp;<br>&nbsp;<br>&nbsp;</p>
+			</td>
+			<td width="15%">&nbsp;</td>	
+		</tr>
+		<tr><td colspan="3">&nbsp;</td></tr>
+	</table>
+</div>
+{% endblock %}

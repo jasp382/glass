@@ -2,8 +2,7 @@
 Manage data in Pandas DataFrame
 """
 
-
-from glass.pd import merge_df
+import pandas as pd
 
 
 def col_list_val_to_row(pndDf, colWithLists, geomCol=None, epsg=None):
@@ -43,9 +42,7 @@ def col_list_val_to_row(pndDf, colWithLists, geomCol=None, epsg=None):
         return df_to_geodf(new_rows, geomCol, epsg)
     
     else:
-        import pandas
-        
-        return pandas.DataFrame(new_rows)
+        return pd.DataFrame(new_rows)
 
 
 def dfcolstorows(inDf, colField, valField, colFid=None):
@@ -190,8 +187,8 @@ def df_cols_to_rows_smp(df, idcol, colstoval, colstovalname, valcol):
     valcol = value
     """
 
-    from glass.pys        import obj_to_lst
-    from glass.pd.dagg import merge_df
+    from glass.pys import obj_to_lst
+    from glass.pd  import merge_df
     
     colstoval = obj_to_lst(colstoval)
 

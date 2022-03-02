@@ -154,4 +154,4 @@ def exec_write_q(db_name, queries, api='psql', dbset='default'):
         con.close()
     
     else:
-        raise ValueError('API {} is not available'.format(api))
+        raise ValueError(f'API {api} is not available')

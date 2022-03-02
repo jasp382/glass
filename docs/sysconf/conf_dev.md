@@ -22,18 +22,32 @@ git clone https://github.com/jasp382/glass ~/glass
 
 ```Bash
 # Create new virtual env
+mkvirtualenv glassenv
+# OR
 mkvirtualenv glassenv --system-site-packages
+
 workon glassenv
 
 # Install GLASS
 pip install --upgrade pip
-pip install yolk3k
 
 cd ~/glass/core && pip install -r requirements.txt
-pgdal=$(yolk -V pygdal)
-pip install "${pgdal// /$'=='}"
+
+pip install pygdal==3.0.4.10
+
+OR 
+
+pip install pygdal==3.4.1.10
 
 pv=$(/usr/bin/python3 --version)
-pvv="${pv:7:3}"
-echo "/home/$USER/glass/core" | sudo tee ~/.virtualenvs/glassenv/lib/python$pvv/site-packages/glass.pth
+IFS=' '
+read -a parr <<< "$pv"
+pvv="${parr[1]}"
+
+IFS='.'
+read -a pvva <<< "$pvv"
+pone="${pvva[0]}"
+ptwo="${pvva[1]}"
+
+echo "/home/$USER/glass/core" | sudo tee ~/.virtualenvs/glassenv/lib/python$pone.$ptwo/site-packages/glass.pth
 ```

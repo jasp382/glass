@@ -50,7 +50,7 @@ def sqlcon(db, sqlAPI='psql', dbset='default'):
         return c
     
     else:
-        raise ValueError("{} API is not available".format(sqlAPI))
+        raise ValueError(f"{sqlAPI} API is not available")
 
 
 def alchemy_engine(db, api='psql', dbset='default'):

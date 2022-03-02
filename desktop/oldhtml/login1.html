@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block title %}Login - Exploring VGI{% endblock %}
+{% block body_contents %}
+<div id="log-container">
+	<div id="logIn">
+		<h1>Sign in</h1>
+        <form method="post" action="/expvgi/login/">
+        	{% csrf_token %}
+        	{{ form.username|attr:"placeholder:Username"|attr:"type:text" }}
+        	{{ form.password|attr:"placeholder:Password" }}
+        	<input type="hidden" name="next" value="{{ next }}" />
+        	<button type="submit">Login</button>
+        </form>
+    </div>
+    
+    <div id="verticalLine"></div>
+    
+    <div id="register">
+    	<h1>Register</h1>
+    	
+    	<form method="post" action="/expvgi/register/">
+    		{% csrf_token %}
+            {{ regform.user|attr:"placeholder:Enter Username" }}
+            {{ regform.email|attr:"placeholder:Enter E-mail" }}
+            {{ regform.fname|attr:"placeholder:Enter First Name" }}
+            {{ regform.lname|attr:"placeholder:Enter Last Name" }}
+            {{ regform.passw|attr:"placeholder:Enter Password" }}
+            {{ regform.repeat|attr:"placeholder:Confirm Password" }}
+            <button type="submit">Submit</button>
+        </form> 
+        <!--<p>Registration will be available soon!</p>-->
+    </div>
+    
+    {% if login_error == 'verdade' %}
+    <!-- PopUp that will appear LOGIN is incorrect -->
+    <div id="popUp" class="ng-cloak">
+        <a class="info-box-close" href="/expvgi/login/?next={{ next }}"></a>
+        <p>The credentials entered are incorrect so we can not validate your login!</p>
+        <p>Please, try again!</p>
+        <a href="/expvgi/login/?next={{ next }}" id="closeButton">Ok!</a>
+    </div>
+    <div id="bass-div" class="ng-cloak"></div>
+    {% endif %}
+    
+    {% if isnewuser == 1 %}
+    <!-- Popup telling the User that he is registed -->
+    <div id="popUp" class="ng-cloak">
+    	<a class="info-box-close" href="/expvgi/login/?next={{ next }}"></a>
+    	<p>Your registration has been successfully completed. 
+    		You can now start using our services.</p>
+    	<p>Login with your credentials to begin!</p>
+    	<a href="/expvgi/login/?next={{ next }}" id="closeButton">Ok!</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

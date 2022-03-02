@@ -1,0 +1,185 @@
+<div class="map-complementar" ng-cloak>
+	<div id="auxiliar-map"></div>
+</div>
+	
+<div class="map-principal" ng-cloak>
+	<div id="main-map"></div>
+	
+	<div id="MapControls" class="caixa-zoom" ng-animate>
+		<a href="#">
+			<img src="/static/jsidejs/img/maps/zoom-in.png" alt="Zoom In Icon" ng-click="vm.activateZoomIn()">
+		</a>
+	
+		<a href="#">
+			<img src="/static/jsidejs/img/maps/zoom-out.png" alt="Zoom Out Icon" ng-click="vm.activateZoomOut()">
+		</a>
+	
+		<a href="#">
+			<img src="/static/jsidejs/img/maps/zoom-fe.png" alt="Zoom Out Icon" ng-click="vm.zoomToFullExtent()">
+		</a>
+	</div>
+</div>
+
+<div ng-if="!vm.lyrObj" class="map-bass-div">
+	<p>Utilize o menu lateral para adicionar "Temas" ao Mapa</p>
+</div>
+
+<div ng-if="!vm.lyrObj" class="complementar-bass-div">
+	<p>Utilize o menu lateral para adicionar "Temas" ao Mapa</p>
+</div>
+
+<div class="indicators-info txt-specs" ng-cloak>
+	<p ng-if="!vm.tbl_contents.length">Nenhum tema adicionado ao mapa</p>
+	<p ng-if="vm.tbl_contents.length">
+		<b>Tema: </b>{{ vm.tbl_contents[0].name }}</p>
+	<p ng-if="vm.tbl_contents.length">
+		<b>Ano: </b>{{ vm.tbl_contents[0].id_year.year }}</p>
+	<p ng-if="vm.tbl_contents.length">
+		<b>Média: </b>{{ vm.tbl_contents[0].mean_val }}</p>
+	<p ng-if="vm.tbl_contents.length">
+		<b>Mínimo: </b>{{ vm.tbl_contents[0].min_val }}</p>
+	<p ng-if="vm.tbl_contents.length">
+		<b>Máximo: </b>{{ vm.tbl_contents[0].max_val }}</p>
+	
+	<p ng-if="vm.ctxClickValue">
+		<b>{{ vm.ctxClickDesi }}:</b>
+		<jside-thermometer width="155" height="55" margin="10" padding="5"
+			minval="vm.tbl_contents[0].min_val"
+			maxval="vm.tbl_contents[0].max_val"
+			meanval="vm.tbl_contents[0].mean_val"
+			rowval="vm.ctxClickValue"
+			color="vm.ctxClickColor"></jside-thermometer>{{ vm.ctxClickValue }}
+	</p>
+</div>
+<!--
+<div class="contents-complementar" ng-cloak>
+	<h5>Temas contexto</h5>
+	
+	<div class="sidebar-tree-div">
+		<ul class="select-tree">
+			<li ng-repeat="lyr in vm.ctxTree">
+				<input type="checkbox" ng-change="vm.ctxLyrControl(lyr)"
+					ng-model="lyr.status">
+				<a>{{ lyr.name }} || {{ lyr.id_year.year }}</a>
+			</li>
+		</ul>
+	</div>
+</div>-->
+
+<div id="legend-contents" class="txt-specs">
+	<h3>Legenda:</h3>
+
+	<h5>Mapa específico:</h5>
+
+	<div ng-repeat="lyr in vm.tbl_contents" class="select-tree">
+		<a>{{ lyr.name }} ({{ lyr.id_year.year }})</a>
+		<ul class="select-tree">
+			<li ng-repeat="leg in lyr.lyr_cls">
+				<i style="background:{{ leg.color }};color:{{ leg.color }}">class</i>
+				{{ leg.cat_val }}
+			</li>
+		</ul>
+	</div>
+
+	<hr>
+
+	<h5>Mapa contexto:</h5>
+
+	<div ng-repeat="lyr in vm.tbl_contents" class="select-tree">
+		<a>{{ lyr.name }} ({{ lyr.id_year.year }})</a>
+		<ul class="select-tree">
+			<li ng-repeat="leg in lyr.lyr_cls">
+				<i style="background:{{ leg.color }};color:{{ leg.color }}">class</i>
+				{{ leg.ctx_val }}
+			</li>
+		</ul>
+	</div>
+</div>
+
+<div id="table-contents" class="txt-specs">
+	<h3>Tabela de conteúdos:</h3>
+	
+	<h5>Adicionar Tema ao mapa:</h5>
+	<select id="sel-years" ng-model="vm.lyr_year">
+		<option ng-repeat="(year, lyrs) in vm.av_lyr">{{ year }}</option>
+	</select>
+	
+	<br>
+	
+	<select id="sel-layers" ng-model="vm.new_lyr">
+		<option ng-repeat="lyr in vm.lst_lyr" value="{{ $index }}">{{ lyr.name }}</option>
+	</select>
+	
+	<hr>
+	
+	<h5>Temas no mapa:</h5>
+	
+	<div class="sidebar-tree-div">
+		<ul class="select-tree">
+			<li ng-repeat="lyr in vm.tbl_contents">
+				<input type="checkbox" ng-change="vm.activeLyrControl(lyr, {{ $index }})" 
+					ng-model="lyr.status">
+				<a>{{ lyr.name }} ({{ lyr.id_year.year }})</a><br>
+			</li>
+		</ul>
+	</div>
+	
+	<hr>
+	
+	<h5>Temas base:</h5>
+	<div class="sidebar-tree-div">
+		<ul class="select-tree">
+			<li ng-repeat="pntLyr in vm.pntLyr">
+				<input type="checkbox" ng-change="vm.pntLyrControl(pntLyr, {{ $index }})"
+					ng-model="pntLyr.status">
+				<a>{{ pntLyr.name }}</a>
+			</li>
+		</ul>
+		<ul class="select-tree">
+			<li ng-repeat="polyLyr in vm.polyLyr">
+				<input type="checkbox" ng-change="vm.pntLyrControl(polyLyr, {{ $index }})"
+					ng-model="polyLyr.status">
+				<a>{{ polyLyr.name }}</a>
+			</li>
+		</ul>
+	</div>
+</div>
+
+<div class="data-table">
+	<div class="table-responsive">
+		<table class="table table-fixed txt-specs">
+			<thead>
+				<tr>
+					<th scope="col" class="col-3">#</th>
+					<th scope="col" class="col-3">Concelho</th>
+					<th scope="col" class="col-3">{{ vm.lyrObj.name }}</th>
+					<th scope="col" class="col-3">Enquadramento</th>
+				</tr>
+			</thead>
+			<tbody ng-if="vm.lyrTbl">
+				<tr ng-repeat="lnh in vm.lyrTbl">
+					<th scope="row" class="col-3">{{ lnh.fid }}</th>
+					<td class="col-3">{{ lnh.design }}</td>
+					<td class="col-3">{{ lnh.value }}</td>
+					<td class="col-3">
+						<jside-thermometer width="155" height="55"
+							margin="10" padding="5"
+							minval="vm.lyrObj.min_val"
+							maxval="vm.lyrObj.max_val"
+							meanval="vm.lyrObj.mean_val"
+							rowval="lnh.value"
+							color="lnh.color"></jside-thermometer>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+
+
+<!-- Sidebar for accessory information -->
+<!--<div id="table-contents">
+	
+</div>-->
+
+<div ng-transclude></div>

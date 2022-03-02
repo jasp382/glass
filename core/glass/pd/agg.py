@@ -42,7 +42,7 @@ def df_groupBy(df, grpCols, STAT=None, STAT_FIELD=None):
             )[STAT_FIELD].sum()
         
         else:
-            raise ValueError("{} is not a valid option".format(STAT))
+            raise ValueError(f"{STAT} is not a valid option")
     
     return newDf
 

@@ -77,7 +77,7 @@ def fishnet(top_left, bottom_right, x, y, outfishnet=None, epsg=None, xy_row_col
     # DataFrame to GeoDataFrame
     fishtbl = gp.GeoDataFrame(
         fishtbl, geometry="geom",
-        crs='EPSG:{}'.format(str(epsg)) if epsg else None
+        crs=f'EPSG:{str(epsg)}' if epsg else None
     )
     
     if outfishnet:

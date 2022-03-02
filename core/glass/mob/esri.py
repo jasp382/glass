@@ -2,7 +2,8 @@
 ArcGIS Rest Services implementation for network analysis
 """
 
-def closest_facility(incidents, incidents_id, facilities, output, impedance='TravelTime'):
+def closest_facility(incidents, incidents_id, facilities, output,
+    impedance='TravelTime', crs=None):
     """
     impedance options:
     * TravelTime;
@@ -11,25 +12,28 @@ def closest_facility(incidents, incidents_id, facilities, output, impedance='Tra
 
     import requests
     import pandas as pd
-    import numpy as np
-    from glass.cons.esri   import rest_token, CF_URL
-    from glass.it.esri import json_to_gjson
+    import json as js
+    import geopandas as gp
+    from glass.cons.esri import rest_token, CF_URL
+    from glass.it.esri   import json_to_gjson
     from glass.rd.shp    import shp_to_obj
     from glass.wt.shp    import df_to_shp
-    from glass.pd.split import df_split
-    from glass.pd       import merge_df
+    from glass.pd.split  import df_split
+    from glass.pd        import merge_df
     from glass.prop.prj  import get_shp_epsg
     from glass.prj.obj   import df_prj
     from glass.it.pd     import df_to_geodf
     from glass.it.pd     import json_obj_to_geodf
-    from glass.cons.esri   import get_tv_by_impedancetype
+    from glass.cons.esri import get_tv_by_impedancetype
+
+    iauxid = 'iid' if incidents_id != 'iid' else 'fiid'
 
     # Get API token
     token = rest_token()
 
     # Data to Pandas DataFrames
-    fdf = shp_to_obj(facilities)
-    idf = shp_to_obj(incidents)
+    fdf = shp_to_obj(facilities) if type(facilities) != gp.GeoDataFrame else facilities
+    idf = shp_to_obj(incidents) if type(incidents) != gp.GeoDataFrame else incidents
 
     # Re-project to WGS84
     fdf = df_prj(fdf, 4326)
@@ -73,7 +77,7 @@ def closest_facility(incidents, incidents_id, facilities, output, impedance='Tra
         tv_col  = 'walktime'
         rn_cols = {'Total_WalkTime' : tv_col}
         
-        ndrop = ['Total_Kilometers', 'Total_TravelTime', 'Total_Minutes']
+        ndrop = ['Total_Kilometers']
     
     elif impedance == 'metric':
         tv_col = 'kilomts'
@@ -101,17 +105,15 @@ def closest_facility(incidents, incidents_id, facilities, output, impedance='Tra
                 'incidents'              : incidents_str,
                 'token'                  : token,
                 'f'                      : 'json',
-                'travelModel'            : tv,
+                'travelModel'            : js.dumps(tv),
                 'defaultTargetFacilityCount' : '1',
-                'returnCFRoutes'        : True,
+                'returnCFRoutes'         : True,
                 'travelDirection'        : 'esriNATravelDirectionToFacility',
                 'impedanceAttributeName' : impedance
             })
 
             if r.status_code != 200:
-                raise ValueError(
-                    'Error when requesting from: {}'.format(str(r.url))
-                )
+                raise ValueError(f'Error when requesting from: {str(r.url)}')
             
             # Convert ESRI json to GeoJson
             esri_geom = r.json()
@@ -121,7 +123,8 @@ def closest_facility(incidents, incidents_id, facilities, output, impedance='Tra
             gdf = json_obj_to_geodf(geom, 4326)
 
             # Delete unwanted columns
-            gdf.drop(drop_cols, axis=1, inplace=True)
+            ndc = [c for c in drop_cols if c in gdf.columns.values]
+            gdf.drop(ndc, axis=1, inplace=True)
 
             # Rename some interest columns
             gdf.rename(columns=rn_cols, inplace=True)
@@ -143,22 +146,26 @@ def closest_facility(incidents, incidents_id, facilities, output, impedance='Tra
         tv_col : 'min'
     })).reset_index()
 
-    gpdf.rename(columns={incidents_id : 'iid', tv_col : 'impcol'}, inplace=True)
+    gpdf.rename(columns={incidents_id : iauxid, tv_col : 'impcol'}, inplace=True)
 
     # Recovery geometry
-    fgdf = fgdf.merge(gpdf, how='left', left_on=incidents_id, right_on='iid')
+    fgdf = fgdf.merge(gpdf, how='left', left_on=incidents_id, right_on=iauxid)
     fgdf = fgdf[fgdf[tv_col] == fgdf.impcol]
     fgdf = df_to_geodf(fgdf, 'geometry', 4326)
 
     # Remove repeated units
-    g = fgdf.groupby('iid')
+    g = fgdf.groupby(iauxid)
     fgdf['rn'] = g[tv_col].rank(method='first')
     fgdf = fgdf[fgdf.rn == 1]
 
-    fgdf.drop(['iid', 'rn'], axis=1, inplace=True)
+    fgdf.drop([iauxid, 'rn'], axis=1, inplace=True)
 
     # Re-project to original SRS
-    epsg = get_shp_epsg(facilities)
+    if type(facilities) != gp.GeoDataFrame:
+        epsg = get_shp_epsg(facilities)
+    
+    else:
+        epsg = 4326 if not crs else crs
     fgdf = df_prj(fgdf, epsg)
 
     # Export result
@@ -169,12 +176,13 @@ def closest_facility(incidents, incidents_id, facilities, output, impedance='Tra
 
 def cf_based_on_relations(incidents, incidents_id, group_incidents_col,
     facilities, facilities_id, rel_inc_fac, sheet, group_fk, facilities_fk,
-    output, impedante='TravelTime'):
+    output, impedance='TravelTime'):
     """
     Calculate time travel considering specific facilities
     for each group of incidents
 
-    Relations between incidents and facilities are in a auxiliar table (rel_inc_fac).
+    Relations between groups of incidents and facilities
+     are in a auxiliar table (rel_inc_fac).
     Auxiliar table must be a xlsx file
     """
 
@@ -235,7 +243,8 @@ def cf_based_on_relations(incidents, incidents_id, group_incidents_col,
         # calculate closest facility
         cf = closest_facility(
             new_i, incidents_id, new_f,
-            os.path.join(tmpdir, f'cf_{row[group_incidents_col]}.shp')
+            os.path.join(tmpdir, f'cf_{row[group_incidents_col]}.shp'),
+            impedance=impedance
         )
 
         res.append(cf)
@@ -297,9 +306,7 @@ def service_areas(facilities, breaks, output, impedance='TravelTime'):
         })
     
         if r.status_code != 200:
-            raise ValueError(
-                'Error when requesting from: {}'.format(str(r.url))
-            )
+            raise ValueError(f'Error when requesting from: {str(r.url)}')
     
         esri_geom = r.json()
         geom = json_to_gjson(esri_geom.get('saPolygons'))

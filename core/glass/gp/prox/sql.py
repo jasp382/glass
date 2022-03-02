@@ -16,7 +16,7 @@ def st_near(db, inTbl, inGeom, nearTbl, nearGeom, output,
     """
     
     if api == 'psql' and not intbl_pk:
-        from glass.pys      import obj_to_lst
+        from glass.pys   import obj_to_lst
         from glass.sql.q import q_to_ntbl
     
         _out = q_to_ntbl(db, output, (
@@ -27,7 +27,7 @@ def st_near(db, inTbl, inGeom, nearTbl, nearGeom, output,
             ") AS j"
         ).format(
             ingeom=inGeom, distCol=near_col, t=inTbl, neargeom=nearGeom,
-            tblNear=nearTbl
+            tblNear=nearTbl, nearwhr=whrNear
         ), api='psql')
 
         return output

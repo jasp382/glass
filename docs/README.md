@@ -7,48 +7,50 @@ Welcome to GLASS documentation!
 
 2) [User Guide](#2-User-Guide)
 
-    2.1) [Configuration](#21-Configuration)
+    2.1. [Installation and Configuration](#21-Configuration)
 
-    2.2) [Usage](#22-Usage)
+    2.2. [Usage and tools](#22-Usage)
 
 3) [Development](#3-Development)
 
 4) [Support](#4-Support)
-________________________________________________________________________________________________________________________
-________________________________________________________________________________________________________________________
+
+<hr><hr>
+
 
 ## 1. General Overview:
 
 The Geoscientific Library for Analysis of Spatial Systems (GLASS) is a free and open source library for geospatial data science.
 It consistes of a set of Python Methods to support the automatization of spatial data science activities based on Geographic Information Systems Software. These Python Methods could be included in any high-level spatial analysis application.
 
-The GLASS package is composed by the following main modules:
 
-* **.ng** -> Tools for non geospatial data;
+<hr><hr>
 
-    - Includes tools to... [Click here to know more](tools/ng/README.md)
-
-* **.g** -> Tools for geospatial data;
-
-* **.ete** -> End-to-End methodologies.
-
-Follow the hyperlink of each module to get more information about it.
-
-________________________________________________________________________________________________________________________
-________________________________________________________________________________________________________________________
 
 ## 2. User Guide:
 
-### 2.1. Configuration:
+### 2.1. Installation and Configuration:
 
 todo
 
-### 2.2. Usage:
+### 2.2. Usage and tools:
 
-todo
+The GLASS package is composed by the following main modules:
 
-________________________________________________________________________________________________________________________
-________________________________________________________________________________________________________________________
+* **.ete** -> End-to-End methodologies.
+
+* [.tbl](tools/tables/README.md) -> **Tools to deal with tables data;**
+
+    - Includes tools to... [Click here to know more](tools/ng/README.md)
+
+
+
+
+Follow the hyperlink of each module to get more information about it.
+
+
+<hr><hr>
+
 
 ## 3. Development:
 

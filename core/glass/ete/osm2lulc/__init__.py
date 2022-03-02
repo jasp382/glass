@@ -2,6 +2,13 @@
 
 import os
 
+NOMENCLATURES = [
+    "CORINE_LAND_COVER",
+    "URBAN_ATLAS",
+    "GLOBE_LAND_30",
+    "EURO_TEST"
+]
+
 
 DB_SCHEMA = {
     "RULES" : {
@@ -41,6 +48,15 @@ DB_SCHEMA = {
         "CLS_FK"       : "globe_id",
         "RULE_FK"      : "rule_id",
         "RULES_FIELDS" : {"BUFFER" : "buffer_dist", "AREA" : "area"}
+    },
+    "EURO_TEST" : {
+        "NAME"         : "nom_eurotest",
+        "CLS_ID"       : "cid",
+        "OSM_RELATION" : "osm_euro",
+        "OSM_FK"       : "osm_id",
+        "CLS_FK"       : "euro_id",
+        "RULE_FK"      : "rule_id",
+        "RULES_FIELDS" : {"BUFFER" : "buffer_dist", "AREA" : "area"}
     }
 }
 
@@ -74,7 +90,8 @@ PRIORITIES = {
     ],
     "GLOBE_LAND_30_NUMPY" : [
         82, 81, 80, 60, 50, 10, 30, 20, 40, 90, 100
-    ]
+    ],
+    "EURO_TEST" : [121, 122, 1, 5, 2, 3]
 }
 
 GEOM_AREA = "geom_area"
@@ -185,6 +202,22 @@ LEGEND = {
         90  : "Bareland",
         70  : "Tundra",
         100 : "Permanent snow/ice"
+    },
+    "EURO_TEST" : {
+        121 : "Artificial Surfaces",
+        122 : "Artificial Surfaces",
+        1 : "Artificial Surfaces",
+        5 : "Water",
+        2 : "Agricultural, semi-natural areas, wetlands",
+        3 : "Forest"
+    },
+    "EURO_TEST_NUMPY" : {
+        11 : "Artificial Surfaces",
+        12 : "Artificial Surfaces",
+        1 : "Artificial Surfaces",
+        5 : "Water",
+        2 : "Agricultural, semi-natural areas, wetlands",
+        3 : "Forest"
     }
 }
 

@@ -310,8 +310,8 @@ def viewshed_by_feat_class(inRaster, observerDataset, feat_class_folder,
     
     arcpy.CheckOutExtension('Spatial')
     
-    from glass.oss.ops               import create_folder
-    from glass.prop.ff               import vector_formats, raster_formats
+    from glass.pys.oss               import mkdir
+    from glass.g.prop               import vector_formats, raster_formats
     from glass.prop.rst              import get_cellsize, rst_distinct
     from glass.anls.prox.bf          import _buffer
     from glass.cpu.arcg.mng.rst.proc import clip_raster
@@ -344,7 +344,7 @@ def viewshed_by_feat_class(inRaster, observerDataset, feat_class_folder,
                           'is a raster or a feature class'))
     
     # Create workspace for temporary files
-    wTmp = create_folder(os.path.join(output_folder, 'tempfiles'))
+    wTmp = mkdir(os.path.join(output_folder, 'tempfiles'))
     
     # When clipping the observerDataset (when it is a raster), there is a change
     # of obtaining a raster with more values than the original raster
@@ -499,9 +499,9 @@ def viewshed_by_feat_class2(inRaster, observerDataset, feat_class_folder,
     import numpy
     import os
     
-    from glass.oss.ops               import create_folder
-    from glass.prop.ff               import vector_formats, raster_formats
-    from glass.cpu.arcg.lyr          import feat_lyr
+    from glass.pys.oss               import mkdir
+    from glass.g.prop              import vector_formats, raster_formats
+    from gesri.rd.shp          import shp_to_lyr
     from glass.prop.rst              import get_cell_coord
     from glass.prop.ext              import rst_ext
     from glass.prop.rst              import rst_shape, rst_distinct, get_nodata, get_cellsize
@@ -545,7 +545,7 @@ def viewshed_by_feat_class2(inRaster, observerDataset, feat_class_folder,
         ))
     
     # Create workspace for temporary files
-    wTmp = create_folder(os.path.join(output_folder, 'tempfiles'))
+    wTmp = mkdir(os.path.join(output_folder, 'tempfiles'))
     
     # When clipping the observerDataset (when it is a raster), there is a change
     # of obtaining a raster with more values than the original raster
@@ -743,7 +743,7 @@ def viewshed_by_feat_class2(inRaster, observerDataset, feat_class_folder,
                         ))
                     )
                     
-                    lyrLineSight = feat_lyr(lineSightRes)
+                    lyrLineSight = shp_to_lyr(lineSightRes)
                     
                     cs = arcpy.SearchCursor(lyrLineSight)
                     lnh = cs.next()

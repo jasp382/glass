@@ -30,7 +30,7 @@ def check_isRaster(_file):
         return True
 
 
-def check_isShp(_file):
+def is_shp(_file):
     from glass.pys.oss import fprop
     
     lst = vector_formats()
@@ -80,7 +80,8 @@ def drv_name(_file):
         '.asc'    : 'AAIGrid',
         '.img'    : 'HFA',
         # Vector or Raster
-        '.gpkg'   : 'GPKG'
+        '.gpkg'   : 'GPKG',
+        '.xlsx'   : 'XLSX'
     }
     return str(drv[os.path.splitext(_file)[1]])
 

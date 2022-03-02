@@ -20,7 +20,7 @@ def service_area_as_sup_cst(networkDataset, rdvName, extentLyr, originsLyr, outp
     import os
     
     from glass.prop.ext           import get_extent
-    from glass.cpu.arcg.lyr       import feat_lyr
+    from gesri.rd.shp       import shp_to_lyr
     from glass.to.shp.arcg        import geomArray_to_fc
     from glass.mob.arctbx.svarea  import service_area_polygon
     from glass.web.glg.distmatrix import get_max_dist
@@ -88,7 +88,7 @@ def service_area_as_sup_cst(networkDataset, rdvName, extentLyr, originsLyr, outp
     else:
         originsWGS = originsLyr
     
-    origLyr = feat_lyr(originsWGS)
+    origLyr = shp_to_lyr(originsWGS)
     origPoint = []
     for line in arcpy.SearchCursor(origLyr):
         pnt = line.Shape.centroid
@@ -105,7 +105,7 @@ def service_area_as_sup_cst(networkDataset, rdvName, extentLyr, originsLyr, outp
     else:
         refWGS = REF_POINTS
     
-    refPointsLyr = feat_lyr(refWGS)
+    refPointsLyr = shp_to_lyr(refWGS)
     refPoints = []
     for line in arcpy.SearchCursor(refPointsLyr):
         geom = line.getValue("Shape")

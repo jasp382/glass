@@ -15,11 +15,11 @@ def range_score(raster, output, MAX=True, __template=None):
     
     import os
     from glass.oss             import get_filename
-    from glass.cpu.arcg.lyr    import rst_lyr
+    from gesri.rd.rst          import rst_to_lyr
     from glass.prop.rst        import rst_stats
     from glass.spanlst.algebra import rstcalc
     
-    lyr = rst_lyr(raster)
+    lyr = rst_to_lyr(raster)
     
     __max = rst_stats(lyr, api='arcpy')["MAX"]
     __min = rst_stats(lyr, api='arcpy')["MIN"]
@@ -46,25 +46,20 @@ def maximum_score(raster, output, MAX=True, __template=None):
     Else, major values will be the minor values in the normalizes raster.
     """
     
-    import os
-    from glass.oss             import get_filename
-    from glass.cpu.arcg.lyr    import rst_lyr
+    from glass.pys.oss             import fprop
+    from gesri.rd.rst    import rst_to_lyr
     from glass.prop.rst        import rst_stats
     from glass.spanlst.algebra import rstcalc
     
-    lyr = rst_lyr(raster)
+    lyr = rst_to_lyr(raster)
     
     __max = rst_stats(lyr, api='arcpy')["MAX"]
     
     express = '{rst} / {_max}' if MAX else '1 - ({rst} / {_max})'
     
-    rstcalc(
-        express.format(
-            rst=get_filename(raster),
-            _max=str(__max)
-        ),
-        output, template=__template, api='arcpy'
-    )
+    rstcalc(express.format(
+        rst=fprop(raster, 'fn'), _max=str(__max)
+    ), output, template=__template, api='arcpy')
     
     return output
 

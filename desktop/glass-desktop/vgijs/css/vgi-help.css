@@ -1,0 +1,32 @@
+#help{
+    position: relative;
+    top: calc(65px + 35px + 55px);
+    padding: 0%;
+}
+
+#help a{
+    color: black;
+    margin: 1% auto;
+    width: 50%;
+}
+
+#help h3{
+    margin: 0 auto;
+}
+
+#help p{
+    margin: 3% auto;
+    width: 80%;
+    text-align: left;
+}
+
+#HelpIndex{
+    font-size: 18px;
+    padding-bottom: 2%;
+    background-image: url("/static/vgijs/img/vgi-home/paperBackgroundTexture.png");
+}
+
+#help #HelpIndex p{
+    text-align: center;
+    margin: 3% auto;
+}

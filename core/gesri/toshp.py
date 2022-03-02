@@ -31,15 +31,15 @@ def geomArray_to_fc(array, output, GEOM_TYPE, EPSG, overwrite=True, fields=None)
     """
     
     from glass.cpu.arcg.mng.featcls import create_feat_class
-    from glass.cpu.arcg.lyr         import feat_lyr
-    from glass.cpu.arcg.mng.fld     import add_field
+    from gesri.rd.shp         import shp_to_lyr
+    from gesri.tbl.cols     import add_col
     
     if overwrite: arcpy.env.overwriteOutput = True
     
     # Create a new Feature Class
     output = create_feat_class(output, GEOM_TYPE, EPSG)
     
-    outLyr = feat_lyr(output)
+    outLyr = shp_to_lyr(output)
     
     # Create fields
     if fields:
@@ -50,7 +50,7 @@ def geomArray_to_fc(array, output, GEOM_TYPE, EPSG, overwrite=True, fields=None)
         
         else:
             for fld in fields:
-                add_field(
+                add_col(
                     outLyr, fld, fields[fld][0],
                     fields[fld][1]
                 )

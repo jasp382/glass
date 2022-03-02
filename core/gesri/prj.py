@@ -9,10 +9,10 @@ def project(inShp, outShp, outEPSG):
     Execute Data Management > Data Transformations > Projection
     """
     
-    from gesri.lyr         import feat_lyr
+    from gesri.rd.shp         import shp_to_lyr
     from gesri.df.prop.prj import get_wkt_esri
     
-    layer = feat_lyr(inShp)
+    layer = shp_to_lyr(inShp)
     srs_obj = get_wkt_esri(outEPSG)
     
     arcpy.Project_management(layer, outShp, srs_obj)

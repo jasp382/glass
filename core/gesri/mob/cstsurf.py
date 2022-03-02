@@ -16,7 +16,6 @@ def acost_surface(mdt, tax_cos, cos, leg_cos, barr, rdv, fldRdv, w, SupCst):
     from glass.spanlst.surf             import slope
     from glass.spanlst.local            import combine
     from glass.cpu.arcg.spanlst.rcls    import lookup
-    from glass.cpu.arcg.mng.fld         import add_field
     from glass.cpu.arcg.mng.fld         import list_fields
     from glass.cpu.arcg.mng.rst.dataset import mosaic_to_raster
     from glass.anls.ovlay               import union

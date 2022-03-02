@@ -190,8 +190,7 @@ def sample_to_points(points, col_name, rst):
     
     m = Module(
         "v.what.rast", map=points, raster=rst,
-        column=col_name,
-        overwrite=True, run_=False, quiet=True
+        column=col_name, run_=False, quiet=True
     )
     
     m()

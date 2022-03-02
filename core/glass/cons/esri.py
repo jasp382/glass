@@ -4,6 +4,11 @@ Constants for using ESRI services
 
 """GLOBAL VARIABLES"""
 
+R_URL = (
+    "https://route-api.arcgis.com/arcgis/rest/services/"
+    "World/Route/NAServer/Route_World/solve?"
+)
+
 SA_URL = (
     'https://route.arcgis.com/arcgis/rest/services'
     '/World/ServiceAreas/NAServer/ServiceArea_World/'
@@ -16,10 +21,18 @@ CF_URL = (
     'solveClosestFacility?'
 )
 
-TV_URL = (
+"""TV_URL = (
     "https://route.arcgis.com/arcgis/rest/services/World/ServiceAreas"
     "/NAServer/ServiceArea_World/retrieveTravelModes?"
+)"""
+
+TV_URL = (
+    "https://route.arcgis.com/arcgis/rest/services/World/Route/NAServer/"
+    "Route_World/retrieveTravelModes?"
 )
+
+
+
 
 """
 Tokens
@@ -28,6 +41,8 @@ Tokens
 def rest_token():
     """
     Return token for using ArcGIS Rest Services
+
+    - Create new tokens at https://developers.arcgis.com/dashboard/
     """
 
     import json, os
@@ -81,6 +96,7 @@ def get_tv_by_impedancetype(impedance):
 
     impedance options:
     * WalkTime
+    * TravelTime
     """
 
     import requests as rqsts

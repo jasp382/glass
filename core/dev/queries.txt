@@ -1,13 +1,3 @@
--- populacao por freguesia
-CREATE TABLE freg_cmb1 AS
-SELECT mtbl.*, jtbl.popres FROM freg_cmb AS mtbl
-LEFT JOIN (
-	SELECT idfreg, SUM(popres) AS popres FROM bgri
-	GROUP BY idfreg
-) AS jtbl
-ON mtbl.idfreg = jtbl.idfreg
-;
-
 -- farmacia por 10000 hab
 CREATE TABLE freg_cmb2 AS
 SELECT mtbl.*, 

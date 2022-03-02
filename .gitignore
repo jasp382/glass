@@ -106,12 +106,11 @@ build/*
 glass.egg-info
 
 
-# Scripts
-scripts/usee/obs_to_txt_nc.json
-scripts/txt/tw_20*
-
 # Configuration json
 core/glass/cons/*.json
+!core/glass/cons/con-postgresql_sample.json
+!core/glass/cons/api-keys-sample.json
+!core/glass/cons/sentinel-ex.json
 
 settings.json
 

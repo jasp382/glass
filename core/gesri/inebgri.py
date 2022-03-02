@@ -19,9 +19,9 @@ def assign_units_to_polygons(bgri, polygons, id_bgri, id_polygon,
     """
     
     import arcpy;            import os
-    from gesri.lyr        import feat_lyr
+    from gesri.rd.shp        import shp_to_lyr
     from gesri.anls.ovlay import intersect
-    from gesri.mng.fld    import add_field
+    from gesri.tbl.cols    import add_col
     from gesri.prop.fld   import get_geom_field
     from gesri.prop.feat  import get_feat_area
     
@@ -29,14 +29,14 @@ def assign_units_to_polygons(bgri, polygons, id_bgri, id_polygon,
     workspace = workspace if workspace else os.path.dirname(bgri)
     
     # Create feature layers of the inputs
-    bgriLyr, polygLyr = [feat_lyr(bgri), feature_lyr(polygons)]
+    bgriLyr, polygLyr = [shp_to_lyr(bgri), shp_to_lyr(polygons)]
     
     # Intersect
     int_fc = os.path.join(workspace, 'bgri_and_polygons.shp')
     int_fc = intersect([bgriLyr, polygLyr], int_fc)
     
     # Relate bgri unit with polygon entities
-    intLyr = feat_lyr(int_fc)
+    intLyr = shp_to_lyr(int_fc)
     
     cursor = arcpy.SearchCursor(intLyr)
     bgri_polygons = {}
@@ -60,7 +60,7 @@ def assign_units_to_polygons(bgri, polygons, id_bgri, id_polygon,
     # Write output
     del cursor, linha
     
-    add_field(bgriLyr, field_bgri, "TEXT", "15")
+    add_col(bgriLyr, field_bgri, "TEXT", "15")
     
     cursor = arcpy.UpdateCursor(bgriLyr)
     for linha in cursor:

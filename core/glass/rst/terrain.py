@@ -15,9 +15,9 @@ def ob_ref_rst(ref, folder, cellsize=None):
     isRst = check_isRaster(ref)
 
     if not isRst:
-        from glass.prop import check_isShp
+        from glass.prop import is_shp
 
-        if not check_isShp(ref):
+        if not is_shp(ref):
             raise ValueError((
                 'Extent Template File has an invalid file format. '
                 'Please give a file with one of the following extensions: '
@@ -50,7 +50,7 @@ def make_dem(grass_workspace, data, field, output, extent_template,
     * CONTOUR;
     """
 
-    from glass.pys.oss    import fprop
+    from glass.pys.oss  import fprop
     from glass.wenv.grs import run_grass
     from glass.prop.prj import get_epsg
     
@@ -142,10 +142,10 @@ def make_dem(grass_workspace, data, field, output, extent_template,
     elif method == "IDW":
         from glass.rst.itp  import ridw
         from glass.rst.alg  import rstcalc
-        from glass.dp.torst import grsshp_to_grsrst as shp_to_rst
+        from glass.dp.torst import grsshp_to_grsrst
         
         # Elevation (GRASS Vector) to Raster
-        elevRst = shp_to_rst(elv, field, 'rst_elevation')
+        elevRst = grsshp_to_grsrst(elv, field, 'rst_elevation')
         # Multiply cells values by 100 000.0
         rstcalc('int(rst_elevation * 100000)', 'rst_elev_int', api='pygrass')
         # Run IDW to generate the new DEM

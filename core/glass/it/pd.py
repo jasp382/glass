@@ -30,10 +30,10 @@ def df_to_geodf(df, colGeom, epsg):
     
     from geopandas import GeoDataFrame
     
-    return GeoDataFrame(
-        df, crs='EPSG:{}'.format(epsg),
+    return GeoDataFrame(df, crs=f'EPSG:{epsg}',
         geometry=colGeom
     )
+
 
 def json_obj_to_geodf(json_obj, epsg):
     """
@@ -43,5 +43,5 @@ def json_obj_to_geodf(json_obj, epsg):
     from geopandas import GeoDataFrame
     
     return GeoDataFrame.from_features(
-        json_obj['features'], 'EPSG:{}'.format(str(epsg))
+        json_obj['features'], f'EPSG:{str(epsg)}'
     )

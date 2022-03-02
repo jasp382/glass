@@ -31,9 +31,7 @@ def start_grass_linux_newLocation(gisdb, location, srs=None,
             del_folder(location_path)
         
         else:
-            raise ValueError(
-                'GRASS GIS 7 Location already exists'
-            )
+            raise ValueError('GRASS GIS 7 Location already exists')
     
     grassbin = grassBin if grassBin else 'grass76'
     startcmd = grassbin + ' --config path'
@@ -257,7 +255,7 @@ def rst_to_region(__raster):
     r()
 
 
-def shp_to_region(shp, cellsize):
+def shp_to_region(shp, cellsize=None):
     """
     Feature Class to region
     """

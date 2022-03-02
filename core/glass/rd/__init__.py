@@ -4,7 +4,7 @@ Read data from File
 
 def tbl_to_obj(tblFile, sheet=None, useFirstColAsIndex=None,
               _delimiter=None, encoding_='utf8', output='df',
-              fields=None, colsAsArray=None):
+              fields=None, colsAsArray=None, csvheader=True):
     """
     Table File to Pandas DataFrame
     
@@ -14,6 +14,7 @@ def tbl_to_obj(tblFile, sheet=None, useFirstColAsIndex=None,
     - array;
     """
     
+    import pandas as pd
     from glass.pys.oss import fprop
     
     fFormat = fprop(tblFile, 'ff')
@@ -34,7 +35,6 @@ def tbl_to_obj(tblFile, sheet=None, useFirstColAsIndex=None,
         ODS file to Pandas Dataframe
         """
         
-        import pandas
         from pyexcel_ods import get_data
         
         if not sheet:
@@ -48,8 +48,7 @@ def tbl_to_obj(tblFile, sheet=None, useFirstColAsIndex=None,
         XLS to Pandas Dataframe
         """
         
-        import pandas as pd
-        from glass.pys  import obj_to_lst
+        from glass.pys import obj_to_lst
         
         sheet = 0 if not sheet else sheet
         
@@ -66,20 +65,24 @@ def tbl_to_obj(tblFile, sheet=None, useFirstColAsIndex=None,
         Text file to Pandas Dataframe
         """
         
-        import pandas
-        
         if not _delimiter:
             raise ValueError(
                 "You must specify _delimiter when converting txt files"
             )
         
-        tableDf = pandas.read_csv(
-            tblFile, sep=_delimiter, low_memory=False,
-            encoding=encoding_
-        )
+        if csvheader:
+            tableDf = pd.read_csv(
+                tblFile, sep=_delimiter, low_memory=False,
+                encoding=encoding_
+            )
+        else:
+            tableDf = pd.read_csv(
+                tblFile, sep=_delimiter, low_memory=False,
+                encoding=encoding_, header=None
+            )
     
     else:
-        raise ValueError('{} is not a valid table format!'.format(fFormat))
+        raise ValueError(f'{fFormat} is not a valid table format!')
     
     if fields:
         from glass.pys  import obj_to_lst

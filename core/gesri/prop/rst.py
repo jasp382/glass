@@ -3,6 +3,17 @@ Get Raster properties
 """
 
 import arcpy
+import os
+
+def checkIfRstIsLayer(obj):
+    """
+    Check if an object is a Raster Layer
+    """
+    
+    dataType = arcpy.Describe(obj)
+    
+    return True if dataType == 'RasterLayer' else None
+
 
 def rst_ext(rst):
     """
@@ -53,14 +64,14 @@ def get_cellsize(rst, xy=False, bnd=None):
     }
     """
     
-    import arcpy
-    from glass.cpu.arcg.lyr import rst_lyr, checkIfRstIsLayer
+    from gesri.rd.rst import rst_to_lyr
+    from gesri.prop.rst import checkIfRstIsLayer
     
     def _get_cell_arc(_r):
         # Check if r is a Raster Layer
         isRaster = checkIfRstIsLayer(_r)
             
-        lyr = rst_lyr(_r) if not isRaster else _r
+        lyr = rst_to_lyr(_r) if not isRaster else _r
             
         cellsizeX = arcpy.GetRasterProperties_management(
             lyr, "CELLSIZEX", "" if not bnd else bnd

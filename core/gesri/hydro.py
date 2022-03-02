@@ -2,6 +2,8 @@
 Hydrologic procedures
 """
 
+import arcpy
+
 def generate_waterlines(mdt, waterbodies, accumulation_value=500,
                         workspace=None):
     """
@@ -9,9 +11,8 @@ def generate_waterlines(mdt, waterbodies, accumulation_value=500,
     """
     
     import os
-    from glass.oss                    import get_fileformat
-    from glass.cpu.arcg.lyr           import rst_lyr
-    from glass.prop.ff                import vector_formats, raster_formats
+    from gesri.rd.rst import rst_to_lyr
+    from glass.g.prop                import vector_formats, raster_formats
     from glass.spanlst.algebra        import rstcalc
     from glass.cpu.arcg.spanlst.hydro import fill
     from glass.cpu.arcg.spanlst.hydro import flow_accumulation
@@ -40,7 +41,7 @@ def generate_waterlines(mdt, waterbodies, accumulation_value=500,
     )
     
     # Split water bodies from the other accumulation data
-    lyr_flow = rst_lyr(flow_acc)
+    lyr_flow = rst_to_lyr(flow_acc)
     
     outFormat = os.path.splitext(os.path.basename(waterbodies))[1]
     rstFormat = raster_formats()

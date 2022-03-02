@@ -286,7 +286,7 @@ def rst_to_grs(rst, grsRst, lmtExt=None, as_cmd=None):
         __flag = 'o' if not lmtExt else 'or'
         
         m = Module(
-            "r.in.gdal", input=rst, output=grsRst, flags='o',
+            "r.in.gdal", input=rst, output=grsRst, flags=__flag,
             overwrite=True, run_=False, quiet=True,
         )
         

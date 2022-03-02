@@ -70,11 +70,11 @@ def grs_vect_selbyarea(osmdb, polyTbl, UPPER=True, apidb='SQLITE'):
     """
     
     import datetime
-    from glass.gp.gen     import dissolve
-    from glass.tbl.grs    import add_table
+    from glass.gp.gen       import dissolve
+    from glass.tbl.grs      import add_table
     from glass.ete.osm2lulc import GEOM_AREA
-    from glass.prop.sqlmport row_num as cnt_row
-    from glass.it.shp     import dbtbl_to_shp as db_to_shp
+    from glass.prop.sql     import row_num as cnt_row
+    from glass.it.shp       import dbtbl_to_shp as db_to_shp
     
     OPERATOR  = ">" if UPPER else "<"
     DIRECTION = "upper" if UPPER else "lower"

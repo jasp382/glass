@@ -34,7 +34,7 @@ def db_to_tbl(db, tables, outTbl, txtDelimiter=None, dbAPI='psql',
     """
     
     import os
-    from glass.pys      import obj_to_lst
+    from glass.pys   import obj_to_lst
     from glass.sql.q import q_to_obj
     from glass.wt    import obj_to_tbl
     

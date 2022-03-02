@@ -1,0 +1,223 @@
+/*_________________ VGI Templates NAV _________________*/
+
+a { /* links */
+    color: white;
+    text-decoration: none;
+}
+
+a:hover{
+    color: #F8E71C;
+    text-decoration: underline;
+}
+
+h2 {
+    background-color: #80AECD;
+    padding: 4%;
+    margin: 0;
+}
+
+/*_________________ NAV _________________*/
+
+#logo {
+    height: 45px;
+    position: fixed;
+    top: 1%;
+    left: 4%;
+}
+
+#header-home {
+    width: 100%;
+    height: calc(65px);
+    position: fixed;
+    background-color: #2C709F;
+    z-index: 2;
+    top: 0px;
+    font-size: 12px;
+}
+
+#header-complete {
+    width: 100%;
+    height: calc(65px + 35px + 55px);
+    position: fixed;
+    background-color: #2C709F;
+    z-index: 2;
+    top: 0px;
+    font-size: 12px;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    width: 80%;
+    float: right;
+}
+
+nav h1 {
+    /*margin: 0 auto;*/
+    padding: 0;
+}
+
+/*
+nav i {
+    position: fixed;
+    top: 21px;
+    font-size: 24px;
+    left: 31%;
+}
+*/
+
+#navArrowAbout{
+    /*left: 76%;*/
+    left: 72%;
+}
+
+#navArrowPartners{
+    /*left: 46.5%;*/
+    left: 44.5%;
+}
+
+nav div {
+    position: fixed;
+    width: 15%;
+    text-align: left;
+    margin-top: 65px;
+    color: white;
+    background-color: #2C709F;
+    padding: 0.5%;
+}
+
+nav div h3 {
+    margin: 5%;
+    padding: 4%;
+}
+
+nav div i {
+    position: relative;
+    left: 5%;
+    top: 0%;
+}
+
+nav div a:hover {
+    color: #F8E71C;
+    text-decoration: underline;
+}
+
+#dropdownServices {
+    left: 30%;
+    z-index: 10;
+}
+
+#dropdownPartners{
+    left: 45%;
+    z-index: 10;
+}
+
+#dropdownAbout {
+    left: 80%;
+    z-index: 10;
+}
+
+#active {
+    color: black;
+}
+
+/*_________________ Path  _________________*/
+#path {
+    position: fixed;
+    top: 65px;
+    width: 100%;
+    text-align: left;
+    background-color: white;
+    height: 35px;
+    padding: 0;
+}
+
+#path p {
+    vertical-align: middle;
+    margin: auto 4.2%;
+}
+
+#path a {
+    color: black;
+    cursor: pointer;
+}
+
+#path a:hover{
+    color: #F8E71C;
+    text-decoration: underline;
+}
+
+
+/*_________________ Nav2  _________________*/
+
+#nav2{
+    background-color: #80AECD;
+    width: 100%;
+    position: fixed;
+    display: flex;
+    justify-content: space-between;
+    top: calc(65px + 35px);
+    height: 55px;
+    padding:0% 5%;
+    padding-right: 10%;
+    box-sizing: border-box;
+}
+
+#nav2 h3{
+    font-size: 18px;
+    margin: auto 0;
+}
+
+#nav2 a, #nav2 h1{
+    font-size: 18px;
+}
+
+#nav2 a:hover, #nav2 h1:hover{
+    color: black;
+    text-decoration: underline;
+}
+
+/*
+#nav2 i{
+    position: fixed;
+    top: 117px;
+    font-size: 24px;
+    left: 73.5%;
+}
+*/
+
+#nav2 #navArrowHelp{
+    left: 90.5%;
+}
+
+#nav2 div {
+    position: fixed;
+    width: 10%;
+    text-align: left;
+    top: calc(65px + 35px + 55px);
+    color: white;
+    background-color: #80AECD;
+    padding: 0.5%;
+}
+
+#nav2 div h3 {
+    margin: 5%;
+    padding: 4%;
+    font-size: 14px;
+}
+
+#nav2 div a:hover {
+    color: #F8E71C;
+    text-decoration: underline;
+}
+
+#dropdownCredits {
+    left: 66%;
+    z-index: 10;
+}
+
+#dropdownHelp {
+    right: 5%;
+    z-index: 10;
+}
+

@@ -58,12 +58,12 @@ def osm_to_relationaldb(osmData, inSchema, osmGeoTbl, osmCatTbl, osmRelTbl,
     db_name='osm_pt'
     """
     
-    from glass.pys         import obj_to_lst
-    from glass.pys.oss     import fprop
+    from glass.pys      import obj_to_lst
+    from glass.pys.oss  import fprop
     from glass.prop.sql import cols_name
     from glass.sql.q    import q_to_ntbl
     from glass.sql.db   import create_db
-    from glass.it.db     import osm_to_psql
+    from glass.it.db    import osm_to_psql
 
     inSchema["TBL"] = obj_to_lst(inSchema["TBL"])
     

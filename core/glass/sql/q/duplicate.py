@@ -9,7 +9,7 @@ def show_duplicates_in_xls(db_name, table, pkCols, outFile,
     Find duplicates and write these objects in a table
     """
     
-    from glass.pys      import obj_to_lst
+    from glass.pys   import obj_to_lst
     from glass.sql.q import q_to_obj
     from glass.wt    import obj_to_tbl
     

@@ -8,7 +8,8 @@ Memory Based
 
 
 def _buffer(inShp, radius, outShp,
-            api='geopandas', dissolve=None, geom_type=None):
+            api='geopandas', dissolve=None, geom_type=None,
+            lyrn=1):
     """
     Buffering on Shapefile
     
@@ -60,11 +61,14 @@ def _buffer(inShp, radius, outShp,
                 'pygrass API'
             ))
         
+        _flags = 't' if not dissolve else ''
+        lyrn = 1 if not lyrn else lyrn
+        
         bf = Module(
             "v.buffer", input=inShp, type=geom_type,
             distance=radius if type(radius) != str else None,
             column=radius if type(radius) == str else None,
-            flags='t', output=outShp,
+            flags=_flags, output=outShp, layer=lyrn,
             overwrite=True, run_=False, quiet=True
         )
         
@@ -72,18 +76,21 @@ def _buffer(inShp, radius, outShp,
     
     elif api == 'grass':
         from glass.pys import execmd
+
+        lyrn = "1" if not lyrn else str(lyrn)
         
         rcmd = execmd((
             "v.buffer input={} type={} layer=1 {}={} "
-            "output={} -t --overwrite --quiet"
+            "output={}{} --overwrite --quiet"
         ).format(
             inShp, geom_type,
             "column" if type(radius) == str else "distance",
-            str(radius), outShp
+            str(radius), outShp,
+            '' if dissolve else ' -t'
         ))
     
     else:
-        raise ValueError("{} is not available!".format(api))
+        raise ValueError(f"{api} is not available!")
     
     return outShp
 

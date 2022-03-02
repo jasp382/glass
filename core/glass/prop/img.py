@@ -34,7 +34,7 @@ def rst_epsg(img, isproj=None):
             'img obj has not Spatial Reference assigned!'
         )
     
-    epsg = int(str(proj.GetAttrValue(str('AUTHORITY'), 1)))
+    epsg = int(str(proj.GetAttrValue('AUTHORITY', 1)))
 
     if not isproj:
         return epsg

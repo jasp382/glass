@@ -12,9 +12,9 @@ def rst_pnt_to_build(osmdb, pntTable, polyTable, api_db='SQLITE'):
     Only used for URBAN ATLAS and CORINE LAND COVER
     """
     
-    import datetime         as dt
-    from glass.prop.sqlmport row_num as cnt_row
-    from glass.sql.q     import q_to_obj
+    import datetime       as dt
+    from glass.prop.sql   import row_num as cnt_row
+    from glass.sql.q      import q_to_obj
     from glass.it.shp     import dbtbl_to_shp as db_to_shp
     from glass.gp.ovl.sql import feat_within, feat_not_within
     from glass.dp.torst   import grsshp_to_grsrst as shp_to_rst
@@ -124,8 +124,8 @@ def vector_assign_pntags_to_build(osmdb, pntTable, polyTable, apidb='SQLITE'):
     Only used for URBAN ATLAS and CORINE LAND COVER
     """
     
-    import datetime         as dt
-    from glass.prop.sqlmport row_num as cnt_row
+    import datetime       as dt
+    from glass.prop.sql   import row_num as cnt_row
     from glass.it.shp     import dbtbl_to_shp as db_to_shp
     from glass.gp.ovl.sql import feat_within, feat_not_within
     from glass.gp.gen     import dissolve
@@ -135,11 +135,11 @@ def vector_assign_pntags_to_build(osmdb, pntTable, polyTable, apidb='SQLITE'):
     new_build = feat_within(
         osmdb, (
             "(SELECT buildings AS pnt_build, geometry AS pnt_geom "
-            "FROM {} WHERE buildings IS NOT NULL)"
-        ).format(pntTable), "pnt_geom", (
+            f"FROM {pntTable} WHERE buildings IS NOT NULL)"
+        ), "pnt_geom", (
             "(SELECT buildings AS poly_build, geometry AS poly_geom "
-            "FROM {} WHERE buildings IS NOT NULL)"
-        ).format(polyTable), "poly_geom", "new_buildings",
+            f"FROM {polyTable} WHERE buildings IS NOT NULL)"
+        ), "poly_geom", "new_buildings",
         inTblCols="pnt_build AS cls", withinCols="poly_geom AS geometry",
         outTblIsFile=None,
         apiToUse="OGR_SPATIALITE" if apidb != "POSTGIS" else apidb,
@@ -150,11 +150,11 @@ def vector_assign_pntags_to_build(osmdb, pntTable, polyTable, apidb='SQLITE'):
     yes_build = feat_not_within(
         osmdb, (
             "(SELECT buildings AS poly_build, geometry AS poly_geom "
-            "FROM {} WHERE buildings IS NOT NULL)"
-        ).format(polyTable), "poly_geom", (
+            f"FROM {polyTable} WHERE buildings IS NOT NULL)"
+        ), "poly_geom", (
             "(SELECT buildings AS pnt_build, geometry AS pnt_geom "
-            "FROM {} WHERE buildings IS NOT NULL)"
-        ).format(pntTable), "pnt_geom", "yes_builds",
+            f"FROM {pntTable} WHERE buildings IS NOT NULL)"
+        ), "pnt_geom", "yes_builds",
         inTblCols="poly_geom AS geometry, 11 AS cls", outTblIsFile=None,
         apiToUse="OGR_SPATIALITE" if apidb != "POSTGIS" else apidb,
         geom_col="geometry"
@@ -177,7 +177,7 @@ def vector_assign_pntags_to_build(osmdb, pntTable, polyTable, apidb='SQLITE'):
         
         # Dissolve
         dissVect = dissolve(
-            grsBuild11, "dss_{}".format(grsBuild11),
+            grsBuild11, f"dss_{grsBuild11}",
             'cls', api="grass"
         )
         
@@ -199,7 +199,7 @@ def vector_assign_pntags_to_build(osmdb, pntTable, polyTable, apidb='SQLITE'):
         
         # Dissolve
         dissVect12 = dissolve(
-            grsBuild12, "dss_{}".format(grsBuild12),
+            grsBuild12, f"dss_{grsBuild12}",
             'cls', api="grass"
         )
         

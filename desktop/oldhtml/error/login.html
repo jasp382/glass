@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block title %}Exploring VGI - Ups!{% endblock %}
+{% block body_contents %}
+<div>
+	<div id="bass-div-g"></div>
+	<div id="popUp">
+		<h3>Upps!!! Something went wrong...</h3>
+		<p>We cannot register your new account correctly!</p>
+		<p>{{ error }}</p>
+		
+		<p>Please try again</p>
+		
+		<br>
+		
+		<a href="/expvgi/login/" id="closeButton">Try again</a>
+	</div>
+</div>
+{% endblock %}

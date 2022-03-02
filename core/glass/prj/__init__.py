@@ -79,7 +79,6 @@ def proj(inShp, outShp, outEPSG, inEPSG=None,
     * ogr2ogr_SQLITE;
     * psql;
     """
-    import os
     
     if gisApi == 'ogr':
         """
@@ -92,12 +91,12 @@ def proj(inShp, outShp, outEPSG, inEPSG=None,
                 ' input data using inEPSG parameter'
             )
         
-        from osgeo                  import ogr
+        from osgeo           import ogr
         from glass.lyr.fld   import copy_flds
         from glass.prop.feat import get_gtype
-        from glass.prop   import drv_name
+        from glass.prop      import drv_name
         from glass.prop.prj  import get_sref_from_epsg, get_trans_param
-        from glass.pys.oss          import fprop
+        from glass.pys.oss   import fprop
         
         def copyShp(out, outDefn, lyr_in, trans):
             for f in lyr_in:
@@ -152,18 +151,16 @@ def proj(inShp, outShp, outEPSG, inEPSG=None,
         if not inEPSG:
             raise ValueError('To use ogr2ogr, you must specify inEPSG')
         
-        from glass.pys            import execmd
+        from glass.pys  import execmd
         from glass.prop import drv_name
+
+        _sql = '' if not sql else f' -dialect sqlite -sql "{sql}"'
         
-        cmd = (
-            'ogr2ogr -f "{}" {} {}{} -s_srs EPSG:{} -t_srs EPSG:{}'
-        ).format(
-            drv_name(outShp), outShp, inShp,
-            '' if not sql else ' -dialect sqlite -sql "{}"'.format(sql),
-            str(inEPSG), str(outEPSG)
-        )
-        
-        outcmd = execmd(cmd)
+        ocmd = execmd((
+            f'ogr2ogr -f "{drv_name(outShp)}" {outShp} {inShp}'
+            f'{_sql} -s_srs EPSG:{str(inEPSG)} '
+            f'-t_srs EPSG:{str(outEPSG)}'
+        ))
     
     elif gisApi == 'ogr2ogr_SQLITE':
         """
@@ -208,9 +205,9 @@ def proj(inShp, outShp, outEPSG, inEPSG=None,
         return df_to_shp(df, outShp)
     
     elif gisApi == 'psql':
-        from glass.sql.db import create_db
-        from glass.pys.oss   import fprop
-        from glass.it.db  import shp_to_psql
+        from glass.sql.db  import create_db
+        from glass.pys.oss import fprop
+        from glass.it.db   import shp_to_psql
         from glass.it.shp  import dbtbl_to_shp
         from glass.prj.sql import sql_proj
 
@@ -243,7 +240,7 @@ def proj(inShp, outShp, outEPSG, inEPSG=None,
         )
     
     else:
-        raise ValueError('Sorry, API {} is not available'.format(gisApi))
+        raise ValueError(f'Sorry, API {gisApi} is not available')
     
     return outShp
 
@@ -275,18 +272,13 @@ def reprj_rst(inRst, outRst, inEPSG, outEPSG):
     Reproject Raster dataset using gdalwarp
     """
     
-    import sys
     from glass.pys import execmd
     
-    cmd = (
-        'gdalwarp -overwrite {inrst} {outrst} -s_srs EPSG:{inepsg} '
-        '-t_srs EPSG:{outepsg}'
-    ).format(
-        inrst=inRst, inepsg=inEPSG,
-        outrst=outRst, outepsg=outEPSG
-    )
-    
-    codecmd = execmd(cmd)
+    ocmd = execmd((
+        f'gdalwarp -overwrite {inRst} {outRst} '
+        f'-s_srs EPSG:{inEPSG} '
+        f'-t_srs EPSG:{outEPSG}'
+    ))
     
     return outRst
 
