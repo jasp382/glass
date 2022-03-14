@@ -1,0 +1,293 @@
+/*_________________ SIDE MENU _________________*/
+
+#sideMenu {
+    width: 30%;
+    position: fixed;
+    right: 0px;
+    background-color: white;
+    height: calc(100% - (65px + 35px + 55px));
+    top: calc(65px + 35px + 55px);
+}
+
+#navSideMenu {
+    position: fixed;
+    background-color: #2C709F;
+    height: calc(100% - 80px);
+    width: 4%;
+    right: calc(0px + (30% - 4%));
+    top: calc(65px + 35px + 55px);
+}
+
+#SideMenuMinimized i, #navSideMenu i {
+    margin: 32% auto;
+    cursor: pointer;
+    padding: 7.9%;
+}
+
+#SideMenuMinimized {
+    position: fixed;
+    background-color: #2C709F;
+    height: calc(100% - (65px + 35px + 55px));
+    width: 4%;
+    right: 0px;
+    display: true;
+    top: calc(65px + 35px + 55px);
+}
+
+/*#searchIcon {
+    background-color: white;
+}*/
+
+#search h3 {
+    background-color: #2C709F;
+    color: white;
+    padding: 6%;
+    margin: 0 auto 7% auto;
+}
+
+#table-contents h3 {
+    background-color: #2C709F;
+    color: white;
+    padding: 6%;
+    margin: 0 auto 7% auto;
+}
+
+.sidebar-div {
+    margin-bottom: 15px;
+}
+
+.sidebar-tree-div {
+    position: absolute;
+    left: 25%;
+}
+
+.text-input {
+    margin: 0 auto;
+    border-radius: 10px;
+    width: 60%;
+    padding: 2%;
+    font-size: 12px;
+    text-align: center;
+}
+
+.select-input {
+    margin: 0 auto;
+    border-radius: 10px;
+    width: 60%;
+    padding: 2%;
+    font-size: 12px;
+    text-align: center;
+}
+
+form input {
+    margin: 4% 3%;
+    border-radius: 10px;
+    width: 40%;
+    padding: 2%;
+    font-size: 12px;
+    text-align: center;
+}
+
+.searchCheckbox {
+    width: auto;
+}
+
+#search, #table-contents {
+    position: absolute;
+    background-color: white;
+    right: 0px;
+    width: 26%;
+    height: 100%;
+    overflow-y: auto;
+	overflow-x: hidden;
+}
+
+#DataSources {
+    text-align: left;
+    width: 35%;
+    margin: 5% auto;
+}
+
+#DataSources select{
+    padding: 0;
+    margin: 5%;
+}
+
+#table-contents div {
+    text-align: left;
+    width: 100%;
+    margin: 0 auto;
+}
+
+#table-contents div p{
+    margin: 0;
+    font-size: 13px;
+    padding: 0;
+}
+
+#table-contents div #p2 {
+    margin-left: 15%;
+}
+
+#table-contents div #p3 {
+    margin-left: 30%;
+}
+
+/* Layer tree controls*/
+
+.sidebar-tree-div a {
+    color: black;
+}
+
+/*_________________ Check box styles  _________________*/
+/* The container */
+.check-container {
+    display: block;
+    position: relative;
+    cursor: pointer;
+    font-size: 22px;
+}
+
+/* Hide the browser's default checkbox */
+.check-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+/* Create a custom checkbox */
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 15%;
+    height: 25px;
+    width: 25px;
+    background-color: #eee;
+}
+
+/* On mouse-over, add a grey background color */
+.check-container:hover input ~ .checkmark {
+    background-color: #ccc;
+}
+
+/* When the checkbox is checked, add a blue background */
+.check-container input:checked ~ .checkmark {
+    background-color: #2196F3;
+}
+
+/* Create the checkmark/indicator (hidden when not checked) */
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+/* Show the checkmark when checked */
+.check-container input:checked ~ .checkmark:after {
+    display: block;
+}
+
+/* Style the checkmark/indicator */
+.check-container .checkmark:after {
+    left: 9px;
+    top: 5px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+}
+
+/*_________________ BOTOES _________________*/
+
+#buttons {
+    position: fixed;
+    bottom: 5%;
+    width: 27%;
+}
+
+.searchButtons {
+    padding: 3%;
+    margin: 1%;
+    width: 40%;
+    font-size: 14px;
+    background-color: #80AECD;
+    border: none;
+    color: black;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+/*_________ POP-UPS with description information _________*/
+
+#popUp {
+    position: absolute;
+    margin: 0 auto;
+    width: 40%;
+    padding: 3%;
+    background-color: white;
+    border: solid;
+    border-color: black;
+    position: fixed;
+    top: 30%;
+    left: 25%;
+    z-index: 50000;
+    border-radius: 10px;
+}
+
+#popUp h3{
+    font-size: 21px;
+    margin-bottom: 7%;
+}
+
+#popUp p{
+    margin-bottom: 7%;
+}
+
+#closeButton {
+    cursor: pointer;
+    background-color: #0696ae;
+    padding: 2%;
+    width: 30%;
+    margin: 0 auto;
+    border-radius: 10px;
+    color: white;
+    font-size: 14px;
+}
+
+a.info-box-close {
+    float:right;
+    margin-top:-55px;
+    margin-right:-55px;
+    cursor:pointer;
+    color: #fff;
+    border: 1px solid #AEAEAE;
+    border-radius: 30px;
+    background: #605F61;
+    font-size: 31px;
+    font-weight: bold;
+    display: inline-block;
+    line-height: 0px;
+    padding: 11px 3px;
+}
+
+.info-box-close:before {
+    content: "×";
+}
+
+
+/* Select Dropdown Style */
+#custom-select {
+	position: relative;
+    overflow: hidden;
+    display: block;
+    margin: auto;
+    width: 330px;
+    height: 100%;
+    border-bottom: 0px;
+    border-radius: 3px;
+    font-size: 12px;
+    box-shadow: 0px 1em 2em -1.5em rgba(0,0,0, .5);
+}

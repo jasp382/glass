@@ -1,0 +1,168 @@
+<div id="map">
+</div>
+
+<vgijs-map-legend
+    ng-if="vm.settings.service === 'osm2lulc_f' && vm.settings.legend !== ''"
+    legend-classes="{{ vm.settings.legend }}">
+</vgijs-map-legend>
+
+<div id="MapControls" ng-animate>
+	<div id="zoom-in">
+		<img src="/static/vgijs/img/maps/zoomIn.png" alt="Zoom In Icon" ng-click="vm.activateZoomIn()">
+	</div>
+	<div id="zoom-out">
+		<img src="/static/vgijs/img/maps/zoomOut.png" alt="Zoom Out Icon"
+		 ng-click="vm.activateZoomOut()">
+	</div>
+	<div id="full-extent" ng-click="vm.zoomToFullExtent()">
+		<i class="fa fa-globe" aria-hidden="true" style="font-size:36px; color: #FFFFFF"></i>
+	</div>
+</div>
+
+<vgijs-osm-search
+    mapcenter="vm.settings.currentCenter">
+</vgijs-osm-search>
+
+<!-- Sidebar related -->
+<div id="SideMenuMinimized" ng-if="!vm.sidebar.sidebar">
+    <div id="maximizeIcon" ng-click="vm.showSidebar(vm.sidebar.sidebar)">
+        <i class="fa fa-chevron-circle-left" aria-hidden="true" style="font-size:30px; color: #FFFFFF"></i>
+    </div>
+</div>
+
+<div id="navSideMenu" ng-if="vm.sidebar.sidebar">
+	<div id="minimizeIcon" ng-click="vm.showSidebar(vm.sidebar.sidebar)">
+		<i class="fa fa-chevron-circle-right" aria-hidden="true"
+            style="font-size:30px; color: #FFFFFF"></i>
+    </div>
+    <div id="searchIcon" ng-click="vm.sideBtnToggle()">
+        <i ng-show="vm.insertInputs" class="fa fa-search" aria-hidden="true"
+           	style="font-size:30px; color: #000000"></i>
+        <i ng-show="!vm.insertInputs" class="fa fa-search" aria-hidden="true"
+           	style="font-size:30px; color: #FFFFFF"></i>
+    </div>
+    <div id="editIcon" ng-click="vm.sideBtnToggle()">
+        <i ng-show="!vm.insertInputs" class="fa fa-pencil-square-o"
+            aria-hidden="true" style="font-size:30px; color: #000000"></i>
+        <i ng-show="vm.insertInputs" class="fa fa-pencil-square-o"
+            aria-hidden="true" style="font-size:30px; color: #FFFFFF"></i>
+    </div>
+</div>
+
+<div id="search" ng-if="vm.sidebar.sidebar && vm.insertInputs">
+	<vgijs-map-dsn ng-if="vm.settings.service === 'search'"
+    	drawedit="vm.settings.draw.edit"
+    	drawout="vm.settings.draw.output"
+    	drawradius="vm.settings.draw.radius"
+    	drawdel="vm.settings.draw.delet"
+    	keyword="vm.settings.text.keyword"
+    	datasrc="vm.settings.text.datasources"
+    	warnmess="vm.popuphtml"
+    	runing="vm.loading">
+    </vgijs-map-dsn>
+    
+    <osm-to-lulc-inputs
+    	ng-if="vm.settings.service === 'osm2lulc_f' || vm.settings.service === 'osm2lulc_s'"
+    	servname="vm.settings.service"
+    	nomenclature="vm.settings.nomenclature"
+    	drawedit="vm.settings.draw.edit"
+    	drawout="vm.settings.draw.output"
+    	drawdel="vm.settings.draw.delet"
+    	warnmess="vm.popuphtml"
+    	runing="vm.loading">
+    </osm-to-lulc-inputs>
+</div>
+<div id="table-contents" ng-if="vm.sidebar.sidebar && !vm.insertInputs">
+	<h3>Table of contents
+		<a href="#">
+        	<i class="fa fa-question-circle" aria-hidden="true"
+        		style="margin-left:5%"></i>
+        </a>
+    </h3>
+    <div class="sidebar-tree-div">
+    	<ul class="select-tree">
+    		<li ng-if="!!vm.rqstLyr">
+            	<span ng-if="vm.lyr_open.open"
+                	class="fa fa-minus" aria-hidden="true"
+                    style="color: #C0C0C0"
+                    ng-click="vm.toogleNode(vm.lyr_open)">
+                </span>
+                <span ng-if="!vm.lyr_open.open"
+                    class="fa fa-plus" aria-hidden="true"
+                    style="color: #C0C0C0"
+                    ng-click="vm.toogleNode(vm.lyr_open)">
+                </span>
+                <a ng-click="vm.activeRef(vm.lyr_open)"
+                    ng-class="vm.lyr_open.css">Result Layers</a>
+                <ul ng-if="vm.lyr_open.open">
+                	<li ng-repeat="lyr in vm.rqstLyr">
+                    	<input type="checkbox"
+                        	ng-change="vm.layerControl(lyr)"
+                            ng-model="lyr.status">{{ lyr.name }}
+                        <a class="fa fa-download" aria-hidden="true"
+                        	href="{{ lyr.dw_url }}"></a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+            	<span ng-if="vm.base_open.open"
+                   	class="fa fa-minus" aria-hidden="true"
+                    style="color: #C0C0C0"
+                    ng-click="vm.toogleNode(vm.base_open)">
+                </span>
+                <span ng-if="!vm.base_open.open"
+                    class="fa fa-plus" aria-hidden="true"
+                    style="color: #C0C0C0"
+                    ng-click="vm.toogleNode(vm.base_open)">
+                </span>
+                <a ng-click="vm.activeRef(vm.base_open)"
+                    ng-class="vm.base_open.css">Basemap Layers</a>
+                <ul ng-if="vm.base_open.open">
+                	<li ng-repeat="(base_cat, lst) in vm.basemaps">
+                		<span ng-if="lst[0].open"
+                			class="fa fa-minus" aria-hidden="true"
+                			style="color: #C0C0C0"
+                			ng-click="vm.toogleNode(lst[0])">
+                        </span>
+                        <span ng-if="!lst[0].open"
+                            class="fa fa-plus" aria-hidden="true"
+                            style="color: #C0C0C0"
+                            ng-click="vm.toogleNode(lst[0])">
+                        </span>
+                        <a ng-click="vm.activeRef(lst[0])"
+                        	"lst[0].css">{{ base_cat }}</a>
+                        <ul ng-if="lst[0].open">
+                            <li ng-repeat="(base, bool) in lst[1]">
+                            	<input type="checkbox"
+                            		ng-change="vm.changeBasemap(base_cat, base)"
+                            		ng-model="bool"
+                            		ng-disabled="bool"><a>{{ base }}</a>
+                            </li>
+                        </ul>
+                    </li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+</div>
+
+<!-- PopUp that will appear if submit button is pushed without drawed circle -->
+<div id="popUp" ng-if="vm.popuphtml!==''" class="ng-cloak">
+	<a class="info-box-close" ng-click="vm.closePopup()"></a>
+	<vgijs-text-to-html
+		htmltemplate="vm.popuphtml">
+	</vgijs-text-to-html>
+	<div ng-click="vm.closePopup()" id="closeButton">Close</div>
+</div>
+
+<!-- Loading PopUp and Bass Box -->
+<div id="popUp" ng-if="!!vm.loading" class="ng-cloak">
+	<vgijs-text-to-html
+		htmltemplate="vm.loading">
+	</vgijs-text-to-html>
+	<br><br>
+	<div id="loading-icon"></div>
+	<p>A new map will load when we are done!</p>
+</div>
+<div ng-if="!!vm.loading" id="bass-div" class="ng-cloak"></div>
+<div ng-transclude></div>

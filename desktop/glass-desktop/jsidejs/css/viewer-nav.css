@@ -1,0 +1,80 @@
+/*_________________ JSIDE ATLAS Templates NAV _________________*/
+
+a { /* links */
+    color: white;
+    text-decoration: none;
+}
+
+a:hover{
+    color: #F8E71C;
+    text-decoration: underline;
+}
+
+/*_________________ NAV _________________*/
+.cabecalho {
+	position: fixed;
+	width: 100%;
+	margin: 0;
+	padding: 0;	
+	background-image: url(/static/jsidejs/img/js-header-back.jpg);
+    background-repeat: repeat-x;
+	height: 100px;
+}
+
+.zona-nome{padding: 43px 20px 10px 50px;
+	float: left;		
+	width: 280px; 
+	margin: 0;
+	text-align: center;	}
+.zona-nome img{	width: 215px;}
+
+.zona-menu {display: block;	float:left;}
+.zona-menu ul { padding: 53px 20px 10px 10px;}
+.zona-menu ul li{ display: inline; 	color: #447077; }
+.zona-menu ul li a{
+    padding: 9px 7px 8px 10px;
+    margin: 2px;	
+	text-align: center;
+    border-radius: 8px;
+	font-size: small;
+	font-weight: 600;
+	text-decoration: none;
+	letter-spacing: 1px;
+	text-transform: uppercase;
+	color: #447077; 
+	background-color: #f0f5f3;
+	border: 1px solid #DCCBC7;}
+
+ul li a:hover{background-color: #FDFFFE;}
+ul li a:active{background-color: #FDFFFE; color: #CE605E; }
+.zona-menu ul li#atlas a{
+    padding: 7px 5px 6px 8px;
+    margin: 2px;	
+	font-weight: 800;
+	color: #447077; 
+	background-color: #f0f5f3;
+	border: 2px solid #CE605E;}
+ul li#atlas a:hover{background-color: #FDFFFE;}
+ul li#atlas a:active{background-color: #FDFFFE; color: #CE605E; }
+
+.zona-menu ul li#login a{
+    padding: 5px 5px 4px 6px;	
+	margin-left: 70px;
+	font-size: 10px;
+	font-weight: 600;
+	color: #CE605E; 
+	background-color: #f0f5f3;
+	border: 1px solid #72A6AD;}
+ul li#login a:hover{background-color: #FDFFFE;}
+ul li#login a:active{background-color: #FDFFFE; color: #447077; }
+
+.zona-menu ul li#lingua a{
+    padding: 5px 5px 4px 6px;	
+	margin-left: 10px;
+	font-size: 10px;
+	font-weight: 600;
+	color: #CE605E; 
+	background-color: #f0f5f3;
+	border: 1px solid #72A6AD;}
+ul li#lingua a:hover{background-color: #FDFFFE;}
+ul li#lingua a:active{background-color: #FDFFFE; color: #447077; }
