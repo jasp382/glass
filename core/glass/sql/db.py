@@ -26,12 +26,11 @@ def create_db(newdb, overwrite=True, api='psql', use_template=True, dbset='defau
     
         if newdb in dbs and overwrite:
             cs.execute(f"DROP DATABASE {newdb};")
+        
+        tmplt = f" TEMPLATE={conparam['TEMPLATE']}" \
+            if "TEMPLATE" in conparam and use_template else ""
     
-        cs.execute("CREATE DATABASE {}{};".format(
-            newdb, f" TEMPLATE={conparam['TEMPLATE']}" \
-                if "TEMPLATE" in conparam and use_template else ""
-            )
-        )
+        cs.execute(f"CREATE DATABASE {newdb}{tmplt};")
 
         if not use_template and geosupport:
             ge = ['postgis', 'hstore', 'postgis_topology', 'postgis_raster', 'pgrouting']

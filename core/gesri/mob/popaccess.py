@@ -22,9 +22,9 @@ def arcg_mean_time_WByPop2(netDt, rdv, infraestruturas, unidades, conjuntos,
     
     import arcpy
     import os
-    from glass.cpu.arcg.lyr       import feat_lyr
+    from gesri.rd.shp       import shp_to_lyr
     from glass.cpu.arcg.mng.feat  import feat_to_pnt
-    from glass.cpu.arcg.mng.fld   import add_field, calc_fld
+    from gesri.tbl.cols   import add_col, calc_fld
     from glass.cpu.arcg.mng.joins import join_table
     from glass.mng.genze          import dissolve
     from glass.mng.gen            import copy_feat
@@ -51,8 +51,8 @@ def arcg_mean_time_WByPop2(netDt, rdv, infraestruturas, unidades, conjuntos,
         return groups_sum
     
     if not os.path.exists(w):
-        from glass.oss.ops import create_folder
-        w = create_folder(w, overwrite=False)
+        from glass.pys.oss import mkdir
+        w = mkdir(w, overwrite=False)
     
     arcpy.env.overwriteOutput = True
     arcpy.env.workspace = w
@@ -65,7 +65,7 @@ def arcg_mean_time_WByPop2(netDt, rdv, infraestruturas, unidades, conjuntos,
     )
     
     # Generate centroids of the statistic unities - unidades
-    lyr_unidades = feat_lyr(copy_unities)
+    lyr_unidades = shp_to_lyr(copy_unities)
     pnt_unidades = feat_to_pnt(lyr_unidades, 'pnt_unidades.shp')
     
     # Network Processing - Distance between CENTROID and Destiny points
@@ -73,7 +73,7 @@ def arcg_mean_time_WByPop2(netDt, rdv, infraestruturas, unidades, conjuntos,
         netDt, rdv, infraestruturas, pnt_unidades,
         os.path.join(w, "cls_table.dbf"), oneway_restriction=oneway
     )
-    add_field("cls_table.dbf", 'j', "SHORT", "6")
+    add_col("cls_table.dbf", 'j', "SHORT", "6")
     calc_fld("cls_table.dbf", 'j', "[IncidentID]-1")
     join_table(lyr_unidades, "FID", "cls_table.dbf", "j", "Total_Minu")
     del lyr_unidades
@@ -84,7 +84,7 @@ def arcg_mean_time_WByPop2(netDt, rdv, infraestruturas, unidades, conjuntos,
     
     """
     groups = get_freg_denominator(lyr_unidades, conjuntos, popf)
-    add_field(lyr_unidades, "tm", "FLOAT", "10", "3")
+    add_col(lyr_unidades, "tm", "FLOAT", "10", "3")
     
     cs = arcpy.UpdateCursor(lyr_unidades)
     linha = cs.next()
@@ -125,15 +125,15 @@ def mean_time_by_influence_area(netDt, rdv, infraestruturas,
     """
     
     import arcpy; import os
-    from glass.cpu.arcg.lyr              import feat_lyr
+    from gesri.rd.shp             import shp_to_lyr
     from glass.cpu.arcg.mng.feat         import feat_to_pnt
     from glass.cpu.arcg.mng.gen          import merge
     from glass.mng.gen                   import copy_feat
     from glass.mng.genze                 import dissolve
-    from glass.cpu.arcg.mng.fld          import add_field
+    from gesri.tbl.cols          import add_col
     from glass.cpu.arcg.mng.fld          import calc_fld
     from glass.cpu.arcg.mng.fld          import field_statistics
-    from glass.cpu.arcg.mng.fld          import type_fields
+    from gesri.prop.cols  import type_fields
     from glass.cpu.arcg.mng.joins        import join_table
     from glass.cpu.arcg.anls.exct        import select_by_attr
     from glass.cpu.arcg.netanlst.closest import closest_facility
@@ -167,14 +167,14 @@ def mean_time_by_influence_area(netDt, rdv, infraestruturas,
     )
     
     # Generate centroids of the statistic unities - unidades
-    lyr_unidades = feat_lyr(copy_unities)
+    lyr_unidades = shp_to_lyr(copy_unities)
     pnt_unidades = feat_to_pnt(lyr_unidades, 'pnt_unidades.shp',
                                     pnt_position="INSIDE")
     # List all groups of unities (conjuntos)
     group_areas = ListGroupArea(lyr_unidades, influence_areas_unities, conjuntos)
     # Create Layers
-    lyr_pnt_unidades   = feat_lyr(pnt_unidades)
-    lyr_pnt_facilities = feat_lyr(infraestruturas)
+    lyr_pnt_unidades   = shp_to_lyr(pnt_unidades)
+    lyr_pnt_facilities = shp_to_lyr(infraestruturas)
     
     result_list = []
     
@@ -211,11 +211,11 @@ def mean_time_by_influence_area(netDt, rdv, infraestruturas,
             netDt, rdv, interest_facilities, interest_centroids,
             cls_fac_table, oneway_restriction=oneway
         )
-        add_field(cls_fac_table, 'j', "SHORT", "6")
+        add_col(cls_fac_table, 'j', "SHORT", "6")
         calc_fld(cls_fac_table, 'j', "[IncidentID]-1")
         join_table(interest_centroids, "FID", cls_fac_table, "j", "Total_Minu")
         # Calculate sum of time x population
-        add_field(interest_centroids, 'sum', "DOUBLE", "10", "3")
+        add_col(interest_centroids, 'sum', "DOUBLE", "10", "3")
         calc_fld(
             interest_centroids, 'sum',
             "[{pop}]*[Total_Minu]".format(
@@ -223,7 +223,7 @@ def mean_time_by_influence_area(netDt, rdv, infraestruturas,
             )
         )
         denominador = field_statistics(interest_centroids, 'sum', 'SUM')
-        add_field(interest_centroids, 'tm', "DOUBLE", "10", "3")
+        add_col(interest_centroids, 'tm', "DOUBLE", "10", "3")
         calc_fld(
             interest_centroids, 'tm',
             "([sum]/{sumatorio})*[Total_Minu]".format(
@@ -254,10 +254,10 @@ def mean_time_in_povoated_areas(network, rdv_name, stat_units, popFld,
     """
     
     import os; import arcpy
-    from glass.cpu.arcg.lyr       import feat_lyr
+    from gesri.rd.shp       import shp_to_lyr
     from glass.cpu.arcg.anls.exct import select_by_attr
     from glass.cpu.arcg.mng.fld   import field_statistics
-    from glass.cpu.arcg.mng.fld   import add_field
+    from gesri.tbl.cols   import add_col
     from glass.cpu.arcg.mng.gen   import merge
     from glass.mng.gen            import copy_feat
     from glass.mob.arctbx.closest import closest_facility
@@ -279,7 +279,7 @@ def mean_time_in_povoated_areas(network, rdv_name, stat_units, popFld,
         stat_units, os.path.join(WORK, os.path.basename(stat_units)),
         gisApi='arcpy'
     )
-    add_field(stat_units, "TIME", "DOUBLE", "10", precision="3")
+    add_col(stat_units, "TIME", "DOUBLE", "10", precision="3")
     
     # Split stat_units into two layers
     # One with population
@@ -290,7 +290,7 @@ def mean_time_in_povoated_areas(network, rdv_name, stat_units, popFld,
                              os.path.join(WORK, 'no_pop.shp'))
     
     # For each statistic unit with population
-    withLyr = feat_lyr(withPop)
+    withLyr = shp_to_lyr(withPop)
     cursor  = arcpy.UpdateCursor(withLyr)
     
     FID = 0
@@ -353,11 +353,10 @@ def population_within_point_buffer(netDataset, rdvName, pointShp, populationShp,
     
     import arcpy; import os
     from geopandas                import GeoDataFrame
-    from glass.cpu.arcg.lyr        import feat_lyr
+    from gesri.rd.shp        import shp_to_lyr
     from glass.cpu.arcg.anls.ovlay import intersect
     from glass.mng.gen             import copy_feat
     from glass.cpu.arcg.mng.fld    import add_geom_attr
-    from glass.cpu.arcg.mng.fld    import add_field
     from glass.cpu.arcg.mng.fld    import calc_fld
     from glass.mng.genze           import dissolve
     from glass.mob.arctbx.svarea   import service_area_use_meters
@@ -377,8 +376,8 @@ def population_within_point_buffer(netDataset, rdvName, pointShp, populationShp,
     ), gisApi='arcpy')
     
     # Create layer
-    pntLyr = feat_lyr(pointShp)
-    popLyr = feat_lyr(populationShp)
+    pntLyr = shp_to_lyr(pointShp)
+    popLyr = shp_to_lyr(populationShp)
     
     # Create Service Area
     if not bufferIsTimeMinutes:
@@ -397,7 +396,7 @@ def population_within_point_buffer(netDataset, rdvName, pointShp, populationShp,
             ONEWAY_RESTRICTION=useOneway, OVERLAP=None
         )
     
-    servAreaLyr = feat_lyr(servArea)
+    servAreaLyr = shp_to_lyr(servArea)
     
     # Add Column with Polygons area to Feature Class population
     add_geom_attr(popLyr, "total", geom_attr="AREA")
@@ -407,7 +406,7 @@ def population_within_point_buffer(netDataset, rdvName, pointShp, populationShp,
         workspace, "int_servarea_pop.shp"
     ))
     
-    intLyr = feat_lyr(intSrc)
+    intLyr = shp_to_lyr(intSrc)
     
     # Get area of intersected statistical unities with population
     add_geom_attr(intLyr, "partarea", geom_attr="AREA")

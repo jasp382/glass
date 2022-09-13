@@ -4,36 +4,38 @@ Distance tools
 
 import arcpy
 
+
 def euclidean_distance(shpRst, cellsize, outRst, template=None,
                        boundary=None, snap=None):
     """
     Euclidean distance from Spatial Analyst
     """
     
+    import os
     from arcpy import env
     from arcpy.sa import *
-    import os
+    
+    from glass.pys.oss import fprop
     
     arcpy.CheckOutExtension('Spatial')
     
-    from glass.prop.ff      import vector_formats, raster_formats
-    from glass.cpu.arcg.lyr import feat_lyr, rst_lyr
+    from glass.g.prop import vector_formats, raster_formats
+    from gesri.rd.rst import rst_to_lyr
+    from gesri.rd.shp import shp_to_lyr
+
+    fp = fprop(outRst, ['fn', 'ff'])
+    fn, ff = fp['filename'], fp['fileformat']
     
-    path_to_output = outRst if not boundary else \
-        os.path.join(
-            os.path.dirname(outRst),
-            '{n}_ext{f}'.format(
-                n=os.path.splitext(os.path.basename(outRst))[0],
-                f=os.path.splitext(os.path.basename(outRst))[1]
-            )
-        )
+    path_to_output = outRst if not boundary else os.path.join(
+        os.path.dirname(outRst), f'{fn}_ext{ff}'
+    )
     
     inputFormat = os.path.splitext(shpRst)[1]
     if inputFormat in vector_formats():
-        inLyr = feat_lyr(shpRst)
+        inLyr = shp_to_lyr(shpRst)
     
     elif inputFormat in raster_formats():
-        inLyr = rst_lyr(shpRst)
+        inLyr = rst_to_lyr(shpRst)
     
     else:
         raise ValueError(
@@ -58,7 +60,7 @@ def euclidean_distance(shpRst, cellsize, outRst, template=None,
     if boundary:
         from glass.cpu.arcg.mng.rst.proc import clip_raster
         
-        clipLyr = feat_lyr(boundary)
+        clipLyr = shp_to_lyr(boundary)
         
         clip_raster(path_to_output, clipLyr, outRst,
                     template=template, snap=snap)

@@ -16,8 +16,8 @@ def tbl_to_db(tblFile, db, sqlTbl, delimiter=None, encoding_='utf-8',
     import os
     from glass.pys     import obj_to_lst
     from glass.pys.oss import fprop
-    from glass.rd   import tbl_to_obj
-    from glass.wt.sql import df_to_db
+    from glass.rd      import tbl_to_obj
+    from glass.wt.sql  import df_to_db
     
     if os.path.isdir(tblFile):
         from glass.pys.oss import lst_ff
@@ -64,7 +64,7 @@ def tbl_to_db(tblFile, db, sqlTbl, delimiter=None, encoding_='utf-8',
             data = tbl_to_obj(tbls[i], sheet=sheet)
     
         else:
-            raise ValueError('{} is not a valid table format!'.format(ff))
+            raise ValueError(f'{ff} is not a valid table format!')
         
         if colsMap:
             data.rename(columns=colsMap, inplace=True)

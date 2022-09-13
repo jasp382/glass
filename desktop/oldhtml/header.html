@@ -1,0 +1,222 @@
+{% load static %}
+{% if service.name == 'home-page' or service.about == 'vgi-error' or service.about == 'vgi-login' %}
+<header id="header-home">
+{% else %}
+<header id="header-complete">
+{% endif %}
+<nav ng-controller="VgiHeaderContent as headVm" ng-cloak>
+    <a href="/">
+        <img src="{% static 'vgijs/img/logos/logo-main.png' %}" alt="Project's Logo - Exploring VGI" id="logo">
+    </a>
+
+    <h1 id="navServices">
+        <span>
+            <i class="fa fa-chevron-circle-down" id="navArrowServices"
+                style="font-size:24px; color:#FFFFFF;" ng-click="headVm.toggleDropdown('services')">
+            </i>
+        </span>
+        {% if service.name == 'home-page' %}
+        <a ng-click="headVm.gotoElement('services')">
+        {% else %}
+        <a href="/expvgi/#!#services">
+        {% endif %}
+            Services
+        </a>
+    </h1>
+    
+    <div id="dropdownServices" ng-if="headVm.dropdowns.services"
+        ng-mouseenter="headVm.dropdowns.services=true"
+        ng-mouseleave="headVm.dropdowns.services=false"
+        class="ng-cloak">
+        <a href="/expvgi/osm/osm2lulc/">
+            <h3>OSM to LULC Maps</h3>
+        </a>
+        <a href="/expvgi/dsn/mapsearch/">
+            <h3>Mapping Social Network Data</h3>
+        </a>
+    </div>
+
+    <h1 id="navPartners">
+        <span>
+            <i class="fa fa-chevron-circle-down"
+                style="font-size:24px; color:#FFFFFF;"
+                id="navArrowPartners"
+                ng-click="headVm.toggleDropdown('partners')">
+            </i>
+        </span>
+        {% if service.name == 'home-page' %}
+        <a ng-click="headVm.gotoElement('partners')">
+        {% else %}
+        <a href="/expvgi/#!#partners">
+        {% endif %}
+            Institutions
+        </a>
+    </h1>
+    
+    <div id="dropdownPartners" ng-if="headVm.dropdowns.partners"
+        ng-mouseenter="headVm.dropdowns.partners=true"
+        ng-mouseleave="headVm.dropdowns.partners=false"
+        class="ng-cloak">
+        <a href="http://www.uc.pt/" target="_blank">
+            <h3>University of Coimbra<i class="fa fa-external-link" aria-hidden="true"></i></h3>
+        </a>
+        <a href="http://www.uc.pt/en/org/inescc" target="_blank">
+            <h3>INESC Coimbra<i class="fa fa-external-link" aria-hidden="true"></i></h3>
+        </a>
+        <a href="https://www.cisuc.uc.pt/" target="_blank">
+            <h3>CISUC<i class="fa fa-external-link" aria-hidden="true"></i></h3>
+        </a>
+    </div>
+
+    <h1 id="navContacts">
+        {% if service.name == 'home-page' %}
+        <a ng-click="headVm.gotoElement('contacts')">
+        {% else %}
+        <a href="/expvgi/#!#contacts">
+        {% endif %}
+            Contacts
+        </a>
+    </h1>
+
+    <h1 id="navAbout">
+        <span>
+            <i class="fa fa-chevron-circle-down"
+                style="font-size:24px; color:#FFFFFF;"
+                id="navArrowAbout"
+                ng-click="headVm.toggleDropdown('about')">
+            </i>
+        </span>
+
+        {% if service.name == 'home-page' %}
+        <a ng-click="headVm.gotoElement('about')">
+        {% else %}
+        <a href="/expvgi/#!#about">
+        {% endif %}
+            About
+        </a>
+    </h1>
+    
+    <div id="dropdownAbout" ng-if="headVm.dropdowns.about"
+        ng-mouseenter="headVm.dropdowns.about=true"
+        ng-mouseleave="headVm.dropdowns.about=false"
+        class="ng-cloak">
+        {% if service.name == 'home-page' %}
+        <a ng-click="headVm.gotoElement('about')"><h3>About the Project</h3></a>
+        <a ng-click="headVm.gotoElement('Credits')"><h3>Credits</h3></a>
+        <a ng-click="headVm.gotoElement('Credits')"><h3>History</h3></a>
+        {% else %}
+        <a href="/expvgi/#!#about"><h3>About the Project</h3></a>
+        <a href="/expvgi/#!#Credits"><h3>Credits</h3></a>
+        <a href="/expvgi/#!#Credits"><h3>History</h3></a>
+        {% endif %}
+    </div>
+
+    {% if user.is_authenticated %}
+        <a href="{% url 'logout' %}?next=/expvgi/">
+            <h1 id="navRegister">Logout</h1>
+        </a>
+    {% else %}
+        <a href="/expvgi/login/?next={{ service.url }}">
+            <h1 id="navRegister">Login/Register</h1>
+        </a>
+    {% endif %}
+</nav>
+
+{% if service.name != 'home-page' and service.about != 'vgi-error' and service.about != 'vgi-login' %}
+<div id="path">
+    <p>
+        {% if service.about == 'meta-publications' %}
+        <a href="/expvgi/">Exploring VGI</a>    >   <a href="{{ service.url }}">{{ service.header }}</a> >   <a href="/expvgi/pub/{{ service.name }}">Publications</a>
+        {% elif service.about == 'meta-credits' %}
+        <a href="/expvgi/">Exploring VGI</a>    >   <a href="{{ service.url }}">{{ service.header }}</a> >   <a href="/expvgi/cred/{{ service.name }}">Credits</a>
+        {% elif service.about == 'meta-help' %}
+        <a href="/expvgi/">Exploring VGI</a>    >   <a href="{{ service.url }}">{{ service.header }}</a> >   <a href="/expvgi/help/{{ service.name }}">Help</a>
+        {% else %}
+        <a href="/expvgi/">Exploring VGI</a>    >   <a href="{{ service.url }}">{{ service.header }}</a> >   <a href="{{ service.url }}">Map</a>
+        {% endif %}
+    </p>
+</div>
+
+<div id="nav2">
+    <h3>{{ service.header }}</h3>
+    {% if service.about == 'service' %}
+    <h1><a href="{{ service.url }}" id="active">Map</a></h1>
+    {% else %}
+    <h1><a href="{{ service.url }}">Map</a></h1>
+    {% endif %}
+
+    {% if service.about == 'meta-publications' %}
+    <h1><a href="/expvgi/pub/{{ service.name }}/" id="active">Publications</a></h1>
+    {% else %}
+    <h1><a href="/expvgi/pub/{{ service.name }}/">Publications</a></h1>
+    {% endif %}
+
+    <h1>
+    {% if service.about == 'meta-credits' %}
+        <a href="/expvgi/cred/{{ service.name }}/" id="active">Credits</a>
+    {% else %}
+        <a href="/expvgi/cred/{{ service.name }}/">Credits</a>
+    {% endif %}
+        <span>
+            <i class="fa fa-chevron-circle-down" id="navArrowCredits"
+                style="font-size:24px; color:#FFFFFF;"
+                ng-click="headVm.toggleDropdown('credits')"></i>
+        </span>
+    </h1>
+    
+    <div id="dropdownCredits" ng-if="headVm.dropdowns.credits"
+        ng-mouseenter="headVm.dropdowns.credits=true"
+        ng-mouseleave="headVm.dropdowns.credits=false"
+        class="ng-cloak">
+        {% if service.about == 'meta-credits' %}
+        <a href="#"><h3>Mentors</h3></a>
+        <a href="#"><h3>Development</h3></a>
+        <a href="#"><h3>Design</h3></a>
+        <a href="#"><h3>Sponsors</h3></a>
+        <a href="#"><h3>Others</h3></a>
+        {% else %}
+        <a href="#"><h3>Mentors</h3></a>
+        <a href="#"><h3>Development</h3></a>
+        <a href="#"><h3>Design</h3></a>
+        <a href="#"><h3>Sponsors</h3></a>
+        <a href="#"><h3>Others</h3></a>
+        {% endif %}
+    </div>
+
+    <h1>
+        {% if service.about == 'meta-help' %}
+        <a href="/expvgi/help/{{ service.name }}/" id="active">Help</a>
+        {% else %}
+        <a href="/expvgi/help/{{ service.name }}/">Help</a>
+        {% endif %}
+        <span>
+            <i class="fa fa-chevron-circle-down" id="navArrowHelp" style="font-size:24px; color:#FFFFFF;"
+                ng-click="headVm.toggleDropdown('help')"></i>
+        </span>
+    </h1>
+    
+    <div id="dropdownHelp" ng-if="headVm.dropdowns.help"
+        ng-mouseenter="headVm.dropdowns.help=true"
+        ng-mouseleave="headVm.dropdowns.help=false"
+        class="ng-cloak">
+        {% if service.about == 'meta-help' %}
+        <a ng-click="headVm.gotoElement('about')"><h3>About</h3></a>
+        <a ng-click="headVm.gotoElement('HelpMapControls')"><h3>Map Controls</h3></a>
+        <a ng-click="headVm.gotoElement('HelpKeyword')"><h3>Keyword</h3></a>
+        <a ng-click="headVm.gotoElement('HelpFilters')"><h3>Filters</h3></a>
+        <a ng-click="headVm.gotoElement('HelpSearchZone')"><h3>Search Zone</h3></a>
+        <a ng-click="headVm.gotoElement('HelpValidation')"><h3>Validation</h3></a>
+        <a ng-click="headVm.gotoElement('HelpResultLayer')"><h3>Result Layer</h3></a>
+        {% else %}
+        <a href="/expvgi/help/{{ service.name }}#!#about"><h3>About</h3></a>
+        <a href="/expvgi/help/{{ service.name }}#!#HelpMapControls"><h3>Map Controls</h3></a>
+        <a href="/expvgi/help/{{ service.name }}#!#HelpKeyword"><h3>Keyword</h3></a>
+        <a href="/expvgi/help/{{ service.name }}#!#HelpFilters"><h3>Filters</h3></a>
+        <a href="/expvgi/help/{{ service.name }}#!#HelpSearchZone"><h3>Search Zone</h3></a>
+        <a href="/expvgi/help/{{ service.name }}#!#HelpValidation"><h3>Validation</h3></a>
+        <a href="/expvgi/help/{{ service.name }}#!#HelpResultLayer"><h3>Result Layer</h3></a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+</header>

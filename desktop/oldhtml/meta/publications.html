@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block title %}{{ service.header }}{% endblock %}
+{% block body_contents %}
+<div id="publications" ng-controller="PublicationsController as mapVm" ng-cloak>
+	<h2>Publications</h2>
+
+	{% if service.name == 'mapsearch' or service.name == 'hazardid' %}
+	<div>
+		<div>
+			<p>
+				2017, Fontes, D., Fonte, C.C., Cardoso, A., Integration of VGI and sensor data in a Web GIS-based
+				platform to support emergency response. 4th Experiment@ International Conference, Faro, Portugal, 2017.
+				DOI: 10.1109/EXPAT.2017.7984345
+			</p>
+			<button>Visit Here</button>
+		</div>
+		<div>
+			<p>
+				2017, Fontes, D., Fonte, C.C., Cardoso, A., A web GIS-based platform to assist authorities in emergency
+				response using VGI and sensor data. 4th Experiment@ International Conference, Faro, Portugal, 2017.
+				DOI: 10.1109/EXPAT.2017.7984352
+			</p>
+			<button>Visit Here</button>
+		</div>
+		<div>
+			<p>
+				2017, Fontes, Diogo; Fonte, Cidalia C; Cardoso, Alberto; Estima, Jacinto; de Almeida, Jose Paulo "A
+				platform to integrate crowdsourced, physical sensor and official geographic information to assist
+				authorities in emergency response", In: Proceedings of AGILE 2017- 20th AGILE International Conference
+				on Geographic Information Science, Wageningen.
+			</p>
+			<button>Visit Here</button>
+		</div>
+	</div>
+
+	{% elif service.name == 'osmtolulc' %}
+	<div>
+		<div>
+			<p>
+				2019, Patriarca, Joaquim; Fonte, Cidalia; Estima, Jacinto; Almeida, José Paulo; Cardoso, Alberto.
+				Automatic conversion of OSM data into LULC maps: comparing FOSS4G based approaches towards an 
+				enhanced performance. Open Geospatial Data, Software and Standards, 4:11, 
+				<a>https://doi.org/10.1186/s40965-019-0070-2</a>.
+			</p>
+			<a href="https://link.springer.com/article/10.1186/s40965-019-0070-2">
+				<button>Visit Here</button>
+			</a>
+		</div>
+		<div>
+			<p>
+				2017, Fonte, C. Cidalia, Minghini, Marco, Patriarca, Joaquim, Antoniou, Vyron, See, Linda, Skopeliti,
+				Andriani. Generating Up-to-Date and Detailed Land Use and Land Cover Maps Using OpenStreetMap and
+				GlobeLand30. ISPRS International Journal of Geo-Information, 6, 125
+			</p>
+			<a href="http://www.mdpi.com/2220-9964/6/4/125">
+				<button>Visit Here</button>
+			</a>
+		</div>
+		
+		<div>
+			<p>
+				2017, Fonte, Cidalia C; Martinho, Nuno. "Assessing the applicability of OpenStreetMap data to assist the
+				validation of land use/land cover maps", International Journal of Geographical Information Science 31,
+				12: 1 - 19. doi: 10.1080/13658816.2017.1358814
+			</p>
+			<a href="http://www.tandfonline.com/eprint/uVfNUxgweArZVqjpzuqF/full">
+				<button>Visit Here</button>
+			</a>
+		</div>
+
+		<div>
+			<p>
+				2017, Fonte, C.C., J. Patriarca, M. Minghini, V. Antoniou, L. See, M.A. Brovelli. Using OpenStreetMap to
+				create land use and land cover maps: development of an application. In: Volunteered Geographic
+				Information and the Future of Geospatial Data, ed. Claudio Campelo, Michela
+				Bertolotto, Padraig Corcoran, 113 - 137. ISBN: 9781522524465. Hershey: IGI Global.
+			</p>
+		</div>
+		
+		<div>
+			<p>
+				2016, Fonte, Cidalia C; Minghini, Marco; Antoniou, Vyron; See, Linda; Patriarca, Joaquim; Brovelli, Maria
+				A; Milcinski, Grega. "An automated methodology for converting OSM data into a Land Use/Cover map", In:
+				Proceedings of the 6th International Conference on Cartography & GIS, Albena. ISSN: 1314-0604.
+			</p>
+			<a href="http://iccgis2016.cartography-gis.com/6-iccgis-proceedings/">
+				<button>Visit Here</button>
+			</a>
+		</div>
+	</div>
+	{% endif %}
+</div>
+{% endblock %}

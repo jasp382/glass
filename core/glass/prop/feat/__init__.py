@@ -53,6 +53,26 @@ def feat_count(shp, gisApi='pandas', work=None, loc=None):
     return fcnt
 
 
+def featcnt_infolder(folder, geoformat='.shp'):
+    """
+    Read all shapes in folder and return total
+    number of features in folder
+    """
+
+    from glass.rd.shp import shp_to_obj
+    from glass.pys.oss import lst_ff
+
+    shps = lst_ff(folder, file_format=geoformat)
+
+    nfeat = []
+    for s in shps:
+        df = shp_to_obj(s)
+
+        nfeat.append(df.shape[0])
+    
+    return sum(nfeat)
+
+
 def get_gtype(shp, name=True, py_cls=None, geomCol="geometry",
               gisApi='pandas'):
     """

@@ -11,9 +11,9 @@ def layoutv1(mxd, geodata, mapstbl, lyt_template,
     agrupados em intervalos de valores
     """
 
-    import arcpy, pprint
+    import arcpy
     import os
-    from glass.rd import tbl_to_obj
+    from glass.ng.rd import tbl_to_obj
 
     mapstodo = tbl_to_obj(mapstbl)
 
@@ -25,12 +25,14 @@ def layoutv1(mxd, geodata, mapstbl, lyt_template,
     mapobj = aprx.listMaps(map_template)[0]
     lyr = mapobj.listLayers(lyrint)[0]
 
+    mapstodo = mapstodo.fillna('')
+
     for i, r in mapstodo.iterrows():
         current_dict = lyr.connectionProperties
 
         replace_dict = {
             'connection_info' : {'database' : geodata},
-            'dataset' : '{}.shp'.format(r.slug),
+            'dataset' : f'{r.slug}.shp',
             'workspace_factory' : 'Shape File'
         }
 
@@ -45,15 +47,21 @@ def layoutv1(mxd, geodata, mapstbl, lyt_template,
         # Replace elements
         for e in elm:
             if e.name in mapsattr:
+                #if not r[e.name]: continue
+
+                #if math.isnan(r[e.name]): continue
+                if str(r[e.name]) == 'nan': continue
+
                 if type(r[e.name]) == float:
                     e.text = str(r[e.name]).replace('.', ',')
+
                 else:
                     e.text = str(r[e.name])
         
         lyt.exportToJPEG(os.path.join(
-            outmaps, '{}.jpg'.format(r.slug)), resolution=500)
+            outmaps, f'{r.slug}.jpg'), resolution=500)
         
-        aprx.saveACopy(os.path.join(outmaps, '{}.aprx'.format(r.slug)))
+        aprx.saveACopy(os.path.join(outmaps, f'{r.slug}.aprx'))
     
     return outmaps
 
@@ -65,7 +73,7 @@ def layoutv1_nmaps(nmaps, mxd, geodata, mapstbl, lyttmp, mapst, lyrints, outmaps
 
     import arcpy
     import os
-    from glass.rd import tbl_to_obj
+    from glass.ng.rd import tbl_to_obj
 
     mapstodo = tbl_to_obj(mapstbl)
 

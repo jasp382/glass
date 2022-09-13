@@ -2,20 +2,21 @@
 Rule 2 - Select Roads
 """
 
+import datetime as dt
+
 def grs_rst_roads(osmdb, lineTbl, polyTbl, dataFolder, LULC_CLS):
     """
     Raster Roads for GRASS
     """
     
-    import datetime
     from glass.it.shp            import dbtbl_to_shp
     from glass.dp.torst          import grsshp_to_grsrst as shp_to_rst
     from glass.gp.prox.bfing.sql import splite_buffer
-    from glass.prop.sql      import row_num
+    from glass.prop.sql          import row_num
     
-    time_a = datetime.datetime.now().replace(microsecond=0)
+    time_a = dt.datetime.now().replace(microsecond=0)
     NR = row_num(osmdb, lineTbl, where="roads IS NOT NULL", api='sqlite')
-    time_b = datetime.datetime.now().replace(microsecond=0)
+    time_b = dt.datetime.now().replace(microsecond=0)
     
     if not NR: return None, {0 : ('count_rows_roads', time_b - time_a)}
     
@@ -25,22 +26,22 @@ def grs_rst_roads(osmdb, lineTbl, polyTbl, dataFolder, LULC_CLS):
         whrClause="roads IS NOT NULL",
         outTblIsFile=None, dissolve="ALL"
     )
-    time_c = datetime.datetime.now().replace(microsecond=0)
+    time_c = dt.datetime.now().replace(microsecond=0)
     
     #roadGrs = shp_to_grs(roadFile, "bf_roads", filterByReg=True, asCMD=True)
     roadGrs = dbtbl_to_shp(
         osmdb, roadFile, "geom", 'bf_roads',
         notTable=True, outShpIsGRASS=True, inDB='sqlite'
     )
-    time_d = datetime.datetime.now().replace(microsecond=0)
+    time_d = dt.datetime.now().replace(microsecond=0)
     roadRst = shp_to_rst(
         roadGrs, int(LULC_CLS), "rst_roads", cmd=True
     )
-    time_e = datetime.datetime.now().replace(microsecond=0)
+    time_e = dt.datetime.now().replace(microsecond=0)
     
     # Builds to GRASS and to RASTER
     NB = row_num(osmdb, polyTbl, where="building IS NOT NULL", api='sqlite')
-    time_f = datetime.datetime.now().replace(microsecond=0)
+    time_f = dt.datetime.now().replace(microsecond=0)
     
     if NB:
         from glass.rst.alg  import rstcalc
@@ -51,24 +52,24 @@ def grs_rst_roads(osmdb, lineTbl, polyTbl, dataFolder, LULC_CLS):
             where="building IS NOT NULL",
             notTable=True, outShpIsGRASS=True, inDB='sqlite'
         )
-        time_g = datetime.datetime.now().replace(microsecond=0)
+        time_g = dt.datetime.now().replace(microsecond=0)
         
         buildsRst = shp_to_rst(
             buildsShp, 1, "rst_builds", cmd=True
         )
-        time_h = datetime.datetime.now().replace(microsecond=0)
+        time_h = dt.datetime.now().replace(microsecond=0)
         
         # Buildings to nodata | Nodata to 0
         null_to_value(buildsRst, 0, as_cmd=True)
-        time_i = datetime.datetime.now().replace(microsecond=0)
+        time_i = dt.datetime.now().replace(microsecond=0)
         set_null(buildsRst, 1, ascmd=True)
-        time_j = datetime.datetime.now().replace(microsecond=0)
+        time_j = dt.datetime.now().replace(microsecond=0)
         
         # Do the math: roads + builds | if builds and roads at the same cell
         # cell will be null in the road layer
         roadsRes = rstcalc(
-            "{} + {}".format(roadRst, buildsRst), "cls_roads", api="grass")
-        time_l = datetime.datetime.now().replace(microsecond=0)
+           f"{roadRst} + {buildsRst}", "cls_roads", api="grass")
+        time_l = dt.datetime.now().replace(microsecond=0)
         
         return {LULC_CLS : roadsRes}, {
             0 : ('count_rows_roads', time_b - time_a),
@@ -98,17 +99,16 @@ def grs_vec_roads(osmdb, lineTbl, polyTbl):
     Select Roads for GRASS GIS
     """
     
-    import datetime
-    from glass.prop.sql  import row_num
+    from glass.prop.sql      import row_num
     from glass.it.shp        import dbtbl_to_shp
     from glass.gp.prox.bfing import _buffer
     from glass.gp.gen        import dissolve
     from glass.tbl.grs       import add_table
     
     # Roads to GRASS GIS
-    time_a = datetime.datetime.now().replace(microsecond=0)
+    time_a = dt.datetime.now().replace(microsecond=0)
     NR = row_num(osmdb, lineTbl, where="roads IS NOT NULL", api='sqlite')
-    time_b = datetime.datetime.now().replace(microsecond=0)
+    time_b = dt.datetime.now().replace(microsecond=0)
     
     if not NR: return None, {0 : ('count_rows_roads', time_b - time_a)}
     
@@ -116,11 +116,11 @@ def grs_vec_roads(osmdb, lineTbl, polyTbl):
         osmdb, lineTbl, "geometry", "all_roads", where="roads IS NOT NULL",
         inDB='sqlite', outShpIsGRASS=True
     )
-    time_c = datetime.datetime.now().replace(microsecond=0)
+    time_c = dt.datetime.now().replace(microsecond=0)
     
     # Buildings to GRASS GIS
     NB = row_num(osmdb, polyTbl, where="building IS NOT NULL", api='sqlite')
-    time_d = datetime.datetime.now().replace(microsecond=0)
+    time_d = dt.datetime.now().replace(microsecond=0)
     
     if NB:
         from glass.gp.prox import grs_near as near
@@ -130,16 +130,16 @@ def grs_vec_roads(osmdb, lineTbl, polyTbl):
             osmdb, polyTbl, "geometry", "all_builds", where="building IS NOT NULL",
             filterByReg=True, inDB='sqlite', outShpIsGRASS=True
         )
-        time_e = datetime.datetime.now().replace(microsecond=0)
+        time_e = dt.datetime.now().replace(microsecond=0)
         
         near(roadsVect, builds, nearDistCol="todist", maxDist=12, as_cmd=True)
-        time_f = datetime.datetime.now().replace(microsecond=0)
+        time_f = dt.datetime.now().replace(microsecond=0)
         cols_calc(
             roadsVect, "bf_roads", "round(todist,0)",
             "\"todist > 0\"",
             lyrN=1, ascmd=True
         )
-        time_g = datetime.datetime.now().replace(microsecond=0)
+        time_g = dt.datetime.now().replace(microsecond=0)
     
     else:
         time_e = None; time_f = None; time_g = None
@@ -149,13 +149,13 @@ def grs_vec_roads(osmdb, lineTbl, polyTbl):
         roadsVect, "bf_roads", "bf_roads",
         api='grass', geom_type="line"
     )
-    time_h = datetime.datetime.now().replace(microsecond=0)
+    time_h = dt.datetime.now().replace(microsecond=0)
     
     # Dissolve Roads
     roadsDiss = dissolve(roadsBf, "diss_roads", "roads", api="grass")
     
     add_table(roadsDiss, None, lyrN=1, asCMD=True)
-    time_i = datetime.datetime.now().replace(microsecond=0)
+    time_i = dt.datetime.now().replace(microsecond=0)
     
     return roadsDiss, {
         0 : ('count_rows_roads', time_b - time_a),
@@ -169,38 +169,42 @@ def grs_vec_roads(osmdb, lineTbl, polyTbl):
     }
 
 
-def roads_sqdb(osmdb, lnhTbl, plTbl, apidb='SQLITE', asRst=None):
+def roads_fmdb_v0(osmdb, lnhTbl, plTbl, apidb='SQLITE', asRst=None):
     """
-    Raods procedings using SQLITE
+    Raods procedings using SQLITE or PostGIS
     """
     
-    import datetime
-    from glass.prop.sqlport row_num as cnt_rows
-    from glass.it.shp    import dbtbl_to_shp as db_to_shp
+    
+    from glass.prop.sql import row_num as cnt_rows
+    from glass.it.shp   import dbtbl_to_shp as db_to_shp
     if apidb=='SQLITE':
         from glass.gp.prox.bfing.sql import splite_buffer as st_buffer
     else:
         from glass.gp.prox.bfing.sql import st_buffer
     
-    time_a = datetime.datetime.now().replace(microsecond=0)
+    time_a = dt.datetime.now().replace(microsecond=0)
     NR = cnt_rows(osmdb, lnhTbl, where="roads IS NOT NULL",
         api='psql' if apidb == 'POSTGIS' else 'sqlite'
     )
-    time_b = datetime.datetime.now().replace(microsecond=0)
+    time_b = dt.datetime.now().replace(microsecond=0)
     
     if not NR: return None, {0 : ('count_rows_roads', time_b - time_a)}
     
     NB = cnt_rows(osmdb, plTbl, where="building IS NOT NULL",
         api='psql' if apidb == 'POSTGIS' else 'sqlite'
     )
-    time_c = datetime.datetime.now().replace(microsecond=0)
+    time_c = dt.datetime.now().replace(microsecond=0)
     
     if NB:
-        from glass.sql.q      import exec_write_q
+        from glass.sql.q       import exec_write_q
         from glass.gp.prox.sql import st_near
         
-        ROADS_Q = "(SELECT{} roads, bf_roads, geometry FROM {} WHERE roads IS NOT NULL)".format(
-            "" if apidb == 'SQLITE' else " gid,", lnhTbl)
+        ROADS_Q = (
+            f"(SELECT{'' if apidb == 'SQLITE' else ' gid,'}"
+            " roads, bf_roads, geometry "
+            f"FROM {lnhTbl} WHERE roads IS NOT NULL)"
+        )
+
         if apidb == 'SQLITE':
             nroads = st_near(
                 osmdb, ROADS_Q, "geometry",
@@ -208,7 +212,7 @@ def roads_sqdb(osmdb, lnhTbl, plTbl, apidb='SQLITE', asRst=None):
                 whrNear="building IS NOT NULL", api='splite',
                 near_col='dist_near'
             )
-            time_d = datetime.datetime.now().replace(microsecond=0)
+            time_d = dt.datetime.now().replace(microsecond=0)
         
             # Update buffer distance field
             exec_write_q(osmdb, [(
@@ -218,34 +222,34 @@ def roads_sqdb(osmdb, lnhTbl, plTbl, apidb='SQLITE', asRst=None):
                 "UPDATE near_roads SET bf_roads = 1 WHERE dist_near >= 0 AND "
                 "dist_near < 1"
             )], api='sqlite')
-            time_e = datetime.datetime.now().replace(microsecond=0)
+            time_e = dt.datetime.now().replace(microsecond=0)
         
         else:
             nroads = st_near(
                 osmdb, ROADS_Q, 'geometry',
-                "(SELECT * FROM {} WHERE building IS NOT NULL)".format(plTbl),
+                f"(SELECT * FROM {plTbl} WHERE building IS NOT NULL)",
                 "geometry", "near_roads", intbl_pk="gid",
                 until_dist="12", near_col="dist_near"
             )
-            time_d = datetime.datetime.now().replace(microsecond=0)
+            time_d = dt.datetime.now().replace(microsecond=0)
             
             exec_write_q(osmdb, [(
                 "UPDATE near_roads SET "
                 "bf_roads = CAST(round(CAST(dist_near AS numeric), 0) AS integer) "
                 "WHERE dist_near >= 1 AND dist_near <= 12"
             ), (
-                "UPDATE near_roads SET bf_roads = 1 WHERE dist_near >= 0 AND "
+                "UPDATE near_roads SET bf_roads = 99 WHERE dist_near >= 0 AND "
                  "dist_near < 1"
             ), (
                 "CREATE INDEX near_dist_idx ON near_roads USING gist (geometry)"
             )], api='psql')
-            time_e = datetime.datetime.now().replace(microsecond=0)
+            time_e = dt.datetime.now().replace(microsecond=0)
     
     else:
         nroads =  (
             "(SELECT roads, bf_roads, geometry "
-            "FROM {} WHERE roads IS NOT NULL) AS foo"
-        ).format(lnhTbl)
+            f"FROM {lnhTbl} WHERE roads IS NOT NULL) AS foo"
+        )
         
         time_d = None; time_e = None
     
@@ -254,7 +258,7 @@ def roads_sqdb(osmdb, lnhTbl, plTbl, apidb='SQLITE', asRst=None):
         osmdb, nroads, "bf_roads", "geometry", "bf_roads",
         cols_select="roads", outTblIsFile=None, dissolve="ALL"
     )
-    time_f = datetime.datetime.now().replace(microsecond=0)
+    time_f = dt.datetime.now().replace(microsecond=0)
     
     # Send data to GRASS GIS
     roadsGrs = db_to_shp(
@@ -262,7 +266,7 @@ def roads_sqdb(osmdb, lnhTbl, plTbl, apidb='SQLITE', asRst=None):
         inDB="psql" if apidb == 'POSTGIS' else 'sqlite',
         outShpIsGRASS=True
     )
-    time_g = datetime.datetime.now().replace(microsecond=0)
+    time_g = dt.datetime.now().replace(microsecond=0)
     
     if asRst:
         from glass.dp.torst import grsshp_to_grsrst as shp_to_rst
@@ -271,7 +275,125 @@ def roads_sqdb(osmdb, lnhTbl, plTbl, apidb='SQLITE', asRst=None):
             roadsGrs, int(asRst), "rst_roads", cmd=True
         )
         
-        time_h = datetime.datetime.now().replace(microsecond=0)
+        time_h = dt.datetime.now().replace(microsecond=0)
+    else:
+        time_h = None
+    
+    return roadsGrs, {
+        0 : ('count_rows_roads', time_b - time_a),
+        1 : ('count_rows_build', time_c - time_b),
+        2 : None if not time_d else ('near_analysis', time_d - time_c),
+        3 : None if not time_e else ('update_buffer_tbl', time_e - time_d),
+        4 : ('buffer_roads', time_f - time_e if time_e else time_f - time_c),
+        5 : ('import_roads', time_g - time_f),
+        6 : None if not time_h else ('roads_to_raster', time_h - time_g)
+    }
+
+
+def roads_fmdb(osmdb, lnhTbl, plTbl, asRst=None):
+    """
+    Roads processing using PostGIS
+    """
+    
+    from glass.sql.q             import exec_write_q
+    from glass.gp.prox.sql       import st_near
+    from glass.prop.sql          import row_num as cnt_rows
+    from glass.it.shp            import dbtbl_to_shp as db_to_shp
+    from glass.gp.prox.bfing.sql import st_buffer
+    
+    time_a = dt.datetime.now().replace(microsecond=0)
+
+    NR = cnt_rows(
+        osmdb, lnhTbl, where="roads IS NOT NULL",
+        api='psql'
+    )
+
+    time_b = dt.datetime.now().replace(microsecond=0)
+    
+    if not NR:
+        return None, {0 : ('count_rows_roads', time_b - time_a)}
+    
+    NB = cnt_rows(
+        osmdb, plTbl, where="building IS NOT NULL",
+        api='psql'
+    )
+
+    time_c = dt.datetime.now().replace(microsecond=0)
+
+    if NB:
+        rq = (
+            f"(SELECT gid, roads, bf_roads, geometry "
+            f"FROM {lnhTbl} WHERE roads IS NOT NULL)"
+        )
+
+        # Update column bf_roads with 'lanes' column values
+        # lanes number * some distance in meteres (e.g. 3)
+
+        # Update column bf_roads with 'width' column values
+        exec_write_q(osmdb, [(
+            f"UPDATE {lnhTbl} "
+            "SET bf_roads=CAST(round((CAST(lanes AS integer) * 3), 0) AS integer) "
+            "WHERE lanes IS NOT NULL AND lanes ~ '^[0-9]+$'"
+        ), (
+            f"UPDATE {lnhTbl} "
+            "SET bf_roads=CAST(round(CAST(width AS numeric), 0) AS integer) "
+            "WHERE width IS NOT NULL AND width ~ '^[0-9]+$' AND "
+            "CAST(width AS numeric) < 50"
+        )], api='psql')
+        
+        nroads = st_near(
+            osmdb, rq, 'geometry',
+            f"(SELECT * FROM {plTbl} WHERE building IS NOT NULL)",
+            "geometry", "near_roads", intbl_pk="gid",
+            until_dist="12", near_col="dist_near"
+        )
+
+        time_d = dt.datetime.now().replace(microsecond=0)
+            
+        exec_write_q(osmdb, [(
+            "UPDATE near_roads SET "
+            "bf_roads = CAST(round(CAST(dist_near AS numeric), 0) AS integer) "
+            "WHERE dist_near >= 1 AND dist_near <= 12"
+        ), (
+            "UPDATE near_roads SET bf_roads = 99 WHERE dist_near >= 0 AND "
+                "dist_near < 1"
+        ), (
+            "CREATE INDEX near_dist_idx ON near_roads USING gist (geometry)"
+        )], api='psql')
+
+        time_e = dt.datetime.now().replace(microsecond=0)
+    
+    else:
+        nroads =  (
+            "(SELECT roads, bf_roads, geometry "
+            f"FROM {lnhTbl} WHERE roads IS NOT NULL) AS foo"
+        )
+        
+        time_d = None; time_e = None
+    
+    # Execute Buffer
+    bfTbl = st_buffer(
+        osmdb, nroads, "bf_roads", "geometry", "bf_roads",
+        cols_select="roads", outTblIsFile=None, dissolve="ALL"
+    )
+    time_f = dt.datetime.now().replace(microsecond=0)
+    
+    # Send data to GRASS GIS
+    roadsGrs = db_to_shp(
+        osmdb, bfTbl, "geometry", "froads", notTable=None,
+        filterByReg=True, inDB="psql", outShpIsGRASS=True
+    )
+    
+    time_g = dt.datetime.now().replace(microsecond=0)
+    
+    if asRst:
+        from glass.dp.torst import grsshp_to_grsrst as shp_to_rst
+        
+        roadsGrs = shp_to_rst(
+            roadsGrs, int(asRst), "rst_roads", cmd=True
+        )
+        
+        time_h = dt.datetime.now().replace(microsecond=0)
     else:
         time_h = None
     
@@ -291,16 +413,15 @@ def num_roads(osmdata, nom, lineTbl, polyTbl, folder, cellsize, srs, rstTemplate
     Select Roads and convert To Raster
     """
     
-    import datetime as dt
     import os
-    import numpy                   as np
-    from threading                 import Thread
+    import numpy                 as np
+    from threading               import Thread
     from glass.rd.rst            import rst_to_array
     from glass.tbl.filter        import sel_by_attr
     from glass.gp.prox.bfing.sql import splite_buffer
     from glass.dp.torst          import shp_to_rst
     from glass.wt.rst            import obj_to_rst
-    from glass.prop.sql      import row_num
+    from glass.prop.sql          import row_num
     
     time_a = dt.datetime.now().replace(microsecond=0)
     NR = row_num(osmdata, lineTbl, where="roads IS NOT NULL", api='sqlite')
@@ -351,9 +472,7 @@ def num_roads(osmdata, nom, lineTbl, polyTbl, folder, cellsize, srs, rstTemplate
         
         bShp = sel_by_attr(
             osmdata,
-            "SELECT geometry FROM {} WHERE building IS NOT NULL".format(
-                polyTbl
-            ),
+            f"SELECT geometry FROM {polyTbl} WHERE building IS NOT NULL",
             os.path.join(folder, 'road_builds.shp'),
             api_gis='ogr'
         )
@@ -405,9 +524,9 @@ def pg_num_roads(osmdb, nom, lnhTbl, polyTbl, folder, cellsize, srs, rstT):
     and convert roads to raster
     """
     
-    import datetime;   import os
-    from osgeo         import gdal
-    from glass.prop.sql      import row_num
+    import datetime
+    import os
+    from glass.prop.sql          import row_num
     from glass.gp.prox.bfing.sql import st_buffer
     from glass.dp.torst          import shp_to_rst
     

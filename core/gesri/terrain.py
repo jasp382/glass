@@ -10,11 +10,15 @@ def countours_to_tin(elevation, elvfield, lmt, prj, output, hydrology=None):
     """
     
     import os
-    from gesri.lyr         import feat_lyr
-    from gesri._3D.mng.tin import create_tin
+    from glass.pys.oss    import fprop
+    from gesri.rd.shp     import shp_to_lyr
+    from gesri.threed.tin import create_tin
     
-    lyr_elev = feat_lyr(elevation, 'elev_lyr')
-    lyr_lmt  = feat_lyr(lmt, 'bnd_lyr')
+    lyr_elev = shp_to_lyr(elevation)
+    lyr_lmt  = shp_to_lyr(lmt)
+
+    bname = fprop(lmt, 'fn')
+    ename = fprop(elevation, 'fn')
     
     if not hydrology:
         __inputs = (
@@ -27,7 +31,7 @@ def countours_to_tin(elevation, elvfield, lmt, prj, output, hydrology=None):
         )
     
     else:
-        lyr_hidro = feat_lyr(hydrology)
+        lyr_hidro = shp_to_lyr(hydrology)
         
         __inputs = (
             "bnd_lyr <None> Soft_Clip <None>; "
@@ -61,11 +65,14 @@ def dem_from_tin(
     """
     
     import os
-    from glass.pys.oss          import get_filename, get_fileformat
-    from gesri.df.lyr          import feat_lyr
+    from glass.pys.oss          import fprop
+    from gesri.rd.shp          import shp_to_lyr
     from gesri.dct.torst          import tin_to_raster
     from gesri.df.mng.rst.proc import clip_raster
     
+    oprop = fprop(output, ['fn', 'ff'])
+    oname, of = oprop['filename'], oprop['fileformat']
+
     if not os.path.exists(w):
         from glass.pys.oss import create_folder
         create_folder(w, overwrite=None)
@@ -100,30 +107,20 @@ def dem_from_tin(
                        'tin_tmp', hidrology)
     # TIN2Raster
     rst_tin = tin_to_raster(
-        tin, cellsize,
-        '{}_extra{}'.format(
-            get_filename(output), get_fileformat(output)
-        ),
-        snapRst=snapRst
+        tin, cellsize, f'{oname}_extra{of}', snapRst=snapRst
     )
     
     # Clip Raster
-    lmt_clip = feat_lyr(boundary_mdt)
+    lmt_clip = shp_to_lyr(boundary_mdt)
     dem_clip = clip_raster(rst_tin, lmt_clip, output, snap=snapRst)
     
     # Create Hillshade just for fun
     if __hillshade:
         from gesri.df.spanlst.surf import hillshade
         
-        hillshd = hillshade(
-            output,
-            os.path.join(
-                os.path.dirname(output),
-                '{}hsd{}'.format(
-                    get_filename(output), get_fileformat(output)
-                )
-            )
-        )
+        hillshd = hillshade(output, os.path.join(
+            os.path.dirname(output), f'{oname}hsd{of}'
+        ))
 
 
 def loop_dem_from_tin(countors_fld, elevField, bound_tin_fld, bound_mdt_fld,

@@ -44,8 +44,8 @@ def merge_tbls(folder, out_tbl, tbl_format='.dbf'):
 
     from glass.pys.oss import lst_ff
     from glass.rd      import tbl_to_obj
-    from glass.wt   import obj_to_tbl
-    from glass.pd   import merge_df
+    from glass.wt      import obj_to_tbl
+    from glass.pd      import merge_df
 
     tbls = lst_ff(folder, file_format=tbl_format)
 

@@ -69,12 +69,11 @@ def fishnet(output, templateExtent, geomType='POLYGON',
     Use fc or raster to assign a extent to the new fishnet
     """
     
-    import os
     from glass.prop.ext import rst_ext, get_extent
-    from glass.prop.ff  import vector_formats, raster_formats
-    from glass.oss      import get_fileformat
+    from glass.g.prop  import vector_formats, raster_formats
+    from glass.pys.oss      import fprop
     
-    templateFormat = get_fileformat(templateExtent)
+    templateFormat = fprop(templateExtent, 'ff')
     
     if templateFormat in vector_formats():
         xmin, xmax, ymin, ymax = get_extent(templateExtent, gisApi='arcpy')

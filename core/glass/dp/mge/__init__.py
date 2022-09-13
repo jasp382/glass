@@ -12,8 +12,9 @@ def vpatch(shps, outshp):
     from glass.pys import execmd
 
     rcmd = execmd((
-        "v.patch input={} output={} --overwrite --quiet"
-    ).format(",".join(shps), outshp))
+        f"v.patch input={','.join(shps)} output={outshp} "
+        "--overwrite --quiet"
+    ))
     
     return outshp
 
@@ -48,21 +49,17 @@ def shps_to_shp(shps, outShp, api="ogr2ogr", fformat='.shp',
 
     
     if api == "ogr2ogr":
-        from glass.pys             import execmd
+        from glass.pys  import execmd
         from glass.prop import drv_name
         
         out_drv = drv_name(outShp)
         
         # Create output and copy some features of one layer (first in shps)
-        cmdout = execmd('ogr2ogr -f "{}" {} {}'.format(
-            out_drv, outShp, shps[0]
-        ))
+        cmdout = execmd(f'ogr2ogr -f "{out_drv}" {outShp} {shps[0]}')
         
         # Append remaining layers
         lcmd = [execmd(
-            'ogr2ogr -f "{}" -update -append {} {}'.format(
-                out_drv, outShp, shps[i]
-            )
+            f'ogr2ogr -f "{out_drv}" -update -append {outShp} {shps[i]}'
         ) for i in range(1, len(shps))]
     
     elif api == 'pandas':
@@ -162,7 +159,7 @@ def same_attr_to_shp(inShps, interestCol, outFolder, basename="data_",
     
     import os
     from glass.rd.shp import shp_to_obj
-    from glass.pd    import merge_df
+    from glass.pd     import merge_df
     from glass.wt.shp import df_to_shp
     
     EXT = os.path.splitext(inShps[0])[1]
@@ -181,7 +178,7 @@ def same_attr_to_shp(inShps, interestCol, outFolder, basename="data_",
         KEY = str(val).split('.')[0] if '.' in str(val) else str(val)
         
         nshp = df_to_shp(ndf, os.path.join(
-            outFolder, '{}{}{}'.format(basename, KEY, EXT)
+            outFolder, f'{basename}{KEY}{EXT}'
         ))
         
         if not resultDict:

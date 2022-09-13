@@ -178,14 +178,14 @@ Do Joins and stuff with excel tables
 def join_shp_with_tbl(shp, shp_pk, tbl, tbl_fk, outShp,
                         joinFieldsMantain=None,
                         newNames=None, csv_delimiter=';', isbgri=None,
-                        sheet=None):
+                        sheet=None, _how='inner', norelval=None):
     """
     Join BGRI ESRI Shapefile with table in xlsx or csv formats
     """
     
-    import pandas       as pd
-    from glass.pys      import obj_to_lst
-    from glass.rd    import tbl_to_obj
+    import pandas     as pd
+    from glass.pys    import obj_to_lst
+    from glass.rd     import tbl_to_obj
     from glass.rd.shp import shp_to_obj
     from glass.wt.shp import df_to_shp
     
@@ -197,6 +197,11 @@ def join_shp_with_tbl(shp, shp_pk, tbl, tbl_fk, outShp,
         tbl, _delimiter=csv_delimiter,
         encoding_='utf-8', sheet=sheet
     )
+
+    # Check if shp_pk is index
+    if shp_pk == "index":
+        mainDf["shp_pk"] = mainDf.index + 1
+        shp_pk = "shp_pk"
 
     # Force ids to strings
     mainDf[shp_pk] = mainDf[shp_pk].astype(str)
@@ -222,8 +227,9 @@ def join_shp_with_tbl(shp, shp_pk, tbl, tbl_fk, outShp,
             joinDf[c] = pd.to_numeric(joinDf[c], errors='ignore')
     
     resultDf = mainDf.merge(
-        joinDf, how='inner', left_on=shp_pk, right_on=tbl_fk
+        joinDf, how=_how, left_on=shp_pk, right_on=tbl_fk
     )
+
     if newNames:
         newNames = obj_to_lst(newNames)
         renDict = {
@@ -232,9 +238,86 @@ def join_shp_with_tbl(shp, shp_pk, tbl, tbl_fk, outShp,
         
         resultDf.rename(columns=renDict, inplace=True)
     
+    # Replace Nan
+    if norelval != None:
+        resultDf[tbl_fk] = resultDf[tbl_fk].fillna(norelval)
+    
     df_to_shp(resultDf, outShp)
     
     return outShp
+
+
+def loop_join_shp_tbl(mfolder, shpname, tblname, shp_pk, tbl_fk, oname):
+    """
+    Run join_shp_with_tbl in a loop for the files on each sub-folder
+    of a main folder
+    """
+
+    import os
+    from glass.pys.oss import lst_fld
+
+    folders = lst_fld(mfolder)
+
+    for f in folders:
+        join_shp_with_tbl(
+            os.path.join(f, shpname), shp_pk,
+            os.path.join(f, tblname), tbl_fk,
+            os.path.join(f, oname),
+            _how="left", norelval=-1
+        )
+
+
+def loop_join_shp_tbl_sameid(fa, fb, of, apk, bfk, oname, tbff='.dbf'):
+    """
+    List files in two folders, get id from file name, join tables
+    with same id
+    """
+
+    import os
+    import pandas as pd
+    from glass.pys.oss import lst_ff, lst_fld, mkdir
+
+    fld = lst_fld(os.path.dirname(of))
+
+    if os.path.basename(of) not in fld:
+        mkdir(of, overwrite=False)
+
+    # List tables in folder a
+    # assuming file id is the last part of the filename
+    # {filename}_{id}.shp
+    # id must be an integer
+
+    a_tbl = pd.DataFrame([{
+        'aid'  : int(f.split('.')[0].split('_')[-1]),
+        'atbl' : f
+    } for f in lst_ff(
+        fa, rfilename=True, file_format='.shp'
+    )])
+
+    # List tables in folder b
+    b_tbl = pd.DataFrame([{
+        'bid'  : int(f.split('.')[0].split('_')[-1]),
+        'btbl' : f
+    } for f in lst_ff(
+        fb, rfilename=True, file_format=tbff
+    )])
+
+    # Join two dataframes
+    jt = a_tbl.merge(b_tbl, how='inner', left_on='aid', right_on='bid')
+
+    # Join tables
+    ot = []
+    for i, r in jt.iterrows():
+        outt = join_shp_with_tbl(
+            os.path.join(fa, r.atbl), apk,
+            os.path.join(fb, r.btbl), bfk,
+            os.path.join(of, f"{oname}_{str(r.aid)}.shp"),
+            _how="left", norelval=-1
+        )
+
+        ot.append(outt)
+
+    return ot
 
 
 def calc_mean_samecol_sevshp(intbls, pk, meancol, output, tformat='.shp'):
@@ -397,7 +480,7 @@ def join_tables_in_table(mainTable, mainIdField, joinTables, outTable):
     """
     
     # Modules
-    import os;       import pandas
+    import os
     from glass.rd import tbl_to_obj
     from glass.wt import obj_to_tbl
     

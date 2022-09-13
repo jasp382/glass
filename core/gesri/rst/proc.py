@@ -9,8 +9,8 @@ def clip_each_feature(rst, shp,
     import arcpy
     import os
 
-    from glass.cpu.arcg.lyr       import feat_lyr
-    from glass.cpu.arcg.lyr       import rst_lyr
+    from gesri.rd.shp       import shp_to_lyr
+    from gesri.rd.rst             import rst_to_lyr
     from glass.cpu.arcg.anls.exct import select_by_attr
     from glass.oss.ops            import create_folder
 
@@ -24,8 +24,8 @@ def clip_each_feature(rst, shp,
     # Do it! #
     # ###### #
     # Open feature class
-    lyr_shp = feat_lyr(shp)
-    lyr_rst = rst_lyr(rst)
+    lyr_shp = shp_to_lyr(shp)
+    lyr_rst = rst_to_lyr(rst)
 
     # Create folder for some temporary files
     wTmp = create_folder(os.path.join(work, 'tmp'))
@@ -71,12 +71,11 @@ def clip_several_each_feature(rst_folder, shp, feature_id, work, template=None,
     import arcpy
     import os
 
-    from glass.cpu.arcg.lyr       import feat_lyr
-    from glass.cpu.arcg.lyr       import rst_lyr
+    from gesri.rd.shp      import shp_to_lyr
+    from gesri.rd.rst       import rst_to_lyr
     from glass.cpu.arcg.anls.exct import select_by_attr
-    from glass.cpu.arcg.mng.fld   import type_fields
-    from glass.oss.ops            import create_folder
-    from glass.pys.oss            import lst_ff
+    from gesri.prop.cols  import type_fields
+    from glass.pys.oss            import lst_ff, mkdir
 
     # ########### #
     # Environment #
@@ -88,10 +87,10 @@ def clip_several_each_feature(rst_folder, shp, feature_id, work, template=None,
     # Do it! #
     # ###### #
     # Open feature class
-    lyr_shp = feat_lyr(shp)
+    lyr_shp = shp_to_lyr(shp)
 
     # Create folder for some temporary files
-    wTmp = create_folder(os.path.join(work, 'tmp'))
+    wTmp = mkdir(os.path.join(work, 'tmp'))
 
     # Split feature class in parts
     c = arcpy.SearchCursor(lyr_shp)
@@ -115,7 +114,7 @@ def clip_several_each_feature(rst_folder, shp, feature_id, work, template=None,
             os.path.join(wTmp, 'each_{}.shp'.format(fid))
         )
         
-        f_lyr = feat_lyr(selection)
+        f_lyr = shp_to_lyr(selection)
         features[fid] = f_lyr
 
         l=c.next()
@@ -123,7 +122,7 @@ def clip_several_each_feature(rst_folder, shp, feature_id, work, template=None,
     rasters = lst_ff(rst_folder, file_format='.tif')
 
     for raster in rasters:
-        r_lyr = rst_lyr(raster)
+        r_lyr = rst_to_lyr(raster)
         for feat in features:
             clip_rst = clip_raster(
                 r_lyr, features[feat],

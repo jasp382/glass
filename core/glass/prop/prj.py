@@ -175,12 +175,12 @@ def get_epsg(inFile):
     Get EPSG of any GIS File
     """
     
-    from glass.prop import check_isRaster, check_isShp
+    from glass.prop import check_isRaster, is_shp
     
     if check_isRaster(inFile):
         return get_rst_epsg(inFile)
     else:
-        if check_isShp(inFile):
+        if is_shp(inFile):
             return get_shp_epsg(inFile)
         else:
             return None

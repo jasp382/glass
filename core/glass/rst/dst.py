@@ -2,7 +2,7 @@
 Raster Distance and cost
 """
 
-def grow_distance(inRst, outRst, api="pygrass"):
+def grow_distance(inrst, outrst, api="pygrass"):
     """
     Generates a raster map containing distance to nearest raster features
     """
@@ -11,7 +11,8 @@ def grow_distance(inRst, outRst, api="pygrass"):
         from grass.pygrass.modules import Module
     
         m = Module(
-            'r.grow.distance', input=inRst, distance=outRst, metric='euclidean',
+            'r.grow.distance', input=inrst, distance=outrst,
+            metric='euclidean',
             overwrite=True, quiet=True, run_=False
         )
     
@@ -21,14 +22,15 @@ def grow_distance(inRst, outRst, api="pygrass"):
         from glass.pys  import execmd
         
         rcmd = execmd((
-            "r.grow.distance input={} distance={} metric=euclidean "
+            f"r.grow.distance input={inrst} "
+            f"distance={outrst} metric=euclidean "
             "--overwrite --quiet"
-        ).format(inRst, outRst))
+        ))
     
     else:
-        raise ValueError("API {} is not available".format(api))
+        raise ValueError(f"API {api} is not available")
     
-    return outRst
+    return outrst
 
 
 def rcost(cst, origin, out):

@@ -85,20 +85,19 @@ def lst_tbl(db, schema='public', excludeViews=None, api='psql',
     
     basename = obj_to_lst(basename)
     
-    basenameStr = "" if not basename else "{}".format(
-        " OR ".join(["{} LIKE '%%{}%%'".format(
-            "table_name" if api == 'psql' else "name", b
-        ) for b in basename])
-    )
+    basenameStr = "" if not basename else " OR ".join([(
+        f"{'table_name' if api == 'psql' else 'name'} "
+        f"LIKE '%%{b}%%'"
+    ) for b in basename])
     
     if api == 'psql':
         from glass.sql.q import q_to_obj
         
         Q = (
             "SELECT table_name FROM information_schema.tables "
-            "WHERE table_schema='{}'{}"
-        ).format(schema, "" if not basename else " AND ({})".format(
-            basenameStr))
+            f"WHERE table_schema='{schema}'"
+            f"{'' if not basename else f' AND ({basenameStr})'}"
+        )
     
         tbls = q_to_obj(db, Q, db_api='psql', dbset=db_set)
     
@@ -120,13 +119,13 @@ def lst_tbl(db, schema='public', excludeViews=None, api='psql',
         conn = sqlite3.connect(db)
         cursor = conn.cursor()
         
-        tables = cursor.execute(
-            "SELECT name FROM sqlite_master WHERE type='table'{};".format(
-                "" if not basename else " AND ({})".format(basenameStr)
-            )
-        )
+        tables = cursor.execute((
+            "SELECT name FROM sqlite_master WHERE type='table'"
+            f"{'' if not basename else f' AND ({basenameStr})'};"
+        ))
         
         __tbls = [n[0] for n in tables]
+        
         cursor.close()
         conn.close()
     

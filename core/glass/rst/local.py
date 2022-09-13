@@ -21,24 +21,12 @@ def combine(inRst, outRst, api="pygrass", template=None):
         from glass.pys import execmd
         
         rcmd = execmd((
-            "r.cross input={} output={} "
+            f"r.cross input={','.join(inRst)} output={outRst} "
             "-z --overwrite --quiet"
-        ).format(",".join(inRst), outRst))
-    
-    elif api == "arcpy":
-        import arcpy
-        
-        if template:
-            tempEnvironment0 = arcpy.env.extent
-            arcpy.env.extent = template
-        
-        arcpy.gp.Combine_sa(";".join(inRst), outRst)
-        
-        if template:
-            arcpy.env.extent = tempEnvironment0
+        ))
     
     else:
-        raise ValueError("API {} is not available".format(api))
+        raise ValueError(f"API {api} is not available")
     
     return outRst
 

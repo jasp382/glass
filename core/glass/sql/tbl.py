@@ -36,11 +36,10 @@ def create_tbl(db, table, fields, orderFields=None, api='psql'):
         
         conn = sqlite3.connect(db)
         cursor = conn.cursor()
+
+        ft = ', '.join([f"{k} {fields[k]}" for k in fields])
         
-        cursor.execute("CREATE TABLE {} ({})".format(
-            table, ', '.join(["{} {}".format(
-                k, fields[k]) for k in fields])
-        ))
+        cursor.execute(f"CREATE TABLE {table} ({ft})")
         
         conn.commit()
         cursor.close()
@@ -105,7 +104,7 @@ def del_tables(db, pg_table_s, isViews=None, isBasename=None, db_set='default'):
     Delete all tables in pg_table_s
     """
     
-    from glass.pys    import obj_to_lst
+    from glass.pys   import obj_to_lst
     from glass.sql.c import sqlcon
     
     pg_table_s = obj_to_lst(pg_table_s)
@@ -126,10 +125,11 @@ def del_tables(db, pg_table_s, isViews=None, isBasename=None, db_set='default'):
     for i in range(0, len(pg_table_s), 100):
         l.append(pg_table_s[i:i+100])
     
+    tref = 'TABLE' if not isViews else 'VIEW'
+    ts   = ', '.join(lt)
     for lt in l:
         cursor = con.cursor()
-        cursor.execute('DROP {} IF EXISTS {};'.format(
-            'TABLE' if not isViews else 'VIEW', ', '.join(lt)))
+        cursor.execute(f'DROP {tref} IF EXISTS {ts};')
         con.commit()
         cursor.close()
     
@@ -381,7 +381,7 @@ def tbls_to_tbl(db, lst_tables, outTable):
     from glass.sql.q import q_to_ntbl
     
     sql = " UNION ALL ".join([
-        "SELECT * FROM {}".format(t) for t in lst_tables])
+        f"SELECT * FROM {t}" for t in lst_tables])
     
     outTable = q_to_ntbl(db, outTable, sql, api='psql')
     

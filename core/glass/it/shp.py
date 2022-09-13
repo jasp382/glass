@@ -15,7 +15,7 @@ def shp_to_shp(inshp, outshp, gapi='ogr', spatialite=None):
     """
     
     if gapi == 'ogr':
-        from glass.pys    import execmd
+        from glass.pys  import execmd
         from glass.prop import drv_name
         
         out_driver = drv_name(outshp)
@@ -134,7 +134,7 @@ def pointXls_to_shp(xlsFile, outShp, x_col, y_col, epsg, sheet=None):
     Excel table with Point information to ESRI Shapefile
     """
     
-    from glass.rd    import tbl_to_obj
+    from glass.rd     import tbl_to_obj
     from glass.it.pd  import pnt_dfwxy_to_geodf
     from glass.wt.shp import df_to_shp
     
@@ -148,6 +148,43 @@ def pointXls_to_shp(xlsFile, outShp, x_col, y_col, epsg, sheet=None):
     df_to_shp(geoDataDf, outShp)
     
     return outShp
+
+
+def tblpnt_to_shp(tbl, shp, xcol, ycol, epsg, outepsg=None, 
+    sheet=None, delimiter='\t', noheaders=None, noheaderscols=None):
+    """
+    Regular table with points to Feature Class
+    """
+
+    from glass.rd     import tbl_to_obj
+    from glass.it.pd  import pnt_dfwxy_to_geodf
+    from glass.prj    import df_prj
+    from glass.wt.shp import df_to_shp
+
+    df = tbl_to_obj(
+        tbl, _delimiter=delimiter,
+        csvheader=True if not noheaders else None,
+        sheet=sheet
+    )
+
+    if noheaders and noheaderscols:
+        ncols = len(list(df.columns.values))
+        cols_name = {
+            i : noheaderscols[i] for i in range(ncols)
+        }
+
+        df.rename(columns=cols_name, inplace=True)
+    
+    df = pnt_dfwxy_to_geodf(df, xcol, ycol, epsg)
+
+    if outepsg and epsg != outepsg:
+        df = df_prj(df, outepsg)
+
+        epsg = outepsg
+
+    df_to_shp(df, shp)
+
+    return shp
 
 
 """
@@ -195,7 +232,7 @@ def grs_to_shp(inLyr, outLyr, geomType, lyrN=1, asCMD=True, asMultiPart=None):
     if not asCMD:
         from grass.pygrass.modules import Module
         
-        __flg = None if not asMultiPart else 'm'
+        __flg = '' if not asMultiPart else 'm'
         
         m = Module(
             "v.out.ogr", input=inLyr, type=geomType, output=outLyr,

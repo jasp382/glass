@@ -110,10 +110,10 @@ def interval_rules(dic, out_rules):
     converted in new values
     
     dic = {
-        new_value1: [lower_class_value, upper_class_value],
-        new_value2: (lower_class_value, upper_class_value),
+        [lower_class_value, upper_class_value] : new_value1,
+        (lower_class_value, upper_class_value) : new_value2,
         ...,
-        new_valuen: (lower_class_value, upper_class_value),
+        (lower_class_value, upper_class_value) : new_valuen
     }
     """
     
@@ -125,10 +125,10 @@ def interval_rules(dic, out_rules):
     with open(out_rules, 'w') as txt:
         for nv in dic:
             thru = [
-                f'{dic[nv][i-1]} thru {dic[nv][i]}'
-            for i in range(1, len(dic[nv]), 2)]
+                f'{str(nv[i-1])} thru {str(nv[i])}'
+            for i in range(1, len(nv), 2)]
 
-            txt.write(f'{"  ".join(thru)}  = {nv}\n')
+            txt.write(f'{"  ".join(thru)}  = {str(dic[nv])}\n')
         
         txt.close()
     
@@ -141,8 +141,8 @@ def category_rules(dic, out_rules):
     converted into new designations/values
     
     dic = {
-        new_value : old_value,
-        new_value : old_value,
+        old_value : new_value,
+        old_value : new_value,
         ...
     }
     """

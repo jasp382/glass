@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}JustSide - Estudos de caso{% endblock %}
+{% block body_contents %}
+<div id="content-container">
+	<manage-study-cases 
+		wtodo="{{ todo }}"
+		rqstid="{{ rqst }}"
+		ctxdif="'{{ ctx }}'"></manage-study-cases>
+</div>
+{% endblock %}

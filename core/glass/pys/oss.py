@@ -3,6 +3,7 @@ Methods to interact with the Operating System
 """
 
 import os
+import re
 
 def os_name():
     import platform
@@ -206,9 +207,7 @@ def mkdir(folder, randName=None, overwrite=True):
             
             shutil.rmtree(folder)
         else:
-            raise ValueError(
-                "{} already exists".format(folder)
-            )
+            raise ValueError(f"{folder} already exists")
     
     os.mkdir(folder)
     
@@ -366,6 +365,34 @@ def onFolder_rename2(folder, newBegin, stripStr, fileFormats=None):
         new_name = "{}{}{}".format(newBegin, new_name, fprop(_file, 'ff'))
         
         os.rename(_file, os.path.join(os.path.dirname(_file), new_name))
+
+
+def rename_mantainid(folder, new_name):
+    """
+    Rename files mantain integer part
+
+    if new_name = 'dclv'
+
+    a file with a old name like
+    filename100_tst.tif
+
+    will have a new name like
+    dclv_100.tif
+    """
+
+    fs = lst_ff(folder, rfilename=True)
+
+    for f in fs:
+        fn, fe = os.path.splitext(f)
+
+        int_v = re.search(r'\d+', fn).group()
+
+        nname = f"{new_name}_{int_v}{fe}"
+
+        os.rename(
+            os.path.join(folder, f),
+            os.path.join(folder, nname)
+        )
 
 
 """

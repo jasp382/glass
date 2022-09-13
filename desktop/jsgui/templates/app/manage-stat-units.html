@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}JustSide - Dados disponíveis{% endblock %}
+{% block body_contents %}
+<div id="content-container">
+	{% if service.name == 'manage-countries-stats' %}
+	<stat-units-manage
+		wtodo="{{ todo }}"
+		rqstid="{{ rqst }}"></stat-units-manage>
+	{% endif %}
+</div>
+{% endblock %}

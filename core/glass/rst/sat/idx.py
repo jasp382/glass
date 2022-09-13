@@ -4,8 +4,12 @@ Apply Indexes to highligh LULC types in Satellite Imagery
 Use GDAL to apply index
 """
 
+import numpy      as np
+from osgeo        import gdal
+from glass.wt.rst import obj_to_rst
 
-def ndwi2(green, nir, outRst, toReflectance=10000):
+
+def calc_ndwi(green, nir, outRst, toReflectance=10000, api='gdal'):
     """
     Apply Normalized Difference Water Index
     
@@ -16,10 +20,37 @@ def ndwi2(green, nir, outRst, toReflectance=10000):
     EXPRESSION: ((green / toReflectance) - (nir /toReflectance)) / 
     ((green / toReflectance) + (nir /toReflectance))
     """
-    
-    return outRst
 
-def ndvi(nir, red, outRst):
+    if api == 'gdal':
+        srcg   = gdal.Open(green, gdal.GA_ReadOnly)
+        srcnir = gdal.Open(nir, gdal.GA_ReadOnly)
+
+        # To Array
+        num_green = srcg.GetRasterBand(1).ReadAsArray().astype(float)
+        num_nir   = srcnir.GetRasterBand(1).ReadAsArray().astype(float)
+
+        # Calculation
+        ndwir = (num_green - num_nir) / (num_green + num_nir)
+
+        # Place NoData Value
+        gnd = srcg.GetRasterBand(1).GetNoDataValue()
+        nnd = srcnir.GetRasterBand(1).GetNoDataValue()
+
+        nd = np.amin(ndwir) - 1
+
+        np.place(ndwir, num_green==gnd, nd)
+        np.place(ndwir, num_nir==nnd, nd)
+    
+        # Export Result
+        outrst = obj_to_rst(ndwir, outRst, nir, noData=nd)
+    
+    else:
+        raise ValueError(f'Sorry, API {api} is not available')
+    
+    return outrst
+
+
+def calc_ndvi(nir, red, outRst):
     """
     Apply Normalized Difference NIR/Red Normalized Difference
     Vegetation Index, Calibrated NDVI - CDVI
@@ -28,10 +59,6 @@ def ndvi(nir, red, outRst):
     
     EXPRESSION: (nir - red) / (nir + red)
     """
-    
-    import numpy        as np
-    from osgeo          import gdal, gdal_array
-    from glass.wt.rst import obj_to_rst
     
     # Open Images
     src_nir = gdal.Open(nir, gdal.GA_ReadOnly)
@@ -42,31 +69,27 @@ def ndvi(nir, red, outRst):
     num_red = src_red.GetRasterBand(1).ReadAsArray().astype(float)
     
     # Do Calculation
-    ndvi = (num_nir - num_red) / (num_nir + num_red)
+    ndvir = (num_nir - num_red) / (num_nir + num_red)
     
     # Place NoData Value
     nirNdVal = src_nir.GetRasterBand(1).GetNoDataValue()
     redNdVal = src_red.GetRasterBand(1).GetNoDataValue()
     
-    ndNdvi = np.amin(ndvi) - 1
+    ndNdvi = np.amin(ndvir) - 1
     
-    np.place(ndvi, num_nir==nirNdVal, ndNdvi)
-    np.place(ndvi, num_red==redNdVal, ndNdvi)
+    np.place(ndvir, num_nir==nirNdVal, ndNdvi)
+    np.place(ndvir, num_red==redNdVal, ndNdvi)
     
     # Export Result
-    return obj_to_rst(ndvi, outRst, nir, noData=ndNdvi)
+    return obj_to_rst(ndvir, outRst, nir, noData=ndNdvi)
 
 
-def nbr(nir, swir, outrst):
+def calc_nbr(nir, swir, outrst):
     """
     Normalized Burn Ratio
     
     EXPRESSION Sentinel-2A: (9-12) / (9+12)
     """
-    
-    import numpy        as np
-    from osgeo          import gdal, gdal_array
-    from glass.wt.rst import obj_to_rst
     
     # Open Images
     srcNir  = gdal.Open(nir, gdal.GA_ReadOnly)

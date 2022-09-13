@@ -12,7 +12,7 @@ def rst_to_array(r, flatten=False, with_nodata=True):
     If with_nodata equal a True, the output will have the nodata values
     """
     
-    from osgeo            import gdal
+    from osgeo         import gdal
     from glass.rd.rsrc import imgsrc_to_num
     
     img = gdal.Open(r)

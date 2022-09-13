@@ -1,0 +1,39 @@
+## 5 - Install Apache2, Tomcat e GeoServer:
+
+**5.1 - Install Apache2:**
+
+```
+sudo apt install apache2 libapache2-mod-wsgi-py3
+sudo a2enmod rewrite
+sudo a2enmod ssl
+```
+
+**5.2 - Install Tomcat:**
+
+```
+sudo apt install tomcat9 tomcat9-admin
+```
+
+**Add new user to tomcat-users.xml**
+
+Edit /etc/tomcat9/tomcat-users.xml and add the following line:
+
+```
+<user username="useriam" password="useriam" roles="manager-gui,admin-gui" />
+```
+
+**5.3 - Install GeoServer:**
+
+```
+sudo apt install unzip
+
+mkdir ~/geoserver_inst
+sudo wget http://sourceforge.net/projects/geoserver/files/GeoServer/2.18.1/geoserver-2.18.1-war.zip -P ~/geoserver_inst/
+
+sudo unzip ~/geoserver_inst/geoserver-2.18.1-war.zip -d ~/geoserver_inst/
+
+sudo mv ~/geoserver_inst/geoserver.war /var/lib/tomcat9/webapps/
+
+sudo a2enmod proxy proxy_ajp
+sudo service apache2 restart
+sudo service tomcat9 restart

@@ -109,9 +109,10 @@ def dissolve(inShp, outShp, fld,
         from glass.pys  import execmd
         
         outCmd = execmd((
-            "v.dissolve input={}{} output={} "
-             "--overwrite --quiet"
-        ).format(inShp, " column={}".format(fld) if fld else "", outShp))
+            f"v.dissolve input={inShp} "
+            f"{f'column={fld} ' if fld else ''}"
+            f"output={outShp} --overwrite --quiet"
+        ))
     
     elif api == 'pandas':
         from glass.rd.shp import shp_to_obj

@@ -1,4 +1,5 @@
 import numpy
+import arcpy
 
 def rst_to_array(r, flatten=False, with_nodata=True):
     """
@@ -27,4 +28,14 @@ def rst_to_array(r, flatten=False, with_nodata=True):
             values, numpy.where(values==noData), None)
         return clean_values
 
+
+
+def rst_to_lyr(r):
+    from glass.pys.oss import fprop
+    
+    lyr = arcpy.MakeRasterLayer_management(
+        r, fprop(r, 'fn'), "", "", "1"
+    )
+    
+    return lyr
 

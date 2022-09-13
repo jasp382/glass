@@ -1,4 +1,5 @@
 {
     "USER"     : "username",
-    "PASSWORD" : "password_for_user"
+    "PASSWORD" : "password_for_user",
+    "URL": "https://scihub.copernicus.eu/dhus"
 }

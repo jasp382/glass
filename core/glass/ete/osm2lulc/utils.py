@@ -105,7 +105,7 @@ def osm_project(osmDb, srs_epsg, api='SQLITE', isGlobeLand=None):
             ).format(
                 "" if api != 'POSTGIS' else " row_number() OVER(ORDER BY roads) AS gid,",
                 GEOM_COL if api != 'POSTGIS' else \
-                    "ST_Transform({}, {})".format(GEOM_COL, srs_epsg),
+                    f"ST_Transform({GEOM_COL}, {srs_epsg})",
                 osmTableData[table]
             )
         
@@ -118,17 +118,18 @@ def osm_project(osmDb, srs_epsg, api='SQLITE', isGlobeLand=None):
                 "" if isGlobeLand else " WHERE buildings IS NOT NULL"
             )
         
+        nt = f'{table}_{str(srs_epsg)}'
         if api != 'POSTGIS':
             proj({'DB' : osmDb, 'TABLE' : table},
-                '{}_{}'.format(table, str(srs_epsg)),
-                srs_epsg, inEPSG=4326, gisApi='ogr2ogr_SQLITE', sql=Q
+                nt, srs_epsg, inEPSG=4326,
+                gisApi='ogr2ogr_SQLITE', sql=Q
             )
         else:
-            proj(osmDb, '{}_{}'.format(table, str(srs_epsg)), Q, api='psql')
+            proj(osmDb, nt, Q, api='psql')
             
-            idx_for_geom(osmDb, '{}_{}'.format(table, str(srs_epsg)), "geometry")
+            idx_for_geom(osmDb, nt, "geometry")
         
-        osmtables[table] = '{}_{}'.format(table, str(srs_epsg))
+        osmtables[table] = nt
     
     return osmtables
 
@@ -314,9 +315,9 @@ def get_ref_raster(refBoundBox, folder, cellsize=None):
     isRst = check_isRaster(refBoundBox)
     
     if not isRst:
-        from glass.prop import check_isShp
+        from glass.prop import is_shp
         
-        if not check_isShp(refBoundBox):
+        if not is_shp(refBoundBox):
             raise ValueError((
                 'refRaster File has an invalid file format. Please give a file '
                 'with one of the following extensions: '

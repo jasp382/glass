@@ -24,7 +24,7 @@ def write_sld(attr_name, attr_colors, mapAttrKeys, sld_path,
        
     QUANTITATIVE - LIST EXAMPLE:
     attr_colors = [
-        {'min':  0, 'max':  5, 'R': X, 'G': X, 'B': X},
+        {'min':  0, 'max':  5, 'R': X, 'G': X, 'B': X, 'stroke_r': 200, 'SG' : 200', 'SB' : 200},
         {'min':  5, 'max': 10, 'R': X, 'G': X, 'B': X},
         {'min': 10, 'max': 15, 'R': X, 'G': X, 'B': X},
         {'min': 15, 'max': 20, 'R': X, 'G': X, 'B': X},
@@ -41,7 +41,7 @@ def write_sld(attr_name, attr_colors, mapAttrKeys, sld_path,
     EXAMPLE:
     mapAttrKeys = {
         'r' : 'R', 'g' : 'G', 'b' : 'B', 'interval_min' : 'min',
-        'interval_max' : 'max'
+        'interval_max' : 'max', 'stroke_r' : 'stroke_r'
     }
     
     keys that could be used:

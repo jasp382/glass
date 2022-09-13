@@ -34,6 +34,72 @@ def clip_by_featcls(inShp, clipFolder, folderOutputs, fFormat='.shp'):
         ))
 
 
+def clip_by_feat(inshp, clipshp, out_fld, bname, clip_feat_id='FID', saveid=None):
+    """
+    Clip inputFeatures for each feature in the clipFeatures layer
+    Store all produced layers in the folderOutputs.
+    """
+    
+    import os
+    from glass.pys.oss    import mkdir
+    from gesri.rd.shp     import shp_to_lyr
+    from gesri.prop.cols  import type_fields
+    from gesri.tbl.filter import sel_by_attr
+    
+    if saveid:
+        from gesri.tbl.cols import calc_fld
+
+        cname = "cid" if clip_feat_id == "FID" else clip_feat_id
+    
+    clip_feat_id = 'FID' if not clip_feat_id else clip_feat_id
+    
+    # ########### #
+    # Environment #
+    # ########### #
+    arcpy.env.overwriteOutput = True
+    
+    # ################ #
+    # Now, is for real #
+    # ################ #
+    ilyr, clyr = shp_to_lyr(inshp), shp_to_lyr(clipshp)
+    
+    if not os.path.exists(out_fld):
+        mkdir(out_fld)
+    
+    # Get id's field type
+    fld_type = type_fields(clyr, field=str(clip_feat_id))
+    
+    expression = '{}=\'{}\'' if str(fld_type) == 'String' else \
+        '{}={}'
+    
+    c = arcpy.SearchCursor(clyr)
+    l = c.next()
+    while l:
+        fid = str(l.getValue(clip_feat_id))
+        
+        selection = sel_by_attr(
+            clyr,
+            expression.format(clip_feat_id, fid)
+        )
+        
+        clip_f = clip(ilyr, selection, os.path.join(
+            out_fld, f'{bname}_{fid}.shp'
+        ))
+
+        if saveid:
+            cliplyr = shp_to_lyr(clip_f)
+
+            calc_fld(cliplyr, cname, f"'{str(fid)}'", {
+                "TYPE" : "TEXT", "LENGTH" : "15",
+                "PRECISION" : ""
+            })
+
+        
+        l = c.next()
+    
+    return out_fld
+
+
 def intersect(lst_lyr, outShp):
     arcpy.Intersect_analysis(lst_lyr, outShp)
     return outShp
@@ -47,7 +113,7 @@ def folderShp_Intersection(inFolder, intFeatures, outFolder):
     
     import os
     from glass.pys.oss import create_folder
-    from gesri.df.lyr  import feat_lyr
+    from gesri.rd.shp  import shp_to_lyr
     
     # Environment
     arcpy.env.overwriteOutput = True
@@ -64,8 +130,8 @@ def folderShp_Intersection(inFolder, intFeatures, outFolder):
     fc_infld = arcpy.ListFeatureClasses()
     
     # Create Layer objects
-    lyr_infld = [feat_lyr(os.path.join(inFolder, str(fc))) for fc in fc_infld]
-    lyr_intFeat = [feat_lyr(fc) for fc in intFeatures]
+    lyr_infld = [shp_to_lyr(os.path.join(inFolder, str(fc))) for fc in fc_infld]
+    lyr_intFeat = [shp_to_lyr(fc) for fc in intFeatures]
     
     # Intersect things
     for i in range(len(lyr_infld)):

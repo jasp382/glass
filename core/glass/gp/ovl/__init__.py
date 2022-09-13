@@ -518,7 +518,7 @@ def erase(inShp, erase_feat, out, splitMultiPart=None, notTbl=None,
             "v.overlay", ainput=inShp, atype="area",
             binput=erase_feat, btype="area", operator="not",
             output=out, overwrite=True, run_=False, quiet=True,
-            flags='t' if notTbl else None
+            flags='t' if notTbl else ''
         )
     
         erase()
@@ -537,7 +537,7 @@ def erase(inShp, erase_feat, out, splitMultiPart=None, notTbl=None,
         ).format(inShp, erase_feat, out, "" if not notTbl else "-t "))
     
     else:
-        raise ValueError('API {} is not available!'.format(api))
+        raise ValueError(f'API {api} is not available!')
     
     return out
 

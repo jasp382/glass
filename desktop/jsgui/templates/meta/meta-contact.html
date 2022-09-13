@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}JUST Side{% endblock %}
+{% block body_contents %}
+<div class="zona-conteudo">
+	<table width="100%">
+		<tr><td colspan="3">&nbsp;</td></tr>
+		<tr>
+			<td width="15%">&nbsp;</td>
+			<td width="70%">
+				<table class="tab-org">
+					<tbody>
+						<tr class="tab-org-univ">
+							<td colspan="2" class="titulo">CONTACTOS</td>
+						</tr>
+						<tr><td>&nbsp;</td></tr>
+						<tr class="tab-org-pais">
+							<td colspan="2">
+								{% if atlas_lang == 'es' %}
+								Contacto directo de la Secretaría General CYTED:&nbsp;
+								{% else %}
+								Contactos directos Secretaria Geral CYTED:&nbsp;
+								{% endif %}
+							</td>
+						</tr>
+						<tr class="tab-org-univ">
+							<td colspan="2">
+								<a href="http://www.cyted.org/es/Contacto_secretaria_general" target="_blank" rel="noopener">http://www.cyted.org/es/Contacto_secretaria_general</a>
+							</td>
+						</tr>
+						<tr><td>&nbsp;</td></tr>
+						<tr class="tab-org-pais">
+							<td colspan="2">
+								{% if atlas_lang == 'es' %}
+								Contacto directo CYTED - Organismos nacionales:&nbsp;
+								{% else %}
+								Contactos directos Cyted - Organismos nacionais:&nbsp;
+								{% endif %}
+							</td>
+						</tr>
+						<tr class="tab-org-univ">
+							<td colspan="2">
+								<a href="http://www.cyted.org/es/Contacto_organismos_nacionales" target="_blank" rel="noopener">http://www.cyted.org/es/Contacto_organismos_nacionales</a>
+							</td>
+						</tr>
+						<tr><td>&nbsp;</td></tr>
+						<tr class="tab-org-pais">
+							<td colspan="2">
+								{% if atlas_lang == 'es' %}
+								Coordinador do Projecto JUST Side (REDE CYTED)&nbsp;
+								{% else %}
+								COORDENADORA do Projecto JUST Side (REDE CYTED)&nbsp;
+								{% endif %}
+							</td>
+						</tr>
+						<tr class="tab-org-univ">
+							<td colspan="2">
+								{% if atlas_lang == 'es' %}
+								Profesora Doctora Alexandra Arag&atilde;o<br />Universidad de Coimbra<br />Centro de Estudos de Direito do Ordenamento, do Urbanismo e do Ambiente<br />Faculdade de Direito da Universidade de Coimbra<br />3030-153 Coimbra, Portugal<br />Telefone: (+351) 239403709<br />Correio electr&oacute;nico: aaragao@fd.uc.pt
+								{% else %}
+								Professora Doutora Alexandra Arag&atilde;o<br />Universidade de Coimbra<br />Centro de Estudos de Direito do Ordenamento, do Urbanismo e do Ambiente<br />Faculdade de Direito da Universidade de Coimbra<br />3030-153 Coimbra, Portugal<br />Telefone: (+351) 239403709<br />Correio electr&oacute;nico: aaragao@fd.uc.pt
+								{% endif %}
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</td>
+			<td width="15%">&nbsp;</td>
+		</tr>
+		<tr><td colspan="3">&nbsp;</td></tr>
+	</table>
+</div>
+{% endblock %}

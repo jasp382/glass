@@ -3,7 +3,7 @@ Group data into classes
 """
 
 
-def datatocls_meanstd(shp_data, maps_table, sheet, slug, title,
+def datatocls_meanstd(shp_data, maps_table, sheet, slug, attrs,
     ncls, decplace, nodata, out_shp, out_maps_tbl, grpcol=None):
     """
     Create classes based on mean and standard deviation
@@ -12,14 +12,17 @@ def datatocls_meanstd(shp_data, maps_table, sheet, slug, title,
     nodata - Must be always smaller than the min of min values
     """
 
-    import pandas            as pd
-    import numpy             as np
+    import pandas          as pd
+    import numpy           as np
     from glass.rd.shp      import shp_to_obj
     from glass.wt.shp      import df_to_shp
-    from glass.rd         import tbl_to_obj
-    from glass.wt         import obj_to_tbl
-    from glass.pd.fld     import listval_to_newcols
+    from glass.rd          import tbl_to_obj
+    from glass.wt          import obj_to_tbl
+    from glass.pd.fld      import listval_to_newcols
     from glass.lyt.diutils import eval_intervals
+    from glass.pys         import obj_to_lst
+
+    attrs = obj_to_lst(attrs)
 
     # Read data
     shp_df = shp_to_obj(shp_data)
@@ -62,7 +65,8 @@ def datatocls_meanstd(shp_data, maps_table, sheet, slug, title,
     for idx, row in maps_df.iterrows():
         ddig = row[decplace]
         i    = row[slug]
-        t    = row[title]
+
+        attrval = [row[a] for a in attrs if a in maps_df.columns.values]
 
         if nodata in shp_df[i].unique():
             vals = list(shp_df[i].unique())
@@ -111,11 +115,15 @@ def datatocls_meanstd(shp_data, maps_table, sheet, slug, title,
                 intervals, __intervals, ddig,
                 round(min_v, ddig)
             )
-        
-            i_stats.append([
-                i, t, round(min_v, ndig), round(max_v, ndig),
+
+            l = [
+                i, round(min_v, ndig), round(max_v, ndig),
                 round(mean_v, ddig), round(std_v, ddig), __intervals
-            ])
+            ]
+
+            l.extend(attrval)
+        
+            i_stats.append(l)
         
             shp_df[i] = shp_df[i].round(ddig)
         
@@ -135,17 +143,23 @@ def datatocls_meanstd(shp_data, maps_table, sheet, slug, title,
 
             __intervals, ndig = eval_intervals(intervals, __intervals, ddig, min_v)
 
-            i_stats.append([
-                i, t, min_v, max_v,
+            l = [
+                i, min_v, max_v,
                 int(round(mean_v, 0)) if rzero else round(mean_v, ddig),
                 int(round(std_v, 0)) if rzero else round(std_v, ddig),
                 __intervals
-            ])
+            ]
+
+            l.extend(attrval)
+
+            i_stats.append(l)
     
-    i_stats = pd.DataFrame(i_stats, columns=[
-        'slug', 'title', 'min_value', 'max_value',
+    cols = [
+        'slug', 'min_value', 'max_value',
         'mean_value', 'std_value', 'intervals'
-    ])
+    ]
+    cols.extend(attrs)
+    i_stats = pd.DataFrame(i_stats, columns=cols)
 
     rename_cols = {}
     for idx, row in i_stats.iterrows():

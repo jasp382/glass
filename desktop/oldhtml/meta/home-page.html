@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Exploring VGI{% endblock %}
+{% block body_contents %}
+{% if browser == 0 %}
+<div ng-controller="VgiHomeController as mapVm" ng-cloak>
+    <img id="background" src="{% static 'vgijs/img/vgi-home/background.png' %}" alt="Background image of our planet">
+
+    <div id="landing">
+        <h1>Exploring VGI</h1>
+        <h3>Tools for processing Volunteered Geographical Information</h3>
+
+        <a ng-click="mapVm.gotoElement('services')">
+            <img src="{% static 'vgijs/img/vgi-home/icon_arow_down.png' %}" alt="Arrow pointing down that goes to the next section">
+        </a>
+    </div>
+
+    <div id="services">
+        <h2>Our Services</h2>
+
+        <div>
+            <img src="{% static 'vgijs/img/logos/logo-osmtolulc.png' %}" alt="OSM to LULC Maps's Logo">
+            <h3>OSM to LULC Maps</h3>
+            <hr>
+            <p>Conversion of data available in OpenStreetMap (OSM) into Land Use/Land Cover (LULC) Maps considering a
+                nomenclature selected by the user.</p>
+
+            <a href="/expvgi/osm/osm2lulc/">
+                <div class="button">
+                    <h4>Use Service</h4>
+                </div>
+            </a>
+
+            <a href="/expvgi/pub/osm2lulc/">
+                <div class="button">
+                    <h4>Publications</h4>
+                </div>
+            </a>
+        </div>
+
+        <div>
+            <img src="{% static 'vgijs/img/logos/logo-vgisearch.png' %}" alt="Mapping Social Network Data's Logo">
+            <h3>Mapping Social Network Data</h3>
+            <hr>
+            <p>Extracts data from Social Networks for a given region selected by the user based on
+                chosen keywords or feature types.</p>
+
+            <a href="/expvgi/dsn/mapsearch/">
+                <div class="button">
+                    <h4>Use Service</h4>
+                </div>
+            </a>
+
+            <a href="/expvgi/pub/search/">
+                <div class="button">
+                    <h4>Publications</h4>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div id="partners">
+        <h2>Institutions</h2>
+        <a href="http://www.uc.pt/en" target="_blank">
+            <img src="{% static 'vgijs/img/logos/logo_UC.png' %}" alt="Partner's Logo">
+        </a>
+
+        <a href="http://www.uc.pt/en/org/inescc" target="_blank">
+            <img src="{% static 'vgijs/img/logos/logo_INESC.png' %}" id="imgINESC">
+        </a>
+        
+        <a href="https://www.cisuc.uc.pt/" target="_blank">
+            <img src="{% static 'vgijs/img/logos/logo_cisuc.png' %}" alt="Partner's Logo">
+        </a>
+    </div>
+
+    <div id="contacts">
+        <h2>Contacts</h2>
+
+        <p id="footerEmail"><i class="fa fa-envelope-o" aria-hidden="true" id="imgEmail"></i>exploringvgi@uc.pt</p>
+
+        <div>
+            <h4>Cidalia Costa Fonte</h4>
+            <p>
+                Department of Mathematics <br> Faculty of Sciences and Technology <br> University of Coimbra<br><br>
+                Institute for Systems Engineering and Computers at Coimbra (INESCC)
+            </p>
+        </div>
+
+        <div>
+            <h4>Alberto Cardoso</h4>
+            <p>
+                Department of Informatics Engineering <br> Faculty of Sciences and Technology <br> University of Coimbra<br><br>
+                Centre for Informatics and Systems (CISUC)
+            </p>
+        </div>
+    </div>
+
+    <div id="about">
+        <h2>About the Project</h2>
+        <p>Exploring VGI project aims to provide services that add value to Volunteered Geographic Information (VGI)
+            available in collaborative projects or Social Networks, such as OpenStreetMap (OSM), Flickr, Twitter or
+            Facebook. <br><br><br> This initiative is the result of a joint collaboration within the University of Coimbra
+            between INESCC (Institute for Systems Engineering & Computers at Coimbra) and CISUC (Centre for Informatics &
+            Systems of the University of Coimbra).</p>
+
+        <h3 id="Credits">Credits</h3>
+        <div id="credits-people">
+            <div>
+                <h4>People: </h4>
+                <p>* Cidalia C. Fonte (DM - FCTUC, INESCC) - 
+                	<a href="https://apps.uc.pt/mypage/faculty/uc22521">
+                	See personal page
+                </a></p>
+                <p>* Alberto Cardoso (DEI - FCTUC, CISUC) - 
+                	<a href="https://apps.uc.pt/mypage/faculty/uc24774">
+                	See personal page
+                </a></p>
+                <p>* Jose Paulo de Almeida (DM - FCTUC, INESCC) - 
+                	<a href="https://apps.uc.pt/mypage/faculty/uc25666">
+                	See personal page
+                </a></p>
+                <p>* Jacinto Estima (FCTC - Universidade Europeia, INESCC)</p>
+                <p>* Joaquim Patriarca (INESCC)</p>
+                <p>* Diogo Fontes</p><br>
+            </div>
+
+            <div>
+                <h4>Implementation: </h4>
+                <p>Joaquim Patriarca</p>
+                <p>Diogo Fontes</p><br>
+            </div>
+
+            <div>
+                <h4>Web Design: </h4>
+                <p>Diana Fonte</p><br>
+            </div>
+        </div>
+
+        <h3 id="Credits">History</h3>
+        <p>
+        	Exploring VGI platform was set up in 2017 to aggregate several projects
+        	aiming at using and adding value to Volunteer Geographical Information (VGI).
+        	First projects were initiated within the context of COS action TD
+        	1202 (Mapping and the Citizen Sensor; http://www.cost.eu/COST_Actions/ict/TD1202)
+        	and IC 1203 (European Network Exploring Research into Geospatial
+        	Information Crowdsourcing: software and methodologies for harnessing
+        	geographic information from the crowd - ENERGIC; http://www.cost.eu/COST_Actions/ict/IC1203).
+        </p>
+    </div>
+</div>
+{% else %}
+<div class="login-form">
+	<h3>Invalid Browser</h3>
+	<p>This website is currently under development.
+		Chrome is being used as support to the development.</p>
+	<p>At this moment, it is impossible to ensure a normal usage with others browsers. So, for now, please use Chrome Web Browser</p>
+	<p>The situation will be solved shortly and all browsers will be allowed.</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -2,31 +2,37 @@
 Change Geometry types
 """
 
-def multipart_to_single(df, geomType):
+def multipart_to_single(df, geomType, use_explode=True):
     """
     Multipart Geometries to SinglePart Geometries
     """
     
     import geopandas as gp
     import pandas as pd
+
+    if not use_explode:
+        df_wsingle = df[df.geometry.type == geomType]
+        df_wmulti  = df[df.geometry.type == 'Multi' + geomType]
     
-    df_wsingle = df[df.geometry.type == geomType]
-    df_wmulti  = df[df.geometry.type == 'Multi' + geomType]
-    
-    for i, row in df_wmulti.iterrows():
-        series_geom = pd.Series(row.geometry)
+        for i, row in df_wmulti.iterrows():
+            series_geom = pd.Series(row.geometry)
         
-        ndf = pd.concat([pd.DataFrame(row).T]*len(series_geom))
+            ndf = pd.concat([pd.DataFrame(row).T]*len(series_geom))
         
-        ndf['geometry'] = series_geom
+            ndf['geometry'] = series_geom
         
-        df_wsingle = pd.concat([df_wsingle, ndf])
+            df_wsingle = pd.concat([df_wsingle, ndf])
     
-    df_wsingle.reset_index(inplace=True, drop=True)
-    df_wsingle = gp.GeoDataFrame(
-        df_wsingle, crs=df.crs, geometry=df_wsingle.geometry)
+        df_wsingle.reset_index(inplace=True, drop=True)
+        df_wsingle = gp.GeoDataFrame(
+            df_wsingle, crs=df.crs, geometry=df_wsingle.geometry
+        )
     
-    return df_wsingle
+        return df_wsingle
+    
+    ndf = df.explode(index_parts=True)
+
+    return ndf
 
 
 def pntDf_to_convex_hull(pntDf, xCol, yCol, epsg, outEpsg=None, outShp=None):

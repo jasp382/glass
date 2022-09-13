@@ -69,7 +69,7 @@ def ext_to_rst(topLeft, btRight, outRst,
     """
     
     import numpy
-    from osgeo        import gdal
+    from osgeo      import gdal
     from glass.prop import drv_name
     
     left, top     = topLeft

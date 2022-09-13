@@ -22,7 +22,7 @@ def grs_near(fromShp, toShp, nearCatCol='tocat', nearDistCol="todistance",
         grass.run_command(
             "v.distance", _from=fromShp, to=toShp,
             upload='cat,dist',
-            column='{},{}'.format(nearCatCol, nearDistCol),
+            column=f'{nearCatCol},{nearDistCol}',
             dmax=maxDist
         )
     
@@ -30,9 +30,9 @@ def grs_near(fromShp, toShp, nearCatCol='tocat', nearDistCol="todistance",
         from glass.pys import execmd
         
         rcmd = execmd((
-            "v.distance from={} to={} upload=cat,dist "
-            "column={},{} dmax={}"
-        ).format(fromShp, toShp, nearCatCol, nearDistCol, maxDist))
+            f"v.distance from={fromShp} to={toShp} upload=cat,dist "
+            f"column={nearCatCol},{nearDistCol} dmax={maxDist}"
+        ))
 
 
 def pnts_dist(inShp, nearShp, outTbl, maxDist=None):
@@ -41,13 +41,13 @@ def pnts_dist(inShp, nearShp, outTbl, maxDist=None):
     """
     
     from glass.pys import execmd
+
+    mdist = "" if not maxDist else f" -MAX_DIST {str(maxDist)}"
     
     c = (
-        "saga_cmd shapes_points 3 -POINTS {} -NEAR {} -DISTANCES {} "
-        "-FORMAT 1{}"
-    ).format(
-        inShp, nearShp, outTbl,
-        "" if not maxDist else " -MAX_DIST {}".format(maxDist)
+        f"saga_cmd shapes_points 3 -POINTS {inShp} "
+        f"-NEAR {nearShp} -DISTANCES {outTbl} "
+        f"-FORMAT 1{mdist}"
     )
     
     outcmd = execmd(c)
@@ -498,3 +498,36 @@ def connect_points_to_near_line(inPnt, nearLines, outLines,
     shpNear.Destroy()
 
     return outLines
+
+
+def pd_near(dfa, dfb):
+    """
+    Find the closest point of each point in dfa
+    """
+
+    import geopandas as gp
+    import numpy as np
+    import pandas as pd
+
+    from scipy.spatial import cKDTree
+    
+    na = np.array(list(dfa.geometry.apply(lambda x: (x.x, x.y))))
+    nb = np.array(list(dfb.geometry.apply(lambda x: (x.x, x.y))))
+
+    btree = cKDTree(nb)
+
+    dist, idx = btree.query(na, k=1)
+
+    dfbnear = dfb.iloc[idx].drop(columns="geometry").reset_index(drop=True)
+
+    gdf = pd.concat(
+        [
+            dfa.reset_index(drop=True),
+            dfbnear,
+            pd.Series(dist, name='dist')
+        ],
+        axis=1
+    )
+
+    return gdf
+

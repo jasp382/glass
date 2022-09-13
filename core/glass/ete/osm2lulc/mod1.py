@@ -57,10 +57,10 @@ def grs_vector(db, polyTable, apidb='SQLITE'):
     """
     
     import datetime
-    from glass.gp.gen    import dissolve
-    from glass.tbl.grs   import add_table
-    from glass.prop.sqlport row_num as cont_row
-    from glass.it.shp    import dbtbl_to_shp as db_to_grs
+    from glass.gp.gen   import dissolve
+    from glass.tbl.grs  import add_table
+    from glass.prop.sql import row_num as cont_row
+    from glass.it.shp   import dbtbl_to_shp as db_to_grs
     
     WHR = "selection IS NOT NULL"
     
@@ -113,11 +113,9 @@ def num_selection(osmdb, polyTbl, folder,
     # Get classes in data
     time_a = datetime.datetime.now().replace(microsecond=0)
     classes = q_to_obj(osmdb, (
-        "SELECT selection FROM {} "
+        f"SELECT selection FROM {polyTbl} "
         "WHERE selection IS NOT NULL "
         "GROUP BY selection"
-    ).format(
-        polyTbl
     ), db_api='psql' if api == 'POSTGIS' else 'sqlite').selection.tolist()
     time_b = datetime.datetime.now().replace(microsecond=0)
     
@@ -131,32 +129,32 @@ def num_selection(osmdb, polyTbl, folder,
         if api == 'SQLITE':
             shp = sel_by_attr(
                 osmdb, SQL_Q.format(lc=str(CLS), tbl=polyTbl),
-                os.path.join(folder, 'sel_{}.shp'.format(str(CLS))),
+                os.path.join(folder, f'sel_{str(CLS)}.shp'),
                 api_gis='ogr'
             )
         else:
             shp = sel_by_attr(
                 osmdb, SQL_Q.format(lc=str(CLS), tbl=polyTbl), "geometry",
-                os.path.join(folder, 'sel_{}.shp'.format(str(CLS))),
+                os.path.join(folder, f'sel_{str(CLS)}.shp'),
                 api='pgsql2shp', tableIsQuery=True
             )
         time_y = datetime.datetime.now().replace(microsecond=0)
         
         rstCls = shp_to_rst(
             shp, None, cellsize, 0,
-            os.path.join(folder, 'sel_{}.tif'.format(str(CLS))),
+            os.path.join(folder, f'sel_{str(CLS)}.tif'),
             epsg=srscode, rst_template=rstTemplate, api='gdal'
         )
         time_z = datetime.datetime.now().replace(microsecond=0)
         
         clsRst[int(CLS)] = rstCls
-        timeGasto[cnt + 1] = ('toshp_{}'.format(str(CLS)), time_y - time_x)
-        timeGasto[cnt + 2] = ('torst_{}'.format(str(CLS)), time_z - time_y)
+        timeGasto[cnt + 1] = (f'toshp_{str(CLS)}', time_y - time_x)
+        timeGasto[cnt + 2] = (f'torst_{str(CLS)}', time_z - time_y)
     
     trs = []
     for i in range(len(classes)):
         trs.append(Thread(
-            name="lll{}".format(str(classes[i])),
+            name=f"lll{str(classes[i])}",
             target=FilterAndExport, args=(classes[i], (i+1) * 10)
         ))
     

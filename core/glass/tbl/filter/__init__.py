@@ -55,55 +55,17 @@ def sel_by_attr(inShp, sql, outShp, geomType="area", lyrN=1, api_gis='ogr',
         v.extract via command shell
         """
         
-        from glass.pys  import execmd
+        from glass.pys import execmd
         
         rcmd = execmd((
-            "v.extract input={} type={} layer={} where={} "
-            "output={} --overwrite --quiet"
-        ).format(inShp, geomType, str(lyrN), sql, outShp))
+            f"v.extract input={inShp} type={geomType} layer={str(lyrN)} "
+            f"where={sql} output={outShp} --overwrite --quiet"
+        ))
     
     else:
-        raise ValueError('API {} is not available'.format(api_gis))
+        raise ValueError(f'API {api_gis} is not available')
     
     return outShp
-
-
-def split_shp_by_attr(inShp, attr, outDir, _format='.shp', outname=None, valinname=None):
-    """
-    Create a new shapefile for each value in a column
-    """
-    
-    import os
-    from glass.rd.shp  import shp_to_obj
-    from glass.pys.oss   import fprop
-    from glass.pd.fld import col_distinct
-    from glass.wt.shp  import df_to_shp
-    
-    # Sanitize format
-    FFF = _format if _format[0] == '.' else '.' + _format
-    
-    # SHP TO DF
-    dataDf = shp_to_obj(inShp)
-    
-    # Get values in attr
-    uniqueAttr = col_distinct(dataDf, attr)
-    
-    # Export Features with the same value in attr to a new File
-    BASENAME = fprop(inShp, 'fn', forceLower=True) if not outname else outname
-    SHPS_RESULT = {}
-    i = 1
-    for val in uniqueAttr:
-        df = dataDf[dataDf[attr] == val]
-        
-        newShp = df_to_shp(df, os.path.join(outDir, "{}_{}{}".format(
-            BASENAME, str(i) if not valinname else str(val), FFF
-        )))
-        
-        SHPS_RESULT[val] = newShp
-        
-        i += 1
-    
-    return SHPS_RESULT
 
 
 def sel_by_loc(shp, boundary_filter, filtered_output):
@@ -115,12 +77,12 @@ def sel_by_loc(shp, boundary_filter, filtered_output):
     Writes the filter on a new shp
     """
     
-    from osgeo             import ogr
+    from osgeo           import ogr
     from glass.prop      import drv_name
     from glass.prop.feat import get_gtype
     from glass.lyr.fld   import copy_flds
     from glass.cp        import copy_feat
-    from glass.pys.oss     import fprop
+    from glass.pys.oss   import fprop
     
     # Open main data
     dtSrc = ogr.GetDriverByName(drv_name(shp)).Open(shp, 0)

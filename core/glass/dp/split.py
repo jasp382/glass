@@ -9,9 +9,9 @@ def splitShp_by_range(shp, nrFeat, outFolder):
     """
     
     import os
-    from glass.pys.oss     import fprop
-    from glass.prop.feat import feat_count, lst_fld
-    from glass.tbl.filter    import sel_by_attr
+    from glass.pys.oss    import fprop
+    from glass.prop.feat  import feat_count, lst_fld
+    from glass.tbl.filter import sel_by_attr
     
     rowsN = feat_count(shp, gisApi='ogr')
     
@@ -41,16 +41,17 @@ def splitShp_by_range(shp, nrFeat, outFolder):
     return exportedShp
 
 
-def eachfeat_to_newshp(inShp, outFolder, epsg=None, idCol=None):
+def eachfeat_to_newshp(inShp, outFolder, epsg=None, idCol=None, idIsName=None):
     """
     Export each feature in inShp to a new/single File
     """
     
-    import os; from osgeo  import ogr
+    import os
+    from osgeo           import ogr
     from glass.prop      import drv_name
     from glass.prop.feat import get_gtype, lst_fld
     from glass.lyr.fld   import copy_flds
-    from glass.pys.oss     import fprop
+    from glass.pys.oss   import fprop
     
     inDt = ogr.GetDriverByName(
         drv_name(inShp)).Open(inShp)
@@ -73,15 +74,20 @@ def eachfeat_to_newshp(inShp, outFolder, epsg=None, idCol=None):
     geomCls = get_gtype(inShp, gisApi='ogr', name=None, py_cls=True)
     
     # Read features and create a new file for each feature
-    RESULT_SHP = []
+    res_shp = []
     for feat in lyr:
         # Create output
         ff = fprop(inShp, ['fn', 'ff'])
-        newShp = os.path.join(outFolder, "{}_{}{}".format(
-            ff['filename'],
-            str(feat.GetFID()) if not idCol else str(feat.GetField(idCol)),
-            ff['fileformat']
-        ))
+        fname, ffmt = ff['filename'], ff['fileformat']
+
+        if idIsName and idCol:
+            shpname = f"{str(feat.GetField(idCol))}{ffmt}"
+
+        else:
+            fid = str(feat.GetFID()) if not idCol else str(feat.GetField(idCol))
+            shpname = f"{fname}_{fid}{ffmt}"
+
+        newShp = os.path.join(outFolder, shpname)
         
         newData = ogr.GetDriverByName(
             drv_name(newShp)).CreateDataSource(newShp)
@@ -113,9 +119,11 @@ def eachfeat_to_newshp(inShp, outFolder, epsg=None, idCol=None):
         
         del newLyr
         newData.Destroy()
-        RESULT_SHP.append(newShp)
+
+        if newShp not in res_shp:
+            res_shp.append(newShp)
     
-    return RESULT_SHP
+    return res_shp
 
 
 def shpcols_to_shp(inshp, tbl, col_cols, outcolname, outfolder):
@@ -130,9 +138,9 @@ def shpcols_to_shp(inshp, tbl, col_cols, outcolname, outfolder):
     """
 
     import os
-    from glass.pys import obj_to_lst
+    from glass.pys    import obj_to_lst
     from glass.rd.shp import shp_to_obj
-    from glass.rd    import tbl_to_obj
+    from glass.rd     import tbl_to_obj
     from glass.wt.shp import df_to_shp
 
     dfshp = shp_to_obj(inshp)
@@ -162,4 +170,44 @@ def shpcols_to_shp(inshp, tbl, col_cols, outcolname, outfolder):
             df_to_shp(newdf, os.path.join(outfolder, r[cc] + '.shp'))
     
     return outfolder
+
+
+
+def split_shp_by_attr(inShp, attr, outDir, _format='.shp', outname=None, valinname=None):
+    """
+    Create a new shapefile for each value in a column
+    """
+    
+    import os
+    from glass.rd.shp  import shp_to_obj
+    from glass.pys.oss import fprop
+    from glass.pd.fld  import col_distinct
+    from glass.wt.shp  import df_to_shp
+    
+    # Sanitize format
+    FFF = _format if _format[0] == '.' else '.' + _format
+    
+    # SHP TO DF
+    dataDf = shp_to_obj(inShp)
+    
+    # Get values in attr
+    uniqueAttr = col_distinct(dataDf, attr)
+    
+    # Export Features with the same value in attr to a new File
+    bname = fprop(inShp, 'fn', forceLower=True) if not outname else outname
+    shps_res = {}
+    i = 1
+    for val in uniqueAttr:
+        df = dataDf[dataDf[attr] == val]
+        
+        fid = str(i) if not valinname else str(val)
+        newShp = df_to_shp(df, os.path.join(
+            outDir, f"{bname}_{fid}{FFF}"
+        ))
+        
+        shps_res[val] = newShp
+        
+        i += 1
+    
+    return shps_res
 

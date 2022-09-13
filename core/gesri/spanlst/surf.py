@@ -47,9 +47,9 @@ def aspect(dem, aspect, reclass=None):
     arcpy.gp.Aspect_sa(dem, outAspect)
     
     if reclass:
-        from glass.cpu.arcg.lyr          import raster_lyr
+        from gesri.rd.rst          import rst_to_lyr
         from glass.cpu.arcg.spanlst.rcls import reclassify
-        from glass.cpu.arcg.mng.fld      import add_field
+        from gesri.tbl.cols      import add_col
         
         __rules = (
             "-1 0 1;"
@@ -72,9 +72,9 @@ def aspect(dem, aspect, reclass=None):
             9: 'Northwest'
         }
         
-        add_field(aspect, 'aspect', "TEXT", "15")
+        add_col(aspect, 'aspect', "TEXT", "15")
         
-        cursor = arcpy.UpdateCursor(rst_lyr(aspect))
+        cursor = arcpy.UpdateCursor(rst_to_lyr(aspect))
         for lnh in cursor:
             __val = int(lnh.getValue("Value"))
             

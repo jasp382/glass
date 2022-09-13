@@ -39,26 +39,28 @@ def osm2lulc(osmdata, nomenclature, refRaster, lulcRst,
     # ************************************************************************ #
     # Python Modules from Reference Packages #
     # ************************************************************************ #
-    import os; import numpy; import datetime
+    import os
+    import numpy as np
+    import datetime as dt
     from threading import Thread
-    from osgeo     import gdal
     # ************************************************************************ #
     # Dependencies #
     # ************************************************************************ #
-    from glass.rd.rst              import rst_to_array
-    from glass.prop                import check_isRaster
-    from glass.prop.rst            import get_cellsize
+    from glass.rd.rst                import rst_to_array
+    from glass.prop                  import check_isRaster
+    from glass.prop.rst              import get_cellsize
     from glass.pys.oss               import mkdir, copy_file
     from glass.pys.oss               import fprop
     if roadsAPI == 'POSTGIS':
-        from glass.sql.db         import create_db
-        from glass.it.db           import osm_to_psql
+        from glass.sql.db            import create_db
+        from glass.it.db             import osm_to_psql
         from glass.ete.osm2lulc.mod2 import pg_num_roads
-        from glass.sql.bkup       import dump_db
-        from glass.sql.db         import drop_db
+        from glass.sql.bkup          import dump_db
+        from glass.sql.db            import drop_db
     else:
-        from glass.it.osm          import osm_to_sqdb
+        from glass.it.osm            import osm_to_sqdb
         from glass.ete.osm2lulc.mod2 import num_roads
+    from glass.ete.osm2lulc          import NOMENCLATURES
     from glass.ete.osm2lulc.utils    import osm_project, add_lulc_to_osmfeat
     from glass.ete.osm2lulc.utils    import osmlulc_rsttbl
     from glass.ete.osm2lulc.utils    import get_ref_raster
@@ -66,26 +68,25 @@ def osm2lulc(osmdata, nomenclature, refRaster, lulcRst,
     from glass.ete.osm2lulc.m3_4     import num_selbyarea
     from glass.ete.osm2lulc.mod5     import num_base_buffer
     from glass.ete.osm2lulc.mod6     import num_assign_builds
-    from glass.wt.rst              import obj_to_rst
+    from glass.wt.rst                import obj_to_rst
     # ************************************************************************ #
     # Global Settings #
     # ************************************************************************ #
     # Check if input parameters exists!
     if not os.path.exists(os.path.dirname(lulcRst)):
-        raise ValueError('{} does not exist!'.format(os.path.dirname(lulcRst)))
+        raise ValueError(f'{os.path.dirname(lulcRst)} does not exist!')
     
     if not os.path.exists(osmdata):
-        raise ValueError('File with OSM DATA ({}) does not exist!'.format(osmdata))
+        raise ValueError(f'File with OSM DATA ({osmdata}) does not exist!')
     
     if not os.path.exists(refRaster):
-        raise ValueError('File with reference area ({}) does not exist!'.format(refRaster))
+        raise ValueError(f'File with reference area ({refRaster}) does not exist!')
     
     # Check if Nomenclature is valid
-    nomenclature = "URBAN_ATLAS" if nomenclature != "URBAN_ATLAS" and \
-        nomenclature != "CORINE_LAND_COVER" and \
-        nomenclature == "GLOBE_LAND_30" else nomenclature
+    nomenclature = "URBAN_ATLAS" if nomenclature not in NOMENCLATURES else \
+        nomenclature
     
-    time_a = datetime.datetime.now().replace(microsecond=0)
+    time_a = dt.datetime.now().replace(microsecond=0)
     
     workspace = os.path.join(os.path.dirname(
         lulcRst), 'num_osmto') if not dataStore else dataStore
@@ -95,7 +96,7 @@ def osm2lulc(osmdata, nomenclature, refRaster, lulcRst,
         if overwrite:
             mkdir(workspace, overwrite=True)
         else:
-            raise ValueError('Path {} already exists'.format(workspace))
+            raise ValueError(f'Path {workspace} already exists')
     else:
         mkdir(workspace, overwrite=None)
     
@@ -105,7 +106,7 @@ def osm2lulc(osmdata, nomenclature, refRaster, lulcRst,
         
     from glass.ete.osm2lulc import osmTableData, PRIORITIES
     
-    time_b = datetime.datetime.now().replace(microsecond=0)
+    time_b = dt.datetime.now().replace(microsecond=0)
     # ************************************************************************ #
     # Convert OSM file to SQLITE DB or to POSTGIS DB #
     # ************************************************************************ #
@@ -116,12 +117,12 @@ def osm2lulc(osmdata, nomenclature, refRaster, lulcRst,
     
     else:
         osm_db = osm_to_sqdb(osmdata, os.path.join(workspace, 'osm.sqlite'))
-    time_c = datetime.datetime.now().replace(microsecond=0)
+    time_c = dt.datetime.now().replace(microsecond=0)
     # ************************************************************************ #
     # Add Lulc Classes to OSM_FEATURES by rule #
     # ************************************************************************ #
     add_lulc_to_osmfeat(osm_db, osmTableData, nomenclature, api=roadsAPI)
-    time_d = datetime.datetime.now().replace(microsecond=0)
+    time_d = dt.datetime.now().replace(microsecond=0)
     # ************************************************************************ #
     # Transform SRS of OSM Data #
     # ************************************************************************ #
@@ -129,7 +130,7 @@ def osm2lulc(osmdata, nomenclature, refRaster, lulcRst,
         osm_db, epsg, api=roadsAPI,
         isGlobeLand=None if nomenclature != "GLOBE_LAND_30" else True
     )
-    time_e = datetime.datetime.now().replace(microsecond=0)
+    time_e = dt.datetime.now().replace(microsecond=0)
     # ************************************************************************ #
     # MapResults #
     # ************************************************************************ #
@@ -138,7 +139,7 @@ def osm2lulc(osmdata, nomenclature, refRaster, lulcRst,
     RULES = [1, 2, 3, 4, 5, 7]
     
     def run_rule(ruleID):
-        time_start = datetime.datetime.now().replace(microsecond=0)
+        time_start = dt.datetime.now().replace(microsecond=0)
         _osmdb = copy_file(
             osm_db, os.path.splitext(osm_db)[0] + '_r{}.sqlite'.format(ruleID)
         ) if roadsAPI == 'SQLITE' else None
@@ -213,7 +214,7 @@ def osm2lulc(osmdata, nomenclature, refRaster, lulcRst,
             else:
                 return
         
-        time_end = datetime.datetime.now().replace(microsecond=0)
+        time_end = dt.datetime.now().replace(microsecond=0)
         mergeOut[ruleID] = res
         timeCheck[ruleID] = {'total': time_end - time_start, 'detailed': tm}
     
@@ -244,7 +245,7 @@ def osm2lulc(osmdata, nomenclature, refRaster, lulcRst,
                 else:
                     compileResults[cls].append(mergeOut[rule][cls])
     
-    time_m = datetime.datetime.now().replace(microsecond=0)
+    time_m = dt.datetime.now().replace(microsecond=0)
     # All Rasters to Array
     arrayRst = {}
     for cls in compileResults:
@@ -255,11 +256,11 @@ def osm2lulc(osmdata, nomenclature, refRaster, lulcRst,
             array = rst_to_array(raster)
             
             if cls not in arrayRst:
-                arrayRst[cls] = [array.astype(numpy.uint8)]
+                arrayRst[cls] = [array.astype(np.uint8)]
             
             else:
-                arrayRst[cls].append(array.astype(numpy.uint8))
-    time_n = datetime.datetime.now().replace(microsecond=0)
+                arrayRst[cls].append(array.astype(np.uint8))
+    time_n = dt.datetime.now().replace(microsecond=0)
     
     # Sum Rasters of each class
     for cls in arrayRst:
@@ -274,7 +275,7 @@ def osm2lulc(osmdata, nomenclature, refRaster, lulcRst,
         
         arrayRst[cls] = sumArray
     
-    time_o = datetime.datetime.now().replace(microsecond=0)
+    time_o = dt.datetime.now().replace(microsecond=0)
     
     # Apply priority rule
     __priorities = PRIORITIES[nomenclature + "_NUMPY"]
@@ -285,7 +286,7 @@ def osm2lulc(osmdata, nomenclature, refRaster, lulcRst,
         if __lulcCls not in arrayRst:
             continue
         else:
-            numpy.place(arrayRst[__lulcCls], arrayRst[__lulcCls] > 0,
+            np.place(arrayRst[__lulcCls], arrayRst[__lulcCls] > 0,
                 lulcCls
             )
     
@@ -303,11 +304,11 @@ def osm2lulc(osmdata, nomenclature, refRaster, lulcRst,
                     continue
                 
                 else:
-                    numpy.place(arrayRst[lulc_e],
+                    np.place(arrayRst[lulc_e],
                         arrayRst[lulc_i] == __priorities[i], 0
                     )
     
-    time_p = datetime.datetime.now().replace(microsecond=0)
+    time_p = dt.datetime.now().replace(microsecond=0)
     
     # Merge all rasters
     startCls = 'None'
@@ -339,14 +340,14 @@ def osm2lulc(osmdata, nomenclature, refRaster, lulcRst,
             os.path.dirname(lulcRst), fprop(lulcRst, 'fn') + '.tif'
         )
     
-    numpy.place(resultSum, resultSum==0, 1)
+    np.place(resultSum, resultSum==0, 1)
     obj_to_rst(resultSum, lulcRst, refRaster, noData=1)
     
     osmlulc_rsttbl(nomenclature + "_NUMPY", os.path.join(
         os.path.dirname(lulcRst), os.path.basename(lulcRst) + '.vat.dbf'
     ))
     
-    time_q = datetime.datetime.now().replace(microsecond=0)
+    time_q = dt.datetime.now().replace(microsecond=0)
 
     # Dump Database if PostGIS was used
     # Drop Database if PostGIS was used

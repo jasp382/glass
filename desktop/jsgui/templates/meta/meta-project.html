@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}JUST Side{% endblock %}
+{% block body_contents %}
+<div class="zona-conteudo">
+	<table width="100%">
+		<tr><td colspan="3">&nbsp;</td></tr>
+		<tr>
+			<td width="15%">&nbsp;</td>
+			<td width="70%">
+				<table class="tab-org">
+					<tbody>
+					{% if atlas_lang == 'pt' %}
+						<tr class="tab-org-univ">
+							<td colspan="2" class="titulo">
+								ACERCA DO PROJETO
+							</td>
+						</tr>
+						<tr><td colspan="2"></td></tr>
+						<tr class="tab-org-pais">
+							<td colspan="2">JUST Side</td>
+						</tr>
+						<tr class="tab-org-coord">
+							<td colspan="2">JUSTIÇA, SUSTENTABILIDADE E TERRITÓRIO - SISTEMAS DE INFRAESTRUTURAS DE DADOS ESPACIAIS&nbsp;<br><a href="http://www.cyted.org/?q=es/detalle_proyecto&amp;un=955" target="_blanc">(http://www.cyted.org/?q=es/detalle_proyecto&amp;un=955)</a></td>
+						</tr>
+						<tr class="tab-org-coord">
+							<td colspan="2">
+								<p>A prossecu&ccedil;&atilde;o do desenvolvimento sustent&aacute;vel atrav&eacute;s de informa&ccedil;&atilde;o geoespacial que permita concretizar a integra&ccedil;&atilde;o de preocupa&ccedil;&otilde;es socio-ambientais nas pol&iacute;ticas &eacute; j&aacute; uma imposi&ccedil;&atilde;o jur&iacute;dica reconhecida pelas Na&ccedil;&otilde;es Unidas desde 2012: &ldquo;Reconhecemos a import&acirc;ncia dos dados espaciais, do monitoramento in situ, e de informa&ccedil;&otilde;es geoespaciais confi&aacute;veis para pol&iacute;ticas, programas e projetos de desenvolvimento sustent&aacute;veis&rdquo; (O futuro que queremos, &sect;274, http://ggim.un.org/).</p>
+								<p>Na Uni&atilde;o Europeia, a produ&ccedil;&atilde;o e disponibiliza&ccedil;&atilde;o de informa&ccedil;&atilde;o ambiental espacializada &eacute; uma obriga&ccedil;&atilde;o das autoridades p&uacute;blicas (Diretivas sobre acesso &agrave; informa&ccedil;&atilde;o ambiental e Inspire). A experi&ecirc;ncia Europeia revela-se inspiradora para o fortalecimento de uma Rede Iberoamericana que estimule, interligue e promova a utiliza&ccedil;&atilde;o de ferramentas, dados e software livre ou de c&oacute;digo aberto, colocadas ao servi&ccedil;o da governa&ccedil;&atilde;o para a sustentabilidade, da cidadania ambiental e da justi&ccedil;a territorial.</p>
+								<p>A Rede interdisciplinar JUST-Side visa desenvolver uma metodologia de integra&ccedil;&atilde;o da justi&ccedil;a territorial e ambiental nas pol&iacute;ticas p&uacute;blicas baseando-se em metodologias interdisciplinares de utiliza&ccedil;&atilde;o dos dados prim&aacute;rios existentes e recorrendo &agrave;s modernas Tecnologias de Informa&ccedil;&atilde;o Geogr&aacute;fica (TIG) e &agrave;s Infra-estruturas de dados Espaciais (IDE) para extrair e organizar dados geospaciais e disponibilizar, informa&ccedil;&atilde;o e conhecimento relevantes para as pol&iacute;ticas p&uacute;blicas territoriais e ambientais de forma a permitir uma reorienta&ccedil;&atilde;o ecol&oacute;gica e social de pol&iacute;ticas p&uacute;blicas, progressivamente mais equilibrada e justa.</p>
+							</td>
+						</tr>
+					{% elif atlas_lang == 'es' %}
+						<tr class="tab-org-univ">
+							<td colspan="2" class="titulo">
+								SOBRE LA RED
+							</td>
+						</tr>
+						<tr><td colspan="2"></td></tr>
+						<tr class="tab-org-pais">
+							<td colspan="2">JUST Side</td>
+						</tr>
+						<tr class="tab-org-coord">
+							<td colspan="2">JUSTICIA, SOSTENIBILIDAD Y TERRITORIO - SISTEMAS DE INFRAESTRUCTURAS DE DATOS ESPACIALES&nbsp;<br><a href="http://www.cyted.org/?q=es/detalle_proyecto&amp;un=955" target="_blanc">(http://www.cyted.org/?q=es/detalle_proyecto&amp;un=955)</a></td>
+						</tr>
+						<tr class="tab-org-coord">
+							<td colspan="2">
+								<p>La consecución del desarrollo sostenible a través de información geoespacial que permita concretar la integración de las preocupaciones socio-ambientales en las políticas es ya una imposición jurídica reconocida por las Naciones Unidas desde 2012: "Reconocemos la importancia de los datos espaciales, del monitoreo in situ, y de informaciones geoespaciales confiables para políticas, programas y proyectos de desarrollo sostenibles "(El futuro que queremos, §274, http://ggim.un.org/).</p>
+								<p>En la Unión Europea, la producción y la disponibilidad de información ambiental espacializada es una obligación de las autoridades públicas (Directivas sobre acceso a la información medioambiental e Inspire). La experiencia europea resulta inspiradora para el fortalecimiento de una Red Iberoamericana que estimule, interconecte y promueve la utilización de herramientas, datos y software libre o de código abierto, puestos al servicio de la gobernanza para la sostenibilidad, la ciudadanía ambiental y la justicia territorial.</p>
+								<p>La red interdisciplinaria JUST-Side pretende desarrollar una metodología de integración de la justicia territorial y ambiental en las políticas públicas basándose en metodologías interdisciplinarias de utilización de los datos primarios existentes y recurriendo a las modernas Tecnologías de Información Geográfica (TIG) ya las Infraestructuras de datos (IDE) para extraer y organizar datos geospaciales y poner a disposición, información y conocimiento relevantes para las políticas públicas territoriales y ambientales, para permitir una reorientación ecológica y social de políticas públicas, progresivamente más equilibrada y justa.</p>
+							</td>
+						</tr>
+					{% endif %}
+					</tbody>
+				</table>
+			</td>
+			<td width="15%">&nbsp;</td>
+		</tr>
+		<tr><td colspan="3">&nbsp;</td></tr>
+	</table>
+</div>
+{% endblock %}

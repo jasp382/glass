@@ -8,11 +8,11 @@ def coords_to_boundshp(topLeft, lowerRight, epsg, outshp,
     Top Left and Lower Right to Boundary
     """
     
-    from osgeo import ogr
-    from glass.prop  import drv_name
+    from osgeo          import ogr
+    from glass.prop     import drv_name
     from glass.prop.prj import get_sref_from_epsg
-    from glass.pys.oss    import fprop
-    from glass.pys        import obj_to_lst
+    from glass.pys.oss  import fprop
+    from glass.pys      import obj_to_lst
     from glass.gp.cnv   import coords_to_boundary
 
     toplefts = obj_to_lst(topLeft)
@@ -240,9 +240,9 @@ def fext_to_geof(inF, outF, ocellsize=10):
             cellsize=ocellsize, epsg=EPSG, invalidResultAsNull=None
         )
     else:
-        from glass.prop import check_isShp
+        from glass.prop import is_shp
         
-        isShp = check_isShp(outF)
+        isShp = is_shp(outF)
         
         if isShp:
             return coords_to_boundshp(

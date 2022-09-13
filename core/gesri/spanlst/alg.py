@@ -27,14 +27,14 @@ def floatRst_to_IntegerRst(inFolder, outFolder):
     """
     
     import os
-    from gesri.lyr import rst_lyr
+    from gesri.rd.rst import rst_to_lyr
     
     arcpy.env.workspace = inFolder
     
     rasters = arcpy.ListRasters()
     
     for rst in rasters:
-        lyr = rst_lyr(os.path.join(inFolder, rst))
+        rst_to_lyr(os.path.join(inFolder, rst))
         
         rstcalc(
             'Int("{}")'.format(os.path.splitext(rst)[0]),

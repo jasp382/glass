@@ -38,3 +38,41 @@ def count_pnt_inside_poly(pnt, cpnt, polys, pntattr=None):
 
     return polys
 
+
+def pnt_inside_poly(pnt, poly, pntgeom, polygeom, poly_cols_mantain=None):
+    """
+    Two tables: one with points, other with polygons
+
+    return a new table with the points related 
+    with the polygon containing the point
+    """
+
+    from glass.pys import obj_to_lst
+
+    poly_cols_mantain = obj_to_lst(poly_cols_mantain)
+    poly_cols_mantain = [] if not poly_cols_mantain else poly_cols_mantain
+
+    # Join the tables
+    # each record of pnt table will be
+    # related with each record of poly table
+    # new table will have a number of records
+    # equal to pnt records x poly records
+    pnt['aid']  = 1
+    poly['bid'] = 1
+
+    pnt = pnt.merge(poly, how='left', left_on='aid', right_on='bid')
+
+    # Check which polygons contain each point
+    pnt['iscontain'] = pnt[polygeom].contains(pnt[pntgeom])
+
+    # Get final dataframe
+    pnt = pnt[pnt.iscontain == True]
+
+    pnt.reset_index(drop=True, inplace=True)
+
+    dcols = [c for c in poly.columns.values \
+        if c not in poly_cols_mantain] + ['iscontain', 'aid']
+    pnt.drop(dcols, axis=1, inplace=True)
+
+    return pnt
+

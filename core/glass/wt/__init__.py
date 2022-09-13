@@ -76,12 +76,16 @@ def obj_to_tbl(pyObj, outTbl, delimiter=None, wIndex=None,
         import numpy as np
         import pandas
         import pysal
+        import dbf
+
+        dbf.Table()
         
-        type2spec = {int: ('N', 20, 0),
-            np.int64: ('N', 20, 0),
-            float: ('N', 36, 15),
-            np.float64: ('N', 36, 15),
-            str: ('C', 14, 0)
+        type2spec = {
+            int        : ('N', 20, 0),
+            np.int64   : ('N', 20, 0),
+            float      : ('N', 36, 15),
+            np.float64 : ('N', 36, 15),
+            str        : ('C', 14, 0)
         }
         
         types = [type(pyObj[i].iloc[0]) for i in pyObj.columns]

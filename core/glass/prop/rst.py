@@ -58,7 +58,7 @@ def rst_shape(rst):
     Return number of lines and columns in a raster
     """
     
-    from glass.pys      import obj_to_lst
+    from glass.pys    import obj_to_lst
     from glass.rd.rst import rst_to_array
     
     rst    = obj_to_lst(rst)
@@ -371,9 +371,9 @@ def adjust_ext_to_snap(outExt, snapRst):
     Adjust extent for a output raster to snap with other raster
     """
     
-    from glass.prop  import check_isShp, check_isRaster
+    from glass.prop     import is_shp, check_isRaster
     from glass.prop.rst import rst_ext, get_cellsize
-    from glass.gobj    import new_pnt, create_polygon
+    from glass.gobj     import new_pnt, create_polygon
     
     # Check if outExt is a raster or not
     isRst = check_isRaster(outExt)
@@ -382,7 +382,7 @@ def adjust_ext_to_snap(outExt, snapRst):
         shpAExt = rst_ext(outExt)
     
     else:
-        isShp = check_isShp(outExt)
+        isShp = is_shp(outExt)
         
         if isShp:
             from glass.prop.feat import get_ext
