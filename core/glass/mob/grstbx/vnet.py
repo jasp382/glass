@@ -8,6 +8,7 @@ GRASS GIS Python tools for network analysis
 """
 Create and Mantain network
 """
+
 def network_from_arcs(networkFC, networkOUT):
     """
     v.net is used for network preparation and maintenance. Its main use is
@@ -43,17 +44,18 @@ def network_from_arcs(networkFC, networkOUT):
     return networkOUT
 
 
-def add_pnts_to_network(network, pntLyr, outNetwork, __threshold=200, asCMD=None):
+def pnts_to_net(network, pnts, oshp, __threshold=5000, ascmd=None):
     """
     Connect points to GRASS GIS Network
     """
     
-    if not asCMD:
+    if not ascmd:
         from grass.pygrass.modules import Module
     
         m = Module(
-            "v.net", input=network, points=pntLyr, operation="connect",
-            threshold=__threshold, output=outNetwork, overwrite=True, run_=False
+            "v.net", input=network, points=pnts, operation="connect",
+            threshold=__threshold, output=oshp,
+            overwrite=True, run_=False
         )
     
         m()
@@ -62,11 +64,12 @@ def add_pnts_to_network(network, pntLyr, outNetwork, __threshold=200, asCMD=None
         from glass.pys import execmd
         
         rcmd = execmd((
-            "v.net input={} points={} operation=connect threshold={} "
-            "output={} --overwrite --quiet"
-        ).format(network, pntLyr, __threshold, outNetwork))
+            f"v.net input={network} points={pnts} "
+            f"operation=connect threshold={str(__threshold)} "
+            f"output={oshp} --overwrite --quiet"
+        ))
     
-    return outNetwork
+    return oshp
 
 
 

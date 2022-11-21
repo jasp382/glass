@@ -11,10 +11,10 @@ def distance_between_catpoints(srcShp, facilitiesShp, networkShp, speedLimitCol,
     """
     
     import os
-    from glass.pys.oss            import fprop
-    from glass.wenv.grs       import run_grass
-    from glass.dp.mge import shps_to_shp
-    from glass.prop.feat      import feat_count
+    from glass.pys.oss   import fprop
+    from glass.wenv.grs  import run_grass
+    from glass.dp.mge    import shps_to_shp
+    from glass.prop.feat import feat_count
     
     # Merge Source points and Facilities into the same Feature Class
     SRC_NFEAT      = feat_count(srcShp, gisApi='pandas')
@@ -31,7 +31,6 @@ def distance_between_catpoints(srcShp, facilitiesShp, networkShp, speedLimitCol,
         location=grsLocation, srs=networkShp
     )
     
-    import grass.script       as grass
     import grass.script.setup as gsetup
     gsetup.init(gbase, grsWorkspace, grsLocation, 'PERMANENT')
     

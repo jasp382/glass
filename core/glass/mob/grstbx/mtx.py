@@ -4,17 +4,18 @@ Produce things related with accessibility
 
 import os
 
+
 def prod_matrix(origins, destinations, networkGrs, speedLimitCol, onewayCol,
                 thrdId="1", asCmd=None):
     """
     Get Matrix Distance:
     """
     
-    from glass.tbl import category
-    from glass.tbl.filter          import sel_by_attr
+    from glass.tbl             import category
+    from glass.tbl.filter      import sel_by_attr
     from glass.tbl.col         import add_fields, cols_calc
     from glass.tbl.grs         import add_table
-    from glass.mob.grstbx.vnet import add_pnts_to_network
+    from glass.mob.grstbx.vnet import pnts_to_net
     from glass.mob.grstbx.vnet import run_allpairs
     from glass.cp              import copy_insame_vector
     from glass.tbl.attr        import geomattr_to_db
@@ -36,7 +37,7 @@ def prod_matrix(origins, destinations, networkGrs, speedLimitCol, onewayCol,
         ORIGINS_DESTINATIONS, "points_od_{}".format(thrdId), asCMD=asCmd)
     
     # Connect Points to Network
-    newNetwork = add_pnts_to_network(
+    newNetwork = pnts_to_net(
         networkGrs, pointsGrs, "rdv_points_{}".format(thrdId), asCMD=asCmd
     )
     
@@ -117,39 +118,36 @@ def prod_matrix(origins, destinations, networkGrs, speedLimitCol, onewayCol,
     return matrix_sel
 
 
-def matrix_od(origins, destinations, networkShp, speedLimitCol, onewayCol,
-              grsWorkspace, grsLocation, outputShp):
+def matrix_od(origins, destinations, rdv, speedLimitCol, onewayCol,
+              oshp):
     """
     Produce matrix OD using GRASS GIS
     """
     
-    from glass.pys.oss    import fprop
+    from glass.pys.oss  import fprop
     from glass.wenv.grs import run_grass
+
+    ws, loc = os.path.dirname(oshp), f"loc_{fprop(oshp, 'fn')}"
     
     # Open an GRASS GIS Session
-    gbase = run_grass(
-        grsWorkspace, grassBIN="grass76",
-        location=grsLocation, srs=networkShp
-    )
+    gbase = run_grass(ws, location=loc, srs=rdv)
     
-    import grass.script       as grass
     import grass.script.setup as gsetup
     
-    gsetup.init(gbase, grsWorkspace, grsLocation, 'PERMANENT')
+    gsetup.init(gbase, ws, loc, 'PERMANENT')
     
     # Import GRASS GIS Module
     from glass.it.shp import shp_to_grs, grs_to_shp
     
     # Add Data to GRASS GIS
-    rdvMain = shp_to_grs(networkShp, fprop(
-        networkShp, 'fn', forceLower=True))
+    rdvgrs = shp_to_grs(rdv, fprop(rdv, 'fn', forceLower=True))
     
     """Get matrix distance:"""
     MATRIX_OD = prod_matrix(
-        origins, destinations, rdvMain, speedLimitCol, onewayCol
+        origins, destinations, rdvgrs, speedLimitCol, onewayCol
     )
     
-    return grs_to_shp(MATRIX_OD, outputShp, "line", lyrN=3)
+    return grs_to_shp(MATRIX_OD, oshp, "line", lyrN=3)
 
 
 def thrd_matrix_od(origins, destinationShp, network, costCol, oneway,
@@ -163,9 +161,9 @@ def thrd_matrix_od(origins, destinationShp, network, costCol, oneway,
     do grass
     """
     
-    from threading        import Thread
+    from threading      import Thread
     from glass.wenv.grs import run_grass
-    from glass.pys.oss    import fprop, mkdir
+    from glass.pys.oss  import fprop, mkdir
     from glass.dp.mge   import shps_to_shp
     from glass.dp.split import splitShp_by_range
     
@@ -173,7 +171,6 @@ def thrd_matrix_od(origins, destinationShp, network, costCol, oneway,
     originsFld = mkdir(os.path.join(grsWork, 'origins_parts'))
     
     originsList = splitShp_by_range(origins, 100, originsFld)
-    
     
     gbase = run_grass(
         grsWork, grassBIN="grass76", location=grsLoc, srs=network
@@ -230,7 +227,7 @@ def bash_matrix_od(origins, destinationShp, network, costCol, oneway,
     """
     
     from glass.wenv.grs import run_grass
-    from glass.pys.oss    import fprop, mkdir
+    from glass.pys.oss  import fprop, mkdir
     from glass.dp.split import splitShp_by_range
     from glass.dp.mge   import shps_to_shp
     
@@ -240,18 +237,15 @@ def bash_matrix_od(origins, destinationShp, network, costCol, oneway,
     originsList = splitShp_by_range(origins, 100, originsFld)
     
     # Open an GRASS GIS Session
-    gbase = run_grass(
-        grsWork, grassBIN="grass76", location='location', srs=network
-    )
-    
-    import grass.script       as grass
+    gbase = run_grass(grsWork, location='location', srs=network)
+
     import grass.script.setup as gsetup
     
     RESULTS = []
     R_FOLDER = mkdir(os.path.join(grsWork, 'res_parts'))
     
     for e in range(len(originsList)):
-        gsetup.init(gbase, grsWork, "grs_loc_{}".format(e), 'PERMANENT')
+        gsetup.init(gbase, grsWork, f"grs_loc_{e}", 'PERMANENT')
         
         from glass.it.shp import shp_to_grs, grs_to_shp
     
@@ -266,7 +260,7 @@ def bash_matrix_od(origins, destinationShp, network, costCol, oneway,
         
         # Export Result
         shp = grs_to_shp(
-            result_part, os.path.join(R_FOLDER, result_part + '.shp'),
+            result_part, os.path.join(R_FOLDER, f"{result_part}.shp"),
             geom_type="line", lyrN=3
         )
         

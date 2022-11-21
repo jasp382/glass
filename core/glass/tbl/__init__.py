@@ -30,9 +30,10 @@ def category(inShp, outShp, useOption, LyrN="1",
         from glass.pys import execmd
         
         rcmd = execmd((
-            "v.category input={} layer={} type={} output={} "
-            "option={} cat=1 --overwrite --quiet"
-        ).format(inShp, LyrN, geomType, outShp, useOption))
+            f"v.category input={inShp} layer={LyrN} "
+            f"type={geomType} output={outShp} "
+            f"option={useOption} cat=1 --overwrite --quiet"
+        ))
     
     return outShp
 

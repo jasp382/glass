@@ -191,7 +191,7 @@ def tblpnt_to_shp(tbl, shp, xcol, ycol, epsg, outepsg=None,
 GRASS GIS conversions
 """
 
-def shp_to_grs(inLyr, outLyr, filterByReg=None, asCMD=None):
+def shp_to_grs(ilyr, olyr, filterByReg=None, asCMD=None):
     """
     Add Shape to GRASS GIS
     """
@@ -202,7 +202,7 @@ def shp_to_grs(inLyr, outLyr, filterByReg=None, asCMD=None):
         f = 'o' if not filterByReg else 'ro'
         
         m = Module(
-            "v.in.ogr", input=inLyr, output=outLyr, flags='o',
+            "v.in.ogr", input=ilyr, output=olyr, flags=f,
             overwrite=True, run_=False, quiet=True
         )
         
@@ -210,33 +210,36 @@ def shp_to_grs(inLyr, outLyr, filterByReg=None, asCMD=None):
     
     else:
         from glass.pys import execmd
+
+        f = " -r" if filterByReg else ""
         
         rcmd = execmd((
-            "v.in.ogr input={} output={} -o{} --overwrite --quiet"
-        ).format(inLyr, outLyr, " -r" if filterByReg else ""))
+            f"v.in.ogr input={ilyr} output={olyr} -o{f} "
+            "--overwrite --quiet"
+        ))
     
-    return outLyr
+    return olyr
 
 
-def grs_to_shp(inLyr, outLyr, geomType, lyrN=1, asCMD=True, asMultiPart=None):
+def grs_to_shp(ilyr, olyr, geomtype, lyrn=1, ascmd=True, asMultiPart=None):
     """
     GRASS Vector to Shape File
     """
     
-    from glass.prop  import VectorialDrivers
+    from glass.prop    import VectorialDrivers
     from glass.pys.oss import fprop
     
     vecDriv = VectorialDrivers()
-    outEXT  = fprop(outLyr, 'ff')
+    outEXT  = fprop(olyr, 'ff')
     
-    if not asCMD:
+    if not ascmd:
         from grass.pygrass.modules import Module
         
         __flg = '' if not asMultiPart else 'm'
         
         m = Module(
-            "v.out.ogr", input=inLyr, type=geomType, output=outLyr,
-            format=vecDriv[outEXT], flags=__flg, layer=lyrN,
+            "v.out.ogr", input=ilyr, type=geomtype, output=olyr,
+            format=vecDriv[outEXT], flags=__flg, layer=lyrn,
             overwrite=True, run_=False, quiet=True
         )
         
@@ -245,15 +248,15 @@ def grs_to_shp(inLyr, outLyr, geomType, lyrN=1, asCMD=True, asMultiPart=None):
     else:
         from glass.pys import execmd
         
+        mp = " -m" if asMultiPart else ""
+
         rcmd = execmd((
-            "v.out.ogr input={} type={} output={} format={} "
-            "layer={}{} --overwrite --quiet"  
-        ).format(
-            inLyr, geomType, outLyr, 
-            vecDriv[outEXT], lyrN, " -m" if asMultiPart else ""
+            f"v.out.ogr input={ilyr} type={geomtype} "
+            f"output={olyr} format={vecDriv[outEXT]} "
+            f"layer={lyrn}{mp} --overwrite --quiet"  
         ))
     
-    return outLyr
+    return olyr
 
 
 """
