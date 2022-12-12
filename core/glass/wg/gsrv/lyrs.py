@@ -89,12 +89,12 @@ def pub_rst_lyr(layername, datastore, workspace, epsg_code):
     Publish a Raster layer
     """
     
-    import os;            import requests
-    from glass.pys.char   import random_str
-    from glass.pys.Xml    import write_xml_tree
-    from glass.pys.oss    import mkdir, del_folder
-    from glass.prop.prj import epsg_to_wkt
-    from glass.cons.gsrv  import con_gsrv
+    import os;           import requests
+    from glass.pys.char  import random_str
+    from glass.pys.Xml   import write_xml_tree
+    from glass.pys.oss   import mkdir, del_folder
+    from glass.prop.prj  import epsg_to_wkt
+    from glass.cons.gsrv import con_gsrv
 
     conf = con_gsrv()
     
