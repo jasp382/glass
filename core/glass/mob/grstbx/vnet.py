@@ -44,7 +44,7 @@ def network_from_arcs(networkFC, networkOUT):
     return networkOUT
 
 
-def pnts_to_net(network, pnts, oshp, __threshold=5000, ascmd=None):
+def pnts_to_net(network, pnts, oshp, pntlyr=2, __threshold=5000, ascmd=None):
     """
     Connect points to GRASS GIS Network
     """
@@ -55,6 +55,7 @@ def pnts_to_net(network, pnts, oshp, __threshold=5000, ascmd=None):
         m = Module(
             "v.net", input=network, points=pnts, operation="connect",
             threshold=__threshold, output=oshp,
+            arc_layer=1, node_layer=pntlyr,
             overwrite=True, run_=False
         )
     
@@ -66,65 +67,9 @@ def pnts_to_net(network, pnts, oshp, __threshold=5000, ascmd=None):
         rcmd = execmd((
             f"v.net input={network} points={pnts} "
             f"operation=connect threshold={str(__threshold)} "
+            f"arc_layer=1 node_layer={str(pntlyr)} "
             f"output={oshp} --overwrite --quiet"
         ))
     
     return oshp
-
-
-
-"""
-Produce indicators
-"""
-
-def run_allpairs(network, fromToCol, toFromCol, outMatrix, arcLyr=1, nodeLyr=2,
-                 asCMD=None):
-    """
-    Implementation of v.net.allpairs
-    """
-    
-    if not asCMD:
-        from grass.pygrass.modules import Module
-    
-        m = Module(
-            "v.net.allpairs", input=network, output=outMatrix,
-            arc_layer=arcLyr, node_layer=nodeLyr, arc_column=fromToCol,
-            arc_backward_column=toFromCol, overwrite=True, run_=False
-        )
-    
-        m()
-    
-    else:
-        from glass.pys import execmd
-        
-        rcmd = execmd((
-            "v.net.allpairs input={} output={} arc_layer={} "
-            "node_layer={} arc_column={} arc_backward_column={} "
-            "--overwrite --quiet"
-        ).format(
-            network, outMatrix, str(arcLyr), str(nodeLyr), fromToCol,
-            toFromCol
-        ))
-    
-    return outMatrix
-
-
-def netpath(network, fileCats, fromToCol, toFromCol, outResult,
-            arcLyr=1, nodeLyr=2):
-    """
-    Implementation of v.net.path
-    """
-    
-    from grass.pygrass.modules import Module
-    
-    m = Module(
-        "v.net.path", input=network, file=fileCats,
-        output=outResult, arc_layer=arcLyr, node_layer=nodeLyr,
-        arc_column=fromToCol, arc_backward_column=toFromCol,
-        overwrite=True, run_=False
-    )
-    
-    m()
-    
-    return outResult
 

@@ -57,17 +57,18 @@ def copy_insame_vector(inShp, colToBePopulated, srcColumn, destinyLayer,
         vtodb = Module(
             "v.to.db", map=inShp, layer=destinyLayer, type=geomType,
             option="query", columns=colToBePopulated,
-            query_column=srcColumn, run_=False, quiet=True
+            query_column=srcColumn, run_=False, quiet=True,
+            overwrite=True
         )
     
         vtodb()
     
     else:
-        from glass.pys  import execmd
+        from glass.pys import execmd
         
         rcmd = execmd((
-            "v.to.db map={} layer={} type={} option=query columns={} "
-            "query_column={} --quiet"
-        ).format(inShp, destinyLayer, geomType, colToBePopulated,
-                 srcColumn))
+            f"v.to.db map={inShp} layer={destinyLayer} "
+            f"type={geomType} option=query columns={colToBePopulated} "
+            f"query_column={srcColumn} --quiet --overwrite"
+        ))
 
