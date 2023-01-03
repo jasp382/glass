@@ -22,18 +22,20 @@ git clone https://github.com/jasp382/glass ~/glass
 
 ```Bash
 # Create new virtual env
-mkvirtualenv glassenv
-# OR
-mkvirtualenv glassenv --system-site-packages
+mkvirtualenv genv
 
-workon glassenv
+workon genv
 
 # Install GLASS
 pip install --upgrade pip
 
-cd ~/glass/core && pip install -r requirements.txt
+cd ~/glass && pip install -r requirements.txt
 
 pip install pygdal=="`gdal-config --version`.*"
+
+OR 
+
+ln -s /usr/lib/python3/dist-packages/osgeo* ~/.virtualenvs/firelocenv/lib/python3.10/site-packages
 
 pv=$(/usr/bin/python3 --version)
 IFS=' '
@@ -45,5 +47,5 @@ read -a pvva <<< "$pvv"
 pone="${pvva[0]}"
 ptwo="${pvva[1]}"
 
-echo "/home/$USER/glass/core" | sudo tee ~/.virtualenvs/glassenv/lib/python$pone.$ptwo/site-packages/glass.pth
+echo "/home/$USER/glass" | sudo tee ~/.virtualenvs/genv/lib/python$pone.$ptwo/site-packages/glass.pth
 ```

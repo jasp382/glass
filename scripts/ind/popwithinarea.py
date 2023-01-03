@@ -6,13 +6,13 @@ from glass.ind.pop import pop_within_area
 
 
 if __name__ == "__main__":
-    gunits = '/home/jasp/mystuff/rms/rms_mun_v7.shp'
+    gunits = '/home/jasp/rms/rms_mun_v10.shp'
 
     gunits_id = 'idmun'
 
     outcol = 'pruido55'
 
-    sunits = '/home/jasp/mystuff/rms/rms_bgri.shp'
+    sunits = '/home/jasp/rms/rms_bgri.shp'
 
     sunits_id = 'refid'
 
@@ -20,9 +20,9 @@ if __name__ == "__main__":
 
     gunits_fk = 'idmun'
 
-    shp = '/home/jasp/mystuff/rms/ruido_55ld_Diss.shp'
+    shp = '/home/jasp/rms/ruido_55ld_dss.shp'
 
-    output = '/home/jasp/mystuff/rms/rms_mun_v8.shp'
+    output = '/home/jasp/rms/rms_mun_v11.shp'
 
     pop_within_area(
         gunits, gunits_id, outcol, sunits,
@@ -30,3 +30,4 @@ if __name__ == "__main__":
         shp, output,
         res_areas=None, res_areas_fk=None
     )
+
