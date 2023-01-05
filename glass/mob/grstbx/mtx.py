@@ -15,8 +15,7 @@ def prod_matrix(origins, destinations, networkGrs, speedLimitCol, onewayCol,
     from glass.tbl.filter      import sel_by_attr
     from glass.tbl.col         import add_fields, cols_calc
     from glass.tbl.grs         import add_table
-    from glass.mob.grstbx.vnet import pnts_to_net
-    from glass.mob.grstbx.vnet import run_allpairs
+    from glass.mob.grstbx.vnet import pnts_to_net, run_allpairs
     from glass.cp              import copy_insame_vector
     from glass.tbl.attr        import geomattr_to_db
     from glass.dp.mge          import shps_to_shp

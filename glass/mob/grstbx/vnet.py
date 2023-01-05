@@ -64,7 +64,7 @@ def pnts_to_net(network, pnts, oshp, pntlyr=2, __threshold=5000, ascmd=None):
     else:
         from glass.pys import execmd
         
-        rcmd = execmd((
+        rcmd = execmd(
             f"v.net input={network} points={pnts} "
             f"operation=connect threshold={str(__threshold)} "
             f"arc_layer=1 node_layer={str(pntlyr)} "
