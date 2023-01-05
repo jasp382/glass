@@ -348,7 +348,7 @@ def get_ref_raster(refBoundBox, folder, cellsize=None):
                 ref_shp = refBoundBox
             
             # Convert to Raster
-            from glass.dp.torst import shp_to_rst
+            from glass.dtr.torst import shp_to_rst
             
             refRaster = shp_to_rst(
                 ref_shp, None, 2 if not cellsize else cellsize,

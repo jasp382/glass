@@ -10,7 +10,7 @@ def grs_rst_roads(osmdb, lineTbl, polyTbl, dataFolder, LULC_CLS):
     """
     
     from glass.it.shp            import dbtbl_to_shp
-    from glass.dp.torst          import grsshp_to_grsrst as shp_to_rst
+    from glass.dtr.torst          import grsshp_to_grsrst as shp_to_rst
     from glass.gp.prox.bfing.sql import splite_buffer
     from glass.prop.sql          import row_num
     
@@ -124,7 +124,7 @@ def grs_vec_roads(osmdb, lineTbl, polyTbl):
     
     if NB:
         from glass.gp.prox import grs_near as near
-        from glass.tbl.col import cols_calc
+        from glass.tbl.grs import cols_calc
         
         builds = dbtbl_to_shp(
             osmdb, polyTbl, "geometry", "all_builds", where="building IS NOT NULL",
@@ -269,7 +269,7 @@ def roads_fmdb_v0(osmdb, lnhTbl, plTbl, apidb='SQLITE', asRst=None):
     time_g = dt.datetime.now().replace(microsecond=0)
     
     if asRst:
-        from glass.dp.torst import grsshp_to_grsrst as shp_to_rst
+        from glass.dtr.torst import grsshp_to_grsrst as shp_to_rst
         
         roadsGrs = shp_to_rst(
             roadsGrs, int(asRst), "rst_roads", cmd=True
@@ -387,7 +387,7 @@ def roads_fmdb(osmdb, lnhTbl, plTbl, asRst=None):
     time_g = dt.datetime.now().replace(microsecond=0)
     
     if asRst:
-        from glass.dp.torst import grsshp_to_grsrst as shp_to_rst
+        from glass.dtr.torst import grsshp_to_grsrst as shp_to_rst
         
         roadsGrs = shp_to_rst(
             roadsGrs, int(asRst), "rst_roads", cmd=True
@@ -419,7 +419,7 @@ def num_roads(osmdata, nom, lineTbl, polyTbl, folder, cellsize, srs, rstTemplate
     from glass.rd.rst            import rst_to_array
     from glass.tbl.filter        import sel_by_attr
     from glass.gp.prox.bfing.sql import splite_buffer
-    from glass.dp.torst          import shp_to_rst
+    from glass.dtr.torst          import shp_to_rst
     from glass.wt.rst            import obj_to_rst
     from glass.prop.sql          import row_num
     
@@ -528,7 +528,7 @@ def pg_num_roads(osmdb, nom, lnhTbl, polyTbl, folder, cellsize, srs, rstT):
     import os
     from glass.prop.sql          import row_num
     from glass.gp.prox.bfing.sql import st_buffer
-    from glass.dp.torst          import shp_to_rst
+    from glass.dtr.torst          import shp_to_rst
     
     # There are roads?
     time_a = datetime.datetime.now().replace(microsecond=0)

@@ -67,7 +67,7 @@ def infovalue(landslides, variables, iv_rst):
             ))
         
         # Convert To Raster
-        from glass.dp.torst import shp_to_rst
+        from glass.dtr.torst import shp_to_rst
         
         land_raster = shp_to_rst(
             land_poly, None, get_cellsize(variables[0], gisApi='gdal'), -9999,
@@ -200,7 +200,7 @@ def grs_infovalue(movs, _var, refrst, out):
     gsetup.init(gbase, ws, loc, 'PERMANENT')
 
     # Import GRASS GIS modules
-    from glass.dp.torst import grsshp_to_grsrst
+    from glass.dtr.torst import grsshp_to_grsrst
     from glass.it.shp   import shp_to_grs
     from glass.it.rst   import rst_to_grs, grs_to_rst
     from glass.rst.alg  import rstcalc

@@ -185,8 +185,8 @@ def optimized_union_anls(lyr_a, lyr_b, outShp, ref_boundary,
     from glass.pys.oss  import cpu_cores
     from glass.smp      import create_fishnet
     from glass.wenv.grs import run_grass
-    from glass.dp.split import eachfeat_to_newshp
-    from glass.dp.mge   import shps_to_shp
+    from glass.dtr.split import eachfeat_to_newshp
+    from glass.dtr.mge   import shps_to_shp
     from glass.wt.rst   import shpext_to_rst
     from glass.prop.ext import get_ext
     
@@ -568,9 +568,9 @@ def check_shape_diff(SHAPES_TO_COMPARE, OUT_FOLDER, REPORT, DB,
     from glass.sql.q        import q_to_obj
     from glass.it           import db_to_tbl
     from glass.wt.sql       import df_to_db
-    from glass.dp.rst.toshp import rst_to_polyg
+    from glass.dtr.rst.toshp import rst_to_polyg
     from glass.it.db        import shp_to_psql
-    from glass.dp.tomtx.sql import tbl_to_area_mtx
+    from glass.dtr.tomtx.sql import tbl_to_area_mtx
     from glass.prop         import is_rst
     from glass.pys.oss      import fprop
     from glass.sql.db       import create_db
@@ -824,7 +824,7 @@ def shp_diff_fm_ref(refshp, refcol, shps, out_folder,
     from glass.prop     import is_rst
     from glass.wenv.grs import run_grass
     from glass.pys.oss  import fprop
-    from glass.dp.tomtx import tbl_to_areamtx
+    from glass.dtr.tomtx import tbl_to_areamtx
 
     # Check if folder exists, if not create it
     if not os.path.exists(out_folder):
@@ -844,7 +844,7 @@ def shp_diff_fm_ref(refshp, refcol, shps, out_folder,
     from glass.it.shp       import shp_to_grs, grs_to_shp
     from glass.it.rst       import rst_to_grs
     from glass.tbl.col      import rn_cols
-    from glass.dp.rst.toshp import rst_to_polyg
+    from glass.dtr.rst.toshp import rst_to_polyg
 
     # Convert to SHAPE if file is Raster
     # Rename interest columns

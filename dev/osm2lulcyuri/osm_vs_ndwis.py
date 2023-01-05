@@ -7,7 +7,7 @@ def osm_vs_ndwis(shp, imds):
     from dgt.it.osm import osm_to_psql
     from dgt.it.shp import dbtbl_to_shp
     from dgt.wenv.grs import run_grass
-    from dgt.dp.torst import shp_to_rst
+    from dgt.dtr.torst import shp_to_rst
     from dgt.rd.shp import shp_to_obj
     from dgt.wt.shp import df_to_shp
 

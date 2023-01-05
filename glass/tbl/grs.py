@@ -2,6 +2,32 @@
 GRASS GIS Tools for table management
 """
 
+from glass.pys import execmd
+
+
+def cols_calc(shp, col, v, onde, lyrN=1, ascmd=None):
+    """
+    Update Table
+    """
+    
+    if not ascmd:
+        from grass.pygrass.modules import Module
+        
+        fc = Module(
+            'v.db.update', map=shp, column=col, value=v, where=onde,
+            layer=lyrN, run_=False, quiet=True
+        )
+        fc()
+    
+    else:
+        from glass.pys import execmd
+        
+        rcmd = execmd((
+            f"v.db.update map={shp} column={col} "
+            f"value=\"{v}\" where={onde} "
+            f"layer={str(lyrN)} --quiet"
+        ))
+
 
 def add_table(shp, fields, lyrN=1, asCMD=None, keyp=None):
     """
@@ -18,8 +44,6 @@ def add_table(shp, fields, lyrN=1, asCMD=None, keyp=None):
         )
     
     else:
-        from glass.pys import execmd
-
         cols = '' if not fields else f' columns=\"{fields}\"'
         keyv = '' if not keyp else f' key={keyp}'
         
@@ -47,8 +71,6 @@ def reset_table(table, new_flds, values2write, whr_fields=None):
     """
     Delete table; create new table and update it
     """
-
-    from glass.tbl.col import cols_calc
     
     if type(new_flds) != dict:
         raise ValueError("new_flds must be a dict")
@@ -77,8 +99,6 @@ def add_and_update(table, new_flds, val_to_write):
     """
     Create new table and put some values in it
     """
-
-    from glass.tbl.col import cols_calc
     
     if type(new_flds) != dict:
         raise ValueError("new_flds must be a dict")

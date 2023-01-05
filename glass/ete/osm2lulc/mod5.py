@@ -16,7 +16,7 @@ def basic_buffer(osmdb, lineTable, dataFolder, apidb='SQLITE'):
         from glass.gp.prox.bfing.sql import st_buffer
     else:
         from glass.gp.prox.bfing.sql import splite_buffer as st_buffer
-    from glass.dp.torst              import grsshp_to_grsrst as shp_to_rst
+    from glass.dtr.torst              import grsshp_to_grsrst as shp_to_rst
     from glass.it.shp                import shp_to_grs
     
     time_a = datetime.datetime.now().replace(microsecond=0)
@@ -128,7 +128,7 @@ def num_base_buffer(osmdb, lineTbl, folder, cells, srscode, rtemplate,
         from glass.gp.prox.bfing.sql import splite_buffer as st_buffer
     else:
         from glass.gp.prox.bfing.sql import st_buffer
-    from glass.dp.torst              import shp_to_rst
+    from glass.dtr.torst              import shp_to_rst
     
     # Get LULC Classes to be selected
     time_a = datetime.datetime.now().replace(microsecond=0)

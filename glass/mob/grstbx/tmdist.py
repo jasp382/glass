@@ -3,7 +3,7 @@ Compute time distance between features
 """
 
 def distance_between_catpoints(srcShp, facilitiesShp, networkShp, speedLimitCol,
-                     onewayCol, grsWorkspace, grsLocation, outputShp):
+                     onewayCol, outputShp):
     """
     Path bet points
     
@@ -13,7 +13,7 @@ def distance_between_catpoints(srcShp, facilitiesShp, networkShp, speedLimitCol,
     import os
     from glass.pys.oss   import fprop
     from glass.wenv.grs  import run_grass
-    from glass.dp.mge    import shps_to_shp
+    from glass.dtr.mge    import shps_to_shp
     from glass.prop.feat import feat_count
     
     # Merge Source points and Facilities into the same Feature Class
@@ -27,7 +27,7 @@ def distance_between_catpoints(srcShp, facilitiesShp, networkShp, speedLimitCol,
     
     # Open an GRASS GIS Session
     gbase = run_grass(
-        grsWorkspace, grassBIN="grass76",
+        grsWorkspace,
         location=grsLocation, srs=networkShp
     )
     
@@ -37,10 +37,9 @@ def distance_between_catpoints(srcShp, facilitiesShp, networkShp, speedLimitCol,
     # Import GRASS GIS Module
     from glass.it.shp          import shp_to_grs, grs_to_shp
     from glass.tbl.attr        import geomattr_to_db
-    from glass.cp              import copy_insame_vector
+    from glass.dtr.cp.grs       import copy_insame_vector
     from glass.tbl             import category
-    from glass.tbl.grs         import add_table
-    from glass.tbl.col         import cols_calc
+    from glass.tbl.grs         import add_table, cols_calc
     from glass.mob.grstbx.vnet import network_from_arcs
     from glass.mob.grstbx.vnet import add_pnts_to_network
     from glass.mob.grstbx.vnet import netpath

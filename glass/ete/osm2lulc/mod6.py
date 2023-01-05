@@ -17,7 +17,7 @@ def rst_pnt_to_build(osmdb, pntTable, polyTable, api_db='SQLITE'):
     from glass.sql.q      import q_to_obj
     from glass.it.shp     import dbtbl_to_shp as db_to_shp
     from glass.gp.ovl.sql import feat_within, feat_not_within
-    from glass.dp.torst   import grsshp_to_grsrst as shp_to_rst
+    from glass.dtr.torst   import grsshp_to_grsrst as shp_to_rst
     
     time_a = dt.datetime.now().replace(microsecond=0)
     new_build = feat_within(
@@ -239,7 +239,7 @@ def num_assign_builds(osmdb, pntTbl, polTbl, folder, cells, srscode, rstT,
         from glass.it.shp import dbtbl_to_shp as sel_by_attr
     from glass.gp.ovl.sql import feat_within, feat_not_within
     from glass.sql.q     import q_to_obj
-    from glass.dp.torst   import shp_to_rst
+    from glass.dtr.torst   import shp_to_rst
     
     time_a = dt.datetime.now().replace(microsecond=0)
     build12 = feat_within(

@@ -30,12 +30,11 @@ def join_attr_by_distance(mainTable, joinTable, workGrass, epsg_code,
     from glass.rd.shp   import shp_to_obj
     from glass.it.pd    import df_to_geodf
     from glass.wt.shp   import df_to_shp
-    from glass.pys.oss    import fprop
+    from glass.pys.oss  import fprop
     
     # Create GRASS GIS Location
     grassBase = run_grass(workGrass, location='join_loc', srs=epsg_code)
     
-    import grass.script as grass
     import grass.script.setup as gsetup
     gsetup.init(grassBase, workGrass, 'join_loc', 'PERMANENT')
     
@@ -90,7 +89,7 @@ def joinLines_by_spatial_rel_raster(mainLines, mainId, joinLines,
     from glass.rd.shp    import shp_to_obj
     from glass.wt.shp    import df_to_shp
     from glass.gp.ext    import shpext_to_boundshp
-    from glass.dp.torst  import shp_to_rst
+    from glass.dtr.torst  import shp_to_rst
     from glass.it.pd     import df_to_geodf
     from glass.wenv.grs  import run_grass
     from glass.pd.joins import join_dfs
@@ -121,7 +120,7 @@ def joinLines_by_spatial_rel_raster(mainLines, mainId, joinLines,
     from glass.rst.local import combine
     from glass.prop.rst  import get_rst_report_data
     from glass.it.shp    import shp_to_grs, grs_to_shp
-    from glass.dp.torst  import grsshp_to_grsrst as shp_to_rst
+    from glass.dtr.torst  import grsshp_to_grsrst as shp_to_rst
     
     # Add data to GRASS GIS
     mainVector = shp_to_grs(

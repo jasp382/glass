@@ -20,7 +20,7 @@ def match_cellsize_and_clip(rstBands, refRaster, outFolder,
     from glass.prop.prj import get_rst_epsg
     from glass.wenv.grs import run_grass
     from glass.pys.oss  import fprop, mkdir
-    from glass.pys.tm import now_as_str
+    from glass.pys.tm   import now_as_str
     
     # Check if outfolder exists
     if not os.path.exists(outFolder):
@@ -49,7 +49,7 @@ def match_cellsize_and_clip(rstBands, refRaster, outFolder,
     from glass.it.rst   import rst_to_grs, grs_to_rst, grs_to_mask
     from glass.wenv.grs import rst_to_region
     from glass.it.shp   import shp_to_grs
-    from glass.dp.torst import grsshp_to_grsrst as shp_to_rst
+    from glass.dtr.torst import grsshp_to_grsrst as shp_to_rst
     
     # Send Ref Raster to GRASS GIS and set region
     extRst = rst_to_grs(refRaster, 'ext_rst')

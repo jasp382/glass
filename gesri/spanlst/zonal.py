@@ -17,7 +17,7 @@ def mean_rst_by_polygon(polygons, raster, work, resultShp):
     from gesri.rd.shp          import shp_to_lyr
     from glass.prop.rst              import rst_stats
     from gesri.tbl.cols      import add_col
-    from glass.mng.gen               import copy_feat
+    from gesri.dp               import copy_feat
     from glass.cpu.arcg.anls.exct    import select_by_attr
     from glass.cpu.arcg.mng.rst.proc import clip_raster
     

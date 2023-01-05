@@ -14,7 +14,7 @@ def rst_area(db, polygonTable, UPPER=True, api='SQLITE'):
     import datetime as dt
     from glass.sql.q     import q_to_obj
     from glass.it.shp     import dbtbl_to_shp as db_to_grs
-    from glass.dp.torst   import grsshp_to_grsrst as shp_to_rst
+    from glass.dtr.torst   import grsshp_to_grsrst as shp_to_rst
     from glass.ete.osm2lulc import GEOM_AREA
     
     RULE_COL = 'area_upper' if UPPER else 'area_lower'
@@ -130,7 +130,7 @@ def num_selbyarea(db, polyTbl, folder, cellsize, srscode, rstTemplate,
         from glass.tbl.filter import sel_by_attr
     else:
         from glass.it.shp import dbtbl_to_shp as sel_by_attr
-    from glass.dp.torst   import shp_to_rst
+    from glass.dtr.torst   import shp_to_rst
     from glass.ete.osm2lulc import GEOM_AREA
     
     # Get OSM Features to be selected for this rule

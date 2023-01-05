@@ -234,7 +234,7 @@ def gdb_to_shp(workspace, outworkspace):
     """
     
     import os
-    from glass.mng.gen import copy_feat
+    from gesri.dp import copy_feat
     
     # List GeoDatabases
     lst_gdb = arcpy.ListWorkspaces(workspace_type="FileGDB")

@@ -27,7 +27,7 @@ def arcg_mean_time_WByPop2(netDt, rdv, infraestruturas, unidades, conjuntos,
     from gesri.tbl.cols   import add_col, calc_fld
     from glass.cpu.arcg.mng.joins import join_table
     from glass.mng.genze          import dissolve
-    from glass.mng.gen            import copy_feat
+    from gesri.dp            import copy_feat
     from glass.mob.arctbx.closest import closest_facility
     from glass.dct                import tbl_to_obj
     
@@ -128,7 +128,7 @@ def mean_time_by_influence_area(netDt, rdv, infraestruturas,
     from gesri.rd.shp             import shp_to_lyr
     from glass.cpu.arcg.mng.feat         import feat_to_pnt
     from glass.cpu.arcg.mng.gen          import merge
-    from glass.mng.gen                   import copy_feat
+    from gesri.dp                   import copy_feat
     from glass.mng.genze                 import dissolve
     from gesri.tbl.cols          import add_col
     from glass.cpu.arcg.mng.fld          import calc_fld
@@ -259,7 +259,7 @@ def mean_time_in_povoated_areas(network, rdv_name, stat_units, popFld,
     from glass.cpu.arcg.mng.fld   import field_statistics
     from gesri.tbl.cols   import add_col
     from glass.cpu.arcg.mng.gen   import merge
-    from glass.mng.gen            import copy_feat
+    from gesri.dp            import copy_feat
     from glass.mob.arctbx.closest import closest_facility
     from glass.to.shp.arcg        import rst_to_pnt
     from glass.to.rst             import shp_to_raster
@@ -355,7 +355,7 @@ def population_within_point_buffer(netDataset, rdvName, pointShp, populationShp,
     from geopandas                import GeoDataFrame
     from gesri.rd.shp        import shp_to_lyr
     from glass.cpu.arcg.anls.ovlay import intersect
-    from glass.mng.gen             import copy_feat
+    from gesri.dp             import copy_feat
     from glass.cpu.arcg.mng.fld    import add_geom_attr
     from glass.cpu.arcg.mng.fld    import calc_fld
     from glass.mng.genze           import dissolve

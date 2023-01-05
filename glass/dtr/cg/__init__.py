@@ -8,8 +8,8 @@ def pnts_to_boundary(pntShp, outBound, distMeters):
     Create a boundary from Point using a tolerance in meters
     """
     
-    from osgeo            import ogr
-    from glass.pys.oss    import fprop
+    from osgeo          import ogr
+    from glass.pys.oss  import fprop
     from glass.prop     import drv_name
     from glass.gobj     import new_pnt
     from glass.prop.prj import get_shp_sref
@@ -512,7 +512,7 @@ def lnh_to_polygons(inShp, outShp, api='saga', db=None):
         from glass.sql.db   import create_db
         from glass.it.db     import shp_to_psql
         from glass.it.shp    import dbtbl_to_shp
-        from glass.dp.cg.sql import lnh_to_polg
+        from glass.dtr.cg.sql import lnh_to_polg
         from glass.prop.prj  import get_shp_epsg
         
         # Create DB

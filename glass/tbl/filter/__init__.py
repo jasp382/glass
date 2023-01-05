@@ -81,7 +81,7 @@ def sel_by_loc(shp, boundary_filter, filtered_output):
     from glass.prop      import drv_name
     from glass.prop.feat import get_gtype
     from glass.lyr.fld   import copy_flds
-    from glass.cp        import copy_feat
+    from glass.dtr.cp     import copy_feat
     from glass.pys.oss   import fprop
     
     # Open main data
@@ -95,8 +95,8 @@ def sel_by_loc(shp, boundary_filter, filtered_output):
     
     c = 0
     for f in filter_lyr:
-        if c:
-            break
+        if c: break
+
         geom = f.GetGeometryRef()
         c += 1
     

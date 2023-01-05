@@ -381,7 +381,7 @@ def vector_based(osmdata, nomenclature, refRaster, lulcShp,
     else:
         from glass.it.osm            import osm_to_sqdb
     from glass.ete.osm2lulc.utils    import osm_project, add_lulc_to_osmfeat, get_ref_raster
-    from glass.dp.mge                import shps_to_shp
+    from glass.dtr.mge                import shps_to_shp
     from glass.ete.osm2lulc.mod1     import grs_vector
     if RoadsAPI == 'SQLITE' or RoadsAPI == 'POSTGIS':
         from glass.ete.osm2lulc.mod2 import roads_fmdb
@@ -391,7 +391,7 @@ def vector_based(osmdata, nomenclature, refRaster, lulcShp,
     from glass.ete.osm2lulc.m3_4     import grs_vect_selbyarea
     from glass.ete.osm2lulc.mod5     import grs_vect_bbuffer
     from glass.ete.osm2lulc.mod6     import vector_assign_pntags_to_build
-    from glass.dp.mge                import same_attr_to_shp
+    from glass.dtr.mge                import same_attr_to_shp
     from glass.prj                   import def_prj
     from glass.prop.feat             import feat_count
     # ************************************************************************ #
@@ -480,8 +480,8 @@ def vector_based(osmdata, nomenclature, refRaster, lulcShp,
     from glass.gp.ovl   import erase
     from glass.wenv.grs import rst_to_region
     from glass.gp.gen   import dissolve
-    from glass.tbl.grs  import add_and_update, reset_table
-    from glass.tbl.col  import add_fields, cols_calc
+    from glass.tbl.grs  import reset_table, cols_calc
+    from glass.tbl.col  import add_fields
     from glass.it.shp   import shp_to_grs, grs_to_shp
     from glass.it.rst   import rst_to_grs
     from glass.tbl.grs  import del_table, add_table

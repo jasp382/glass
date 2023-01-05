@@ -13,13 +13,13 @@ def prod_matrix(origins, destinations, networkGrs, speedLimitCol, onewayCol,
     
     from glass.tbl             import category
     from glass.tbl.filter      import sel_by_attr
-    from glass.tbl.col         import add_fields, cols_calc
-    from glass.tbl.grs         import add_table
+    from glass.tbl.col         import add_fields
+    from glass.tbl.grs         import add_table, cols_calc
     from glass.mob.grstbx.vnet import pnts_to_net
-    from glass.mob.grstbx.vnet import run_allpairs
-    from glass.cp              import copy_insame_vector
+    from glass.mob.grstbx.anls import run_allpairs
+    from glass.dtr.cp.grs      import copy_insame_vector
     from glass.tbl.attr        import geomattr_to_db
-    from glass.dp.mge          import shps_to_shp
+    from glass.dtr.mge         import shps_to_shp
     from glass.prop.feat       import feat_count
     from glass.it.shp          import shp_to_grs
     
@@ -150,8 +150,7 @@ def matrix_od(origins, destinations, rdv, speedLimitCol, onewayCol,
     return grs_to_shp(MATRIX_OD, oshp, "line", lyrN=3)
 
 
-def thrd_matrix_od(origins, destinationShp, network, costCol, oneway,
-                   grsWork, grsLoc, output):
+def thrd_matrix_od(origins, destinationShp, network, costCol, oneway, output):
     """
     Produce matrix OD using GRASS GIS - Thread MODE
     
@@ -164,22 +163,22 @@ def thrd_matrix_od(origins, destinationShp, network, costCol, oneway,
     from threading      import Thread
     from glass.wenv.grs import run_grass
     from glass.pys.oss  import fprop, mkdir
-    from glass.dp.mge   import shps_to_shp
-    from glass.dp.split import splitShp_by_range
+    from glass.dtr.mge   import shps_to_shp
+    from glass.dtr.split import splitShp_by_range
+
+    ws = os.path.dirname(output)
+    loc = f"loc_{fprop(output, 'fn')}"
     
     # SPLIT ORIGINS IN PARTS
-    originsFld = mkdir(os.path.join(grsWork, 'origins_parts'))
+    originsFld = mkdir(os.path.join(ws, loc, 'origins_parts'))
     
     originsList = splitShp_by_range(origins, 100, originsFld)
     
-    gbase = run_grass(
-        grsWork, grassBIN="grass76", location=grsLoc, srs=network
-    )
+    gbase = run_grass(ws, location=loc, srs=network)
     
-    import grass.script       as grass
     import grass.script.setup as gsetup
     
-    gsetup.init(gbase, grsWork, grsLoc, 'PERMANENT')
+    gsetup.init(gbase, ws, loc, 'PERMANENT')
     
     from glass.it.shp import shp_to_grs
 
@@ -188,7 +187,7 @@ def thrd_matrix_od(origins, destinationShp, network, costCol, oneway,
         network, 'fn', forceLower=True), asCMD=True)
     
     RESULTS = []
-    R_FOLDER = mkdir(os.path.join(grsWork, 'res_parts'))
+    R_FOLDER = mkdir(os.path.join(ws, loc, 'res_parts'))
     
     def __prod_mtxod(O, D, THRD):
         result_part = prod_matrix(
@@ -228,8 +227,8 @@ def bash_matrix_od(origins, destinationShp, network, costCol, oneway,
     
     from glass.wenv.grs import run_grass
     from glass.pys.oss  import fprop, mkdir
-    from glass.dp.split import splitShp_by_range
-    from glass.dp.mge   import shps_to_shp
+    from glass.dtr.split import splitShp_by_range
+    from glass.dtr.mge   import shps_to_shp
     
     # SPLIT ORIGINS IN PARTS
     originsFld = mkdir(os.path.join(grsWork, 'origins_parts'))

@@ -611,3 +611,52 @@ def rst_to_tiles(rst, n_tiles_x, n_tiles_y, out_folder):
             ))
 
     return out_folder
+
+
+def grsws_to_rst(f, outfolder, exclude=None):
+    """
+    Export All Rasters in several GRASS GIS 
+    Workspaces to file
+    """
+
+    import os
+
+    from glass.wenv.grs import run_grass
+    from glass.pys      import obj_to_lst
+    from glass.pys.oss  import lst_fld, mkdir
+
+    exclude = obj_to_lst(exclude)
+
+    # List Workspaces
+    wss = lst_fld(f)
+
+    i = 0
+    for ws in wss:
+        outf = mkdir(os.path.join(outfolder, os.path.basename(ws)))
+
+        # List locations
+        locs = lst_fld(ws, name=True)
+
+        # For each location, export files
+        for loc in locs:
+            gb = run_grass(ws, location=loc)
+            
+            if not i:
+                import grass.script.setup as gsetup
+        
+            gsetup.init(gb, ws, loc, 'PERMANENT')
+
+            if not i:
+                from glass.prop.grs import list_raster
+                from glass.it.rst   import grs_to_rst
+
+                i += 1
+            
+            rsts = list_raster()
+
+            for rst in rsts:
+                if exclude and rst in exclude:
+                    continue
+
+                grs_to_rst(rst, os.path.join(outf, f"{rst}.tif"))
+

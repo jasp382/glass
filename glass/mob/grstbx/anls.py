@@ -23,24 +23,6 @@ def netpath(network, fileCats, fromToCol, toFromCol, outResult,
     m()
     
     return outResult
-def netpath(network, fileCats, fromToCol, toFromCol, outResult,
-            arcLyr=1, nodeLyr=2):
-    """
-    Implementation of v.net.path
-    """
-    
-    from grass.pygrass.modules import Module
-    
-    m = Module(
-        "v.net.path", input=network, file=fileCats,
-        output=outResult, arc_layer=arcLyr, node_layer=nodeLyr,
-        arc_column=fromToCol, arc_backward_column=toFromCol,
-        overwrite=True, run_=False
-    )
-    
-    m()
-    
-    return outResult
 
 
 def run_allpairs(rdv, fromto, tofrom, mtx, arclyr=1, nodelyr=2, ascmd=None):

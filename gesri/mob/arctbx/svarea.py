@@ -14,7 +14,7 @@ def get_sa(net, rdv, time_interval, loc, out,
     Execute service area tool
     """
     
-    from glass.mng.gen import copy_feat
+    from gesri.dp import copy_feat
     
     if arcpy.CheckExtension("Network") == "Available":
         arcpy.CheckOutExtension("Network")
@@ -81,7 +81,7 @@ def service_area_use_meters(net, rdv, distance, loc, out,
     Execute service area tool using metric distances
     """
     
-    from glass.mng.gen import copy_feat
+    from gesri.dp import copy_feat
     
     if arcpy.CheckExtension("Network") == "Available":
         arcpy.CheckOutExtension("Network")
@@ -96,7 +96,7 @@ def service_area_use_meters(net, rdv, distance, loc, out,
     
     INTERVALS = str(distance) if type(distance) == int or \
         type(distance) == float else distance if \
-        type(distance) == str or type(distance) == unicode \
+        type(distance) == str \
         else ' '.join([str(int(x)) for x in distance]) if \
         type(distance) == list else None
     

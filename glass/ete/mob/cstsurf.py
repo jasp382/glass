@@ -86,20 +86,20 @@ def mk_costsuf(dem, lulc, lucol, rdv, kph, barr, out):
     gsetup.init(gb, ws, loc, 'PERMANENT')
 
     # Import GRASS GIS Modules
-    from glass.it.shp import shp_to_grs
-    from glass.it.rst import rst_to_grs, grs_to_rst
-    from glass.rst.surf import slope
-    from glass.rst.rcls import interval_rules, rcls_rst, category_rules
+    from glass.it.shp    import shp_to_grs
+    from glass.it.rst    import rst_to_grs, grs_to_rst
+    from glass.rst.surf  import slope
+    from glass.rst.rcls  import interval_rules, rcls_rst, category_rules
     from glass.gp.ovl    import grsunion
-    from glass.gp.gen import dissolve
-    from glass.tbl.grs      import add_table
-    from glass.tbl.col import cols_calc, add_fields
-    from glass.dp.torst  import grsshp_to_grsrst
-    from glass.rst.rcls import set_null
+    from glass.gp.gen    import dissolve
+    from glass.tbl.grs   import add_table, cols_calc
+    from glass.tbl.col   import add_fields
+    from glass.dtr.torst  import grsshp_to_grsrst
+    from glass.rst.rcls  import set_null
     from glass.rst.mos   import rsts_to_mosaic
     from glass.rst.local import combine
-    from glass.prop.rst import raster_report
-    from glass.rst.alg import rstcalc
+    from glass.prop.rst  import raster_report
+    from glass.rst.alg   import rstcalc
 
     # Generate slope raster
     grsdem = rst_to_grs(dem, fprop(dem, 'fn'))
