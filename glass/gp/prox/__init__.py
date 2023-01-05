@@ -62,8 +62,8 @@ def connect_lines_to_near_lines(inLines, nearLines, outLines,
     line
     """
 
-    from osgeo                     import ogr
-    from glass.pys.oss             import fprop
+    from osgeo                   import ogr
+    from glass.pys.oss           import fprop
     from glass.prop              import drv_name
     from glass.prop.feat         import get_gtype
     from glass.gp.prox.bfing.obj import draw_buffer

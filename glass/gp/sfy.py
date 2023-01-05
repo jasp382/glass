@@ -8,21 +8,22 @@ def geom_simplification(db, tbl, selcols, geomc, simplifcationfactor, out):
     """
 
     from glass.sql.q import exec_write_q
-    from glass.pys import obj_to_lst
+    from glass.pys   import obj_to_lst
 
     selcols = obj_to_lst(selcols)
 
+    t = tbl if tbl.startswith("SELECT") else f"SELECT * FROM {tbl}"
+    c = ", ".join(selcols)
+
     QS = [(
-        "CREATE TABLE {ot} AS "
-        "SELECT {c}, ST_SimplifyPreserveTopology({g}, {sf}) AS {g} "
-        "FROM ({t}) AS foo"
-    ).format(
-        ot=out, c=", ".join(selcols), g=geomc,
-        t=tbl if tbl.startswith("SELECT") else "SELECT * FROM {}".format(tbl),
-        sf=str(simplifcationfactor)
+        f"CREATE TABLE {out} AS "
+        f"SELECT {c}, ST_SimplifyPreserveTopology("
+            f"{geomc}, {str(simplifcationfactor)}) AS {geomc} "
+        f"FROM ({t}) AS foo"
     ), (
-        "CREATE INDEX {t}_{g}_dist ON {t} USING gist({g})"
-    ).format(t=out, g=geomc)]
+        f"CREATE INDEX {out}_{geomc}_dist "
+        f"ON {out} USING gist({geomc})"
+    )]
 
     exec_write_q(db, QS, api='psql')
 

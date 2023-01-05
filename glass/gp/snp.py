@@ -19,9 +19,9 @@ def snap_points_to_near_line(lineShp, pointShp, epsg, workGrass,
         Uses GRASS GIS to find near lines.
         """
         
-        import os;            import numpy
-        from geopandas        import GeoDataFrame
-        from glass.pys.oss    import fprop
+        import os;          import numpy
+        from geopandas      import GeoDataFrame
+        from glass.pys.oss  import fprop
         from glass.wenv.grs import run_grass
         from glass.rd.shp   import shp_to_obj
         from glass.wt.shp   import df_to_shp
@@ -115,19 +115,19 @@ def snap_points_to_near_line(lineShp, pointShp, epsg, workGrass,
         """
         
         from glass.pys  import execmd
+
+        mv="" if not movesShp else f" -MOVES {movesShp}"
         
         cmd = (
-            "saga_cmd shapes_points 19 -INPUT {pnt} -SNAP {lnh} "
-            "-OUTPUT {out}{mv}"
-        ).format(
-            pnt=pointShp, lnh=lineShp, out=outPoints,
-            mv="" if not movesShp else " -MOVES {}".format(movesShp)
+            f"saga_cmd shapes_points 19 -INPUT {pointShp} "
+            f"-SNAP {lineShp} "
+            f"-OUTPUT {outPoints}{mv}"
         )
         
         outcmd = execmd(cmd)
     
     else:
-        raise ValueError("{} is not available!".format(api))
+        raise ValueError(f"{api} is not available!")
     
     return outPoints
 
