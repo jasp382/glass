@@ -37,20 +37,16 @@ def _buffer(inShp, radius, outShp,
         from glass.pys import execmd
         
         distIsField = True if type(radius) == str else None
+        distOption  = "-DIST_FIELD_DEFAULT" if not distIsField else \
+            "-DIST_FIELD"
         
-        c = (
-            "saga_cmd shapes_tools 18 -SHAPES {_in} "
-            "-BUFFER {_out} {distOption} {d} -DISSOLVE {diss}"
-        ).format(
-            _in=inShp,
-            distOption = "-DIST_FIELD_DEFAULT" if not distIsField else \
-                "-DIST_FIELD",
-            d=str(radius),
-            _out=outShp,
-            diss="0" if not dissolve else "1"
-        )
+        diss="0" if not dissolve else "1"
         
-        outcmd = execmd(c)
+        outcmd = execmd((
+            f"saga_cmd shapes_tools 18 -SHAPES {inShp} "
+            f"-BUFFER {outShp} {distOption} "
+            f"{str(radius)} -DISSOLVE {diss}"
+        ))
     
     elif api=='pygrass':
         from grass.pygrass.modules import Module
@@ -78,15 +74,14 @@ def _buffer(inShp, radius, outShp,
         from glass.pys import execmd
 
         lyrn = "1" if not lyrn else str(lyrn)
+
+        pdist = "column" if type(radius) == str else "distance"
+        _t = '' if dissolve else ' -t'
         
         rcmd = execmd((
-            "v.buffer input={} type={} layer=1 {}={} "
-            "output={}{} --overwrite --quiet"
-        ).format(
-            inShp, geom_type,
-            "column" if type(radius) == str else "distance",
-            str(radius), outShp,
-            '' if dissolve else ' -t'
+            f"v.buffer input={inShp} type={geom_type} "
+            f"layer={lyrn} {pdist}={str(radius)} "
+            f"output={outShp}{_t} --overwrite --quiet"
         ))
     
     else:
@@ -141,7 +136,7 @@ def dic_buffer_array_to_shp(arrayBf, outShp, epsg, fields=None):
     Array with dict with buffer proprieties to Feature Class
     """
     
-    import os; from osgeo          import ogr
+    import os; from osgeo        import ogr
     from glass.prop              import drv_name
     from glass.prop.prj          import get_sref_from_epsg
     from glass.gp.prox.bfing.obj import xy_to_buffer
@@ -150,7 +145,8 @@ def dic_buffer_array_to_shp(arrayBf, outShp, epsg, fields=None):
     srs = get_sref_from_epsg(epsg)
     
     # Create output DataSource and Layer
-    outData = ogr.GetDriverByName(drv_name(outShp)).CreateDataSource(outShp)
+    outData = ogr.GetDriverByName(
+        drv_name(outShp)).CreateDataSource(outShp)
     
     lyr = outData.CreateLayer(
         os.path.splitext(os.path.basename(outShp))[0],

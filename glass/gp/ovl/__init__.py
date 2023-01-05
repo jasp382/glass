@@ -94,8 +94,9 @@ def union(lyrA, lyrB, outShp, api_gis="grass"):
         from glass.pys  import execmd
         
         rcmd = execmd((
-            "saga_cmd shapes_polygons 17 -A {} -B {} -RESULT {} -SPLIT 1"
-        ).format(lyrA, lyrB, outShp))
+            f"saga_cmd shapes_polygons 17 -A {lyrA} "
+            f"-B {lyrB} -RESULT {outShp} -SPLIT 1"
+        ))
     
     elif api_gis == "pygrass" or api_gis == "grass":
         import os
@@ -128,7 +129,7 @@ def union(lyrA, lyrB, outShp, api_gis="grass"):
         grs_to_shp(shpunion, outShp, "area")
     
     else:
-        raise ValueError("{} is not available!".format(api_gis))
+        raise ValueError(f"{api_gis} is not available!")
     
     return outShp
 
@@ -180,8 +181,8 @@ def optimized_union_anls(lyr_a, lyr_b, outShp, ref_boundary,
     
     import os
     import multiprocessing
-    from glass.pys.oss    import fprop, lst_ff
-    from glass.pys.oss    import cpu_cores
+    from glass.pys.oss  import fprop, lst_ff
+    from glass.pys.oss  import cpu_cores
     from glass.smp      import create_fishnet
     from glass.wenv.grs import run_grass
     from glass.dp.split import eachfeat_to_newshp
@@ -397,13 +398,14 @@ def intersection(inShp, intersectShp, outShp, api='geopandas'):
         from glass.pys  import execmd
         
         cmdout = execmd((
-            "saga_cmd shapes_polygons 14 -A {} -B {} -RESULT {} -SPLIT 1"
-        ).format(inShp, intersectShp, outShp))
+            f"saga_cmd shapes_polygons 14 -A {inShp} "
+            f"-B {intersectShp} -RESULT {outShp} -SPLIT 1"
+        ))
     
     elif api == 'pygrass' or api == 'grass':
         import os
         from glass.wenv.grs import run_grass
-        from glass.pys.oss    import fprop
+        from glass.pys.oss  import fprop
         from glass.prop.prj import get_epsg
 
         epsg = get_epsg(inShp)
@@ -468,9 +470,9 @@ def self_intersection(polygons, output):
     from glass.pys  import execmd
     
     cmd = (
-        'saga_cmd shapes_polygons 12 -POLYGONS {in_poly} -INTERSECT '
-        '{out}'
-    ).format(in_poly=polygons, out=output)
+        f'saga_cmd shapes_polygons 12 -POLYGONS '
+        f'{polygons} -INTERSECT {output}'
+    )
     
     outcmd = execmd(cmd)
     
@@ -494,15 +496,14 @@ def erase(inShp, erase_feat, out, splitMultiPart=None, notTbl=None,
         
         It appears to be very slow
         """
+
         from glass.pys  import execmd
+
+        sp = '0' if not splitMultiPart else '1'
     
         cmd = (
-            'saga_cmd shapes_polygons 15 -A {in_shp} -B {erase_shp} '
-            '-RESULT {output} -SPLIT {sp}'
-        ).format(
-            in_shp=inShp, erase_shp=erase_feat,
-            output=out,
-            sp='0' if not splitMultiPart else '1'
+            f'saga_cmd shapes_polygons 15 -A {inShp} -B {erase_feat} '
+            f'-RESULT {out} -SPLIT {sp}'
         )
     
         outcmd = execmd(cmd)
@@ -529,12 +530,15 @@ def erase(inShp, erase_feat, out, splitMultiPart=None, notTbl=None,
         """
         
         from glass.pys  import execmd
+
+        istbl = "" if not notTbl else "-t "
         
         rcmd = execmd((
-            "v.overlay ainput={} atype=area binput={} "
-            "btype=area operator=not output={} {}"
+            f"v.overlay ainput={inShp} atype=area "
+            f"binput={erase_feat} btype=area "
+            f"operator=not output={out} {istbl}"
             "--overwrite --quiet"
-        ).format(inShp, erase_feat, out, "" if not notTbl else "-t "))
+        ))
     
     else:
         raise ValueError(f'API {api} is not available!')
@@ -560,25 +564,25 @@ def check_shape_diff(SHAPES_TO_COMPARE, OUT_FOLDER, REPORT, DB,
     """
     
     import datetime
-    import os;                import pandas
-    from glass.sql.q       import q_to_obj
-    from glass.it          import db_to_tbl
+    import os;              import pandas
+    from glass.sql.q        import q_to_obj
+    from glass.it           import db_to_tbl
     from glass.wt.sql       import df_to_db
     from glass.dp.rst.toshp import rst_to_polyg
     from glass.it.db        import shp_to_psql
-    from glass.dp.tomtx     import tbl_to_area_mtx
+    from glass.dp.tomtx.sql import tbl_to_area_mtx
     from glass.prop         import is_rst
-    from glass.pys.oss        import fprop
-    from glass.sql.db      import create_db
-    from glass.sql.tbl     import tbls_to_tbl
-    from glass.sql.q       import q_to_ntbl
+    from glass.pys.oss      import fprop
+    from glass.sql.db       import create_db
+    from glass.sql.tbl      import tbls_to_tbl
+    from glass.sql.q        import q_to_ntbl
     
     # Check if folder exists, if not create it
     if not os.path.exists(OUT_FOLDER):
         from glass.pys.oss import mkdir
         mkdir(OUT_FOLDER, overwrite=None)
     else:
-        raise ValueError('{} already exists!'.format(OUT_FOLDER))
+        raise ValueError(f'{OUT_FOLDER} already exists!')
         
     from glass.wenv.grs import run_grass
         
@@ -592,49 +596,50 @@ def check_shape_diff(SHAPES_TO_COMPARE, OUT_FOLDER, REPORT, DB,
         
     gsetup.init(gbase, OUT_FOLDER, 'shpdif', 'PERMANENT')
         
-    from glass.it.shp import shp_to_grs, grs_to_shp
-    from glass.it.rst     import rst_to_grs
-    from glass.tbl.col      import rn_cols
+    from glass.it.shp  import shp_to_grs, grs_to_shp
+    from glass.it.rst  import rst_to_grs
+    from glass.tbl.col import rn_cols
     
     # Convert to SHAPE if file is Raster
     i = 0
     _SHP_TO_COMPARE = {}
     for s in SHAPES_TO_COMPARE:
         isRaster = is_rst(s)
+
+        ncol = f"lulc_{str(i)}"
     
         if isRaster:
             # To GRASS
             rstName = fprop(s, 'fn')
-            inRst   = rst_to_grs(s, "rst_" + rstName, as_cmd=True)
+            inRst   = rst_to_grs(s, f"rst_{rstName}", as_cmd=True)
             # To Vector
-            d       = rst_to_polyg(inRst, rstName,
-                rstColumn="lulc_{}".format(i), gisApi="grass")
+            d = rst_to_polyg(
+                inRst, rstName,
+                rstColumn=ncol, gisApi="grass"
+            )
                 
             # Export Shapefile
             shp = grs_to_shp(
-                d, os.path.join(OUT_FOLDER, d + '.shp'), "area")
+                d, os.path.join(OUT_FOLDER, f"{d}.shp"), "area")
                 
-            _SHP_TO_COMPARE[shp] = "lulc_{}".format(i)
+            _SHP_TO_COMPARE[shp] = ncol
     
         else:
             # To GRASS
             grsV = shp_to_grs(s, fprop(s, 'fn'), asCMD=True)
                 
             # Change name of column with comparing value
-            ncol = "lulc_{}".format(str(i))
-            rn_cols(grsV, {
-                SHAPES_TO_COMPARE[s] : "lulc_{}".format(str(i))
-            }, api="grass")
+            rn_cols(grsV, {SHAPES_TO_COMPARE[s] : ncol}, api="grass")
                 
             # Export
             shp = grs_to_shp(
                 grsV, os.path.join(OUT_FOLDER, grsV + '_rn.shp'), "area")
                 
-            _SHP_TO_COMPARE[shp] = "lulc_{}".format(str(i))
+            _SHP_TO_COMPARE[shp] = ncol
         
         i += 1
     
-    SHAPES_TO_COMPARE = _SHP_TO_COMPARE
+    SHAPES_TO_COMPARE   = _SHP_TO_COMPARE
     __SHAPES_TO_COMPARE = SHAPES_TO_COMPARE
     
     # Create database
@@ -653,9 +658,9 @@ def check_shape_diff(SHAPES_TO_COMPARE, OUT_FOLDER, REPORT, DB,
             time_a = datetime.datetime.now().replace(microsecond=0)
             __unShp = optimized_union_anls(
                 SHPS[i], SHPS[e],
-                os.path.join(OUT_FOLDER, "un_{}_{}.shp".format(i, e)),
+                os.path.join(OUT_FOLDER, f"un_{str(i)}_{str(e)}.shp"),
                 GRASS_REGION_TEMPLATE,
-                os.path.join(OUT_FOLDER, "work_{}_{}".format(i, e)),
+                os.path.join(OUT_FOLDER, f"work_{str(i)}_{str(e)}"),
                 multiProcess=True
             )
             time_b = datetime.datetime.now().replace(microsecond=0)
@@ -677,7 +682,7 @@ def check_shape_diff(SHAPES_TO_COMPARE, OUT_FOLDER, REPORT, DB,
         union_tbl = shp_to_psql(DB, UNION_SHAPE[uShp], api='shp2pgsql')
         
         # Produce table with % of area equal in both maps
-        areaMapTbl = q_to_ntbl(DB, "{}_syn".format(union_tbl), (
+        areaMapTbl = q_to_ntbl(DB, f"{union_tbl}_syn", (
             "SELECT CAST('{lulc_1}' AS text) AS lulc_1, "
             "CAST('{lulc_2}' AS text) AS lulc_2, "
             "round("
@@ -816,10 +821,10 @@ def shp_diff_fm_ref(refshp, refcol, shps, out_folder,
     """
 
     import os
-    from glass.prop      import is_rst
-    from glass.wenv.grs  import run_grass
-    from glass.pys.oss     import fprop
-    from glass.tbl.tomtx import tbl_to_areamtx
+    from glass.prop     import is_rst
+    from glass.wenv.grs import run_grass
+    from glass.pys.oss  import fprop
+    from glass.dp.tomtx import tbl_to_areamtx
 
     # Check if folder exists, if not create it
     if not os.path.exists(out_folder):
@@ -852,12 +857,12 @@ def shp_diff_fm_ref(refshp, refcol, shps, out_folder,
         if isrst:
             # To GRASS
             rname = fprop(s, 'fn')
-            inrst = rst_to_grs(s, "rst_" + rname, as_cmd=True)
+            inrst = rst_to_grs(s, f"rst_{rname}", as_cmd=True)
 
             # To vector
             d = rst_to_polyg(
                 inrst, rname,
-                rstColumn="lulc_{}".format(str(i)), gisApi="grass"
+                rstColumn=f"lulc_{str(i)}", gisApi="grass"
             )
         
         else:
@@ -866,17 +871,17 @@ def shp_diff_fm_ref(refshp, refcol, shps, out_folder,
 
             # Change name of interest colum
             rn_cols(d, {
-                shps[s] if i else refcol : "lulc_{}".format(str(i))
+                shps[s] if i else refcol : f"lulc_{str(i)}"
             }, api="grass")
 
         # Export To Shapefile
         if not i:
-            refshp = grs_to_shp(d, os.path.join(out_folder, d + '.shp'), 'area')
-            refcol = "lulc_{}".format(str(i))
+            refshp = grs_to_shp(d, os.path.join(out_folder, f"{d}.shp"), 'area')
+            refcol = f"lulc_{str(i)}"
         
         else:
-            shp = grs_to_shp(d, os.path.join(out_folder, d + '.shp'), 'area')
-            __shps[shp] = "lulc_{}".format(str(i))
+            shp = grs_to_shp(d, os.path.join(out_folder, f"{d}.shp"), 'area')
+            __shps[shp] = f"lulc_{str(i)}"
         
         i += 1
     
@@ -888,14 +893,14 @@ def shp_diff_fm_ref(refshp, refcol, shps, out_folder,
         sname = fprop(shp, 'fn')
         union_shape[shp] = optimized_union_anls(
             shp, refshp,
-            os.path.join(out_folder, sname + '_un.shp'),
+            os.path.join(out_folder, f"{sname}_un.shp"),
             refrst,
-            os.path.join(out_folder, "wk_" + sname), multiProcess=True
+            os.path.join(out_folder, f"wk_{sname}"), multiProcess=True
         )
         
         # Produce confusion matrices
         mtxf = tbl_to_areamtx(
-            union_shape[shp], "a_" + __shps[shp], 'b_' + refcol,
+            union_shape[shp], f"a_{__shps[shp]}", f'b_{refcol}',
             os.path.join(out_folder, sname + '.xlsx'),
             db=db, with_metrics=True
         )
