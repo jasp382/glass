@@ -73,12 +73,14 @@ def fprop(__file, prop, forceLower=None, fs_unit=None):
         return result
 
 
-def lst_ff(w, file_format=None, filename=None, rfilename=None):
+def lst_ff(w, file_format=None, filename=None, fnpart=None, rfilename=None):
     """
     List the abs path of all files with a specific extension on a folder
     """
     
     from glass.pys import obj_to_lst
+    
+    filename = None if filename and fnpart else filename
     
     # Prepare file format list
     if file_format:
@@ -111,10 +113,9 @@ def lst_ff(w, file_format=None, filename=None, rfilename=None):
             t = [i for i in r if os.path.splitext(i)[1] in formats]
     
     # Filter by filename
-    if not filename:
-        return t
+    if not filename and not fnpart: return t
     
-    else:
+    elif filename and not fnpart:
         filename = obj_to_lst(filename)
         
         _t = []
@@ -122,6 +123,20 @@ def lst_ff(w, file_format=None, filename=None, rfilename=None):
             fn = fprop(i, 'fn') if not rfilename else i
             if fn in filename:
                 _t.append(i)
+        
+        return _t
+    
+    elif not filename and fnpart:
+        fnp = obj_to_lst(fnpart)
+        
+        _t = []
+        for i in t:
+            fn = fprop(i, 'fn') if not rfilename else i
+            
+            for _f in fnp:
+                if _f in fn:
+                    _t.append(i)
+                    break
         
         return _t
 
