@@ -232,3 +232,73 @@ def get_sub_buffers(x, y, radius):
     
     return lstSubBuffer
 
+
+
+def buffer_by_direction(inshp, dist, angle_min, angles_int, outshp):
+    """
+    Create a buffer in all directions
+    """
+
+    import numpy        as np
+    import geopandas    as gp
+    from glass.gobj     import create_polygon
+    from glass.rd.shp   import shp_to_obj
+    from glass.prop.prj import get_epsg
+    from glass.wt.shp   import df_to_shp
+    from glass.pd.dagg  import col_listwlist_to_row
+
+    def run_buffer(r):
+        multipoly = []
+    
+        minangle = 0
+        maxangle = angles_int
+    
+        while maxangle <= 360:
+            coords = [(r.x, r.y)]
+            for i in range(minangle, maxangle + 1):
+                y = r.y + ((r.dist + dist) * np.cos(np.radians(i)))
+                x = r.x + ((r.dist + dist) * np.sin(np.radians(i)))
+    
+                coords.append((x, y))
+        
+            coords.append((r.x, r.y))   
+    
+            poly = create_polygon(coords, api='shapely')
+        
+            multipoly.append([r.featid, poly, f"{str(minangle)} - {str(maxangle)}"])
+        
+            minangle += angles_int
+            maxangle += angles_int
+    
+        r["geoms"] = multipoly
+    
+        return r
+    
+    idf  = shp_to_obj(inshp)
+    epsg = get_epsg(inshp)
+
+    s = idf.geometry
+
+    t = gp.GeoSeries(gp.points_from_xy(
+        s.envelope.bounds.maxx, s.envelope.bounds.maxy
+    ))
+    idf["dist"] = s.envelope.centroid.distance(t)
+
+    idf['x'] = s.envelope.centroid.x
+    idf['y'] = s.envelope.centroid.y
+
+    idf["featid"] = idf.index
+
+    idf = idf.apply(lambda x: run_buffer(x), axis=1)
+
+    idf.drop(["x", "y", "geometry"], axis=1, inplace=True)
+
+    idf = col_listwlist_to_row(
+        idf, "geoms", ["ofid", "geom", "direction"],
+        geomcol="geom", epsg=epsg
+    )
+
+    df_to_shp(idf, outshp)
+
+    return outshp
+
