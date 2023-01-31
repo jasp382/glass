@@ -39,7 +39,7 @@ def get_shp_sref(shp):
     Get Spatial Reference Object from Feature Class/Lyr
     """
     
-    from osgeo        import ogr
+    from osgeo      import ogr
     from glass.prop import drv_name
     
     if type(shp) == ogr.Layer:

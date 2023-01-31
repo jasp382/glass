@@ -234,18 +234,23 @@ def get_sub_buffers(x, y, radius):
 
 
 
-def buffer_by_direction(inshp, dist, angle_min, angles_int, outshp):
+def buffer_by_direction(inshp, dist, angles_int, outshp, epsg=None):
     """
     Create a buffer in all directions
     """
 
-    import numpy        as np
-    import geopandas    as gp
-    from glass.gobj     import create_polygon
-    from glass.rd.shp   import shp_to_obj
-    from glass.prop.prj import get_epsg
-    from glass.wt.shp   import df_to_shp
-    from glass.pd.dagg  import col_listwlist_to_row
+    import numpy       as np
+    import geopandas   as gp
+    from glass.gobj    import create_polygon
+    from glass.rd.shp  import shp_to_obj
+    from glass.wt.shp  import df_to_shp
+    from glass.pd.dagg import col_listwlist_to_row
+
+    if not epsg:
+        from glass.prop.prj import get_epsg
+
+        epsg = get_epsg(inshp)
+
 
     def run_buffer(r):
         multipoly = []
@@ -275,13 +280,12 @@ def buffer_by_direction(inshp, dist, angle_min, angles_int, outshp):
         return r
     
     idf  = shp_to_obj(inshp)
-    epsg = get_epsg(inshp)
 
     s = idf.geometry
 
     t = gp.GeoSeries(gp.points_from_xy(
         s.envelope.bounds.maxx, s.envelope.bounds.maxy
-    ))
+    ), crs=epsg)
     idf["dist"] = s.envelope.centroid.distance(t)
 
     idf['x'] = s.envelope.centroid.x
