@@ -32,10 +32,10 @@ def run_close_facility(rdv, incidents, facilities, kph, oneway, output):
     from glass.tbl.attr        import geomattr_to_db
 
     # Add data to GRASS GIS
-    rdvgrs = shp_to_grs(rdv, fprop(rdv, 'fn'))
+    rdvgrs = shp_to_grs(rdv)
 
-    igrs = shp_to_grs(incidents, fprop(incidents, 'fn'))
-    fgrs = shp_to_grs(facilities, fprop(facilities, 'fn'))
+    igrs = shp_to_grs(incidents)
+    fgrs = shp_to_grs(facilities)
 
     # Add incidents and facilities to the network
     i_rdv = pnts_to_net(rdvgrs, igrs, 'rdv_incidents', pntlyr=2, ascmd=True)

@@ -9,7 +9,7 @@ def psql_cmd(db_name, sqlfile, dbcon=None):
     """
     
     import os
-    from glass.pys        import execmd
+    from glass.pys       import execmd
     from glass.cons.psql import con_psql
 
     cdb = con_psql(db_set=dbcon)
@@ -21,13 +21,11 @@ def psql_cmd(db_name, sqlfile, dbcon=None):
     else:
         sqls = [sqlfile]
     
-    cmd = 'psql -h {} -U {} -p {} -w {} < {}'
+    cmd = (f"psql -h {cdb['HOST']} -U {cdb['USER']} "
+           f"-p {cdb['PORT']} -w {db_name} < ")
     
     for s in sqls:
-        outcmd = execmd(cmd.format(
-            cdb['HOST'], cdb['USER'], cdb['PORT'],
-            db_name, s
-        ))
+        outcmd = execmd(f"{cmd}{s}")
     
     return db_name
 

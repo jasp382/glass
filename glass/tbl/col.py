@@ -147,8 +147,8 @@ def rn_cols(inShp, columns, api="ogr2ogr"):
         import os
         from glass.pys.oss    import fprop
         from glass.pys.oss    import del_file, lst_ff
-        from glass.tbl.filter   import sel_by_attr
-        from glass.prop.col import lst_cols
+        from glass.tbl.filter import sel_by_attr
+        from glass.prop.col   import lst_cols
         
         # List Columns
         cols = lst_cols(inShp)
@@ -189,8 +189,9 @@ def rn_cols(inShp, columns, api="ogr2ogr"):
 
         for col in columns:
             rcmd = execmd((
-                "v.db.renamecolumn map={} layer=1 column={},{}"
-            ).format(inShp, col, columns[col]))
+                f"v.db.renamecolumn map={inShp} layer=1 "
+                f"column={col},{columns[col]}"
+            ))
     
     elif api == 'pygrass':
         from grass.pygrass.modules import Module
@@ -198,7 +199,7 @@ def rn_cols(inShp, columns, api="ogr2ogr"):
         for col in columns:
             func = Module(
                 "v.db.renamecolumn", map=inShp,
-                column="{},{}".format(col, columns[col]),
+                column=f"{col},{columns[col]}",
                 quiet=True, run_=False
             )
             func()

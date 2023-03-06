@@ -191,10 +191,14 @@ def tblpnt_to_shp(tbl, shp, xcol, ycol, epsg, outepsg=None,
 GRASS GIS conversions
 """
 
-def shp_to_grs(ilyr, olyr, filterByReg=None, asCMD=None):
+def shp_to_grs(ilyr, olyr=None, filterByReg=None, asCMD=None):
     """
     Add Shape to GRASS GIS
     """
+
+    from glass.pys.oss import fprop
+
+    olyr = fprop(ilyr, 'fn', forceLower=True) if not olyr else olyr
     
     if not asCMD:
         from grass.pygrass.modules import Module
