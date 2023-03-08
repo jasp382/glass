@@ -234,17 +234,21 @@ def get_sub_buffers(x, y, radius):
 
 
 
-def buffer_by_direction(inshp, dist, angles_int, outshp, epsg=None):
+def cheese_buffer(inshp, dist, angles_int, outshp,
+                        epsg=None, regbuffer=None, precheese=None):
     """
     Create a buffer in all directions
     """
 
-    import numpy       as np
-    import geopandas   as gp
-    from glass.gobj    import create_polygon
-    from glass.rd.shp  import shp_to_obj
-    from glass.wt.shp  import df_to_shp
-    from glass.pd.dagg import col_listwlist_to_row
+    import numpy                 as np
+    import geopandas             as gp
+    from glass.gp.prox.bfing.obj import geodf_buffer
+    from glass.gobj              import create_polygon
+    from glass.rd.shp            import shp_to_obj
+    from glass.wt.shp            import df_to_shp
+    from glass.pd.dagg           import col_listwlist_to_row
+    from glass.pd                import merge_df
+    from glass.it.pd             import df_to_geodf
 
     if not epsg:
         from glass.prop.prj import get_epsg
@@ -252,7 +256,7 @@ def buffer_by_direction(inshp, dist, angles_int, outshp, epsg=None):
         epsg = get_epsg(inshp)
 
 
-    def run_buffer(r):
+    def run_cheese_buffer(r):
         multipoly = []
     
         minangle = 0
@@ -279,30 +283,73 @@ def buffer_by_direction(inshp, dist, angles_int, outshp, epsg=None):
     
         return r
     
-    idf  = shp_to_obj(inshp)
+    pdf = shp_to_obj(inshp)
 
-    s = idf.geometry
+    # Get Regular Buffer
+    rbf = geodf_buffer(pdf, dist)
+
+    rbf['ofeatid'] = rbf.index
+
+    # Save original polygons
+    odf = pdf.copy()
+
+    # Get Cheese buffer
+    s = pdf.geometry
 
     t = gp.GeoSeries(gp.points_from_xy(
-        s.envelope.bounds.maxx, s.envelope.bounds.maxy
+        s.envelope.bounds.maxx,
+        s.envelope.bounds.maxy
     ), crs=epsg)
-    idf["dist"] = s.envelope.centroid.distance(t)
 
-    idf['x'] = s.envelope.centroid.x
-    idf['y'] = s.envelope.centroid.y
+    pdf["dist"] = s.envelope.centroid.distance(t)
 
-    idf["featid"] = idf.index
+    pdf['x'] = s.envelope.centroid.x
+    pdf['y'] = s.envelope.centroid.y
 
-    idf = idf.apply(lambda x: run_buffer(x), axis=1)
+    pdf["featid"] = pdf.index
 
-    idf.drop(["x", "y", "geometry"], axis=1, inplace=True)
+    pdf = pdf.apply(lambda x: run_cheese_buffer(x), axis=1)
 
-    idf = col_listwlist_to_row(
-        idf, "geoms", ["ofid", "geom", "direction"],
+    pdf.drop(["x", "y", "geometry"], axis=1, inplace=True)
+
+    pdf = col_listwlist_to_row(
+        pdf, "geoms", ["ofid", "geom", "direction"],
         geomcol="geom", epsg=epsg
     )
 
-    df_to_shp(idf, outshp)
+    # Save regular buffer
+    if regbuffer:
+        df_to_shp(rbf, regbuffer)
+
+    # Save pre-cheese buffer
+    if precheese:
+        df_to_shp(pdf, precheese)
+    
+    # Get final buffer 
+    # by intersecting pre-cheese and regular buffer
+    dfs = []
+    for i, row in odf.iterrows():
+        # Get slices
+        slices = pdf[pdf.ofid == i]
+    
+        # Get regular buffer
+        regbf = rbf[rbf.ofeatid == i]
+        regbf = regbf.to_dict(orient="records")
+    
+        bfgeom = regbf[0]["geometry"]
+    
+        # Get Intersection
+        slices["geometry"] = slices.geom.intersection(bfgeom)
+    
+        dfs.append(slices)
+    
+    # Merge all dataframes
+    fdf = merge_df(dfs)
+    fdf = df_to_geodf(fdf, 'geometry', epsg)
+
+    fdf.drop('geom', axis=1, inplace=True)
+
+    df_to_shp(fdf, outshp)
 
     return outshp
 
