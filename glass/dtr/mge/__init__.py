@@ -85,7 +85,7 @@ def shps_to_shp(shps, outShp, api="ogr2ogr", fformat='.shp',
     elif api == 'psql':
         import os
         from glass.sql.tbl import tbls_to_tbl, del_tables
-        from glass.it.db import shp_to_psql
+        from glass.it.db   import shp_to_psql
 
         if not dbname:
             from glass.sql.db import create_db
@@ -117,7 +117,7 @@ def shps_to_shp(shps, outShp, api="ogr2ogr", fformat='.shp',
     
     elif api == 'grass':
         from glass.wenv.grs import run_grass
-        from glass.pys.oss    import fprop, lst_ff
+        from glass.pys.oss  import fprop, lst_ff
         from glass.prop.prj import get_shp_epsg
 
         lshps = lst_ff(shps, file_format='.shp')
@@ -142,9 +142,7 @@ def shps_to_shp(shps, outShp, api="ogr2ogr", fformat='.shp',
         grs_to_shp(patch, outShp, "area")
        
     else:
-        raise ValueError(
-            "{} API is not available"
-        )
+        raise ValueError(f"{api} API is not available")
     
     return outShp
 

@@ -2,7 +2,7 @@
 Bufering TOOLS
 """
 
-def geoseries_buffer(gseries, dist):
+def gs_buffer(gseries, dist):
     """
     Buffer of GeoSeries
     """
@@ -63,6 +63,14 @@ def df_buffer_extent(inDf, inEpsg, meterTolerance, geomCol="geometry",
     resDf = gdf(inDf, crs=f'EPSG:{inEpsg}', geometry=geoms)
 
     return resDf
+
+
+def geodf_buffer(df, dist, colgeom='geometry'):
+    _df = df.copy()
+
+    _df[colgeom] = _df[colgeom].buffer(dist, resolution=16)
+
+    return _df
 
 
 def geodf_buffer_to_shp(geoDf, dist, outfile, colgeom='geometry'):
