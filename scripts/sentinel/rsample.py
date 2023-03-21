@@ -6,11 +6,14 @@ from glass.rst.sat.rmp import resample_s2img_shp
 
 
 if __name__ == "__main__":
-    shp = '/mnt/disk1/jasp/a2autocls2023/sentinel/img_cmb21.shp'
+    shp     = '/mnt/disk1/jasp/a2autocls2023/imgcmb/img_cmb18p.shp'
 
-    folder = '/mnt/disk3/jasp/sentinel_coimbra/src2021'
+    folder  = '/mnt/disk3/jasp/coimbra/src2018p'
 
-    ofolder = '/mnt/disk1/jasp/a2autocls2023/imgcmb/rmp2021'
+    ofolder = '/mnt/disk1/jasp/a2autocls2023/imgcmb/rmp2018p'
 
-    resample_s2img_shp(shp, folder, ofolder)
+    #reflmt  = '/mnt/disk1/jasp/a2autocls2023/ref/lmt_terceira.shp'
+    reflmt  = None
+
+    resample_s2img_shp(shp, folder, ofolder, refgeo=reflmt)
 

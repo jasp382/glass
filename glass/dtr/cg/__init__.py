@@ -173,7 +173,6 @@ def polylines_from_points(points, polylines, POLYLINE_COLUMN,
     
     import os; from osgeo import ogr
     from glass.prop  import drv_name
-    from glass.prj      import def_prj
     from glass.prop.col import ogr_list_fields_defn
     from glass.lyr.fld   import fields_to_lyr
     

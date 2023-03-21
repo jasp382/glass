@@ -3,7 +3,7 @@ Resampling methods for Satellite images
 """
 
 
-def resample_s2img_shp(shp, folder, ofolder):
+def resample_s2img_shp(shp, folder, ofolder, refgeo=None):
     """
     Resample all sentinel 2 images listed
     in a given Shapefile
@@ -54,7 +54,7 @@ def resample_s2img_shp(shp, folder, ofolder):
                 bands = match_cellsize_and_clip(
                     [bands[b] for b in bands],
                     bands["B02_10m"], mf,
-                    isint=True, clipgeo=None,
+                    isint=True, clipgeo=refgeo,
                     ws=zfolder
                 )
             

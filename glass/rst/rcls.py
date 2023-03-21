@@ -93,7 +93,7 @@ def rcls_rst(inrst, rclsRules, outrst, api='gdal', maintain_ext=True):
         r()
     
     elif api == "grass":
-        from firegis.pys import execmd
+        from glass.pys import execmd
 
         rcmd = execmd((
             f"r.reclass input={inrst} output={outrst} "
