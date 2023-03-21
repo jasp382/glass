@@ -51,7 +51,7 @@ def grs_rst(db, polyTbl, api='SQLITE'):
     return clsRst, timeGasto
 
 
-def grs_vector(db, polyTable, apidb='SQLITE'):
+def grs_vector(db, table):
     """
     Simple Selection using GRASS GIS
     """
@@ -66,19 +66,16 @@ def grs_vector(db, polyTable, apidb='SQLITE'):
     
     # Check if we have interest data
     time_a = datetime.datetime.now().replace(microsecond=0)
-    N = cont_row(db, polyTable, where=WHR,
-        api='psql' if apidb == 'POSTGIS' else 'sqlite'
-    )
+    N = cont_row(db, table, where=WHR, api='psql')
     time_b = datetime.datetime.now().replace(microsecond=0)
     
     if not N: return None, {0 : ('count_rows', time_b - time_a)}
     
     # Data to GRASS GIS
     grsVect = db_to_grs(
-        db, polyTable, "geometry", "sel_rule",
+        db, table, "geometry", "sel_rule",
         where=WHR, filterByReg=True,
-        inDB='psql' if apidb == 'POSTGIS' else 'sqlite',
-        outShpIsGRASS=True
+        inDB='psql', outShpIsGRASS=True
     )
     time_c = datetime.datetime.now().replace(microsecond=0)
     

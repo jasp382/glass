@@ -62,7 +62,7 @@ def rst_area(db, polygonTable, UPPER=True, api='SQLITE'):
     return clsRst, timeGasto
 
 
-def grs_vect_selbyarea(osmdb, polyTbl, UPPER=True, apidb='SQLITE'):
+def grs_vect_selbyarea(osmdb, polyTbl, UPPER=True):
     """
     Select features with area upper than.
     
@@ -76,33 +76,29 @@ def grs_vect_selbyarea(osmdb, polyTbl, UPPER=True, apidb='SQLITE'):
     from glass.prop.sql     import row_num as cnt_row
     from glass.it.shp       import dbtbl_to_shp as db_to_shp
     
-    OPERATOR  = ">" if UPPER else "<"
-    DIRECTION = "upper" if UPPER else "lower"
+    o = ">" if UPPER else "<"
+    d = "upper" if UPPER else "lower"
     
-    WHR = "{ga} {op} t_area_{r} and area_{r} IS NOT NULL".format(
-        op=OPERATOR, r=DIRECTION, ga=GEOM_AREA
-    )
+    WHR = f"{GEOM_AREA} {o} t_area_{d} and area_{d} IS NOT NULL"
     
     # Check if we have interest data
     time_a = datetime.datetime.now().replace(microsecond=0)
-    N = cnt_row(osmdb, polyTbl, where=WHR,
-        api='psql' if apidb == 'POSTGIS' else 'sqlite'
-    )
+    N = cnt_row(osmdb, polyTbl, where=WHR, api='psql')
     time_b = datetime.datetime.now().replace(microsecond=0)
     
     if not N: return None, {0 : ('count_rows', time_b - time_a)}
     
     # Data to GRASS GIS
-    grsVect = db_to_shp(osmdb, polyTbl, "geometry",
-        "area_{}".format(DIRECTION), where=WHR,
-        inDB='psql' if apidb == 'POSTGIS' else 'sqlite',
+    grsVect = db_to_shp(
+        osmdb, polyTbl, "geometry",
+        f"area_{d}", where=WHR, inDB='psql',
         filterByReg=True, outShpIsGRASS=True
     )
     time_c = datetime.datetime.now().replace(microsecond=0)
     
     dissVect = dissolve(
-        grsVect, "diss_area_{}".format(DIRECTION),
-        "area_{}".format(DIRECTION), api="grass"
+        grsVect, f"diss_area_{d}",
+        f"area_{d}", api="grass"
     )
     
     add_table(dissVect, None, lyrN=1, asCMD=True)

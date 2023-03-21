@@ -67,7 +67,7 @@ def osm_project(osmDb, srs_epsg, api='SQLITE', isGlobeLand=None):
     else:
         from glass.sql.q       import q_to_ntbl as proj
         from glass.prop.sql.idx import idx_for_geom
-    from glass.ete.osm2lulc       import osmTableData, GEOM_AREA
+    from glass.ete.osm2lulc     import osmTableData, GEOM_AREA
     
     osmtables = {}
     
@@ -177,7 +177,7 @@ def add_lulc_to_osmfeat(osmdb, osmTbl, nomenclature, api='SQLITE'):
     Add LULC Classes in OSM Data Tables
     """
     
-    from glass.sql.q     import exec_write_q
+    from glass.sql.q        import exec_write_q
     from glass.ete.osm2lulc import DB_SCHEMA
     
     KEY_COL   = DB_SCHEMA["OSM_FEATURES"]["OSM_KEY"]
@@ -301,82 +301,4 @@ def osmlulc_rsttbl(nomenclature, outpath):
     table.close()
     
     return outpath
-
-
-def get_ref_raster(refBoundBox, folder, cellsize=None):
-    """
-    Get Reference Raster
-    """
-    
-    import os
-    from glass.prop import is_rst
-    
-    # Check if refRaster is really a Raster
-    isRst = is_rst(refBoundBox)
-    
-    if not isRst:
-        from glass.prop import is_shp
-        
-        if not is_shp(refBoundBox):
-            raise ValueError((
-                'refRaster File has an invalid file format. Please give a file '
-                'with one of the following extensions: '
-                'shp, gml, json, kml, tif or img'
-            ))
-        
-        else:
-            # We have a shapefile
-            
-            # Check SRS and see if it is a projected SRS
-            from glass.prop.prj import get_shp_epsg
-            
-            epsg, isProj = get_shp_epsg(refBoundBox, returnIsProj=True)
-            
-            if not epsg:
-                raise ValueError('Cannot get epsg code from {}'.format(refBoundBox))
-            
-            if not isProj:
-                # A conversion between SRS is needed
-                from glass.prj import proj
-                
-                ref_shp = proj(
-                    refBoundBox, os.path.join(folder, 'tmp_ref_shp.shp'),
-                    outEPSG=3857, inEPSG=epsg, gisApi='ogr2ogr'
-                )
-                epsg = 3857
-            else:
-                ref_shp = refBoundBox
-            
-            # Convert to Raster
-            from glass.dtr.torst import shp_to_rst
-            
-            refRaster = shp_to_rst(
-                ref_shp, None, 2 if not cellsize else cellsize,
-                -1, os.path.join(folder, 'ref_raster.tif'), api='gdal'
-            )
-    
-    else:
-        # We have a raster
-        from glass.prop.prj import get_rst_epsg
-        
-        epsg, isProj = get_rst_epsg(refBoundBox, returnIsProj=True)
-        
-        if not epsg:
-            raise ValueError(f'Cannot get epsg code from {refBoundBox}')
-        
-        # Check if Raster has a SRS with projected coordinates
-        if not isProj:
-            # We need to reproject raster
-            from glass.prj import reprj_rst
-            
-            refRaster = reprj_rst(
-                refBoundBox,
-                os.path.join(folder, 'refrst_3857.tif'),
-                epsg, 3857
-            )
-            epsg = 3857
-        else:
-            refRaster = refBoundBox
-    
-    return refRaster, epsg
 

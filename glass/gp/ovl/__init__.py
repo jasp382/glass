@@ -181,24 +181,20 @@ def optimized_union_anls(lyr_a, lyr_b, outShp, ref_boundary,
     
     import os
     import multiprocessing
-    from glass.pys.oss  import fprop, lst_ff
-    from glass.pys.oss  import cpu_cores
-    from glass.smp      import create_fishnet
-    from glass.wenv.grs import run_grass
-    from glass.dtr.split import eachfeat_to_newshp
-    from glass.dtr.mge   import shps_to_shp
-    from glass.wt.rst   import shpext_to_rst
-    from glass.prop.ext import get_ext
+    from glass.pys.oss       import mkdir, fprop, lst_ff
+    from glass.pys.oss       import cpu_cores
+    from glass.smp           import create_fishnet
+    from glass.wenv.grs      import run_grass
+    from glass.dtr.split     import eachfeat_to_newshp
+    from glass.dtr.mge       import shps_to_shp
+    from glass.dtr.ext.torst import shpext_to_rst
+    from glass.prop.ext      import get_ext
     
     if workspace:
         if not os.path.exists(workspace):
-            from glass.pys.oss import mkdir
-            
             mkdir(workspace, overwrite=True)
     
     else:
-        from glass.pys.oss import mkdir
-        
         workspace = mkdir(os.path.join(
             os.path.dirname(outShp), "union_work"))
     

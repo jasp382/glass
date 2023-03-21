@@ -117,7 +117,7 @@ def rst_pnt_to_build(osmdb, pntTable, polyTable, api_db='SQLITE'):
     return resLayers, timeGasto
 
 
-def vector_assign_pntags_to_build(osmdb, pntTable, polyTable, apidb='SQLITE'):
+def vector_assign_pntags_to_build(osmdb, pntTable, polyTable):
     """
     Replace buildings with tag yes using the info in the Points Layer
     
@@ -141,9 +141,7 @@ def vector_assign_pntags_to_build(osmdb, pntTable, polyTable, apidb='SQLITE'):
             f"FROM {polyTable} WHERE buildings IS NOT NULL)"
         ), "poly_geom", "new_buildings",
         inTblCols="pnt_build AS cls", withinCols="poly_geom AS geometry",
-        outTblIsFile=None,
-        apiToUse="OGR_SPATIALITE" if apidb != "POSTGIS" else apidb,
-        geom_col="geometry"
+        outTblIsFile=None, apiToUse="POSTGIS", geom_col="geometry"
     )
     time_b = dt.datetime.now().replace(microsecond=0)
     
@@ -155,23 +153,22 @@ def vector_assign_pntags_to_build(osmdb, pntTable, polyTable, apidb='SQLITE'):
             "(SELECT buildings AS pnt_build, geometry AS pnt_geom "
             f"FROM {pntTable} WHERE buildings IS NOT NULL)"
         ), "pnt_geom", "yes_builds",
-        inTblCols="poly_geom AS geometry, 11 AS cls", outTblIsFile=None,
-        apiToUse="OGR_SPATIALITE" if apidb != "POSTGIS" else apidb,
-        geom_col="geometry"
+        inTblCols="poly_geom AS geometry, poly_build AS cls",
+        outTblIsFile=None,
+        apiToUse="POSTGIS", geom_col="geometry"
     )
     time_c = dt.datetime.now().replace(microsecond=0)
     
-    N12 = cnt_row(osmdb, new_build, api='psql' if apidb == 'POSTGIS' else 'sqlite')
+    N12 = cnt_row(osmdb, new_build, api='psql')
     time_d = dt.datetime.now().replace(microsecond=0)
-    N11 = cnt_row(osmdb, yes_build, api='psql' if apidb == 'POSTGIS' else 'sqlite')
+    N11 = cnt_row(osmdb, yes_build, api='psql')
     time_e = dt.datetime.now().replace(microsecond=0)
     
     if N11:
         # Add data into grasss
         grsBuild11 = db_to_shp(
-            osmdb, yes_build, "geometry", "yes_builds", filterByReg=True,
-            inDB='psql' if apidb == 'POSTGIS' else 'sqlite',
-            outShpIsGRASS=True
+            osmdb, yes_build, "geometry", "yes_builds",
+            filterByReg=True, inDB='psql', outShpIsGRASS=True
         )
         time_f = dt.datetime.now().replace(microsecond=0)
         
@@ -191,8 +188,7 @@ def vector_assign_pntags_to_build(osmdb, pntTable, polyTable, apidb='SQLITE'):
         # Add data into GRASS GIS
         grsBuild12 = db_to_shp(
             osmdb, new_build, "geometry", "pnt_build", filterByReg=True,
-            inDB='psql' if apidb == 'POSTGIS' else 'sqlite',
-            outShpIsGRASS=True
+            inDB='psql', outShpIsGRASS=True
         )
         
         time_h = dt.datetime.now().replace(microsecond=0)

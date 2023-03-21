@@ -15,7 +15,7 @@ def st_buffer(db, inTbl, bfDist, geomCol, outTbl, bufferField="geometry",
     
     SEL_COLS = "" if not cols_select else ", ".join(obj_to_lst(cols_select))
     DISS_COLS = "" if not dissolve or dissolve == "ALL" else ", ".join(dissolve)
-    GRP_BY = "" if not dissolve else "{}, {}".format(SEL_COLS, DISS_COLS) if \
+    GRP_BY = "" if not dissolve else f"{SEL_COLS}, {DISS_COLS}" if \
         SEL_COLS != "" and DISS_COLS != "" else SEL_COLS \
         if SEL_COLS != "" else DISS_COLS if DISS_COLS != "" else ""
     
@@ -23,14 +23,14 @@ def st_buffer(db, inTbl, bfDist, geomCol, outTbl, bufferField="geometry",
         "SELECT{sel}{spFunc}{geom}, {_dist}{endFunc} AS {bf} "
         "FROM {t}{whr}{grpBy}"
     ).format(
-        sel = " " if not cols_select else " {}, ".format(SEL_COLS),
+        sel = " " if not cols_select else f" {SEL_COLS}, ",
         spFunc="ST_Buffer(" if not dissolve else \
             "ST_UnaryUnion(ST_Collect(ST_Buffer(",
         geom=geomCol, _dist=bfDist,
         endFunc=")" if not dissolve else ")))",
         t=inTbl,
-        grpBy=" GROUP BY {}".format(GRP_BY) if GRP_BY != "" else "",
-        whr="" if not whrClause else " WHERE {}".format(whrClause),
+        grpBy=f" GROUP BY {GRP_BY}" if GRP_BY != "" else "",
+        whr="" if not whrClause else f" WHERE {whrClause}",
         bf=bufferField
     )
     
