@@ -7,7 +7,7 @@ GLASS | Install GLASS dependencies in MacOS:
 Install HomeBrew
 
 ```
-/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
 Open bash_profile
@@ -39,9 +39,11 @@ brew doctor
 ```
 brew install python3
 
+brew install virtualenvwrapper
+
 echo "export PATH=/usr/local/share/python:$PATH" | tee -a ~/.bash_profile
 
-pip3 install --ugrade pip
+python3 -m pip install --upgrade pip
 
 pip3 install virtualenv virtualenvwrapper
 
@@ -57,8 +59,13 @@ source ~/.zshrc
 ## 3 - Install GDAL:
 
 ```
-brew install gdal --HEAD
 brew install gdal
+
+pip download GDAL
+tar -xpzf GDAL-3.6.3.tar.gz && cd GDAL-3.6.3
+python3 setup.py build_ext --gdal-config /usr/local/Cellar/gdal/3.6.3/bin/gdal-config
+python3 setup.py build
+python3 setup.py install
 ```
 
 **Set GDAl environment variables:**

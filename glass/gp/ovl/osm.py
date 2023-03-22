@@ -14,6 +14,7 @@ def osm_extraction(boundary, osmdata: str, output: str,
     """
     
     from glass.pys     import execmd
+    from glass.pys.oss import fprop
     from glass.prj.obj import prj_ogrgeom
     from glass.prop    import is_rst
 
@@ -113,11 +114,6 @@ def osm_extraction(boundary, osmdata: str, output: str,
         ) for i in range(len(boundaries))]
     
     # Extract data using OSMOSIS
-    cmd = (
-        "osmosis --read-{_f} {dtparse}file={_in} "
-        "--bounding-box top={t} left={l} bottom={b} right={r} "
-        "--write-{outext} file={_out}"
-    )
     for g in range(len(boundaries)):
         # Convert boundary to WGS84 -EPSG 4326
         geom_wgs = prj_ogrgeom(
@@ -128,15 +124,30 @@ def osm_extraction(boundary, osmdata: str, output: str,
         left, right, bottom, top = geom_wgs.GetEnvelope()
     
         # Osmosis shell comand
-        osmext = os.path.splitext(osmdata)[1]
+        osmext = fprop(osmdata, 'ff')
+
+        outff = fprop(out_files[g], 'ff')
         
         # Execute command
-        outcmd = execmd(cmd.format(
-            _f='pbf' if osmext == '.pbf' else 'xml', _in=osmdata,
-            t=str(top), l=str(left), b=str(bottom), r=str(right),
-            _out=out_files[g], outext=os.path.splitext(out_files[g])[1][1:],
-            dtparse="" if osmext == '.pbf' else "enableDataParsing=no "
-        ))
+        if osmext == '.bz2':
+            cmd = (
+                f"bzcat {osmdata} | osmosis --read-xml "
+                f"file=- --bounding-box top={str(top)} "
+                f"left={str(left)} bottom={str(bottom)} "
+                f"right={str(right)} "
+                f"--write-{outff[1:]} | bzip2 > {out_files[g]}"
+            )
+        
+        else:
+            cmd = (
+                f"osmosis --read-{'pbf' if osmext == '.pbf' else 'xml'} "
+                f"{'' if osmext == '.pbf' else 'enableDataParsing=no '} "
+                f"file={osmdata} --bounding-box top={str(top)} "
+                f"left={str(left)} bottom={str(bottom)} right={str(right)} "
+                f"--write-{outff[1:]} file={out_files[g]}"
+            )
+        
+        outcmd = execmd(cmd)
     
     return output
 
