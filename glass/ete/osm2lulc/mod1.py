@@ -15,10 +15,10 @@ def grs_rst(db, polyTbl, api='SQLITE'):
     # Get Classes 
     time_a = dt.datetime.now().replace(microsecond=0)
     lulcCls = q_to_obj(db, (
-        "SELECT selection FROM {} "
+        f"SELECT selection FROM {polyTbl} "
         "WHERE selection IS NOT NULL "
         "GROUP BY selection"
-    ).format(polyTbl), db_api='psql' if api == 'POSTGIS' else 'sqlite').selection.tolist()
+    ), db_api='psql' if api == 'POSTGIS' else 'sqlite').selection.tolist()
     time_b = dt.datetime.now().replace(microsecond=0)
     
     timeGasto = {0 : ('check_cls', time_b - time_a)}
@@ -29,9 +29,9 @@ def grs_rst(db, polyTbl, api='SQLITE'):
     for cls in lulcCls:
         time_x = dt.datetime.now().replace(microsecond=0)
         grsVect = db_to_grs(
-            db, polyTbl, "geometry", "rule1_{}".format(str(cls)),
+            db, polyTbl, "geometry", f"rule1_{str(cls)}",
             inDB='psql' if api == 'POSTGIS' else 'sqlite',
-            where="selection = {}".format(str(cls)), notTable=True,
+            where=f"selection = {str(cls)}", notTable=True,
             filterByReg=True, outShpIsGRASS=True
         )
         time_y = dt.datetime.now().replace(microsecond=0)
@@ -43,8 +43,8 @@ def grs_rst(db, polyTbl, api='SQLITE'):
         time_z = dt.datetime.now().replace(microsecond=0)
         
         clsRst[int(cls)] = grsRst
-        timeGasto[tk]    = ('import_{}'.format(cls), time_y - time_x)
-        timeGasto[tk+1]  = ('torst_{}'.format(cls), time_z - time_y)
+        timeGasto[tk]    = (f'import_{cls}', time_y - time_x)
+        timeGasto[tk+1]  = (f'torst_{cls}', time_z - time_y)
         
         tk += 2
     
@@ -72,15 +72,14 @@ def grs_vector(db, table):
     if not N: return None, {0 : ('count_rows', time_b - time_a)}
     
     # Data to GRASS GIS
-    grsVect = db_to_grs(
+    gv = db_to_grs(
         db, table, "geometry", "sel_rule",
         where=WHR, filterByReg=True,
         inDB='psql', outShpIsGRASS=True
     )
     time_c = datetime.datetime.now().replace(microsecond=0)
     
-    dissVect = dissolve(
-        grsVect, "diss_sel_rule", "selection", api="grass")
+    dissVect = dissolve(gv, "diss_sel_rule", "selection", api="grass")
     
     add_table(dissVect, None, lyrN=1, asCMD=True)
     time_d = datetime.datetime.now().replace(microsecond=0)

@@ -2,7 +2,6 @@
 Rule 3 and 4 - Area upper than and less than
 """
 
-from glass.ete.osm2lulc import DB_SCHEMA
 
 def rst_area(db, polygonTable, UPPER=True, api='SQLITE'):
     """
@@ -25,9 +24,10 @@ def rst_area(db, polygonTable, UPPER=True, api='SQLITE'):
     # Get Classes
     time_a = dt.datetime.now().replace(microsecond=0)
     lulcCls = q_to_obj(db, (
-        "SELECT {r} FROM {tbl} WHERE {ga} {op} t_{r} GROUP BY {r}"
-    ).format(
-         r=RULE_COL, tbl=polygonTable, ga=GEOM_AREA, op=OPERATOR
+        f"SELECT {RULE_COL} "
+        f"FROM {polygonTable} "
+        f"WHERE {GEOM_AREA} {OPERATOR} t_{RULE_COL} "
+        f"GROUP BY {RULE_COL}"
     ), db_api='psql' if api == 'POSTGIS' else 'sqlite')[RULE_COL].tolist()
     time_b = dt.datetime.now().replace(microsecond=0)
     
@@ -40,7 +40,7 @@ def rst_area(db, polygonTable, UPPER=True, api='SQLITE'):
         time_x = dt.datetime.now().replace(microsecond=0)
         grsVect = db_to_grs(
             db, polygonTable, "geometry",
-            "{}_{}".format(RULE_COL, cls),
+            f"{RULE_COL}_{cls}",
             inDB="psql" if api == 'POSTGIS' else 'sqlite',
             where=WHR.format(
                 op=OPERATOR, r=RULE_COL, ga=GEOM_AREA, cls_=cls

@@ -18,7 +18,7 @@ def st_near(db, inTbl, inGeom, nearTbl, nearGeom, output=None,
     from glass.pys   import obj_to_lst
     from glass.sql.q import q_to_ntbl
     
-    if api == 'psql' and not intbl_pk:
+    if api == 'psql':
         icols = "s.*" if not cols_in_tbl else ", ".join([
             f"s.{x}" for x in obj_to_lst(cols_in_tbl)
         ])

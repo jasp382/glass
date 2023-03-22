@@ -656,11 +656,11 @@ def osm_to_lulc(osm, nomenclature, ref, lulc, overwrite=None, savedb=None, tmpfl
     time_r = dt.datetime.now().replace(microsecond=0)
 
     # Dump Database if PostGIS was used
-    #if savedb:
-        #dump_db(osm_db, savedb, api='psql')
+    if savedb:
+        dump_db(osm_db, savedb, api='psql')
     
     # Drop Database if PostGIS was used
-    #drop_db(osm_db)
+    drop_db(osm_db)
 
     return lulc, {
         0  : ('set_settings', time_b - time_a),

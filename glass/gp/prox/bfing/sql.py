@@ -13,25 +13,29 @@ def st_buffer(db, inTbl, bfDist, geomCol, outTbl, bufferField="geometry",
     
     dissolve = obj_to_lst(dissolve) if dissolve != "ALL" else "ALL"
     
-    SEL_COLS = "" if not cols_select else ", ".join(obj_to_lst(cols_select))
-    DISS_COLS = "" if not dissolve or dissolve == "ALL" else ", ".join(dissolve)
-    GRP_BY = "" if not dissolve else f"{SEL_COLS}, {DISS_COLS}" if \
-        SEL_COLS != "" and DISS_COLS != "" else SEL_COLS \
-        if SEL_COLS != "" else DISS_COLS if DISS_COLS != "" else ""
+    selcols = " " if not cols_select else \
+        f" {', '.join(obj_to_lst(cols_select))}, "
+    
+    bf_start = "ST_Buffer(" if not dissolve else \
+        "ST_UnaryUnion(ST_Collect(ST_Buffer("
+    
+    bf_end = ")" if not dissolve else ")))"
+
+    whr = "" if not whrClause else f" WHERE {whrClause}"
+
+
+    dsscols = "" if not dissolve or dissolve == "ALL" else ", ".join(dissolve)
+    gby = "" if not dissolve else f"{selcols} {dsscols}" if \
+        cols_select and dsscols else selcols[1:-2] \
+        if cols_select and not dsscols else \
+            dsscols if dsscols and not cols_select else ""
+    
+    gby = gby if not gby else f" GROUP BY {gby}"
     
     Q = (
-        "SELECT{sel}{spFunc}{geom}, {_dist}{endFunc} AS {bf} "
-        "FROM {t}{whr}{grpBy}"
-    ).format(
-        sel = " " if not cols_select else f" {SEL_COLS}, ",
-        spFunc="ST_Buffer(" if not dissolve else \
-            "ST_UnaryUnion(ST_Collect(ST_Buffer(",
-        geom=geomCol, _dist=bfDist,
-        endFunc=")" if not dissolve else ")))",
-        t=inTbl,
-        grpBy=f" GROUP BY {GRP_BY}" if GRP_BY != "" else "",
-        whr="" if not whrClause else f" WHERE {whrClause}",
-        bf=bufferField
+        f"SELECT{selcols}{bf_start}{geomCol}, {bfDist}"
+        f"{bf_end} AS {bufferField} "
+        f"FROM {inTbl}{whr}{gby}"
     )
     
     if not outTblIsFile:
@@ -63,23 +67,20 @@ def splite_buffer(db, table, dist, geomField, outTbl,
     from glass.pys import obj_to_lst
     
     dissolve = obj_to_lst(dissolve) if dissolve != "ALL" else "ALL"
+
+    sel = " " if not cols_select else f" {', '.join(obj_to_lst(cols_select))}, "
+
+    bfstart = "ST_Buffer(" if not dissolve else "ST_UnaryUnion(ST_Collect(ST_Buffer("
+    bfend   = ")" if not dissolve else ")))"
+
+    whr="" if not whrClause else f" WHERE {whrClause}"
+
+    gby = "" if not dissolve or dissolve == "ALL" else f" GROUP BY {', '.join(dissolve)}"
     
     sql = (
-        "SELECT{sel}{spFunc}{geom}, {_dist}{endFunc} AS {bf} "
-        "FROM {tbl}{whr}{grpBy}"
-    ).format(
-        sel = " " if not cols_select else " {}, ".format(
-            ", ".join(obj_to_lst(cols_select))
-        ),
-        tbl=table,
-        geom=geomField, _dist=str(dist), bf=bufferField,
-        whr="" if not whrClause else " WHERE {}".format(whrClause),
-        spFunc="ST_Buffer(" if not dissolve else \
-            "ST_UnaryUnion(ST_Collect(ST_Buffer(",
-        endFunc = ")" if not dissolve else ")))",
-        grpBy="" if not dissolve or dissolve == "ALL" else " GROUP BY {}".format(
-            ", ".join(dissolve)
-        )
+        f"SELECT{sel}{bfstart}{geomField}, "
+        f"{str(dist)}{bfend} AS {bufferField} "
+        f"FROM {table}{whr}{gby}"
     )
     
     if outTblIsFile:

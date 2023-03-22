@@ -179,6 +179,8 @@ def roads_fmdb(osmdb, lnhTbl, plTbl, asRst=None):
     from glass.prop.sql          import row_num as cnt_rows
     from glass.it.shp            import dbtbl_to_shp as db_to_shp
     from glass.gp.prox.bfing.sql import st_buffer
+    from glass.gp.gen            import dissolve
+    from glass.tbl.grs           import add_table
     
     time_a = dt.datetime.now().replace(microsecond=0)
 
@@ -258,25 +260,28 @@ def roads_fmdb(osmdb, lnhTbl, plTbl, asRst=None):
     time_f = dt.datetime.now().replace(microsecond=0)
     
     # Send data to GRASS GIS
-    roadsGrs = db_to_shp(
+    rdv = db_to_shp(
         osmdb, bfTbl, "geometry", "froads", notTable=None,
         filterByReg=True, inDB="psql", outShpIsGRASS=True
     )
+
+    # Dissolve
+    drdv = dissolve(rdv, "droads", "roads", api="grass")
+
+    add_table(drdv, None, lyrN=1, asCMD=True)
     
     time_g = dt.datetime.now().replace(microsecond=0)
     
     if asRst:
         from glass.dtr.torst import grsshp_to_grsrst as shp_to_rst
         
-        roadsGrs = shp_to_rst(
-            roadsGrs, int(asRst), "rst_roads", cmd=True
-        )
+        drdv = shp_to_rst(drdv, int(asRst), "rst_roads", cmd=True)
         
         time_h = dt.datetime.now().replace(microsecond=0)
     else:
         time_h = None
     
-    return roadsGrs, {
+    return drdv, {
         0 : ('count_rows_roads', time_b - time_a),
         1 : ('count_rows_build', time_c - time_b),
         2 : None if not time_d else ('near_analysis', time_d - time_c),
