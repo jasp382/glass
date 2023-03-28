@@ -131,20 +131,19 @@ def restore_db(db, sqlScript, api='psql', dbset=None):
 
         condb = con_psql(db_set='default' if not dbset else dbset)
 
-        cmd = 'psql -h {} -U {} -p {} -w {} < {}'.format(
-            condb['HOST'], condb['USER'], condb['PORT'],
-            db, sqlScript
-        )
+        h, u, p = condb['HOST'], condb['USER'], condb['PORT']
+
+        cmd = f'psql -h {h} -U {u} -p {p} -w {db} < {sqlScript}'
     
     elif api == 'mysql':
         from glass.cons.mysql import con_mysql
 
         condb = con_mysql()
 
-        cmd = 'mysql -u {} -p{} {} < {}'.format(
-            condb['USER'], condb['PASSWORD'], db,
-            sqlScript
-        )
+        u, p = condb['USER'], condb['PASSWORD']
+
+        cmd = f'mysql -u {u} -p{p} {db} < {sqlScript}'
+    
     else:
         raise ValueError(f'{api} API is not available')
     
@@ -167,16 +166,17 @@ def restore_tbls(dbn, sql, tablenames=None, dbset='default'):
     condb = con_psql(db_set=dbset)
     
     tbls = obj_to_lst(tablenames)
+
+    tblstr = "" if not tablenames else \
+        " ".join([f"-t {t}" for t in tbls])
     
-    tblStr = "" if not tablenames else " {}".format(" ".join([
-        "-t {}".format(t) for t in tbls]))
+    tblStr = "" if not tablenames else f" {tblstr}"
+
+    u, h, p = condb["USER"], condb["HOST"], condb["PORT"]
     
     outcmd = execmd((
-        "pg_restore -U {user} -h {host} -p {port} "
-        "-w{tbl} -d {db} {sqls}"
-    ).format(
-        user=condb["USER"], host=condb["HOST"],
-        port=condb["PORT"], db=dbn, sqls=sql, tbl=tblStr
+        f"pg_restore -U {u} -h {h} -p {p} "
+        f"-w{tblStr} -d {dbn} {sql}"
     ))
     
     return tablenames
@@ -195,14 +195,14 @@ def merge_dbs(destinationDb, dbs,
     """
     
     import os
-    from glass.pys.oss    import fprop, del_file
-    from glass.sql        import psql_cmd
-    from glass.prop.sql   import db_exists, lst_tbl
-    from glass.sql.db     import create_db, drop_db
-    from glass.sql.tbl    import rename_tbl, tbls_to_tbl
+    from glass.pys.oss  import fprop, del_file
+    from glass.sql      import psql_cmd
+    from glass.prop.sql import db_exists, lst_tbl
+    from glass.sql.db   import create_db, drop_db
+    from glass.sql.tbl  import rename_tbl, tbls_to_tbl
     from glass.sql.bkup import dump_tbls
-    from glass.sql.db     import restore_tbls
-    from glass.sql.tbl    import distinct_to_table, del_tables
+    from glass.sql.db   import restore_tbls
+    from glass.sql.tbl  import distinct_to_table, del_tables
     
     # Prepare database
     fdb = fprop(destinationDb, ['fn', 'ff'])
@@ -275,16 +275,17 @@ def merge_dbs(destinationDb, dbs,
             tbl, str(i)) for tbl in tbls})
         
         for t in range(len(tbls)):
+            tn = f"{tbls[t]}_{str(i)}"
             if tbls[t] not in TABLES:
-                TABLES[tbls[t]] = ["{}_{}".format(tbls[t], str(i))]
+                TABLES[tbls[t]] = [tn]
             
             else:
-                TABLES[tbls[t]].append("{}_{}".format(tbls[t], str(i)))
+                TABLES[tbls[t]].append(tn)
         
         # Dump Tables
         SQL_DUMP = os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
-            'tbl_{}.sql'.format(DB_NAME)
+            f'tbl_{DB_NAME}.sql'
         ); dump_tbls(DB_NAME, newTbls, SQL_DUMP)
         
         # Restore Tables in the destination Database
@@ -302,7 +303,7 @@ def merge_dbs(destinationDb, dbs,
     
     for tbl in TABLES:
         # Rename original table
-        NEW_TBL = "{}_{}".format(tbl, max_len)
+        NEW_TBL = f"{tbl}_{max_len}"
         rename_tbl(destinationDb, {tbl : NEW_TBL})
         
         TABLES[tbl].append(NEW_TBL)
