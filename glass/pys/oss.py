@@ -36,16 +36,13 @@ def fprop(__file, prop, forceLower=None, fs_unit=None):
 
     result = {}
 
+    fn, ff = os.path.splitext(os.path.basename(__file))
+
     if 'filename' in prop or 'fn' in prop:
-        fn, ff = os.path.splitext(os.path.basename(__file))
-
         result['filename'] = fn if not forceLower else fn.lower()
-
-        if 'fileformat' in prop or 'fn' in prop:
-            result['fileformat'] = ff
     
-    elif 'fileformat' in prop or 'ff' in prop:
-        result['fileformat'] = os.path.splitext(__file)[1]
+    if 'fileformat' in prop or 'ff' in prop:
+        result['fileformat'] = ff
     
     if 'filesize' in prop or 'fs' in prop:
         fs_unit = 'MB' if not fs_unit else fs_unit
@@ -377,7 +374,7 @@ def onFolder_rename2(folder, newBegin, stripStr, fileFormats=None):
         name = fprop(_file, 'fn', forceLower=True)
         
         new_name = name.replace(stripStr, '')
-        new_name = "{}{}{}".format(newBegin, new_name, fprop(_file, 'ff'))
+        new_name = f"{newBegin}{new_name}{fprop(_file, 'ff')}"
         
         os.rename(_file, os.path.join(os.path.dirname(_file), new_name))
 

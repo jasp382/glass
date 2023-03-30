@@ -35,3 +35,4 @@ polyline==1.4.0
 py_expression_eval==0.3.14
 jenkspy==0.2.0
 pysal==2.6.0
+geopy==2.3.0

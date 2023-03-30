@@ -20,7 +20,7 @@ def q_to_obj(dbname, query, db_api='psql', geomCol=None, epsg=None, of='df',
 
     if not query.startswith('SELECT '):
         # Assuming query is a table name
-        from glass.pys         import obj_to_lst
+        from glass.pys      import obj_to_lst
         from glass.prop.sql import cols_name
 
         cols = cols_name(dbname, query) if not cols else \
@@ -76,12 +76,11 @@ def q_to_ntbl(db, outbl, query, ntblIsView=None, api='psql', db__set='default'):
         con = sqlcon(db, dbset=db__set)
     
         curs = con.cursor()
+
+        t = "TABLE" if not ntblIsView else "VIEW"
     
-        _q = "CREATE {} {} AS {}".format(
-            "TABLE" if not ntblIsView else "VIEW",
-            outbl, query
-        )
-    
+        _q = f"CREATE {t} {outbl} AS {query}"
+
         curs.execute(_q)
     
         con.commit()
@@ -97,16 +96,14 @@ def q_to_ntbl(db, outbl, query, ntblIsView=None, api='psql', db__set='default'):
         from glass.pys import execmd
         
         cmd = (
-            'ogr2ogr -update -append -f "SQLite" {db} -nln "{nt}" '
-            '-dialect sqlite -sql "{q}" {db}' 
-        ).format(
-             db=db, nt=outbl, q=query
+            f'ogr2ogr -update -append -f "SQLite" {db} -nln "{outbl}" '
+            f'-dialect sqlite -sql "{query}" {db}' 
         )
         
         outcmd = execmd(cmd)
     
     else:
-        raise ValueError('API {} is not available!'.format(api))
+        raise ValueError(f'API {api} is not available!')
     
     return outbl
 

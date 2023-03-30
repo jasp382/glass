@@ -1,5 +1,5 @@
 """
-Fields
+Columns
 """
 
 
@@ -27,7 +27,7 @@ def add_fields(tbl, fields, lyrN=1, api='ogr'):
     import os
 
     if api == 'ogr':
-        from osgeo           import ogr
+        from osgeo         import ogr
         from glass.prop    import drv_name
         from glass.lyr.fld import fields_to_lyr
 
@@ -54,22 +54,19 @@ def add_fields(tbl, fields, lyrN=1, api='ogr'):
 
         tname = fprop(tbl, 'fn')
 
-        ogrinfo = 'ogrinfo {i} -sql "{s}"'
-
         for fld in fields:
-            sql = 'ALTER TABLE {} ADD COLUMN {} {};'.format(
-                tname, fld, fields[fld]
-            )
+            sql = f'ALTER TABLE {tname} ADD COLUMN {fld} {fields[fld]};'
 
-            outcmd = execmd(ogrinfo.format(i=tbl, s=sql))
+            outcmd = execmd(f'ogrinfo {tbl} -sql "{sql}"')
     
     elif api == 'grass':
         from glass.pys import execmd
 
         for fld in fields:
             rcmd = execmd((
-                "v.db.addcolumn map={} layer={} columns=\"{} {}\" --quiet"
-            ).format(tbl, lyrN, fld, fields[fld]))
+                f"v.db.addcolumn map={tbl} layer={lyrN} "
+                f"columns=\"{fld} {fields[fld]}\" --quiet"
+            ))
     
     elif api == 'pygrass':
         from grass.pygrass.modules import Module
@@ -77,14 +74,14 @@ def add_fields(tbl, fields, lyrN=1, api='ogr'):
         for fld in fields:
             c = Module(
                 "v.db.addcolumn", map=tbl, layer=lyrN,
-                columns='{} {}'.format(fld, fields[fld]),
+                columns=f'{fld} {fields[fld]}',
                 run_=False, quiet=True
             )
 
             c()
     
     else:
-        raise ValueError('API {} is not available'.format(api))
+        raise ValueError(f'API {api} is not available')
 
 
 def fields_to_tbls(inFolder, fields, tbl_format='.shp'):
@@ -113,10 +110,8 @@ def del_cols(lyr, cols, api='grass', lyrn=1):
         from glass.pys import execmd
 
         rcmd = execmd((
-            "v.db.dropcolumn map={} layer={} columns={} "
-            "--quiet"
-        ).format(
-            lyr, str(lyrn), ','.join(cols)
+            f"v.db.dropcolumn map={ lyr} layer={str(lyrn)} "
+            f"columns={','.join(cols)} --quiet"
         ))
     
     elif api == 'pygrass':
@@ -128,7 +123,7 @@ def del_cols(lyr, cols, api='grass', lyrn=1):
         )
     
     else:
-        raise ValueError("API {} is not available".format(api))
+        raise ValueError(f"API {api} is not available")
 
     return lyr
 
@@ -147,8 +142,8 @@ def rn_cols(inShp, columns, api="ogr2ogr"):
         import os
         from glass.pys.oss    import fprop
         from glass.pys.oss    import del_file, lst_ff
-        from glass.tbl.filter   import sel_by_attr
-        from glass.prop.col import lst_cols
+        from glass.tbl.filter import sel_by_attr
+        from glass.prop.col   import lst_cols
         
         # List Columns
         cols = lst_cols(inShp)
@@ -168,12 +163,14 @@ def rn_cols(inShp, columns, api="ogr2ogr"):
 
         # Temporary output
         output = os.path.join(inshpfld, inshpname + '_xtmp.shp')
+
+        cols = ", ".join([f"{c} AS {columns[c]}" for c in columns])
         
         # Rename columns by selecting data from input
-        outShp = sel_by_attr(inShp, "SELECT {} FROM {}".format(
-            ", ".join(["{} AS {}".format(c, columns[c]) for c in columns]),
-            inshpname
-        ) , output, api_gis='ogr')
+        outShp = sel_by_attr(
+            inShp, f"SELECT {cols} FROM {inshpname}",
+            output, api_gis='ogr'
+        )
         
         # Delete Original file
         infiles = lst_ff(inshpfld, filename=inshpname)
@@ -189,8 +186,9 @@ def rn_cols(inShp, columns, api="ogr2ogr"):
 
         for col in columns:
             rcmd = execmd((
-                "v.db.renamecolumn map={} layer=1 column={},{}"
-            ).format(inShp, col, columns[col]))
+                f"v.db.renamecolumn map={inShp} "
+                f"layer=1 column={col},{columns[col]}"
+            ))
     
     elif api == 'pygrass':
         from grass.pygrass.modules import Module
@@ -198,13 +196,13 @@ def rn_cols(inShp, columns, api="ogr2ogr"):
         for col in columns:
             func = Module(
                 "v.db.renamecolumn", map=inShp,
-                column="{},{}".format(col, columns[col]),
+                column=f"{col},{columns[col]}",
                 quiet=True, run_=False
             )
             func()
     
     else:
-        raise ValueError("{} is not available".format(api))
+        raise ValueError(f"{api} is not available")
     
     return inShp
 
@@ -234,14 +232,14 @@ def update_cols(table, upcol, nval):
     tn = fprop(table, 'fn')
     
     for v in nval:
-        q = "UPDATE {} SET {}={}{}".format(
-            tn, upcol, str(v) if type(v) != str else "'{}'".format(str(v)),
-            "" if not nval[v] else " WHERE {}".format(
-                nval[v] if type(nval[v]) != list else " OR ".join(nval[v])
-            )
-        )
+        whr = "" if not nval[v] else \
+            f" WHERE {nval[v] if type(nval[v]) != list else ' OR '.join(nval[v])}"
+        
+        val = str(v) if type(v) != str else f"'{str(v)}'"
+
+        q = f"UPDATE {tn} SET {upcol}={val}{whr}"
     
-        ogrinfo = 'ogrinfo {} -dialect sqlite -sql "{}"'.format(table, q)
+        ogrinfo = f'ogrinfo {table} -dialect sqlite -sql "{q}"'
     
         # Run command
         outcmd = execmd(ogrinfo)
@@ -253,7 +251,7 @@ def filename_to_col(tables, new_field, table_format='.dbf'):
     """
     
     import os
-    from glass.pys.oss    import lst_ff
+    from glass.pys.oss import lst_ff
     from glass.tbl.col import add_fields
     
     if os.path.isdir(tables):

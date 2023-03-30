@@ -460,9 +460,9 @@ def lnh_to_polygons(inShp, outShp, api='saga', db=None):
         from glass.pys  import execmd
         
         rcmd = execmd((
-            "saga_cmd shapes_polygons 3 -POLYGONS {} "
-            "LINES {} -SINGLE 1 -MERGE 1"
-        ).format(outShp, inShp))
+            f"saga_cmd shapes_polygons 3 -POLYGONS {outShp} "
+            f"LINES {inShp} -SINGLE 1 -MERGE 1"
+        ))
     
     elif api == 'grass' or api == 'pygrass':
         # Do it using GRASS GIS
@@ -477,7 +477,6 @@ def lnh_to_polygons(inShp, outShp, api='saga', db=None):
         
         gs = run_grass(wk, lo, srs=inShp)
         
-        import grass.script as grass
         import grass.script.setup as gsetup
         gsetup.init(gs, wk, lo, 'PERMANENT')
         
@@ -507,12 +506,12 @@ def lnh_to_polygons(inShp, outShp, api='saga', db=None):
     
     elif api == 'psql':
         """ Do it using PostGIS """
-        from glass.pys.oss     import fprop
-        from glass.sql.db   import create_db
-        from glass.it.db     import shp_to_psql
-        from glass.it.shp    import dbtbl_to_shp
+        from glass.pys.oss    import fprop
+        from glass.sql.db     import create_db
+        from glass.it.db      import shp_to_psql
+        from glass.it.shp     import dbtbl_to_shp
         from glass.dtr.cg.sql import lnh_to_polg
-        from glass.prop.prj  import get_shp_epsg
+        from glass.prop.prj   import get_shp_epsg
         
         # Create DB
         if not db:
@@ -538,7 +537,7 @@ def lnh_to_polygons(inShp, outShp, api='saga', db=None):
             epsg=get_shp_epsg(inShp))
     
     else:
-        raise ValueError("API {} is not available".format(api))
+        raise ValueError(f"API {api} is not available")
     
     return outShp
 

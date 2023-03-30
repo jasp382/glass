@@ -48,7 +48,7 @@ def lst_prod(shpext, start_time, end_time,
     
         else:
             if is_rst(shpext):
-                from glass.gp.ext import rstext_to_shp
+                from glass.dtr.ext.toshp import rstext_to_shp
 
                 # Raster extent to shape
                 shpext = rstext_to_shp(shpext, os.path.join(

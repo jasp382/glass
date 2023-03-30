@@ -159,11 +159,11 @@ def grs_infovalue(movs, _var, refrst, out):
 
     import os
     import math as m
-    from glass.gp.ext   import rstext_to_rst
-    from glass.prop     import is_rst
-    from glass.prop.rst import rst_shape, frequencies
-    from glass.wenv.grs import run_grass
-    from glass.pys.oss    import lst_ff, fprop
+    from glass.dtr.ext.torst import rstext_to_rst
+    from glass.prop          import is_rst
+    from glass.prop.rst      import rst_shape, frequencies
+    from glass.wenv.grs      import run_grass
+    from glass.pys.oss       import lst_ff, fprop
 
     # Get reference raster
     ws = os.path.dirname(out)

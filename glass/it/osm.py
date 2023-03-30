@@ -31,7 +31,7 @@ def osm_to_featcls(xmlOsm, output, fileFormat='.shp', useXmlName=None,
 
     import os
     from glass.tbl.filter import sel_by_attr
-    from glass.pys.oss  import fprop, del_file
+    from glass.pys.oss    import fprop, del_file
     
     # Convert xml to sqliteDB
     gpkg = osm_to_gpkg(xmlOsm, os.path.join(
