@@ -2,7 +2,7 @@
 Custom Joins with GRASS GIS
 """
 
-def join_table(inShp, jnTable, shpCol, joinCol):
+def join_table(shp, jshp, shpid, joinfk):
     """
     Join Tables using GRASS GIS
     """
@@ -10,9 +10,11 @@ def join_table(inShp, jnTable, shpCol, joinCol):
     from glass.pys import execmd
     
     rcmd = execmd((
-        f"v.db.join map={inShp} column={shpCol} "
-        f"other_table={jnTable} other_column={joinCol}"
-        ))
+        f"v.db.join map={shp} column={shpid} "
+        f"other_table={jshp} other_column={joinfk}"
+    ))
+
+    return shp
 
 
 def join_attr_by_distance(mainTable, joinTable, workGrass, epsg_code,
@@ -38,8 +40,8 @@ def join_attr_by_distance(mainTable, joinTable, workGrass, epsg_code,
     gsetup.init(grassBase, workGrass, 'join_loc', 'PERMANENT')
     
     # Import some GRASS GIS tools
-    from glass.gp.prox  import grs_near as near
-    from glass.it.shp   import shp_to_grs, grs_to_shp
+    from glass.gp.prox import grs_near as near
+    from glass.it.shp  import shp_to_grs, grs_to_shp
     
     # Import data into GRASS GIS
     grsMain = shp_to_grs(mainTable, fprop(

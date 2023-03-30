@@ -2,9 +2,36 @@
 Tools for sampling
 """
 
+from glass.pys import execmd
+
 """
 Fishnets
 """
+
+def grass_fishnet(fish_shp, ascmd=None):
+    """
+    Create fishnet using GRASS GIS tool
+    """
+
+    if not ascmd:
+        from grass.pygrass.modules import Module
+
+        m = Module(
+            "v.mkgrid", map=fish_shp, position='region',
+            overwrite=True, run_=False, quiet=True
+        )
+
+        m()
+    
+    else:
+        rcmd = execmd((
+            f'v.mkgrid map={fish_shp} position=region '
+            '--overwrite --quiet'
+        ))
+
+    return fish_shp
+
+
 def create_fishnet(boundary, x, y, shpfishnet=None,
     xy_row_col=None, srs=None, outepsg=None):
     """
@@ -101,7 +128,7 @@ def nfishnet_fm_rst(rst, max_row, max_col, out_fld):
             fshp = fishnet(
                 (tlx, tly), (brx, bry),
                 cs_x, abs(cs_y),
-                os.path.join(out_fld, 'fishnet_{}.shp'.format(str(fi))),
+                os.path.join(out_fld, f'fishnet_{str(fi)}.shp'),
                 epsg=epsg
             )
 

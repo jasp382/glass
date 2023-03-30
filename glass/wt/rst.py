@@ -12,6 +12,10 @@ Array to Raster
 def obj_to_rst(inArray, outRst, template, noData=None, geotrans=None):
     """
     Send Array to Raster
+
+    inArray - array of array with raster date
+    outRst - path to output raster file - 
+        inArray will be written in this file
     """
     
     from glass.prop.rst import compress_option

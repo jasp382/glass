@@ -8,9 +8,9 @@ def k_means(imgFiles, out, n_cls=8):
     """
     
     import os
-    from osgeo          import gdal, gdal_array
-    import numpy        as np
-    from sklearn        import cluster
+    from osgeo        import gdal, gdal_array
+    import numpy      as np
+    from sklearn      import cluster
     from glass.wt.rst import obj_to_rst
     
     gdal.UseExceptions()

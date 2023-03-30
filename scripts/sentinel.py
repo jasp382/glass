@@ -3,10 +3,13 @@ Download Sentinel-2 IMG
 """
 
 if __name__ == '__main__':
-    from glass.acq.sentinel import down_imgs
+    from glass.acq.stl import down_imgs_v2
 
-    in_shp = '/home/jasp/mrgis/sentinel_cmb/sentinel.shp'
-    out_folder = '/home/jasp/mrgis/sentinel_cmb'
+    imgs = '/mnt/disk1/jasp/a2autocls2023/imgcmb/img_cmb18p.shp'
 
-    down_imgs(in_shp, 'uuid', outFolder=out_folder)
+    imgid = 'uuid'
+
+    ofolder = '/mnt/disk3/jasp/coimbra/src2018p'
+
+    down_imgs_v2(imgs, imgid, ofolder=ofolder)
 

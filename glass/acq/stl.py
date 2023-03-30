@@ -210,7 +210,6 @@ def down_imgs(inTbl, imgIDcol, outFolder=None):
     Download Images in Table
     """
     
-    import os
     from sentinelsat    import SentinelAPI
     from glass.rd.shp   import shp_to_obj
     from glass.cons.stl import con_datahub
@@ -237,4 +236,73 @@ def down_imgs(inTbl, imgIDcol, outFolder=None):
             continue
         else:
             api.download(row[imgIDcol], directory_path=of)
+
+
+def down_imgs_v2(itbl, idcol, ofolder=None):
+    """
+    Download images in shapefile
+
+    Download also offline products
+    """
+
+    import time
+    from sentinelsat import SentinelAPI
+    from glass.rd.shp import shp_to_obj
+    from glass.cons.stl import con_datahub
+
+    ofolder = ofolder if ofolder else os.path.dirname(itbl)
+
+    # Get global vars
+    gvar = con_datahub()
+    user, passw, url = gvar["USER"], gvar["PASSWORD"], gvar["URL"]
+
+    # Tbl to df
+    df_img = shp_to_obj(itbl)
+
+    df_img["isd"] = 0
+    df_img["ist"] = 0
+
+    # API Instance
+    api = SentinelAPI(user, passw, url)
+
+    def download(row):
+        pinfo = api.get_product_odata(row[idcol])
+    
+        is_on = pinfo["Online"]
+    
+        if is_on:
+            try:
+                api.download(row[idcol], directory_path=ofolder)
+        
+                row["isd"] = 1
+
+                print(f'download imagem {row[idcol]}')
+            except:
+                print(f'erro download {row[idcol]}')
+                time.sleep(60 * 30)
+    
+        else:
+            if not row.ist:
+                try:
+                    api.trigger_offline_retrieval(row[idcol])
+            
+                    row["ist"] = 1
+                
+                except:
+                    print(f'erro imagem {row[idcol]}')
+                    time.sleep(60 * 40)
+    
+        return row
+    
+    all_download = 0
+
+    while not all_download:
+        df_img = df_img.apply(lambda x: download(x), axis=1)
+    
+        dstatus = df_img.isd.tolist()
+    
+        if 0 not in dstatus:
+            all_download = 1
+    
+    return 1
 

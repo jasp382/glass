@@ -41,17 +41,15 @@ def dissolve(inShp, outShp, fld,
         
         if not inputIsLines:
             cmd = (
-                'saga_cmd shapes_polygons 5 -POLYGONS {in_poly} -FIELDS {fld} '
-                '-DISSOLVED {out_shp}'
-            ).format(
-                in_poly=inShp, fld=fld, out_shp=outShp
+                f'saga_cmd shapes_polygons 5 -POLYGONS {inShp} -FIELDS {fld} '
+                f'-DISSOLVED {outShp}'
             )
         
         else:
             cmd = (
-                'saga_cmd shapes_lines 5 -LINES {} -FIELD_1 {} -DISSOLVED {} '
-                '-ALL 0'
-            ).format(inShp, fld, outShp)
+                f'saga_cmd shapes_lines 5 -LINES {inShp} -FIELD_1 '
+                f'{fld} -DISSOLVED {outShp} -ALL 0'
+            )
         
         outcmd = execmd(cmd)
     
@@ -68,29 +66,23 @@ def dissolve(inShp, outShp, fld,
         
         from glass.pys     import execmd
         from glass.pys.oss import fprop
+
+        tname = fprop(inShp, 'fn')
+
+        stat = '' if not statistics else ', ' + ','.join([
+            f'{statistics[fld]}({fld}) AS {fld}' for fld in statistics
+        ])
+
+        q = (
+            f'SELECT {fld}{stat}, ST_Union(geometry) '
+            f'FROM {tname} '
+            f'GROUP BY {fld}'
+        )
         
-        if not statistics:
-            cmd = (
-                'ogr2ogr {o} {i} -dialect sqlite -sql '
-                '"SELECT ST_Union(geometry), {f} '
-                'FROM {t} GROUP BY {f};"'
-            ).format(o=outShp, i=inShp, f=fld, t=fprop(inShp, 'fn'))
-        
-        else:
-            cmd = (
-                'ogr2ogr {o} {i} -dialect sqlite -sql '
-                '"SELECT ST_Union(geometry), {f}, {stat} '
-                'FROM {t} GROUP BY {f};"'
-            ).format(
-                o=outShp, i=inShp, f=fld,
-                t=fprop(inShp, 'fn'),
-                stat=','.join([
-                    '{s}({f}) AS {f}'.format(
-                        f=str(fld),
-                        s=statistics[fld]
-                    ) for fld in statistics]
-                )
-            )
+        cmd = (
+            f'ogr2ogr {outShp} {inShp} -dialect '
+            f'sqlite -sql "{q};"'
+        )
         
         # Execute command
         outcmd = execmd(cmd)
