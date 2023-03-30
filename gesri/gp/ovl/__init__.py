@@ -3,6 +3,7 @@ Overlay tools
 """
 
 import arcpy
+import os
 
 
 def clip(inputFeatures, clipFeatures, outFeatures):
@@ -21,7 +22,6 @@ def clip_by_featcls(inShp, clipFolder, folderOutputs, fFormat='.shp'):
     clip features.
     """
     
-    import os
     from glass.pys.oss import lst_ff, fprop
     
     clip_fc = lst_ff(clipFolder, file_format=fFormat)
@@ -40,7 +40,6 @@ def clip_by_feat(inshp, clipshp, out_fld, bname, clip_feat_id='FID', saveid=None
     Store all produced layers in the folderOutputs.
     """
     
-    import os
     from glass.pys.oss    import mkdir
     from gesri.rd.shp     import shp_to_lyr
     from gesri.prop.cols  import type_fields
@@ -100,9 +99,17 @@ def clip_by_feat(inshp, clipshp, out_fld, bname, clip_feat_id='FID', saveid=None
     return out_fld
 
 
-def intersect(lst_lyr, outShp):
-    arcpy.Intersect_analysis(lst_lyr, outShp)
-    return outShp
+def intersection(lst_lyr, outShp):
+    """
+    Run intersection
+    """
+
+    nlyr = arcpy.analysis.Intersect(
+        in_features=lst_lyr,
+        out_feature_class=outShp
+    )[0]
+
+    return nlyr
 
 
 def folderShp_Intersection(inFolder, intFeatures, outFolder):
@@ -111,7 +118,6 @@ def folderShp_Intersection(inFolder, intFeatures, outFolder):
     listed in the argument intFeatures (path to the file).
     """
     
-    import os
     from glass.pys.oss import create_folder
     from gesri.rd.shp  import shp_to_lyr
     
@@ -146,8 +152,6 @@ def union(lyrA, lyrB, outShp):
     Calculates the geometric union of the overlayed polygon layers, i.e.
     the intersection plus the symmetrical difference of layers A and B.
     """
-    
-    import arcpy
         
     if type(lyrB) == list:
         lst = [lyrA] + lyrB
@@ -163,8 +167,6 @@ def erase(inShp, erase_feat, out):
     """
     Difference between two feature classes
     """
-    
-    import arcpy
         
     arcpy.Erase_analysis(
         in_features=inShp, erase_features=erase_feat, 

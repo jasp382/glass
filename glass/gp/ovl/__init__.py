@@ -158,9 +158,10 @@ def union_for_all_pairs(inputList):
         new_union = copy.deepcopy(unionTool)
         op_list.append(new_union)
         
-        un_result = "{}_{}".format(lyr_a, lyr_b)
+        un_result = f"{lyr_a}_{lyr_b}"
         nu = new_union(
-            ainput=lyr_a, binput=lyr_b, ouput=un_result
+            ainput=lyr_a, binput=lyr_b,
+            ouput=un_result
         )
         
         qq.put(nu)
@@ -560,18 +561,18 @@ def check_shape_diff(SHAPES_TO_COMPARE, OUT_FOLDER, REPORT, DB,
     """
     
     import datetime
-    import os;              import pandas
-    from glass.sql.q        import q_to_obj
-    from glass.it           import db_to_tbl
-    from glass.wt.sql       import df_to_db
+    import os;               import pandas
+    from glass.sql.q         import q_to_obj
+    from glass.it            import db_to_tbl
+    from glass.wt.sql        import df_to_db
     from glass.dtr.rst.toshp import rst_to_polyg
-    from glass.it.db        import shp_to_psql
+    from glass.it.db         import shp_to_psql
     from glass.dtr.tomtx.sql import tbl_to_area_mtx
-    from glass.prop         import is_rst
-    from glass.pys.oss      import fprop
-    from glass.sql.db       import create_db
-    from glass.sql.tbl      import tbls_to_tbl
-    from glass.sql.q        import q_to_ntbl
+    from glass.prop          import is_rst
+    from glass.pys.oss       import fprop
+    from glass.sql.db        import create_db
+    from glass.sql.tbl       import tbls_to_tbl
+    from glass.sql.q         import q_to_ntbl
     
     # Check if folder exists, if not create it
     if not os.path.exists(OUT_FOLDER):
@@ -586,8 +587,7 @@ def check_shape_diff(SHAPES_TO_COMPARE, OUT_FOLDER, REPORT, DB,
         OUT_FOLDER, grassBIN='grass78', location='shpdif',
         srs=GRASS_REGION_TEMPLATE
     )
-        
-    import grass.script as grass
+    
     import grass.script.setup as gsetup
         
     gsetup.init(gbase, OUT_FOLDER, 'shpdif', 'PERMANENT')
