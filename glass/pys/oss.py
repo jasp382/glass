@@ -362,7 +362,7 @@ def onFolder_rename2(folder, newBegin, stripStr, fileFormats=None):
         name = fprop(_file, 'fn', forceLower=True)
         
         new_name = name.replace(stripStr, '')
-        new_name = "{}{}{}".format(newBegin, new_name, fprop(_file, 'ff'))
+        new_name = f"{newBegin}{new_name}{fprop(_file, 'ff')}"
         
         os.rename(_file, os.path.join(os.path.dirname(_file), new_name))
 

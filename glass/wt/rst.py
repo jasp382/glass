@@ -2,6 +2,9 @@
 Data to Raster File
 """
 
+from osgeo      import gdal, osr, gdal_array
+from glass.prop import drv_name
+
 """
 Array to Raster
 """
@@ -11,8 +14,6 @@ def obj_to_rst(inArray, outRst, template, noData=None, geotrans=None):
     Send Array to Raster
     """
     
-    from osgeo            import gdal, osr, gdal_array
-    from glass.prop     import drv_name
     from glass.prop.rst import compress_option
 
     if type(template).__name__ == 'Dataset':
@@ -69,8 +70,6 @@ def ext_to_rst(topLeft, btRight, outRst,
     """
     
     import numpy
-    from osgeo      import gdal
-    from glass.prop import drv_name
     
     left, top     = topLeft
     right, bottom = btRight
