@@ -4,11 +4,25 @@ Table Joins
 
 import arcpy
 
+from glass.pys import obj_to_lst
 
-def join_tbl(f_tbl, f_f, s_tbl, f_s, fld_to_f_tbl=""):
-    arcpy.JoinField_management(
-        f_tbl, f_f, s_tbl, f_s, fld_to_f_tbl
-    )
+
+def join_table(inshp, jshp, pk, fk, cols=None):
+    """
+    Join Tables using JoinField tool
+    """
+
+    cols = obj_to_lst(cols)
+
+    cols = "" if not cols else cols
+
+    res = arcpy.management.JoinField(
+        in_data=inshp, in_field=pk,
+        join_table=jshp, join_field=fk,
+        fields=cols
+    )[0]
+
+    return res
 
 
 def join_table_with_tables(table, idTable, join_tables, join_fields=None):
@@ -26,7 +40,7 @@ def join_table_with_tables(table, idTable, join_tables, join_fields=None):
         table_name : [field_1, field_2, ...]
     }
     """
-    from glass.pys import obj_to_lst
+    
     
     for tbl in join_tables:
         if join_fields:

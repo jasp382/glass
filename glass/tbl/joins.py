@@ -9,11 +9,10 @@ def join_table(inShp, jnTable, shpCol, joinCol):
     
     from glass.pys import execmd
     
-    rcmd = execmd(
-        "v.db.join map={} column={} other_table={} other_column={}".format(
-            inShp, shpCol, jnTable, joinCol
-            )
-        )
+    rcmd = execmd((
+        f"v.db.join map={inShp} column={shpCol} "
+        f"other_table={jnTable} other_column={joinCol}"
+        ))
 
 
 def join_attr_by_distance(mainTable, joinTable, workGrass, epsg_code,

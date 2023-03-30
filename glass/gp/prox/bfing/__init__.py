@@ -347,6 +347,9 @@ def cheese_buffer(inshp, dist, angles_int, outshp,
     fdf = merge_df(dfs)
     fdf = df_to_geodf(fdf, 'geometry', epsg)
 
+    # Remove features with area == 0
+    fdf = fdf[fdf.geometry.area > 0]
+
     fdf.drop('geom', axis=1, inplace=True)
 
     df_to_shp(fdf, outshp)
