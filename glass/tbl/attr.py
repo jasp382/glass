@@ -84,12 +84,9 @@ def add_geomattr_to_sqldbTbl(sqdb, table, geom_attr, newTblName, newColName):
     from glass.pys import execmd
     
     cmd = (
-        "ogr2ogr -update -append -f \"SQLite\" {db} -nln \"{nt}\" "
-        "-dialect sqlite -sql \"SELECT *, {geomProp}(geometry) "
-        "AS {newCol} FROM {tbl}\" {db}"
-    ).format(
-        db=sqdb, nt=newTblName, geomProp=geom_attr,
-        newCol=newColName, tbl=table
+        f"ogr2ogr -update -append -f \"SQLite\" {sqdb} -nln \"{newTblName}\" "
+        f"-dialect sqlite -sql \"SELECT *, {geom_attr}(geometry) "
+        f"AS {newColName} FROM {table}\" {sqdb}"
     )
     
     rcmd = execmd(cmd)

@@ -134,13 +134,13 @@ def osmlulc_to_s2grid(ref_raster, osmtolulc, lucol, tmp_folder, results):
     OSM LULC to Sentinel-2 GRID
     """
 
-    from glass.smp       import nfishnet_fm_rst
-    from glass.pys.oss     import lst_ff, cpu_cores
-    from glass.wt       import obj_to_tbl
-    from glass.pd.split import df_split
-    from glass.rd.shp    import shp_to_obj
-    from glass.wt.shp    import df_to_shp
-    from glass.gp.ext    import shpext_to_boundshp
+    from glass.smp           import nfishnet_fm_rst
+    from glass.pys.oss       import lst_ff, cpu_cores
+    from glass.wt            import obj_to_tbl
+    from glass.pd.split      import df_split
+    from glass.rd.shp        import shp_to_obj
+    from glass.wt.shp        import df_to_shp
+    from glass.dtr.ext.torst import shpext_to_boundshp
 
     # Create Fishnets
     fishnets = mkdir(os.path.join(tmp_folder, 'fishnets_shp'))

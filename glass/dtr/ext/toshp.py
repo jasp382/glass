@@ -130,7 +130,7 @@ def shpext_to_boundshp(inShp, outShp, epsg=None):
     """
     
     from osgeo         import ogr
-    from glass.prop  import drv_name
+    from glass.prop    import drv_name
     from glass.pys.oss import fprop
     
     # Get SRS for the output
@@ -173,88 +173,17 @@ def rstext_to_shp(inRst, outShp, epsg=None):
     """
     
     from glass.prop.rst import rst_ext
+    from glass.prop.prj import get_rst_epsg
     
     # Get Raster Extent
     left, right, bottom, top = rst_ext(inRst)
     
     # Get EPSG
     if not epsg:
-        from glass.prop.prj import get_rst_epsg
-        
         epsg = get_rst_epsg(inRst)
     
     # Create Boundary
     return coords_to_boundshp((left, top), (right, bottom), epsg, outShp)
-
-
-def rstext_to_rst(inrst, outrst, cellsize=None, epsg=None, rstval=None):
-    """
-    Raster Extent to Raster
-    """
-
-    from glass.prop.rst import rst_ext, get_cellsize
-    from glass.wt.rst   import ext_to_rst
-
-    # Get Raster Extent
-    left, right, bottom, top = rst_ext(inrst)
-
-    # GET EPSG
-    if not epsg:
-        from glass.prop.prj import get_rst_epsg
-
-        epsg = get_rst_epsg(inrst)
-    
-    # Create raster
-    ext_to_rst(
-        (left, top), (right, bottom), outrst,
-        cellsize=get_cellsize(inrst) if not cellsize else cellsize,
-        epsg=epsg, rstvalue=rstval
-    )
-
-    return outrst
-
-
-def fext_to_geof(inF, outF, ocellsize=10):
-    """
-    Extent of a File to Raster or Shapefile
-    """
-    
-    from glass.prop.ext import get_ext
-    from glass.prop     import is_rst
-    from glass.prop.prj import get_epsg
-    
-    # Get extent
-    left, right, bottom, top = get_ext(inF)
-    
-    # Get EPSG of inF
-    EPSG = get_epsg(inF)
-    
-    # Export Boundary
-    isRst = is_rst(outF)
-    
-    if isRst:
-        from glass.wt.rst import ext_to_rst
-        
-        return ext_to_rst(
-            (left, top), (right, bottom), outF,
-            cellsize=ocellsize, epsg=EPSG, invalidResultAsNull=None
-        )
-    else:
-        from glass.prop import is_shp
-        
-        isShp = is_shp(outF)
-        
-        if isShp:
-            return coords_to_boundshp(
-                (left, top), (right, bottom), EPSG, outF
-            )
-        
-        else:
-            raise ValueError(
-                '{} is not recognized as a file with GeoData'.format(
-                    inF
-                )
-            )
 
 
 def featext_to_shp(shp, oshp, epsg=None):

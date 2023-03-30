@@ -2,6 +2,11 @@
 Data to a Relational Database
 """
 
+import os
+from glass.pys    import obj_to_lst
+from glass.rd     import tbl_to_obj
+from glass.wt.sql import df_to_db
+
 
 def tbl_to_db(tblFile, db, sqlTbl, delimiter=None, encoding_='utf-8',
               sheet=None, isAppend=None, api_db='psql', colsMap=None):
@@ -13,11 +18,7 @@ def tbl_to_db(tblFile, db, sqlTbl, delimiter=None, encoding_='utf-8',
     * sqlite;
     """
     
-    import os
-    from glass.pys     import obj_to_lst
     from glass.pys.oss import fprop
-    from glass.rd      import tbl_to_obj
-    from glass.wt.sql  import df_to_db
     
     if os.path.isdir(tblFile):
         from glass.pys.oss import lst_ff
@@ -82,6 +83,25 @@ def tbl_to_db(tblFile, db, sqlTbl, delimiter=None, encoding_='utf-8',
     return RTBL[0] if len(RTBL) == 1 else RTBL
 
 
+def xlsx_to_db(xls, db, sheets, apidb='psql'):
+    """
+    Excel data to database
+
+    API's available:
+    * psql;
+    * sqlite;
+    """
+
+    sheets = obj_to_lst(sheets)
+
+    for s in sheets:
+        d = tbl_to_obj(xls, sheet=s)
+
+        df_to_db(db, d, s, api=apidb)
+    
+    return db
+
+
 def db_to_db(db_a, db_b, typeDBA, typeDBB):
     """
     All tables in one Database to other database
@@ -93,7 +113,6 @@ def db_to_db(db_a, db_b, typeDBA, typeDBB):
     * psql
     """
     
-    from glass.wt.sql    import df_to_db
     from glass.sql.q    import q_to_obj
     from glass.prop.sql import lst_tbl
     from glass.sql.db   import create_db
@@ -118,9 +137,6 @@ def tbl_fromdb_todb(from_db, to_db, tables, qForTbl=None, api='pandas'):
     Send PGSQL Tables from one database to other
     """
     
-    from glass.pys      import obj_to_lst
-    from glass.wt.sql import df_to_db
-    
     api = 'pandas' if api != 'pandas' and api != 'psql' else api
     
     tables = obj_to_lst(tables)
@@ -144,8 +160,7 @@ def tbl_fromdb_todb(from_db, to_db, tables, qForTbl=None, api='pandas'):
             df_to_db(to_db, tblDf, table, api='psql')
     
     else:
-        import os
-        from glass.pys.oss     import mkdir, del_folder
+        from glass.pys.oss  import mkdir, del_folder
         from glass.sql.bkup import dump_tbls
         from glass.sql.db   import restore_tbls
         
@@ -171,7 +186,6 @@ def apndtbl_in_otherdb(db_a, db_b, tblA, tblB, mapCols,
     """
     
     from glass.sql.q import q_to_obj
-    from glass.wt.sql import df_to_db
     
     df = q_to_obj(db_a, "SELECT {} FROM {}".format(
         ", ".join(list(mapCols.keys())), tblA
@@ -212,8 +226,8 @@ def txts_to_db(folder, db, delimiter, __encoding='utf-8', apidb='psql',
     The file name will be the table name
     """
     
-    from glass.pys.oss import lst_ff, fprop
-    from glass.prop.sql   import db_exists
+    from glass.pys.oss  import lst_ff, fprop
+    from glass.prop.sql import db_exists
     
     if not db_exists(db):
         # Create database

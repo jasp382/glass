@@ -73,7 +73,7 @@ def shp_to_rst(shp, inSource, cellsize, nodata, outRaster, epsg=None,
     """
     
     if api == 'gdal':
-        from osgeo        import gdal, ogr
+        from osgeo      import gdal, ogr
         from glass.prop import drv_name
     
         if not epsg:

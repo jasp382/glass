@@ -36,16 +36,13 @@ def fprop(__file, prop, forceLower=None, fs_unit=None):
 
     result = {}
 
+    fn, ff = os.path.splitext(os.path.basename(__file))
+
     if 'filename' in prop or 'fn' in prop:
-        fn, ff = os.path.splitext(os.path.basename(__file))
-
         result['filename'] = fn if not forceLower else fn.lower()
-
-        if 'fileformat' in prop or 'fn' in prop:
-            result['fileformat'] = ff
     
-    elif 'fileformat' in prop or 'ff' in prop:
-        result['fileformat'] = os.path.splitext(__file)[1]
+    if 'fileformat' in prop or 'ff' in prop:
+        result['fileformat'] = ff
     
     if 'filesize' in prop or 'fs' in prop:
         fs_unit = 'MB' if not fs_unit else fs_unit
