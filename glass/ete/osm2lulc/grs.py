@@ -367,7 +367,7 @@ def osm_to_lulc(osm, nomenclature, ref, lulc, overwrite=None, savedb=None, tmpfl
     from glass.dtr.ext        import fext_to_geof
     from glass.dtr.mge        import same_attr_to_shp, shps_to_shp
     from glass.sql.db           import create_db, drop_db
-    from glass.it.db import osm_to_psql
+    from glass.it.db             import osm_to_psql
     from glass.sql.bkup          import dump_db
     from glass.ete.osm2lulc.mod1 import grs_vector
     from glass.ete.osm2lulc.mod2 import roads_fmdb
