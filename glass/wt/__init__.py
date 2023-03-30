@@ -5,6 +5,8 @@ Python data to File Data
 import pandas as pd
 import geopandas as gp
 
+from glass.pys.oss import fprop
+
 
 def obj_to_tbl(pyObj, outTbl, delimiter=None, wIndex=None,
                sheetsName=None, sanitizeUtf8=True):
@@ -24,9 +26,6 @@ def obj_to_tbl(pyObj, outTbl, delimiter=None, wIndex=None,
         
         return row
     
-    
-    from glass.pys.oss import fprop
-    
     ff = fprop(outTbl, 'ff')
     
     if ff == '.txt' or ff == '.csv' or ff == '.tsv':
@@ -45,8 +44,7 @@ def obj_to_tbl(pyObj, outTbl, delimiter=None, wIndex=None,
             ))
     
     elif ff == '.xlsx' or ff == '.xls':
-        from glass.pys     import obj_to_lst
-        from glass.pys.oss import fprop
+        from glass.pys import obj_to_lst
         
         dfs = [pyObj] if type(pyObj) != list else pyObj
         sheetsName = obj_to_lst(sheetsName)
@@ -68,9 +66,8 @@ def obj_to_tbl(pyObj, outTbl, delimiter=None, wIndex=None,
         for i in range(len(dfs)):
             dfs[i].to_excel(
                 writer,
-                sheet_name="{}_{}".format(
-                    fprop(outTbl, 'fn'), str(i)
-                ) if not sheetsName or i+1 > len(sheetsName) else sheetsName[i],
+                sheet_name=f"{fprop(outTbl, 'fn')}_{str(i)}" \
+                    if not sheetsName or i+1 > len(sheetsName) else sheetsName[i],
                 index=wIndex
             )
         
