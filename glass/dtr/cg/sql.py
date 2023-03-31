@@ -13,10 +13,10 @@ def lnh_to_polg(db, intbl, outtbl):
         "SELECT ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS gid, "
         "(ST_Dump(ST_Polygonize(geom))).geom AS geom FROM ("
             "SELECT ST_Node(ST_Collect(geom)) AS geom FROM ("
-                "SELECT (ST_Dump(geom)).geom FROM {}"
+                f"SELECT (ST_Dump(geom)).geom FROM {intbl}"
             ") AS foo"
         ") AS foo"
-    ).format(intbl)
+    )
     
     return q_to_ntbl(db, outtbl, Q)
 
@@ -29,18 +29,19 @@ def geom_to_points(db, table, geomCol, outTable,
     Equivalent to feature to point tool
     """
     
-    from glass.pys      import obj_to_lst
+    from glass.pys   import obj_to_lst
     from glass.sql.q import q_to_ntbl
     
     selCols = obj_to_lst(selCols)
+
+    cols = "" if not selCols else f"{', '.join(selCols)}, "
+
+    newCol="geom" if not newGeomCol else newGeomCol
     
     Q = (
-        "SELECT {cols}(ST_DumpPoints({geom})).geom AS {newCol} "
-        "FROM {tbl}"
-    ).format(
-        cols = "" if not selCols else "{}, ".format(", ".join(selCols)),
-        geom=geomCol, newCol="geom" if not newGeomCol else newGeomCol,
-        tbl=table
+        f"SELECT {cols}(ST_DumpPoints("
+            f"{geomCol})).geom AS {newCol} "
+        f"FROM {table}"
     )
     
     return q_to_ntbl(db, outTable, Q, api='psql')

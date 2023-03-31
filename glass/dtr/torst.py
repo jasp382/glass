@@ -163,7 +163,7 @@ def shp_to_rst(shp, inSource, cellsize, nodata, outRaster, epsg=None,
         from glass.wenv.grs import shp_to_region
 
         # Shape to GRASS GIS
-        gshp = shp_to_grs(shp, fprop(shp, 'fn'), asCMD=True)
+        gshp = shp_to_grs(shp, asCMD=True)
 
         # Set Region
         shp_to_region(gshp, cellsize)

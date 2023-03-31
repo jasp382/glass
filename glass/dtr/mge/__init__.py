@@ -135,7 +135,7 @@ def shps_to_shp(shps, outShp, api="ogr2ogr", fformat='.shp',
         from glass.it.shp import shp_to_grs, grs_to_shp
 
         # Import data
-        gshps = [shp_to_grs(s, fprop(s, 'fn'), asCMD=True) for s in lshps]
+        gshps = [shp_to_grs(s, asCMD=True) for s in lshps]
 
         patch = vpatch(gshps, outshpname)
 

@@ -275,10 +275,14 @@ def gpkgrst_to_rst(gpkg, tbl, outrst):
     return outrst
 
 
-def rst_to_grs(rst, grsRst, lmtExt=None, as_cmd=None):
+def rst_to_grs(rst, grst=None, lmtExt=None, as_cmd=None):
     """
     Raster to GRASS GIS Raster
     """
+
+    from glass.pys.oss import fprop
+
+    grst = fprop(rst, 'fn', forceLower=True) if not grst else grst
     
     if not as_cmd:
         from grass.pygrass.modules import Module
@@ -286,7 +290,7 @@ def rst_to_grs(rst, grsRst, lmtExt=None, as_cmd=None):
         __flag = 'o' if not lmtExt else 'or'
         
         m = Module(
-            "r.in.gdal", input=rst, output=grsRst, flags=__flag,
+            "r.in.gdal", input=rst, output=grst, flags=__flag,
             overwrite=True, run_=False, quiet=True,
         )
         
@@ -296,11 +300,12 @@ def rst_to_grs(rst, grsRst, lmtExt=None, as_cmd=None):
         from glass.pys import execmd
         
         rcmd = execmd((
-            "r.in.gdal input={} output={} -o{} --overwrite "
-            "--quiet"
-        ).format(rst, grsRst, "" if not lmtExt else " -r"))
+            f"r.in.gdal input={rst} output={grst} -o"
+            f"{'' if not lmtExt else ' -r'} "
+            "--overwrite --quiet"
+        ))
     
-    return grsRst
+    return grst
 
 
 def grs_to_rst(grsRst, rst, as_cmd=None, allBands=None, is_int=None):

@@ -484,13 +484,12 @@ def lnh_to_polygons(inShp, outShp, api='saga', db=None):
         from glass.it.shp  import shp_to_grs, grs_to_shp
         
         # Send data to GRASS GIS
-        lnh_shp = shp_to_grs(inShp, fprop(
-            inShp, 'fn', forceLower=True
-        ), asCMD=True if api == 'grass' else None)
+        lnh_shp = shp_to_grs(inShp, asCMD=True if api == 'grass' else None)
         
         # Build Polylines
-        pol_lnh = line_to_polyline(lnh_shp, "polylines",
-                                   asCmd=True if api == 'grass' else None)
+        pol_lnh = line_to_polyline(
+            lnh_shp, "polylines",
+            asCmd=True if api == 'grass' else None)
         
         # Polyline to boundary
         bound = geomtype_to_geomtype(pol_lnh, 'bound_shp', 'line', 'boundary',
@@ -512,6 +511,7 @@ def lnh_to_polygons(inShp, outShp, api='saga', db=None):
         from glass.it.shp     import dbtbl_to_shp
         from glass.dtr.cg.sql import lnh_to_polg
         from glass.prop.prj   import get_shp_epsg
+        from glass.sql.q      import exec_write_q
         
         # Create DB
         if not db:
@@ -526,6 +526,14 @@ def lnh_to_polygons(inShp, outShp, api='saga', db=None):
         
         # Send data to DB
         in_tbl = shp_to_psql(db, inShp, api="shp2pgsql")
+
+        # Create an index to speed things up
+        exec_write_q(db, [(
+           f"DROP INDEX IF EXISTS {in_tbl}_geom_idx"
+        ), (
+            f"CREATE INDEX {in_tbl}_geometry_idx "
+            f"ON {in_tbl} USING spgist (geom)"
+        )], api='psql')
         
         # Get Result
         result = lnh_to_polg(db, in_tbl, fprop(

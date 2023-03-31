@@ -56,8 +56,8 @@ def cae_vs_polygon(caeshp, polyshp, lulccls_col, refshp, oshp, source, polycae=N
 
     # Import data
     pbname = fprop(polyshp, 'fn')
-    polyg  = shp_to_grs(polyshp, pbname)
-    caegrs = shp_to_grs(caeshp, fprop(caeshp, 'fn')) if ncae else None
+    polyg  = shp_to_grs(polyshp, olyr=pbname)
+    caegrs = shp_to_grs(caeshp) if ncae else None
 
     # Dissolve
     lulcdiss = dissolve(polyg, f'{pbname}_d', lulccls_col, api="grass")
@@ -86,7 +86,7 @@ def cae_vs_polygon(caeshp, polyshp, lulccls_col, refshp, oshp, source, polycae=N
 
         return oshp
 
-    lulcdiss = shp_to_grs(disscat, fprop(disscat, 'fn') + 'v2')
+    lulcdiss = shp_to_grs(disscat, olyr=fprop(disscat, 'fn') + 'v2')
 
     # Union Polygon and CAE
     polcae = grsunion(lulcdiss, caegrs, 'caeunion')

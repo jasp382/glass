@@ -9,7 +9,7 @@ def psql_cmd(db_name, sqlfile, dbcon=None):
     """
     
     import os
-    from glass.pys        import execmd
+    from glass.pys       import execmd
     from glass.cons.psql import con_psql
 
     cdb = con_psql(db_set=dbcon)

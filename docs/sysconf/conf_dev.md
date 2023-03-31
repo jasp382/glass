@@ -49,3 +49,13 @@ ptwo="${pvva[1]}"
 
 echo "/home/$USER/glass" | sudo tee ~/.virtualenvs/genv/lib/python$pone.$ptwo/site-packages/glass.pth
 ```
+
+
+### Set PGPASSFILE Environment variable:
+
+```
+echo "export PGPASSFILE=/home/$USER/.pgpass" | sudo tee --append ~/.bashrc
+
+sudo chmod 600 ~/.pgpass
+source ~/.bashrc
+```

@@ -186,8 +186,8 @@ def rn_cols(inShp, columns, api="ogr2ogr"):
 
         for col in columns:
             rcmd = execmd((
-                f"v.db.renamecolumn map={inShp} "
-                f"layer=1 column={col},{columns[col]}"
+                f"v.db.renamecolumn map={inShp} layer=1 "
+                f"column={col},{columns[col]}"
             ))
     
     elif api == 'pygrass':

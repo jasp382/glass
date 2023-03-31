@@ -2,52 +2,67 @@
 Datetime Objects Management
 """
 
+import datetime as dt
 
-def now_as_int():
+
+def now_as_int(utc=None):
     """
     Return Datetime.now as integer
     """
     
-    import datetime
+    _now = dt.datetime.now() if not utc else \
+        dt.datetime.utcnow()
     
-    _now = str(datetime.datetime.now())
+    now = int(_now.strftime('%Y%m%d%H%M%S'))
     
-    _now = _now.replace('-', '')
-    _now = _now.replace(' ', '')
-    _now = _now.replace(':', '')
-    _now = _now.split('.')[0]
-    
-    return int(_now)
+    return now
 
 
-def now_as_str():
+def now_as_str(utc=None):
     """
     Return Datetime.now as string
     """
     
     mapDic = {
-        '00' : '9',
-        '01' : 'a', '02' : 'b', '03' : 'c', '04' : 'd', '05'  : 'e', 
-        '06' : 'f', '07' : 'g', '08' : 'h', '09' : 'i', '10' : 'j',
-        '11' : 'k', '12' : 'l', '13' : 'm', '14' : 'n', '15' : 'o',
-        '16' : 'p', '17' : 'q', '18' : 'r', '19' : 's', '20' : 't',
-        '21' : 'u', '22' : 'v', '23' : 'w', '24' : 'x', '25' : 'y',
-        '26' : 'z', '27' : 'A', '28' : 'B', '29' : 'C', '30' : 'D',
-        '31' : 'E', '32' : 'F', '33' : 'G', '34' : 'H', '35' : 'I',
-        '36' : 'J', '37' : 'K', '38' : 'L', '39' : 'M', '40' : 'N',
-        '41' : 'O', '42' : 'P', '43' : 'Q', '44' : 'R', '45' : 'S',
-        '46' : 'T', '47' : 'U', '48' : 'V', '49' : 'W', '50' : 'X',
-        '51' : 'Y', '52' : 'Z', '53' : '1', '54' : '2', '55' : '3',
-        '56' : '4', '57' : '5', '58' : '6', '59' : '7', '60' : '8',
+        '00' : 'a',
+        '01' : 'b', '02' : 'c', '03' : 'd', '04' : 'e', '05' : 'f', 
+        '06' : 'g', '07' : 'h', '08' : 'i', '09' : 'j', '10' : 'k',
+        '11' : 'l', '12' : 'm', '13' : 'n', '14' : 'o', '15' : 'p',
+        '16' : 'q', '17' : 'r', '18' : 's', '19' : 't', '20' : 'u',
+        '21' : 'v', '22' : 'w', '23' : 'x', '24' : 'y', '25' : 'z',
+        '26' : '1', '27' : '2', '28' : '3', '29' : '4', '30' : '5',
+        '31' : '6', '32' : '7', '33' : '8', '34' : '9', '35' : '0',
+        '36' : '_a', '37' : '_c', '38' : '_d', '39' : '_e', '40' : '_f',
+        '41' : '_g', '42' : '_h', '43' : '_i', '44' : '_j', '45' : '_k',
+        '46' : '_l', '47' : '_m', '48' : '_n', '49' : '_o', '50' : '_p',
+        '51' : '_q', '52' : '_r', '53' : '_s', '54' : '_t', '55' : '_u',
+        '56' : '_v', '57' : '_w', '58' : '_x', '59' : '_y', '60' : '_z',
     }
     
-    N = str(now_as_int())[2:]
+    N = str(now_as_int(utc=utc))[2:]
     L = ''
     for c in range(0, len(N), 2):
         n = N[c:c+2]
         L += mapDic[n]
     
     return L
+
+
+def now_as_unix(utc=None, retnotunix=None):
+    """
+    Returns now as Unix Timestamp
+    """
+
+    import time
+
+    now = dt.datetime.now().replace(microsecond=0) \
+        if not utc else dt.datetime.utcnow().replace(microsecond=0)
+    
+    unix = int(time.mktime(now.timetuple()))
+
+    r = unix if not retnotunix else unix, now.strftime('%Y-%m-%d %H:%M:%S')
+
+    return r
 
 
 def day_to_intervals(interval_period):
@@ -135,7 +150,7 @@ def day_to_intervals2(intervaltime):
     return PERIODS
 
 
-def timerange(firstday, lastday):
+def daysrange(firstday, lastday):
     """
     Return a list with all days between firstday and lastday.
 

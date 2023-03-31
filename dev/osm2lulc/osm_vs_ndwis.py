@@ -63,7 +63,7 @@ def osm_vs_ndwis(shp, imds):
         from dgt.it.rst import grs_to_rst
         
         # Import shp data
-        watergrs = shp_to_grs(shp, fprop(shp, 'fn'))
+        watergrs = shp_to_grs(shp)
 
         imdgrs = rst_to_grs(i, fprop(i, 'fn'))
 

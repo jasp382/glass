@@ -44,7 +44,7 @@ def osm_vs_ndwi(shp, imd):
     gsetup.init(gb, ws, loc, 'PERMANENT')
     
     # GRASS GIS Modules
-    from dgt.it.shp import shp_to_grs, grs_to_shp
+    from glass.it.shp import shp_to_grs, grs_to_shp
     from dgt.it.rst import rst_to_grs
     from dgt.gp.gen import dissolve
     from dgt.gp.ovl import grsintersection
@@ -53,7 +53,7 @@ def osm_vs_ndwi(shp, imd):
     from dgt.it.rst import grs_to_rst
     
     # Import shp data
-    watergrs = shp_to_grs(shp, fprop(shp, 'fn'))
+    watergrs = shp_to_grs(shp)
 
     imdgrs = rst_to_grs(imd, fprop(imd, 'fn'))
         
