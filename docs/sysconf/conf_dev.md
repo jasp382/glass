@@ -35,7 +35,7 @@ pip install pygdal=="`gdal-config --version`.*"
 
 OR 
 
-ln -s /usr/lib/python3/dist-packages/osgeo* ~/.virtualenvs/firelocenv/lib/python3.10/site-packages
+ln -s /usr/lib/python3/dist-packages/osgeo* ~/.virtualenvs/genv/lib/python3.10/site-packages
 
 pv=$(/usr/bin/python3 --version)
 IFS=' '

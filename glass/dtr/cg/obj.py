@@ -30,7 +30,7 @@ def multipart_to_single(df, geomType, use_explode=True):
     
         return df_wsingle
     
-    ndf = df.explode(index_parts=True)
+    ndf = df.explode(index_parts=False)
 
     return ndf
 

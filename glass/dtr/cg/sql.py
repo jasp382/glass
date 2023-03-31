@@ -83,31 +83,29 @@ def add_endpnt_to_tbl(db, inTable, outTable,
     
     from glass.sql.q    import q_to_ntbl
     from glass.prop.sql import cols_name
+
+    cols = ", ".join(cols_name(db, inTable))
     
     return q_to_ntbl(db, outTable, (
-        "SELECT {cols}, {stPnt}, {endPnt} FROM ("
-            "SELECT *, lead({stPnt}) OVER ("
-                "PARTITION BY {colId} ORDER BY pnt_idx) AS {endPnt} "
+        f"SELECT {cols}, {startCol}, {endCol} FROM ("
+            f"SELECT *, lead({startCol}) OVER ("
+                f"PARTITION BY {idCol} ORDER BY pnt_idx) AS {endCol} "
             "FROM ("
-                "SELECT {cols}, pnt_idx, {stPnt}, "
+                f"SELECT {cols}, pnt_idx, {startCol}, "
                 "CASE "
                     "WHEN pnt_idx = 1 OR pnt_idx = MAX(pnt_idx) "
-                        "OVER (PARTITION BY {colId}) "
+                        f"OVER (PARTITION BY {idCol}) "
                     "THEN 1 ELSE 0 END AS pnt_cat "
                 "FROM ("
                     "SELECT {cols}, "
-                    "(ST_DumpPoints({geomF})).path[1] AS pnt_idx, "
-                    "(ST_DumpPoints({geomF})).geom AS {stPnt} "
+                    f"(ST_DumpPoints({geomCol})).path[1] AS pnt_idx, "
+                    f"(ST_DumpPoints({geomCol})).geom AS {startCol} "
                     "FROM {table}"
                 ") AS foo"
             ") AS foo2 "
             "WHERE pnt_cat = 1"
         ") AS foo3 "
-        "WHERE {endPnt} IS NOT NULL "
-        "ORDER BY {colId}, pnt_idx"
-    ).format(
-        cols  =", ".join(cols_name(db, inTable)),
-        stPnt = startCol, endPnt = endCol, colId = idCol,
-        geomF = geomCol , table  = inTable
+        f"WHERE {endCol} IS NOT NULL "
+        f"ORDER BY {idCol}, pnt_idx"
     ), api='psql')
 

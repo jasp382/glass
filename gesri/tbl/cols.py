@@ -4,12 +4,6 @@ Manage Table Columns
 
 import arcpy
 
-def add_col(tbl, name, fld_type, length, precision=""):
-    arcpy.AddField_management(
-        tbl, name, fld_type, length, precision, "", "",
-        "NULLABLE", "NON_REQUIRED", ""
-    )
-
 
 def del_field(tbl, drop_fields, table_format=None):
     """
@@ -39,26 +33,6 @@ def del_field(tbl, drop_fields, table_format=None):
     
     for tbl in tables:
         arcpy.DeleteField_management(tbl, drop_fields)
-
-
-def calc_fld(table, fld, expression, isNewField=None):
-    """
-    Field Calculator
-    
-    isNewField = {
-        "TYPE" : "DOUBLE", "LENGTH" : "10", "PRECISION" : "3"
-    }
-    """
-    
-    if isNewField:
-        add_col(
-            table, fld, isNewField["TYPE"],
-            isNewField["LENGTH"], isNewField["PRECISION"]
-        )
-    
-    arcpy.CalculateField_management(
-        table, fld, expression, "PYTHON3", ""
-    )
 
 
 def get_field_type_str(field_type):
@@ -164,21 +138,6 @@ def field_statistics(shp, fld, STATS):
             STATS[i] = sum(VAL) / len(VAL)
     
     return STATS if len(STATS) > 1 else STATS[0]
-
-
-def add_geom_attr(lyr, field_name, geom_attr="AREA"):
-    """
-    Add Geometry Attribute to table
-    
-    TODO: Now works only with Polygon and geom_attr=Area
-    """
-    
-    arcpy.AddGeometryAttributes_management(lyr, geom_attr)
-    
-    add_col(lyr, field_name, "DOUBLE", "10", "3")
-    calc_fld(lyr, field_name, "[POLY_AREA]")
-    
-    del_field(lyr, ["POLY_AREA"])
 
 
 def distint_values_column(shp, field):

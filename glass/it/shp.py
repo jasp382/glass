@@ -287,12 +287,11 @@ def dbtbl_to_shp(db, tbl, geom_col, outShp, where=None, inDB='psql',
     started already. 
     """
 
-    from glass.wt.shp import df_to_shp
+    from glass.wt.shp    import df_to_shp
+    from glass.pys       import execmd
+    from glass.cons.psql import con_psql
     
     if outShpIsGRASS:
-        from glass.pys       import execmd
-        from glass.cons.psql import con_psql
-
         db_con = con_psql(db_set=dbset)
         
         whr = "" if not where else f" where=\"{where}\""
@@ -317,10 +316,8 @@ def dbtbl_to_shp(db, tbl, geom_col, outShp, where=None, inDB='psql',
     
     else:
         if api == 'pgsql2shp':
-            from glass.pys       import execmd
-            from glass.cons.psql import con_psql
-
             db_con = con_psql(db_set=dbset)
+            
             geom = '' if not geom_col else f' -g {geom_col}'
             t    = tbl if not tableIsQuery else f'"{tbl}"'
             

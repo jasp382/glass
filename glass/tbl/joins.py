@@ -2,18 +2,19 @@
 Custom Joins with GRASS GIS
 """
 
-def join_table(inShp, jnTable, shpCol, joinCol):
+def join_table(shp, jshp, shpid, joinfk):
     """
     Join Tables using GRASS GIS
     """
     
     from glass.pys import execmd
     
-    rcmd = execmd(
-        "v.db.join map={} column={} other_table={} other_column={}".format(
-            inShp, shpCol, jnTable, joinCol
-            )
-        )
+    rcmd = execmd((
+        f"v.db.join map={shp} column={shpid} "
+        f"other_table={jshp} other_column={joinfk}"
+    ))
+
+    return shp
 
 
 def join_attr_by_distance(mainTable, joinTable, workGrass, epsg_code,
@@ -39,8 +40,8 @@ def join_attr_by_distance(mainTable, joinTable, workGrass, epsg_code,
     gsetup.init(grassBase, workGrass, 'join_loc', 'PERMANENT')
     
     # Import some GRASS GIS tools
-    from glass.gp.prox  import grs_near as near
-    from glass.it.shp   import shp_to_grs, grs_to_shp
+    from glass.gp.prox import grs_near as near
+    from glass.it.shp  import shp_to_grs, grs_to_shp
     
     # Import data into GRASS GIS
     grsMain = shp_to_grs(mainTable, fprop(
@@ -85,16 +86,16 @@ def joinLines_by_spatial_rel_raster(mainLines, mainId, joinLines,
     An raster based approach
     """
     
-    import os;             import pandas
-    from glass.rd.shp    import shp_to_obj
-    from glass.wt.shp    import df_to_shp
-    from glass.gp.ext    import shpext_to_boundshp
-    from glass.dtr.torst  import shp_to_rst
-    from glass.it.pd     import df_to_geodf
-    from glass.wenv.grs  import run_grass
-    from glass.pd.joins import join_dfs
-    from glass.pd.agg   import df_groupBy
-    from glass.pys.oss     import fprop, mkdir
+    import os; import pandas as pd
+    from glass.rd.shp        import shp_to_obj
+    from glass.wt.shp        import df_to_shp
+    from glass.dtr.ext.toshp import shpext_to_boundshp
+    from glass.dtr.torst     import shp_to_rst
+    from glass.it.pd         import df_to_geodf
+    from glass.wenv.grs      import run_grass
+    from glass.pd.joins      import join_dfs
+    from glass.pd.agg        import df_groupBy
+    from glass.pys.oss       import fprop, mkdir
     
     workspace = mkdir(os.path.join(
         os.path.dirname(mainLines, 'tmp_dt')
@@ -112,7 +113,6 @@ def joinLines_by_spatial_rel_raster(mainLines, mainId, joinLines,
     # Start GRASS GIS Session
     gbase = run_grass(workspace, location="grs_loc", srs=boundRst)
     
-    import grass.script       as grass
     import grass.script.setup as gsetup
     
     gsetup.init(gbase, workspace, "grs_loc", "PERMANENT")
@@ -120,7 +120,7 @@ def joinLines_by_spatial_rel_raster(mainLines, mainId, joinLines,
     from glass.rst.local import combine
     from glass.prop.rst  import get_rst_report_data
     from glass.it.shp    import shp_to_grs, grs_to_shp
-    from glass.dtr.torst  import grsshp_to_grsrst as shp_to_rst
+    from glass.dtr.torst import grsshp_to_grsrst as shp_to_rst
     
     # Add data to GRASS GIS
     mainVector = shp_to_grs(
@@ -135,7 +135,7 @@ def joinLines_by_spatial_rel_raster(mainLines, mainId, joinLines,
     
     combine_data = get_rst_report_data(combRst, UNITS="c")
     
-    combDf = pandas.DataFrame(combine_data, columns=[
+    combDf = pd.DataFrame(combine_data, columns=[
         "comb_cat", "rst_1", "rst_2", "ncells"
     ])
     combDf = combDf[combDf["rst_2"] != '0']

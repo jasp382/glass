@@ -9,7 +9,7 @@ def copy_feat(inshp, outshp):
     Copy features
     """
 
-    arcpy.CopyFeatures_management(inshp, outshp)
+    arcpy.management.CopyFeatures(inshp, outshp)
 
     return outshp
 
@@ -44,7 +44,7 @@ def del_empty_files(folder, file_format):
     0 features
     """
     
-    from glass.pys.oss  import lst_ff
+    from glass.pys.oss   import lst_ff
     from glass.prop.feat import feat_count
     
     fc = lst_ff(folder, file_format=file_format)

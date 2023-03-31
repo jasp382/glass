@@ -28,15 +28,14 @@ def rcls_rst(inrst, rclsRules, outrst, api='gdal', maintain_ext=True):
     """
     
     if api == 'gdal':
-        import numpy          as np
-        import os
-        from osgeo            import gdal
+        import numpy        as np
+        from osgeo          import gdal
         from glass.wt.rst   import obj_to_rst
         from glass.rd.rsrc  import imgsrc_to_num
         from glass.prop.img import get_nd
 
         if not os.path.exists(inrst):
-            raise ValueError('File {} does not exist!'.format(inrst))
+            raise ValueError(f'File {inrst} does not exist!')
 
         # Open Raster
         img = gdal.Open(inrst)
@@ -93,6 +92,14 @@ def rcls_rst(inrst, rclsRules, outrst, api='gdal', maintain_ext=True):
         
         r()
     
+    elif api == "grass":
+        from glass.pys import execmd
+
+        rcmd = execmd((
+            f"r.reclass input={inrst} output={outrst} "
+            f"rules={rclsRules} --overwrite --quiet"
+        ))
+    
     else:
         raise ValueError(f"API {api} is not available")
     
@@ -102,6 +109,29 @@ def rcls_rst(inrst, rclsRules, outrst, api='gdal', maintain_ext=True):
 """
 Reclassify in GRASS GIS
 """
+
+def rcls_rules(dic, out_rules):
+    """
+    Write reclassify rules file
+    """
+
+    if os.path.splitext(out_rules)[1] != '.txt':
+        out_rules = os.path.splitext(out_rules)[0] + '.txt'
+    
+    with open(out_rules, 'w') as txt:
+        for k in dic:
+            if type(k) == tuple:
+                thru = [
+                    f'{str(k[i-1])} thru {str(k[i])}'
+                    for i in range(1, len(k), 2)
+                ]
+
+                txt.write(f'{"  ".join(thru)}  = {str(dic[k])}\n')
+            
+            else:
+                txt.write(f'{str(k)}  = {str(dic[k])}\n')
+
+    return out_rules
 
 
 def interval_rules(dic, out_rules):
@@ -116,8 +146,6 @@ def interval_rules(dic, out_rules):
         (lower_class_value, upper_class_value) : new_valuen
     }
     """
-    
-    import os
     
     if os.path.splitext(out_rules)[1] != '.txt':
         out_rules = os.path.splitext(out_rules)[0] + '.txt'
@@ -178,9 +206,7 @@ def set_null(rst, value, ascmd=None):
     else:
         from glass.pys import execmd
         
-        rcmd = execmd("r.null map={} setnull={} --quiet".format(
-            rst, value
-        ))
+        rcmd = execmd(f"r.null map={rst} setnull={value} --quiet")
 
 
 def null_to_value(rst, value, as_cmd=None):
@@ -210,12 +236,11 @@ def rstval_to_binrst(rst, outfld, fileformat=None):
     """
     Export all values in a raster to new binary raster
     """
-
-    import os
-    import numpy as np
-    from osgeo import gdal
-    from glass.wt.rst import obj_to_rst
-    from glass.pys.oss  import fprop
+    
+    import numpy       as np
+    from osgeo         import gdal
+    from glass.wt.rst  import obj_to_rst
+    from glass.pys.oss import fprop
 
     fileformat = fileformat if fileformat else '.tif'
 

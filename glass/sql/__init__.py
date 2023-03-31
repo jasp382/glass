@@ -21,8 +21,10 @@ def psql_cmd(db_name, sqlfile, dbcon=None):
     else:
         sqls = [sqlfile]
     
-    cmd = (f"psql -h {cdb['HOST']} -U {cdb['USER']} "
-           f"-p {cdb['PORT']} -w {db_name} < ")
+    cmd = (
+        f"psql -h {cdb['HOST']} -U {cdb['USER']} "
+        f"-p {cdb['PORT']} -w {db_name} < "
+    )
     
     for s in sqls:
         outcmd = execmd(f"{cmd}{s}")

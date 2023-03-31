@@ -45,6 +45,50 @@ def col_list_val_to_row(pndDf, colWithLists, geomCol=None, epsg=None):
         return pd.DataFrame(new_rows)
 
 
+def col_listwlist_to_row(df, col, ncols, geomcol=None, epsg=None):
+    """
+    Convert a dataframe:
+
+    ncols = ['col_d', 'col_e']
+    
+       | col_a | col_b | col_c
+     0 |   X   |   X   | [[5, 6],[7, 8]]
+     1 |   X   |   X   | [[0, 2],[1, 3]]
+     
+    To:
+       | col_a | col_b | col_d | col_e
+     0 |   X   |   X   |   5   |   6
+     1 |   X   |   X   |   7   |   8
+     2 |   X   |   X   |   0   |   2
+     3 |   X   |   X   |   1   |   3
+    """
+
+    def desmembrate(row, row_acc, target_col, _ncols):
+        for lst in row[target_col]:
+            new_row = row.to_dict()
+
+            for i in range(len(lst)):
+                new_row[_ncols[i]] = lst[i]
+            
+            row_acc.append(new_row)
+    
+    newr = []
+    df.apply(lambda x: desmembrate(x, newr, col, ncols), axis=1)
+
+    # Convert again to DataFrame
+    if geomcol and epsg:
+        from glass.it.pd import df_to_geodf
+        
+        ndf = df_to_geodf(newr, geomcol, epsg)
+    
+    else:
+        ndf = pd.DataFrame(newr)
+    
+    ndf.drop(col, axis=1, inplace=True)
+
+    return ndf
+
+
 def dfcolstorows(inDf, colField, valField, colFid=None):
     """
     Dataframe Like:

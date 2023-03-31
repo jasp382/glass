@@ -39,7 +39,7 @@ def get_shp_sref(shp):
     Get Spatial Reference Object from Feature Class/Lyr
     """
     
-    from osgeo        import ogr
+    from osgeo      import ogr
     from glass.prop import drv_name
     
     if type(shp) == ogr.Layer:
@@ -107,16 +107,12 @@ def get_shp_epsg(shp, returnIsProj=None):
         epsg = get_gml_epsg(shp)
         
         if not epsg:
-            raise ValueError(
-                '{} file has not Spatial Reference assigned!'.format(shp)
-            )
+            raise ValueError(f'{shp} file has not Spatial Reference assigned!')
         
         proj = get_sref_from_epsg(int(epsg))
     
     if not proj:
-        raise ValueError(
-            '{} file has not Spatial Reference assigned!'.format(shp)
-        )
+        raise ValueError(f'{shp} file has not Spatial Reference assigned!')
     
     epsg = int(str(proj.GetAttrValue('AUTHORITY', 1)))
     
@@ -170,20 +166,23 @@ def get_rst_epsg(rst, returnIsProj=None):
 Generic Methods
 """
 
-def get_epsg(inFile):
+def get_epsg(inFile, is_proj=None):
     """
     Get EPSG of any GIS File
     """
     
     from glass.prop import is_rst, is_shp
+
+    irst, ishp = is_rst(inFile), is_shp(inFile)
     
-    if is_rst(inFile):
-        return get_rst_epsg(inFile)
+    if irst and not ishp:
+        return get_rst_epsg(inFile, returnIsProj=is_proj)
+    
+    elif not irst and ishp:
+        return get_shp_epsg(inFile, returnIsProj=is_proj)
+    
     else:
-        if is_shp(inFile):
-            return get_shp_epsg(inFile)
-        else:
-            return None
+        return None
 
 
 def get_srs(in_file):

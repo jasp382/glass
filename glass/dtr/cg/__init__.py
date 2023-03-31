@@ -173,7 +173,6 @@ def polylines_from_points(points, polylines, POLYLINE_COLUMN,
     
     import os; from osgeo import ogr
     from glass.prop  import drv_name
-    from glass.prj      import def_prj
     from glass.prop.col import ogr_list_fields_defn
     from glass.lyr.fld   import fields_to_lyr
     
@@ -461,9 +460,9 @@ def lnh_to_polygons(inShp, outShp, api='saga', db=None):
         from glass.pys  import execmd
         
         rcmd = execmd((
-            "saga_cmd shapes_polygons 3 -POLYGONS {} "
-            "LINES {} -SINGLE 1 -MERGE 1"
-        ).format(outShp, inShp))
+            f"saga_cmd shapes_polygons 3 -POLYGONS {outShp} "
+            f"LINES {inShp} -SINGLE 1 -MERGE 1"
+        ))
     
     elif api == 'grass' or api == 'pygrass':
         # Do it using GRASS GIS

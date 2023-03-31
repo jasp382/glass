@@ -36,16 +36,13 @@ def fprop(__file, prop, forceLower=None, fs_unit=None):
 
     result = {}
 
+    fn, ff = os.path.splitext(os.path.basename(__file))
+
     if 'filename' in prop or 'fn' in prop:
-        fn, ff = os.path.splitext(os.path.basename(__file))
-
         result['filename'] = fn if not forceLower else fn.lower()
-
-        if 'fileformat' in prop or 'fn' in prop:
-            result['fileformat'] = ff
     
-    elif 'fileformat' in prop or 'ff' in prop:
-        result['fileformat'] = os.path.splitext(__file)[1]
+    if 'fileformat' in prop or 'ff' in prop:
+        result['fileformat'] = ff
     
     if 'filesize' in prop or 'fs' in prop:
         fs_unit = 'MB' if not fs_unit else fs_unit
@@ -73,12 +70,14 @@ def fprop(__file, prop, forceLower=None, fs_unit=None):
         return result
 
 
-def lst_ff(w, file_format=None, filename=None, rfilename=None):
+def lst_ff(w, file_format=None, filename=None, fnpart=None, rfilename=None):
     """
     List the abs path of all files with a specific extension on a folder
     """
     
     from glass.pys import obj_to_lst
+    
+    filename = None if filename and fnpart else filename
     
     # Prepare file format list
     if file_format:
@@ -111,10 +110,9 @@ def lst_ff(w, file_format=None, filename=None, rfilename=None):
             t = [i for i in r if os.path.splitext(i)[1] in formats]
     
     # Filter by filename
-    if not filename:
-        return t
+    if not filename and not fnpart: return t
     
-    else:
+    elif filename and not fnpart:
         filename = obj_to_lst(filename)
         
         _t = []
@@ -122,6 +120,20 @@ def lst_ff(w, file_format=None, filename=None, rfilename=None):
             fn = fprop(i, 'fn') if not rfilename else i
             if fn in filename:
                 _t.append(i)
+        
+        return _t
+    
+    elif not filename and fnpart:
+        fnp = obj_to_lst(fnpart)
+        
+        _t = []
+        for i in t:
+            fn = fprop(i, 'fn') if not rfilename else i
+            
+            for _f in fnp:
+                if _f in fn:
+                    _t.append(i)
+                    break
         
         return _t
 
@@ -362,7 +374,7 @@ def onFolder_rename2(folder, newBegin, stripStr, fileFormats=None):
         name = fprop(_file, 'fn', forceLower=True)
         
         new_name = name.replace(stripStr, '')
-        new_name = "{}{}{}".format(newBegin, new_name, fprop(_file, 'ff'))
+        new_name = f"{newBegin}{new_name}{fprop(_file, 'ff')}"
         
         os.rename(_file, os.path.join(os.path.dirname(_file), new_name))
 
