@@ -59,13 +59,13 @@ def otp_cf_based_on_rel(incidents, group_incidents_col,
 
     import os
     import pandas as pd
-    from glass.rd         import tbl_to_obj
+    from glass.rd          import tbl_to_obj
     from glass.rd.shp      import shp_to_obj
     from glass.wt.shp      import obj_to_shp
     from glass.mob.otp.log import clsfacility
     from glass.prop.prj    import get_shp_epsg
-    from glass.pd         import merge_df
-    from glass.pys.oss       import fprop
+    from glass.dtr.mge.pd  import merge_df
+    from glass.pys.oss     import fprop
     from glass.prj.obj     import df_prj
 
     # Avoid problems when facilities_id == facilities_fk
@@ -140,13 +140,13 @@ def otp_servarea(facilities, hourday, date, breaks, output, vel=None):
     import requests
     import os
     from glass.cons.otp   import ISO_URL
-    from glass.rd.shp   import shp_to_obj
-    from glass.prj.obj  import df_prj
-    from glass.prop.prj import get_shp_epsg
-    from glass.wt.shp   import obj_to_shp
+    from glass.rd.shp     import shp_to_obj
+    from glass.prj.obj    import df_prj
+    from glass.prop.prj   import get_shp_epsg
+    from glass.wt.shp     import obj_to_shp
     from glass.pys.oss    import fprop
-    from glass.it.pd    import json_obj_to_geodf
-    from glass.pd      import merge_df
+    from glass.it.pd      import json_obj_to_geodf
+    from glass.dtr.mge.pd import merge_df
     from glass.pys        import obj_to_lst
 
     breaks = obj_to_lst(breaks)

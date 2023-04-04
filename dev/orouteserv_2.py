@@ -181,7 +181,7 @@ def servarea_from_points(pntShp, inEPSG, range, outShp,
     from glass.adv.mob.orouteserv import get_keys, isochrones
     from glass.rd              import tbl_to_obj
     from glass.df.split           import df_split
-    from glass.df.mng             import merge_df
+    from glass.dtr.mge.pd import merge_df
     from glass.prop.feat        import get_gtype
     from glass.prj              import proj
     from glass.df.to              import df_to_dict
@@ -275,7 +275,7 @@ def cost_od(shpOrigins, shpDestinations, epsgOrigins, epsgDestinations,
     from glass.df.split           import df_split
     from glass.tbl.col          import pointxy_to_cols
     from glass.prj             import proj
-    from glass.df.mng             import merge_df
+    from glass.dtr.mge.pd import merge_df
     from glass.prop.feat       import get_gtype
     from glass.wt              import obj_to_tbl
     

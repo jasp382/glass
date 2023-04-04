@@ -65,7 +65,7 @@ def getosm_to_featcls(inBoundary, outVector, boundaryEpsg=4326,
     """
 
     import os
-    from glass.acq.osm import download_by_boundary
+    from glass.acq.osm.dwl import download_by_boundary
 
     # Download data from the web
     osmData = download_by_boundary(
@@ -101,8 +101,6 @@ def osm_merge(osm_files, out_osm):
             'osm_files must be a non empty list'
         ))
 
-    rcmd = execmd("osmium merge {} -o {}".format(
-        " ".join(osm_files), out_osm
-    ))
+    rcmd = execmd(f"osmium merge {' '.join(osm_files)} -o {out_osm}")
 
     return out_osm

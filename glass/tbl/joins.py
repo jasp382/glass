@@ -1,6 +1,10 @@
 """
-Custom Joins with GRASS GIS
+Custom Joins
 """
+
+import os
+import pandas as pd
+
 
 def join_table(shp, jshp, shpid, joinfk):
     """
@@ -26,7 +30,6 @@ def join_attr_by_distance(mainTable, joinTable, workGrass, epsg_code,
     Uses GRASS GIS to find near lines.
     """
     
-    import os
     from glass.wenv.grs import run_grass
     from glass.rd.shp   import shp_to_obj
     from glass.it.pd    import df_to_geodf
@@ -86,7 +89,6 @@ def joinLines_by_spatial_rel_raster(mainLines, mainId, joinLines,
     An raster based approach
     """
     
-    import os; import pandas as pd
     from glass.rd.shp        import shp_to_obj
     from glass.wt.shp        import df_to_shp
     from glass.dtr.ext.toshp import shpext_to_boundshp
@@ -182,7 +184,6 @@ def join_shp_with_tbl(shp, shp_pk, tbl, tbl_fk, outShp,
     Join BGRI ESRI Shapefile with table in xlsx or csv formats
     """
     
-    import pandas     as pd
     from glass.pys    import obj_to_lst
     from glass.rd     import tbl_to_obj
     from glass.rd.shp import shp_to_obj
@@ -252,7 +253,6 @@ def loop_join_shp_tbl(mfolder, shpname, tblname, shp_pk, tbl_fk, oname):
     of a main folder
     """
 
-    import os
     from glass.pys.oss import lst_fld
 
     folders = lst_fld(mfolder)
@@ -272,11 +272,9 @@ def loop_join_shp_tbl_sameid(fa, fb, of, apk, bfk, oname, tbff='.dbf'):
     with same id
     """
 
-    import os
-    import pandas as pd
     from glass.pys.oss import lst_ff, lst_fld, mkdir
 
-    fld = lst_fld(os.path.dirname(of))
+    fld = lst_fld(os.path.dirname(of), name=True)
 
     if os.path.basename(of) not in fld:
         mkdir(of, overwrite=False)
@@ -328,8 +326,7 @@ def calc_mean_samecol_sevshp(intbls, pk, meancol, output, tformat='.shp'):
     This script calculate the mean of all these columns
     """
 
-    import os
-    from glass.wt    import obj_to_tbl
+    from glass.wt     import obj_to_tbl
     from glass.rd.shp import shp_to_obj
 
     if os.path.isdir(intbls):
@@ -355,15 +352,18 @@ def calc_mean_samecol_sevshp(intbls, pk, meancol, output, tformat='.shp'):
 
         if d:
             dfs[d].rename(columns={
-                pk      : "{}_{}".format(pk, str(d)),
-                meancol : "{}_{}".format(meancol, str(d))
+                pk      : f"{pk}_{str(d)}",
+                meancol : f"{meancol}_{str(d)}"
             }, inplace=True)
     
     # Join all DFS
     main_df = dfs[0]
 
     for d in range(1, len(dfs)):
-        main_df = main_df.merge(dfs[d], how='outer', left_on=pk, right_on="{}_{}".format(pk, str(d)))
+        main_df = main_df.merge(
+            dfs[d], how='outer', left_on=pk,
+            right_on=f"{pk}_{str(d)}"
+        )
 
         main_df[meancol] = main_df[meancol] + main_df[meancol + "_" + str(d)]
     
@@ -373,8 +373,8 @@ def calc_mean_samecol_sevshp(intbls, pk, meancol, output, tformat='.shp'):
     # Drop uncessary cols
     drop_cols = []
     for d in range(1, len(dfs)):
-        drop_cols.append("{}_{}".format(pk, str(d)))
-        drop_cols.append("{}_{}".format(meancol, str(d)))
+        drop_cols.append(f"{pk}_{str(d)}")
+        drop_cols.append(f"{meancol}_{str(d)}")
     
     main_df.drop(drop_cols, axis=1, inplace=True)
 
@@ -397,7 +397,7 @@ def join_xls_table(main_table, fid_main, join_table, fid_join, copy_fields, out_
     """
     
     import xlwt
-    from glass.rd      import tbl_to_obj
+    from glass.rd          import tbl_to_obj
     from glass.tbl.xls.fld import col_name
     
     copy_fields = [copy_fields] if type(copy_fields) == str else \
@@ -479,7 +479,6 @@ def join_tables_in_table(mainTable, mainIdField, joinTables, outTable):
     """
     
     # Modules
-    import os
     from glass.rd import tbl_to_obj
     from glass.wt import obj_to_tbl
     
@@ -567,7 +566,7 @@ def field_sum_by_table_folder(folderOne, joinFieldOne,
                               folderTwo, joinFieldTwo,
                               sum_field, outFolder):
     
-    import os; from glass.pys.oss import lst_ff, fprop
+    from glass.pys.oss import lst_ff, fprop
     
     tablesOne = lst_ff(folderOne, file_format=['.xls', '.xlsx'])
     tablesTwo = lst_ff(folderTwo, file_format=['.xls', '.xlsx'])
