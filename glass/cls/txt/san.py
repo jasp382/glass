@@ -10,11 +10,11 @@ def get_stop_words(inTbl, fidCol, txtCol, outFile,
     Uses PostgreSQL dictionaries to get stop words
     """
     
-    from glass.pys.oss     import fprop
+    from glass.pys.oss  import fprop
     from glass.prop.sql import cols_name
     from glass.sql.db   import create_db
-    from glass.it.sql      import tbl_to_db
-    from glass.it          import db_to_tbl
+    from glass.it.db    import tbl_to_db
+    from glass.it       import db_to_tbl
     
     FILENAME = fprop(inTbl, 'fn')
     

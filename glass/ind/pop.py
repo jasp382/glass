@@ -2,6 +2,9 @@
 Produce indicators
 """
 
+import pandas as pd
+
+
 def pop_within_area(mapunits, mapunits_id, outcol, subunits,
     subunits_id, pop_col, mapunits_fk,
     area_shp, output, res_areas=None, res_areas_fk=None):
@@ -15,7 +18,6 @@ def pop_within_area(mapunits, mapunits_id, outcol, subunits,
     """
 
     import os
-    import pandas            as pd
     from glass.rd.shp        import shp_to_obj
     from glass.dtr.ext.torst import shpext_to_rst
     from glass.wt.shp        import obj_to_shp
@@ -141,7 +143,6 @@ def calc_iwpop_agg(mapunits, mapunits_id, subunits, mapunits_fk,
     a infra-estrutura mais proxima
     """
 
-    import pandas as pd
     from glass.rd.shp import shp_to_obj
     from glass.wt.shp import df_to_shp
 
@@ -228,7 +229,6 @@ def shparea_by_mapunitpopulation(polygons, mapunits, units_id, outcol, output,
     """
 
     import os
-    import pandas            as pd
     import geopandas         as gp
     from glass.dtr.ext.torst import shpext_to_rst
     from glass.pys.oss       import mkdir, fprop

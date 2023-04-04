@@ -35,3 +35,60 @@ def rst_mean(rsts, out_rst):
     # Export result
     return obj_to_rst(num_out, out_rst, src_rst[0], noData=nd_out)
 
+
+
+def count_region_in_shape(folder, ref, out):
+    """
+    Count how many times a region appears in a set
+    of ESRI Shapefiles
+
+    e.g. Count how many times an area was burned
+    """
+
+    import os
+
+    from glass.pys.oss  import lst_ff, fprop
+    from glass.wenv.grs import run_grass
+
+    # List burn areas shapes
+    shps = lst_ff(folder, file_format='.shp')
+
+    # Start GRASS GIS Session
+    orst_name = fprop(out, 'fn')
+    ws = os.path.dirname(out)
+    loc = f'locprod_{orst_name}'
+
+    gb = run_grass(ws, location=loc, srs=ref)
+
+    import grass.script.setup as gsetup
+
+    gsetup.init(gb, ws, loc, 'PERMANENT')
+
+    from glass.it.shp    import shp_to_grs
+    from glass.it.rst    import grs_to_rst
+    from glass.rst.alg   import rstcalc
+    from glass.rst.rcls  import null_to_value
+    from glass.dtr.torst import grsshp_to_grsrst
+
+    # For each shape
+    # Import it to GRASS GIS
+    # Convert to Raster
+    # Null to zero
+    rsts = []
+    for shp in shps:
+        gshp = shp_to_grs(shp)
+    
+        rshp = grsshp_to_grsrst(gshp, 1, f'rst_{gshp}')
+    
+        null_to_value(rshp, 0)
+    
+        rsts.append(rshp)
+    
+    # Sum all rasters
+    frst = rstcalc(" + ".join(rsts), orst_name, api='grass')
+
+    # Export final raster
+    grs_to_rst(frst, out)
+
+    return out
+

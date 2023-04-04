@@ -10,9 +10,9 @@ def shp_to_djg_mdl(in_shp, app, mdl, cols_map, djg_proj):
     from django.contrib.gis.geos       import GEOSGeometry
     from django.contrib.gis.db         import models
     from glass.pys                     import __import
-    from glass.webg.djg                 import get_djgprj
-    from glass.rd.shp            import shp_to_obj
-    from glass.prop.prj         import get_shp_epsg
+    from glass.webg.djg                import get_djgprj
+    from glass.rd.shp                  import shp_to_obj
+    from glass.prop.prj                import get_shp_epsg
     from shapely.geometry.multipolygon import MultiPolygon
 
     def force_multi(geom):
@@ -23,7 +23,7 @@ def shp_to_djg_mdl(in_shp, app, mdl, cols_map, djg_proj):
 
     application = get_djgprj(djg_proj)
     
-    mdl_cls = __import('{}.models.{}'.format(app, mdl))
+    mdl_cls = __import(f'{app}.models.{mdl}')
     mdl_obj = mdl_cls()
         
     in_df = shp_to_obj(in_shp)

@@ -2,8 +2,11 @@
 Overlay operations
 """
 
-from glass.pys.oss import fprop
+import os
 
+from glass.pys      import execmd
+from glass.pys.oss  import fprop
+from glass.wenv.grs import run_grass
 
 """
 Intersection in the same Feature Class/Table
@@ -16,7 +19,7 @@ def line_intersect_to_pnt(inShp, outShp, db=None):
     """
     
     from glass.it.shp     import dbtbl_to_shp
-    from glass.sql.db    import create_db
+    from glass.sql.db     import create_db
     from glass.it.db      import shp_to_psql
     from glass.gp.ovl.sql import line_intersection_pnt
     
@@ -57,8 +60,6 @@ def grsunion(lyra, lyrb, oshp, cmd=None):
     """
 
     if cmd:
-        from glass.pys  import execmd
-        
         outcmd = execmd((
             f"v.overlay ainput={lyra} atype=area "
             f"binput={lyrb} btype=area "
@@ -91,17 +92,12 @@ def union(lyrA, lyrB, outShp, api_gis="grass"):
     """
     
     if api_gis == "saga":
-        from glass.pys  import execmd
-        
         rcmd = execmd((
             f"saga_cmd shapes_polygons 17 -A {lyrA} "
             f"-B {lyrB} -RESULT {outShp} -SPLIT 1"
         ))
     
     elif api_gis == "pygrass" or api_gis == "grass":
-        import os
-        from glass.wenv.grs import run_grass
-        from glass.pys.oss    import fprop
         from glass.prop.prj import get_epsg
 
         ws = os.path.dirname(outShp)
@@ -132,6 +128,53 @@ def union(lyrA, lyrB, outShp, api_gis="grass"):
         raise ValueError(f"{api_gis} is not available!")
     
     return outShp
+
+
+def union_all(shp_folder, ref, out):
+    """
+    Union all ESRI Shapefiles in one folder
+    """
+
+    from glass.pys.oss import lst_ff
+
+    shps = lst_ff(shp_folder, file_format='.shp')
+
+    # Start GRASS GIS Session
+    ws = os.path.dirname(out)
+    loc = f'locprod_{fprop(out, "fn")}'
+
+    gb = run_grass(ws, location=loc, srs=ref)
+
+    import grass.script.setup as gsetup
+
+    gsetup.init(gb, ws, loc, 'PERMANENT')
+
+    from glass.it.shp  import shp_to_grs, grs_to_shp
+    from glass.tbl.grs import reset_table
+    from glass.gp.gen  import dissolve
+
+    res = None
+    for shp in shps:
+        # Import shapes into grass
+        _shp = shp_to_grs(shp)
+
+        if not res:
+            res = _shp
+            continue
+    
+        # Union
+        res = grsunion(res, _shp, f'un_{_shp}')
+    
+        # Reset table
+        reset_table(res, {'code' : 'integer'}, {'code' : '1'})
+    
+        # Dissolve
+        res = dissolve(res, f'ds_{_shp}', 'code', api='pygrass')
+    
+    # Export result
+    grs_to_shp(res, out, 'area')
+
+    return out
 
 
 def union_for_all_pairs(inputList):
@@ -180,8 +223,7 @@ def optimized_union_anls(lyr_a, lyr_b, outShp, ref_boundary,
     Goal: optimize v.overlay performance for Union operations
     """
     
-    import os
-    import multiprocessing
+    import multiprocessing   as mp
     from glass.pys.oss       import mkdir, fprop, lst_ff
     from glass.pys.oss       import cpu_cores
     from glass.smp           import create_fishnet
@@ -306,7 +348,7 @@ def optimized_union_anls(lyr_a, lyr_b, outShp, ref_boundary,
             # Export
             o = grs_to_shp(u_shp, output, "area")
         
-        thrds = [multiprocessing.Process(
+        thrds = [mp.Process(
             target=clip_and_union, name="th-{}".format(i), args=(
                 lyr_a, lyr_b, cellsShp[i],
                 os.path.join(workspace, "th_{}".format(i)), i,
@@ -344,8 +386,6 @@ def grsintersection(inshp, intshp, outshp, cmd=None):
     """
 
     if cmd:
-        from glass.pys  import execmd
-
         rcmd = execmd((
             f"v.overlay ainput={inshp} atype=area, "
             f"binput={intshp} btype=area "
@@ -392,17 +432,12 @@ def intersection(inShp, intersectShp, outShp, api='geopandas'):
         df_to_shp(res_interse, outShp)
     
     elif api == 'saga':
-        from glass.pys  import execmd
-        
         cmdout = execmd((
             f"saga_cmd shapes_polygons 14 -A {inShp} "
             f"-B {intersectShp} -RESULT {outShp} -SPLIT 1"
         ))
     
     elif api == 'pygrass' or api == 'grass':
-        import os
-        from glass.wenv.grs import run_grass
-        from glass.pys.oss  import fprop
         from glass.prop.prj import get_epsg
 
         epsg = get_epsg(inShp)
@@ -464,8 +499,6 @@ def self_intersection(polygons, output):
     Create a result with the self intersections
     """
     
-    from glass.pys  import execmd
-    
     cmd = (
         f'saga_cmd shapes_polygons 12 -POLYGONS '
         f'{polygons} -INTERSECT {output}'
@@ -493,8 +526,6 @@ def erase(inShp, erase_feat, out, splitMultiPart=None, notTbl=None,
         
         It appears to be very slow
         """
-
-        from glass.pys  import execmd
 
         sp = '0' if not splitMultiPart else '1'
     
@@ -525,8 +556,6 @@ def erase(inShp, erase_feat, out, splitMultiPart=None, notTbl=None,
         """
         Use GRASS GIS tool via command line
         """
-        
-        from glass.pys  import execmd
 
         istbl = "" if not notTbl else "-t "
         
@@ -561,7 +590,7 @@ def check_shape_diff(SHAPES_TO_COMPARE, OUT_FOLDER, REPORT, DB,
     """
     
     import datetime
-    import os;               import pandas
+    import pandas
     from glass.sql.q         import q_to_obj
     from glass.it            import db_to_tbl
     from glass.wt.sql        import df_to_db
@@ -569,7 +598,6 @@ def check_shape_diff(SHAPES_TO_COMPARE, OUT_FOLDER, REPORT, DB,
     from glass.it.db         import shp_to_psql
     from glass.dtr.tomtx.sql import tbl_to_area_mtx
     from glass.prop          import is_rst
-    from glass.pys.oss       import fprop
     from glass.sql.db        import create_db
     from glass.sql.tbl       import tbls_to_tbl
     from glass.sql.q         import q_to_ntbl
@@ -816,10 +844,7 @@ def shp_diff_fm_ref(refshp, refcol, shps, out_folder,
     - PostgreSQL with Postgis or GeoPandas;
     """
 
-    import os
-    from glass.prop     import is_rst
-    from glass.wenv.grs import run_grass
-    from glass.pys.oss  import fprop
+    from glass.prop      import is_rst
     from glass.dtr.tomtx import tbl_to_areamtx
 
     # Check if folder exists, if not create it
@@ -837,9 +862,9 @@ def shp_diff_fm_ref(refshp, refcol, shps, out_folder,
 
     gsetup.init(gbase, out_folder, 'shpdif', 'PERMANENT')
 
-    from glass.it.shp       import shp_to_grs, grs_to_shp
-    from glass.it.rst       import rst_to_grs
-    from glass.tbl.col      import rn_cols
+    from glass.it.shp        import shp_to_grs, grs_to_shp
+    from glass.it.rst        import rst_to_grs
+    from glass.tbl.col       import rn_cols
     from glass.dtr.rst.toshp import rst_to_polyg
 
     # Convert to SHAPE if file is Raster

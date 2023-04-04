@@ -111,7 +111,7 @@ def get_gtype(shp, name=True, py_cls=None, geomCol="geometry",
                     return i
     
     elif gisApi == 'ogr':
-        from osgeo                import ogr
+        from osgeo      import ogr
         from glass.prop import drv_name
         
         geom_types = {
@@ -140,7 +140,7 @@ def get_gtype(shp, name=True, py_cls=None, geomCol="geometry",
                 if not name and py_cls else None
     
     else:
-        raise ValueError('The api {} is not available'.format(gisApi))
+        raise ValueError(f'The api {gisApi} is not available')
 
 
 """

@@ -1,4 +1,9 @@
 """
+Open Route Service Related
+"""
+
+
+"""
 Open Route Service API Data Processing
 """
 
@@ -11,8 +16,7 @@ API_KEY  = ''
 MAIN_URL = 'https://api.openrouteservice.org/'
 
 
-def directions(latOrigin, lngOrigin, latDestination, lngDestination,
-               modeTransportation='foot-walking'):
+def directions(lat_o, lng_o, lat_d, lng_d, modeTransportation='foot-walking'):
     """
     Get Shortest path between two points using Directions service
     
@@ -40,14 +44,10 @@ def directions(latOrigin, lngOrigin, latDestination, lngDestination,
     from glass.pys.web import http_to_json
     
     URL = (
-        "{_url_}directions?api_key={apik}&"
-        "coordinates={ox},{oy}|{dx},{dy},&"
-        "profile={prof}&preferences=fastest&"
+        f"{MAIN_URL}directions?api_key={API_KEY}&"
+        f"coordinates={lng_o},{lat_o}|{lng_d},{lat_d},&"
+        f"profile={modeTransportation}&preferences=fastest&"
         "format=geojson"
-    ).format(
-        _url_=MAIN_URL, apik=API_KEY,
-        oy=latOrigin, ox=lngOrigin, dy=latDestination, dx=lngDestination,
-        prof=modeTransportation
     )
     
     data = http_to_json(URL)
@@ -71,7 +71,7 @@ def isochrones(locations, range, range_type='time',
     
     from glass.pys.web import http_to_json
     
-    url_intervals = "&interval={}".format(str(intervals)) if intervals \
+    url_intervals = f"&interval={str(intervals)}" if intervals \
         else ""
     
     API_KEY_TO_USE = API_KEY if not useKey else useKey
@@ -141,9 +141,8 @@ def path_from_coords_to_shp(latOrigin, lngOrigin, latDest, lngDest, outshp,
     """
     
     import pandas
-    from glass.adv.mob.orouteserv import directions
-    from glass.it.pd            import df_to_geodf, json_obj_to_geodf
-    from glass.wt.shp           import df_to_shp
+    from glass.it.pd  import df_to_geodf, json_obj_to_geodf
+    from glass.wt.shp import df_to_shp
     
     path = directions(
         latOrigin, lngOrigin, latDest, lngDest,
@@ -176,18 +175,19 @@ def servarea_from_points(pntShp, inEPSG, range, outShp,
     Calculate isochrones for all points in a Point Feature Class
     """
     
-    import time; from threading   import Thread
-    from shapely.geometry         import shape
-    from glass.adv.mob.orouteserv import get_keys, isochrones
-    from glass.rd              import tbl_to_obj
-    from glass.df.split           import df_split
+    import time
+    from threading        import Thread
+    from shapely.geometry import shape
+
+    from glass.rd         import tbl_to_obj
+    from glass.pd.split   import df_split
     from glass.dtr.mge.pd import merge_df
-    from glass.prop.feat        import get_gtype
-    from glass.prj              import proj
-    from glass.df.to              import df_to_dict
-    from glass.wt.shp           import df_to_shp
-    from glass.tbl.col          import pointxy_to_cols
-    from glass.to.geom            import dict_to_geodf
+    from glass.prop.feat  import get_gtype
+    from glass.prj        import proj
+    from glass.pd         import df_to_dict
+    from glass.wt.shp     import df_to_shp
+    from glass.tbl.col    import pointxy_to_cols
+    from glass.it.pd      import obj_to_geodf
     
     # SHP TO GEODATAFRAME
     pntDf = tbl_to_obj(pntShp)
@@ -223,7 +223,7 @@ def servarea_from_points(pntShp, inEPSG, range, outShp,
     
         for k in pntDict:
             iso = isochrones(
-                "{},{}".format(pntDict[k]["longitude"], pntDict[k]["latitude"]),
+                f'{pntDict[k]["longitude"]},{pntDict[k]["latitude"]}',
                 range, range_type='time', modeTransportation=mode,
                 intervals=intervals
             )
@@ -232,7 +232,7 @@ def servarea_from_points(pntShp, inEPSG, range, outShp,
         
             time.sleep(5)
     
-            pntDf = dict_to_geodf(pntDict, "geometry", 4326)
+            pntDf = obj_to_geodf(pntDict, "geometry", 4326)
         
         results.append(pntDf)
     
@@ -241,7 +241,7 @@ def servarea_from_points(pntShp, inEPSG, range, outShp,
     i = 1
     for df in df_by_key:
         thrds.append(Thread(
-            name='tk{}'.format(str(i)), target=get_isochrones,
+            name=f'tk{str(i)}', target=get_isochrones,
             args=(df, keys_list[i - 1])
         ))
         i += 1
@@ -269,15 +269,15 @@ def cost_od(shpOrigins, shpDestinations, epsgOrigins, epsgDestinations,
     Matrix od Service Implementation
     """
     
-    import pandas;from threading  import Thread
-    from glass.adv.mob.orouteserv import get_keys, matrix_od
-    from glass.rd              import tbl_to_obj
-    from glass.df.split           import df_split
-    from glass.tbl.col          import pointxy_to_cols
-    from glass.prj             import proj
+    import pandas
+    from threading        import Thread
+    from glass.rd         import tbl_to_obj
+    from glass.pd.split   import df_split
+    from glass.tbl.col    import pointxy_to_cols
+    from glass.prj        import proj
     from glass.dtr.mge.pd import merge_df
-    from glass.prop.feat       import get_gtype
-    from glass.wt              import obj_to_tbl
+    from glass.prop.feat  import get_gtype
+    from glass.wt         import obj_to_tbl
     
     origensDf = tbl_to_obj(     shpOrigins)
     destinoDf = tbl_to_obj(shpDestinations)
