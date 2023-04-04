@@ -14,17 +14,17 @@ def closest_facility(incidents, incidents_id, facilities, output,
     import pandas as pd
     import json as js
     import geopandas as gp
-    from glass.cons.esri import rest_token, CF_URL
-    from glass.it.esri   import json_to_gjson
-    from glass.rd.shp    import shp_to_obj
-    from glass.wt.shp    import df_to_shp
-    from glass.pd.split  import df_split
-    from glass.pd        import merge_df
-    from glass.prop.prj  import get_shp_epsg
-    from glass.prj.obj   import df_prj
-    from glass.it.pd     import df_to_geodf
-    from glass.it.pd     import json_obj_to_geodf
-    from glass.cons.esri import get_tv_by_impedancetype
+    from glass.cons.esri  import rest_token, CF_URL
+    from glass.it.esri    import json_to_gjson
+    from glass.rd.shp     import shp_to_obj
+    from glass.wt.shp     import df_to_shp
+    from glass.pd.split   import df_split
+    from glass.dtr.mge.pd import merge_df
+    from glass.prop.prj   import get_shp_epsg
+    from glass.prj.obj    import df_prj
+    from glass.it.pd      import df_to_geodf
+    from glass.it.pd      import json_obj_to_geodf
+    from glass.cons.esri  import get_tv_by_impedancetype
 
     iauxid = 'iid' if incidents_id != 'iid' else 'fiid'
 
@@ -269,7 +269,7 @@ def service_areas(facilities, breaks, output, impedance='TravelTime'):
     from glass.wt.shp import df_to_shp
     from glass.cons.esri import get_tv_by_impedancetype
     from glass.pd.split import df_split
-    from glass.pd import merge_df
+    from glass.dtr.mge.pd import merge_df
     from glass.prop.prj import get_shp_epsg
 
     # Get Token

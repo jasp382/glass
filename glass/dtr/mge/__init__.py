@@ -2,6 +2,7 @@
 Multi-Files to Single File
 """
 
+import os
 
 
 def vpatch(shps, outshp):
@@ -31,8 +32,6 @@ def shps_to_shp(shps, outShp, api="ogr2ogr", fformat='.shp',
     * psql;
     * grass;
     """
-
-    import os
 
     if type(shps) != list:
         # Check if is dir
@@ -83,7 +82,6 @@ def shps_to_shp(shps, outShp, api="ogr2ogr", fformat='.shp',
         df_to_shp(result, outShp)
     
     elif api == 'psql':
-        import os
         from glass.sql.tbl import tbls_to_tbl, del_tables
         from glass.it.db   import shp_to_psql
 
@@ -155,10 +153,9 @@ def same_attr_to_shp(inShps, interestCol, outFolder, basename="data_",
     values with the respective geometry regardeless the origin shp.
     """
     
-    import os
-    from glass.rd.shp import shp_to_obj
-    from glass.pd     import merge_df
-    from glass.wt.shp import df_to_shp
+    from glass.rd.shp     import shp_to_obj
+    from glass.dtr.mge.pd import merge_df
+    from glass.wt.shp     import df_to_shp
     
     EXT = os.path.splitext(inShps[0])[1]
     
@@ -185,3 +182,22 @@ def same_attr_to_shp(inShps, interestCol, outFolder, basename="data_",
             nShps[KEY] = nshp
     
     return nShps
+
+
+def merge_sameshp_in_diffld(folder, fname, oshp):
+    """
+    Merge same file in different folders
+
+    Imagine you have several folders, inside of each one of them there
+    is a file with a certain name. This will program will create a new file
+    with all data in the files with the same name in each folder.
+    """
+
+    from glass.pys.oss import lst_fld
+
+    shps = [os.path.join(f, fname) for f in lst_fld(folder)]
+
+    _ = shps_to_shp(shps, oshp, api='pandas')
+
+    return oshp
+

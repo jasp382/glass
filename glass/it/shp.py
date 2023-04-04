@@ -2,6 +2,8 @@
 Change File Format
 """
 
+import os
+
 def shp_to_shp(inshp, outshp, gapi='ogr', spatialite=None):
     """
     Convert a vectorial file to another with other file format
@@ -18,17 +20,14 @@ def shp_to_shp(inshp, outshp, gapi='ogr', spatialite=None):
         from glass.pys  import execmd
         from glass.prop import drv_name
         
-        out_driver = drv_name(outshp)
+        drv = drv_name(outshp)
     
-        if out_driver == 'SQLite' and spatialite:
+        if drv == 'SQLite' and spatialite:
             splite = ' -dsco "SPATIALITE=YES"'
         else:
             splite = ''
     
-        cmd = 'ogr2ogr -f "{drv}" {out} {_in}{lite}'.format(
-            drv=out_driver, out=outshp, _in=inshp,
-            lite=splite
-        )
+        cmd = f'ogr2ogr -f "{drv}" {outshp} {inshp}{splite}'
     
         # Run command
         cmdout = execmd(cmd)
@@ -36,8 +35,7 @@ def shp_to_shp(inshp, outshp, gapi='ogr', spatialite=None):
     elif gapi == 'grass':
         # TODO identify input geometry type
         
-        import os
-        from glass.pys.oss    import fprop
+        from glass.pys.oss  import fprop
         from glass.wenv.grs import run_grass
         from glass.prop.prj import get_epsg
 
@@ -72,7 +70,6 @@ def foldershp_to_foldershp(inFld, outFld, destiny_file_format,
     * ogr;
     """
     
-    import os
     from glass.pys.oss import lst_ff, fprop
     
     if not os.path.exists(outFld):
@@ -95,9 +92,8 @@ def shps_to_gpkg(in_shps, gpkg, shp_ff='.shp', tbl_name=None):
     Add Shapefile to GeoPackage File
     """
 
-    import os
-    from glass.pys      import execmd
-    from glass.pys .oss import fprop
+    from glass.pys     import execmd
+    from glass.pys.oss import fprop
 
     if type(in_shps) == list:
         shps = in_shps

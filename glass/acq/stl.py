@@ -132,10 +132,10 @@ def lst_prod_by_cell_and_year(shp, id_col, year, outshp,
     total_images = grid_number * number_months_year
     """
 
-    from glass.rd.shp import shp_to_obj
-    from glass.pd    import merge_df
-    from glass.wt.shp import df_to_shp
-    from glass.it.pd  import df_to_geodf
+    from glass.rd.shp     import shp_to_obj
+    from glass.dtr.mge.pd import merge_df
+    from glass.wt.shp     import df_to_shp
+    from glass.it.pd      import df_to_geodf
 
     months = {
         '01' : '31', '02' : '28', '03' : '31',

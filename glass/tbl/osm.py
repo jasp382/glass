@@ -234,3 +234,71 @@ def osm_to_lucls_mtag(reftbl, osm, lucls, oshp, epsg=4326, lucol=None):
 
     return oshp
 
+
+def allosmtags_to_tbl(db, osmtbl, outtbl, colsmantain=None):
+    """
+    Study other_tags fields in OSM Data
+    """
+
+    import pandas       as pd
+    from glass.sql.q    import q_to_obj
+    from glass.prop.sql import cols_name
+    from glass.pys      import obj_to_lst
+    from glass.wt       import obj_to_tbl
+
+    cols_maintain = [
+        'osm_id', 'name', 'wkb_geometry'
+    ] if not colsmantain else obj_to_lst(colsmantain)
+
+    cols = cols_name(db, osmtbl)
+    #transcols = [c for c in cols if c not in cols_maintain]
+
+    # Get Other tags Data
+    df = q_to_obj(db, (
+        f"SELECT other_tags FROM {osmtbl}"
+    ), db_api='psql')
+
+    # Get other_tags and count keys and values frequencies
+    keys = {}
+
+    def id_keys(row):
+        if not row.other_tags:
+            return row
+        
+        else:
+            kv = row.other_tags.replace('"', '').split(',')
+
+
+            for pair in kv:
+                if '=>' in pair:
+                    _kv = pair.split('=>')
+                    key, val = _kv[0], _kv[1]
+                else:
+                    continue
+
+                if key not in keys:
+                    keys[key] = {'VALUES': [val], 'COUNT' : 1}
+                
+                else:
+                    if val not in keys[key]["VALUES"]:
+                        keys[key]["VALUES"].append(val)
+                    
+                    keys[key]['COUNT'] += 1
+        
+        return row
+    
+    # Add keys count and values
+    df = df.apply(lambda x: id_keys(x), axis=1)
+
+    keys_df = []
+    for k in keys:
+        keys_df.append([k, len(keys[k]['VALUES']), keys[k]['COUNT']])
+    
+    keys_df = pd.DataFrame(keys_df, columns=["keys", 'nvalues', 'keycount'])
+
+    # Export data to xlsx file
+    return obj_to_tbl(
+        keys_df, outtbl, sanitizeUtf8=True,
+        sheetsName=f"{osmtbl}_keys"
+    )
+

@@ -1,3 +1,5 @@
+import pandas as pd
+
 def df_to_dict(df, colsIsIndex=None, valueIsList=None):
     """
     Pandas Dataframe to Dict
@@ -37,20 +39,4 @@ def dict_to_df(df):
     import pandas
     
     return pandas.DataFrame.from_dict(df, orient="index")
-
-
-def merge_df(dfs, ignIndex=True, ignoredfstype=None):
-    """
-    Merge Multiple DataFrames into one
-    """
-    
-    if type(dfs) != list and not ignoredfstype:
-        raise ValueError('dfs should be a list with Pandas Dataframe')
-    
-    result = dfs[0]
-    
-    for df in dfs[1:]:
-        result = result.append(df, ignore_index=ignIndex)
-    
-    return result
 
