@@ -9,7 +9,7 @@ def acumulated_cost(cst_surface, dest_pnt, cst_dist):
     close destination
     """
     
-    from glass.rst.alg import rstcalc
+    from glass.rst.alg import grsrstcalc
     from glass.rst.dst import rcost
     from glass.it.rst  import rst_to_grs, grs_to_rst
     from glass.it.shp  import shp_to_grs
@@ -21,7 +21,7 @@ def acumulated_cost(cst_surface, dest_pnt, cst_dist):
     # Execute r.cost
     rcost('cst_surf', 'destination', 'cst_dist')
     # Convert to minutes
-    rstcalc('cst_dist / 60.0', 'CstDistMin', api="grass")
+    grsrstcalc('cst_dist / 60.0', 'CstDistMin')
     # Export result
     grs_to_rst('CstDistMin', cst_dist)
     
@@ -99,7 +99,7 @@ def mk_costsuf(dem, lulc, lucol, rdv, kph, barr, out):
     from glass.rst.mos   import rsts_to_mosaic
     from glass.rst.local import combine
     from glass.prop.rst  import raster_report
-    from glass.rst.alg   import rstcalc
+    from glass.rst.alg   import grsrstcalc
 
     # Generate slope raster
     grsdem = rst_to_grs(dem, fprop(dem, 'fn'))
@@ -206,7 +206,7 @@ def mk_costsuf(dem, lulc, lucol, rdv, kph, barr, out):
     frules = category_rules(dcost, os.path.join(ws, 'tsurface.txt'))
     pfinal = rcls_rst(cmb, frules, 'rcls_cmb', api="pygrass")
 
-    res = rstcalc(f'{pfinal} / 10000000.0', fprop(out, 'fn'), api="grass")
+    res = grsrstcalc(f'{pfinal} / 10000000.0', fprop(out, 'fn'))
 
     grs_to_rst(res, out, as_cmd=True)
 

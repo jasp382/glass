@@ -58,7 +58,7 @@ def month_representative(img_folder, refimg, ofolder, bname, fformat='.tif'):
     from glass.it.rst   import rst_to_grs, grs_to_rst
     from glass.rst.rcls import rcls_rst
     from glass.rst.mos  import rsts_to_mosaic, rseries
-    from glass.rst.alg  import rstcalc
+    from glass.rst.alg  import grsrstcalc
 
     # For each image
     # Get only cells with data
@@ -86,14 +86,13 @@ def month_representative(img_folder, refimg, ofolder, bname, fformat='.tif'):
             imgs[img]['scl'], scl_rules,
             f'dmask_{img}', api='grass'
         )
-        _rs = rstcalc(rcls, f'dmaskcp_{img}', api='grass')
+        _rs = grsrstcalc(rcls, f'dmaskcp_{img}')
     
         # Get only cells with data
         for b in bands:
-            nb = rstcalc(
+            nb = grsrstcalc(
                 f'{imgs[img][b]} + {_rs}',
-                f'd_{imgs[img][b]}',
-                api="grass"
+                f'd_{imgs[img][b]}'
             )
         
             if b not in timeseries:
