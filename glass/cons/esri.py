@@ -2,6 +2,8 @@
 Constants for using ESRI services
 """
 
+import requests as rq
+
 """GLOBAL VARIABLES"""
 
 R_URL = (
@@ -63,11 +65,9 @@ def tvmodes():
     Return travel models raw data
     """
 
-    import requests as rqsts
-
     token = rest_token()
 
-    tvs = rqsts.get(TV_URL, params={'f' : 'json', 'token' : token})
+    tvs = rq.get(TV_URL, params={'f' : 'json', 'token' : token})
 
     return tvs.json()
 
@@ -77,11 +77,9 @@ def get_tvmodes():
     Return travel modes
     """
 
-    import requests as rqsts
-
     token = rest_token()
 
-    tvs = rqsts.get(TV_URL, params={'f' : 'json', 'token' : token})
+    tvs = rq.get(TV_URL, params={'f' : 'json', 'token' : token})
 
     if tvs.status_code == 200:
         d = tvs.json()
@@ -99,11 +97,9 @@ def get_tv_by_impedancetype(impedance):
     * TravelTime
     """
 
-    import requests as rqsts
-
     token = rest_token()
 
-    tvs = rqsts.get(TV_URL, params={'f' : 'json', 'token' : token})
+    tvs = rq.get(TV_URL, params={'f' : 'json', 'token' : token})
 
     if tvs.status_code == 200:
         tvdata = tvs.json()

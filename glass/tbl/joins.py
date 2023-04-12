@@ -6,6 +6,13 @@ import os
 import pandas as pd
 
 
+from glass.rd.shp   import shp_to_obj
+from glass.rd       import tbl_to_obj
+from glass.wt       import obj_to_tbl
+from glass.wt.shp   import df_to_shp, obj_to_shp
+from glass.prop.prj import get_epsg
+
+
 def join_table(shp, jshp, shpid, joinfk):
     """
     Join Tables using GRASS GIS
@@ -31,9 +38,7 @@ def join_attr_by_distance(mainTable, joinTable, workGrass, epsg_code,
     """
     
     from glass.wenv.grs import run_grass
-    from glass.rd.shp   import shp_to_obj
     from glass.it.pd    import df_to_geodf
-    from glass.wt.shp   import df_to_shp
     from glass.pys.oss  import fprop
     
     # Create GRASS GIS Location
@@ -89,8 +94,6 @@ def joinLines_by_spatial_rel_raster(mainLines, mainId, joinLines,
     An raster based approach
     """
     
-    from glass.rd.shp        import shp_to_obj
-    from glass.wt.shp        import df_to_shp
     from glass.dtr.ext.toshp import shpext_to_boundshp
     from glass.dtr.torst     import shp_to_rst
     from glass.it.pd         import df_to_geodf
@@ -184,10 +187,7 @@ def join_shp_with_tbl(shp, shp_pk, tbl, tbl_fk, outShp,
     Join BGRI ESRI Shapefile with table in xlsx or csv formats
     """
     
-    from glass.pys    import obj_to_lst
-    from glass.rd     import tbl_to_obj
-    from glass.rd.shp import shp_to_obj
-    from glass.wt.shp import df_to_shp
+    from glass.pys import obj_to_lst
     
     # Read main_table
     mainDf = shp_to_obj(shp)
@@ -326,9 +326,6 @@ def calc_mean_samecol_sevshp(intbls, pk, meancol, output, tformat='.shp'):
     This script calculate the mean of all these columns
     """
 
-    from glass.wt     import obj_to_tbl
-    from glass.rd.shp import shp_to_obj
-
     if os.path.isdir(intbls):
         from glass.pys.oss import lst_ff
 
@@ -397,7 +394,6 @@ def join_xls_table(main_table, fid_main, join_table, fid_join, copy_fields, out_
     """
     
     import xlwt
-    from glass.rd          import tbl_to_obj
     from glass.tbl.xls.fld import col_name
     
     copy_fields = [copy_fields] if type(copy_fields) == str else \
@@ -478,10 +474,6 @@ def join_tables_in_table(mainTable, mainIdField, joinTables, outTable):
     #TODO: only works with xlsx tables as join TABLES
     """
     
-    # Modules
-    from glass.rd import tbl_to_obj
-    from glass.wt import obj_to_tbl
-    
     # Get table format
     tableType = os.path.splitext(mainTable)[1]
     
@@ -542,8 +534,6 @@ def field_sum_two_tables(tableOne, tableTwo,
     4 |  15
     """
     
-    from glass.rd       import tbl_to_obj
-    from glass.wt       import obj_to_tbl
     from glass.pd.joins import sum_field_of_two_tables
     
     # Open two tables
@@ -584,4 +574,101 @@ def field_sum_by_table_folder(folderOne, joinFieldOne,
                 )
                 
                 break
+
+
+def rows_tbla_notin_tblb(ta, tb, pka, pkb, out):
+    """
+    Get records of Table A not in Table B
+    """
+
+    epsg = get_epsg(ta)
+
+    # Open Shapes
+    dfa = shp_to_obj(ta)
+    dfb = shp_to_obj(tb)
+
+    # Rename all columns in table_b
+    cols = {c : f"b_{c}" for c in dfb.columns.values}
+    dfb.rename(columns=cols, inplace=True)
+    pkb = f"b_{pkb}"
+
+    # Join
+    res = dfa.merge(dfb, how='left', left_on=pka, right_on=pkb)
+
+    # Get no relation records
+    res = res[res[pkb].isna()]
+
+    # Delete unecessary cols
+    res.drop(list(cols.values()), axis=1, inplace=True)
+
+    # Write result
+    obj_to_shp(res, 'geometry', epsg, out)
+
+    return out
+
+
+def copy_fields_based_on_table(shp, jshp, pk, fk, auxtbl, auxsheet,
+                               old_names, new_names, oshp):
+    """
+    Copy fields from one shape to another and rename the fields
+    based on another table
+    """
+
+    shpdf = shp_to_obj(shp)
+
+    jshpdf = shp_to_obj(jshp)
+
+    xlsdf = tbl_to_obj(auxtbl, sheet=auxsheet)
+
+    jshpcols = list(jshpdf.columns.values)
+
+    rdf = {fk: 'jtblfid'}
+    jcols = ['jtblfid']
+
+    for i, r in xlsdf.iterrows():
+        if r[old_names] in jshpcols:
+            rdf[r[old_names]] = r[new_names]
+        
+            jcols.append(r[new_names])
+
+    jshpdf.rename(columns=rdf, inplace=True)
+    dcols = [c for c in jshpdf.columns.values if c not in jcols]
+    jshpdf.drop(dcols, axis=1, inplace=True)
+
+    shpdf = shpdf.merge(jshpdf, how='left', left_on=pk, right_on='jtblfid')
+
+    df_to_shp(shpdf, oshp)
+
+    return oshp
+
+
+def nton_to_table(left_t, right_t, right_sheet, rel_t, rel_sheet, otable,
+                  left_pk, left_fk, right_pk, right_fk):
+    """
+    N-TO-N Relation to single table
+    """
+
+    epsg = get_epsg(left_t)
+
+    left_df = shp_to_obj(left_t)
+
+    right_df = tbl_to_obj(right_t, sheet=right_sheet)
+
+    rel_df = tbl_to_obj(rel_t, rel_sheet)
+
+    # Join rel with right
+    rel_df = rel_df.merge(
+        right_df, how='inner',
+        left_on=right_fk, right_on=right_pk
+    )
+
+    # Join freg with data
+    left_df = left_df.merge(
+        rel_df, how='left',
+        left_on=left_pk, right_on=left_fk
+    )
+
+    obj_to_shp(left_df, 'geometry', epsg, otable)
+
+    return otable
 

@@ -5,12 +5,52 @@ Compare tables Shape (number of columns and rows)
 import os
 import pandas as pd
 
+from glass.prop    import is_shp
+from glass.rd      import tbl_to_obj
+from glass.rd.shp  import shp_to_obj
+from glass.wt      import obj_to_tbl
+
 
 def foldertbls_have_samerows(mfolder, tbl_a, tbl_b, out):
     """
     For each folder in mfolder, see if tbl_a and tbl_b
     have the same number of rows
     """
+
+    from glass.pys.oss import lst_fld
+
+    # List folders
+    folders = lst_fld(mfolder)
+
+    res = []
+    for f in folders:
+        # Check if table is geo or not
+        a_is_shp = is_shp(os.path.join(f, tbl_a))
+        b_is_shp = is_shp(os.path.join(f, tbl_b))
+    
+        # Open Tables
+        dfa = shp_to_obj(
+            os.path.join(f, tbl_a)
+        ) if a_is_shp else tbl_to_obj(
+            os.path.join(f, tbl_a)
+        )
+        dfb = shp_to_obj(
+            os.path.join(f, tbl_b)
+        ) if b_is_shp else tbl_to_obj(
+            os.path.join(f, tbl_b)
+        )
+    
+        # Get row number
+        row_a = dfa.shape[0]
+        row_b = dfb.shape[0]
+    
+        # Write result
+        res.append([os.path.basename(f), row_a, row_b, 1 if row_a == row_b else 0])
+    
+    # Save result in an output table
+    res_df = pd.DataFrame(res, columns=["folder", "ta_rows", "tb_rows", "status"])
+
+    obj_to_tbl(res_df, out)
 
     return out
 
@@ -22,10 +62,6 @@ def tblsameid_have_samerows(fa, fb, faff, fbff, out):
     """
 
     from glass.pys.oss import lst_ff
-    from glass.prop    import is_shp
-    from glass.rd      import tbl_to_obj
-    from glass.rd.shp  import shp_to_obj
-    from glass.wt      import obj_to_tbl
 
     # Get Files by id
     a_tbl = pd.DataFrame([{

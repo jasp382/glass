@@ -66,6 +66,7 @@ def shps_to_shp(shps, outShp, api="ogr2ogr", fformat='.shp',
         Merge SHP using pandas
         """
         
+        import pandas as pd
         from glass.rd.shp import shp_to_obj
         from glass.wt.shp import df_to_shp
         
@@ -73,11 +74,8 @@ def shps_to_shp(shps, outShp, api="ogr2ogr", fformat='.shp',
             raise ValueError('shps should be a list with paths for Feature Classes')
         
         dfs = [shp_to_obj(shp) for shp in shps]
-        
-        result = dfs[0]
-        
-        for df in dfs[1:]:
-            result = result.append(df, ignore_index=True, sort=True)
+
+        result = pd.concat(dfs, ignore_index=True)
         
         df_to_shp(result, outShp)
     

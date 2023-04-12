@@ -3,13 +3,14 @@ ArcGIS Rest Services implementation for network analysis
 """
 
 def closest_facility(incidents, incidents_id, facilities, output,
-    impedance='TravelTime', crs=None):
+    impedance='TravelTime', crs=None, save_temp_json=None):
     """
     impedance options:
     * TravelTime;
     * WalkTime;
     """
 
+    import os
     import requests
     import pandas as pd
     import json as js
@@ -25,6 +26,7 @@ def closest_facility(incidents, incidents_id, facilities, output,
     from glass.it.pd      import df_to_geodf
     from glass.it.pd      import json_obj_to_geodf
     from glass.cons.esri  import get_tv_by_impedancetype
+    from glass.wt.js      import dict_to_json
 
     iauxid = 'iid' if incidents_id != 'iid' else 'fiid'
 
@@ -93,6 +95,7 @@ def closest_facility(incidents, incidents_id, facilities, output,
 
     drop_cols.extend(ndrop)
 
+    _c = 1
     for i_df in idfs:
         incidents_str  = i_df.coords.str.cat(sep=';')
 
@@ -117,6 +120,13 @@ def closest_facility(incidents, incidents_id, facilities, output,
             
             # Convert ESRI json to GeoJson
             esri_geom = r.json()
+
+            if save_temp_json:
+                dict_to_json(esri_geom, os.path.join(
+                    os.path.dirname(output),
+                    f"esri_response_{str(_c)}.json"
+                ))
+
             geom = json_to_gjson(esri_geom.get('routes'))
 
             # GeoJSON to GeoDataFrame
@@ -133,6 +143,8 @@ def closest_facility(incidents, incidents_id, facilities, output,
             r_df = gdf.merge(i_df, how='left', left_index=True, right_index=True)
 
             results.append(r_df)
+        
+        _c += 1
     
     # Compute final result
     # Put every DataFrame in a single DataFrame
