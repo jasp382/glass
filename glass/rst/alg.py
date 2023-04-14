@@ -40,6 +40,33 @@ def gdal_mapcalc(expression, exp_val_paths, outRaster, template_rst,
     return obj_to_rst(result, outRaster, template_rst, noData=outNodata)
 
 
+def grsrstcalc(expression, result, ascmd=None):
+    """
+    GRASS GIS Raster Calculator
+    """
+
+    if not ascmd:
+        from grass.pygrass.modules import Module
+
+        rc = Module(
+            'r.mapcalc',
+            f'{result} = {expression}',
+            overwrite=True, run_=False, quiet=True
+        )
+
+        rc()
+    
+    else:
+        from glass.pys import execmd
+
+        rcmd = execmd((
+            f"r.mapcalc \"{result} = {expression}\" "
+            "--overwrite --quiet"
+        ))
+    
+    return result
+
+
 def rstcalc(expression, output, api='saga', grids=None):
     """
     Basic Raster Calculator
@@ -49,20 +76,19 @@ def rstcalc(expression, output, api='saga', grids=None):
         # Using SAGA GIS
         
         import os
-        from glass.pys      import execmd
-        from glass.pys.oss  import fprop
-        from glass.it.rst import saga_to_tif
+        from glass.pys     import execmd
+        from glass.pys.oss import fprop
+        from glass.it.rst  import saga_to_tif
         
         SAGA_RASTER = os.path.join(
             os.path.dirname(output),
-            "sag_{}.sgrd".format(fprop(output, 'fn'))
+            f"sag_{fprop(output, 'fn')}.sgrd"
         )
         
         cmd = (
-            "saga_cmd grid_calculus 1 -FORMULA \"{}\" -GRIDS \"{}\" "
-            "-RESULT {} -RESAMPLING 0"
-        ).format(
-            expression, ";".join(grids), SAGA_RASTER
+            f"saga_cmd grid_calculus 1 -FORMULA \"{expression}\" "
+            f"-GRIDS \"{';'.join(grids)}\" "
+            f"-RESULT {SAGA_RASTER} -RESAMPLING 0"
         )
         
         outcmd = execmd(cmd)
@@ -70,24 +96,36 @@ def rstcalc(expression, output, api='saga', grids=None):
         # Convert to tiff
         saga_to_tif(SAGA_RASTER, output)
     
-    elif api == 'pygrass':
-        from grass.pygrass.modules import Module
+    elif api == 'grass' or api == "pygrass":
+        from glass.wenv.grs import run_grass
+        from glass.pys      import obj_to_lst
         
-        rc = Module(
-            'r.mapcalc',
-            f'{output} = {expression}',
-            overwrite=True, run_=False, quiet=True
+        or_name = fprop(output, 'fn')
+
+        ws = os.path.dirname(output)
+        loc = f"loc_{or_name}"
+
+        rsts = obj_to_lst(grids)
+
+        gb = run_grass(ws, grassBIN="grass78", location=loc, srs=rsts[0])
+
+        import grass.script.setup as gsetup
+
+        gsetup.init(gb, ws, loc, 'PERMANENT')
+
+        from glass.it.rst import rst_to_grs, grs_to_rst
+
+        # Import rsts
+        grsts = [rst_to_grs(r, fprop(r, 'fn')) for r in rsts]
+
+        # Do the math
+        out = grsrstcalc(
+            expression, or_name,
+            ascmd=True if api == "grass" else None
         )
-        
-        rc()
-    
-    elif api == 'grass':
-        from glass.pys  import execmd
-        
-        rcmd = execmd((
-            f"r.mapcalc \"{output} = {expression}\" "
-            "--overwrite --quiet"
-        ))
+
+        # Export
+        grs_to_rst(or_name, output, as_cmd=None, is_int=None)
     
     else:
         raise ValueError(f"{api} is not available!")

@@ -66,7 +66,7 @@ def count_region_in_shape(folder, ref, out):
 
     from glass.it.shp    import shp_to_grs
     from glass.it.rst    import grs_to_rst
-    from glass.rst.alg   import rstcalc
+    from glass.rst.alg   import grsrstcalc
     from glass.rst.rcls  import null_to_value
     from glass.dtr.torst import grsshp_to_grsrst
 
@@ -85,7 +85,7 @@ def count_region_in_shape(folder, ref, out):
         rsts.append(rshp)
     
     # Sum all rasters
-    frst = rstcalc(" + ".join(rsts), orst_name, api='grass')
+    frst = grsrstcalc(" + ".join(rsts), orst_name)
 
     # Export final raster
     grs_to_rst(frst, out)

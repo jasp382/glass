@@ -55,7 +55,7 @@ def rm_anyclouds(folder, bands, scl, ff, ofolder, noclouds_raster):
 
     from glass.it.rst   import rst_to_grs, grs_to_rst
     from glass.rst.rcls import rcls_rst
-    from glass.rst.alg  import rstcalc
+    from glass.rst.alg  import grsrstcalc
 
     cldrules = rcls_rules({
         0  : 0, 1 : 0,
@@ -73,12 +73,12 @@ def rm_anyclouds(folder, bands, scl, ff, ofolder, noclouds_raster):
 
         # Reclassify all files to get only things related to clouds
         rs = rcls_rst(_s, cldrules, f'rcls_{_s}', api='grass')
-        _rs = rstcalc(rs, f'cp_{_s}', api='grass')
+        _rs = grsrstcalc(rs, f'cp_{_s}')
     
         rscl.append(_rs)
 
     # One file with all clouds as nodata
-    cloud_rst = rstcalc(" + ".join(rscl), 'no_clouds', api='grass')
+    cloud_rst = grsrstcalc(" + ".join(rscl), 'no_clouds')
 
     # Export clouds
     rcld = grs_to_rst(cloud_rst, noclouds_raster, is_int=True)

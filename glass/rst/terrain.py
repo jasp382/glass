@@ -141,17 +141,17 @@ def make_dem(grass_workspace, data, field, output, extent_template,
     
     elif method == "IDW":
         from glass.rst.itp  import ridw
-        from glass.rst.alg  import rstcalc
+        from glass.rst.alg  import grsrstcalc
         from glass.dtr.torst import grsshp_to_grsrst
         
         # Elevation (GRASS Vector) to Raster
         elevRst = grsshp_to_grsrst(elv, field, 'rst_elevation')
         # Multiply cells values by 100 000.0
-        rstcalc('int(rst_elevation * 100000)', 'rst_elev_int', api='pygrass')
+        grsrstcalc('int(rst_elevation * 100000)', 'rst_elev_int')
         # Run IDW to generate the new DEM
         ridw('rst_elev_int', 'dem_int', numberPoints=15)
         # DEM to Float
-        rstcalc('dem_int / 100000.0', OUTPUT_NAME, api='pygrass')
+        grsrstcalc('dem_int / 100000.0', OUTPUT_NAME)
     
     # Export DEM to a file outside GRASS Workspace
     grs_to_rst(OUTPUT_NAME, output)

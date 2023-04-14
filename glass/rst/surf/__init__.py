@@ -76,13 +76,13 @@ def aspect(dem, rst_aspect, from_north=None, api="pygrass"):
         raise ValueError(f"API {api} is not available")
     
     if from_north:
-        from glass.rst.alg import rstcalc
+        from glass.rst.alg import grsrstcalc
 
         expression = None if not from_north else (
             "if({r} == 0, -1, if({r} < 90, 90 - {r}, 450 - {r}))"
         ).format(r=aspect_tmp)
 
-        rrcmd = rstcalc(expression, rst_aspect, api=api)
+        rrcmd = grsrstcalc(expression, rst_aspect, api=api)
     
     return rst_aspect
 

@@ -203,7 +203,7 @@ def grs_infovalue(movs, _var, refrst, out):
     from glass.dtr.torst import grsshp_to_grsrst
     from glass.it.shp   import shp_to_grs
     from glass.it.rst   import rst_to_grs, grs_to_rst
-    from glass.rst.alg  import rstcalc
+    from glass.rst.alg  import grsrstcalc
     from glass.rst.rcls import category_rules, rcls_rst
 
     # Check if movs are raster
@@ -226,7 +226,9 @@ def grs_infovalue(movs, _var, refrst, out):
 
     i = 1
     for r in grsvar:
-        gref = rstcalc(f"int({r} * {gref})", f"refrst_{str(i)}", api='grass')
+        gref = grsrstcalc(
+            f"int({r} * {gref})", f"refrst_{str(i)}"
+        )
 
         i += 1
     
@@ -235,7 +237,7 @@ def grs_infovalue(movs, _var, refrst, out):
 
     gref = rcls_rst(gref, refrules, f'rcls_{gref}', api="pygrass")
 
-    grsvar = [rstcalc(f"{r} * {gref}", f"{r}_san", api='grass') for r in grsvar]
+    grsvar = [grsrstcalc(f"{r} * {gref}", f"{r}_san") for r in grsvar]
 
     # Export rasters to get frequencies
     filevar = {r : grs_to_rst(r, os.path.join(
@@ -265,7 +267,7 @@ def grs_infovalue(movs, _var, refrst, out):
                 raise ValueError(f'{r} has a different number of cells with data')
     
     # Intersect landslides raster with var rasters
-    varwithmov = [rstcalc(f"{movrst} * {r}", f"mov_{r}", api='grass') for r in grsvar]
+    varwithmov = [grsrstcalc(f"{movrst} * {r}", f"mov_{r}") for r in grsvar]
 
     # Export rasters to get frequencies
     filemov = {grsvar[i] : grs_to_rst(varwithmov[i], os.path.join(
@@ -334,12 +336,12 @@ def grs_infovalue(movs, _var, refrst, out):
         vivar.append(virst)
 
     # Integer to float
-    virst = [rstcalc(
-        f"{r} / 10000.0", f"{r}_f", api='grass'
+    virst = [grsrstcalc(
+        f"{r} / 10000.0", f"{r}_f"
     ) for r in vivar]
 
     # Sum results
-    virstfinal = rstcalc(" + ".join(virst), fprop(out, 'fn'), api='grass')
+    virstfinal = grsrstcalc(" + ".join(virst), fprop(out, 'fn'))
 
     fffinal = grs_to_rst(virstfinal, out)
 

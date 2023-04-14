@@ -193,3 +193,35 @@ def water_lines_to_polygon():
     
     return None
 
+
+def osmwater_vs_ndwi(water, ndwi, oshp):
+    """
+    """
+
+    import os
+
+    from glass.wenv.grs import run_grass
+    from glass.pys.oss import mkdir, fprop
+    from glass.pys.tm import now_as_str
+
+    # Prepare workspace
+    ws, loc = mkdir(os.path.join(
+        os.path.dirname(oshp),
+        now_as_str(utc=True) 
+    ), overwrite=True), 'locwork'
+
+    # Start GRASS GIS Session
+    gb = run_grass(ws, location=loc, srs=ndwi)
+
+    import grass.script.setup as gsetup
+
+    gsetup.init(gb, ws, loc, 'PERMANENT')
+
+    # GRASS GIS Modules
+    from glass.it.shp import shp_to_grs, grs_to_shp
+    from glass.it.rst import rst_to_grs
+    from glass.rst.alg import grsrstcalc
+
+
+    return oshp
+

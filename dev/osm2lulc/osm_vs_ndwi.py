@@ -2,19 +2,9 @@ def osm_vs_ndwi(shp, imd):
     import os
     import pandas as pd
     import numpy as np
-    import glob
 
-    from dgt.it.osm import osm_to_psql
-    from dgt.it.shp import dbtbl_to_shp
     from dgt.wenv.grs import run_grass
-    from dgt.dtr.torst import shp_to_rst
-    from dgt.rd.shp import shp_to_obj
-    from dgt.wt.shp import df_to_shp
 
-    from dgt.prop.sql import cols_name
-    from dgt.rd import tbl_to_obj
-    from dgt.sql.q import exec_write_q
-    from dgt.sql.db import create_db
     from dgt.pys.oss import mkdir, fprop
     
     # Prepare workspace
@@ -46,9 +36,7 @@ def osm_vs_ndwi(shp, imd):
     # GRASS GIS Modules
     from glass.it.shp import shp_to_grs, grs_to_shp
     from dgt.it.rst import rst_to_grs
-    from dgt.gp.gen import dissolve
-    from dgt.gp.ovl import grsintersection
-    from dgt.smp import sample_to_points
+    
     from grass.pygrass.modules import Module
     from dgt.it.rst import grs_to_rst
     
