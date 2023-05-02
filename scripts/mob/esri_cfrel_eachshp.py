@@ -6,7 +6,7 @@ ESRI Shapefile in a folder
 if __name__ == "__main__":
     import os
     from glass.pys.oss import lst_ff
-    from glass.mob.esri import cf_based_on_relations
+    from glass.mob.esri.cf import cf_based_on_relations
 
     """
     Parameters

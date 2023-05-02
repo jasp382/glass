@@ -7,15 +7,15 @@ from glass.ind.pop import shparea_by_mapunitpopulation
 
 
 if __name__ == "__main__":
-    shp = '/home/jasp/rms/evu.shp'
+    shp = '/home/jasp/rms/evu_azores.shp'
 
-    gunits = '/home/jasp/rms/rms_mun_v5.shp'
+    gunits = '/home/jasp/rms/rms_mun_azores_v1.shp'
 
     gunits_id = 'idmun'
 
     out_col = 'evuhab'
 
-    output = '/home/jasp/rms/rms_mun_v6.shp'
+    output = '/home/jasp/rms/rms_mun_azores_v2.shp'
 
     pop_col = "pop21"
 
