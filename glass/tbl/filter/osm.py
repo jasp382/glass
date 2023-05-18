@@ -17,13 +17,13 @@ def highways_from_osm(inOsm, outOsm, filter_geom=None, api='osmosis'):
     
     if api == 'osmosis':
         outExt = os.path.splitext(outOsm)[1]
+
+        ext = "pbf" if outExt == ".pbf" else "xml"
     
         cmd = (
-            'osmosis --read-xml enableDateParsing=no file={} --tf accept-ways '
-            'highway=* --used-node --write-{} {}' 
-        ).format(
-            inOsm,
-            "pbf" if outExt == ".pbf" else "xml", outOsm
+            f'osmosis --read-xml enableDateParsing=no file={inOsm} '
+            '--tf accept-ways '
+            f'highway=* --used-node --write-{ext} {outOsm}' 
         )
     
     elif api == 'osmconvert':
@@ -32,16 +32,16 @@ def highways_from_osm(inOsm, outOsm, filter_geom=None, api='osmosis'):
             from glass.prop.ext import get_ext
 
             dataext = get_ext(filter_geom, outEpsg=4326)
+
+            bbox = (
+                f" -b={str(dataext[0])},{str(dataext[2])},"
+                f"{str(dataext[1])},{str(dataext[3])}"
+            )
         
         else:
-            dataext = None
+            bbox = ''
         
-        cmd = "osmconvert {}{} --complete-ways -o={}".format(
-            inOsm, "" if not dataext else " -b={},{},{},{}".format(
-                str(dataext[0]), str(dataext[2]),
-                str(dataext[1]), str(dataext[3])
-            ), outOsm
-        )
+        cmd = f"osmconvert {inOsm}{bbox} --complete-ways -o={outOsm}"
     
     else:
         raise ValueError(f"{api} API is not available!")

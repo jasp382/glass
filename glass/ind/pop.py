@@ -190,6 +190,50 @@ def calc_iwpop_agg(mapunits, mapunits_id, subunits, mapunits_fk,
     return output
 
 
+def calc_weighted_mean(mapunits, muid, subunits, mufk, icol, wcol, ocol, output):
+    """
+    Weighted mean calculation
+
+    Útil para calcular o tempo médio a uma infraestrutura
+    por freguesia
+    """
+
+    from glass.rd.shp import shp_to_obj
+    from glass.wt.shp import df_to_shp
+
+    # Read data
+    mapunits_df = shp_to_obj(mapunits)
+    subunits_df = shp_to_obj(subunits)
+
+    # Get values/weight product
+    subunits_df['prod'] = subunits_df[icol] * subunits_df[wcol]
+
+    # Get sum of the last product and
+    # sum of the weights
+    munitsp = pd.DataFrame(subunits_df.groupby([mufk]).agg({
+        'prod' : 'sum',
+        wcol   : 'sum'
+    })).reset_index()
+
+    munitsp[ocol] = munitsp['prod'] / munitsp[wcol]
+
+    munitsp.rename(columns={mufk : 'jtblid'}, inplace=True)
+    munitsp.drop(['prod', wcol], axis=1, inplace=True)
+
+    # Join data
+    mapunits_df = mapunits_df.merge(
+        munitsp, how='left', left_on=muid,
+        right_on='jtblid'
+    )
+
+    mapunits_df.drop(['jtblid'], axis=1, inplace=True)
+
+    # Export result
+    df_to_shp(mapunits_df, output)
+
+    return output
+
+
 def points_by_polutation(pnt, mapunits, popcol, outcol, output,
     count_pnt=None, inhabitants=1000, pntattr=None):
     """

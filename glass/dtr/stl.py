@@ -9,7 +9,7 @@ def unzip_img(zip_file, out_folder):
 
     import os
     from zipfile        import ZipFile
-    from glass.cons.stl import get_ibands
+    from glass.cons.sat import get_ibands
     from glass.pys.oss  import copy_file
 
     intbands = get_ibands()

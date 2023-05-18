@@ -33,7 +33,7 @@ def lst_prod(shpext, start_time, end_time,
     from glass.pys      import obj_to_lst
     from glass.pys.oss  import fprop
     from glass.wt.shp   import df_to_shp
-    from glass.cons.stl import con_datahub
+    from glass.cons.sat import con_datahub
     from glass.prop     import is_rst
     from glass.gobj     import wkt_to_geom
 
@@ -212,7 +212,7 @@ def down_imgs(inTbl, imgIDcol, outFolder=None):
     
     from sentinelsat    import SentinelAPI
     from glass.rd.shp   import shp_to_obj
-    from glass.cons.stl import con_datahub
+    from glass.cons.sat import con_datahub
     
     of = outFolder if outFolder else os.path.dirname(inTbl)
 
@@ -246,9 +246,9 @@ def down_imgs_v2(itbl, idcol, ofolder=None):
     """
 
     import time
-    from sentinelsat import SentinelAPI
-    from glass.rd.shp import shp_to_obj
-    from glass.cons.stl import con_datahub
+    from sentinelsat    import SentinelAPI
+    from glass.rd.shp   import shp_to_obj
+    from glass.cons.sat import con_datahub
 
     ofolder = ofolder if ofolder else os.path.dirname(itbl)
 

@@ -17,13 +17,16 @@ def con_datahub():
     return jsond
 
 
-def get_ibands():
+def get_ibands(sat='sentinel'):
     return [
         'B02_10m', 'B03_10m', 'B04_10m', 'B08_10m',
         'B05_20m', 'B06_20m', 'B07_20m', 'B8A_20m',
         'B11_20m', 'B12_20m', 'B09_60m', 'B01_60m',
         'AOT_10m', 'SCL_20m'
-    ]
+    ] if sat == 'sentinel' else [
+        f"B{str(i+1)}" for i in range(11)
+    ] if sat == 'landsat' else []
+
 
 def get_lwibands():
     return [
@@ -43,3 +46,4 @@ def bandsmap():
         'B11_20m' : 'b11', 'B12_20m' : 'b12',
         'B09_60m' : 'b09', 'B01_60m' : 'b01'
     }
+

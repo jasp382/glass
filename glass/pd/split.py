@@ -3,7 +3,7 @@ Split Pandas DataFrame
 """
 
 
-def df_split(df, ndf, nrows=None):
+def df_split(df, ndf, nrows=None, resetidx=True):
     """
     Split Dataframe in several
 
@@ -21,6 +21,10 @@ def df_split(df, ndf, nrows=None):
         ndf = __ndf if int(__ndf) == __ndf else int(__ndf) + 1
 
     dfs = npdf.array_split(df, ndf)
+
+    if resetidx:
+        for i in range(len(dfs)):
+            dfs[i].reset_index(inplace=True, drop=True)
 
     return dfs
 

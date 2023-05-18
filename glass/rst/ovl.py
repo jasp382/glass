@@ -2,7 +2,7 @@
 Subset of Matrixes
 """
 
-def clip_rst(raster, clipShp, outRst, nodataValue=None, api='gdal'):
+def clip_rst(raster, clipshp, outrst, nodataValue=None, api='gdal'):
     """
     Clip Raster using GDAL WARP
     """
@@ -10,38 +10,37 @@ def clip_rst(raster, clipShp, outRst, nodataValue=None, api='gdal'):
     if api == 'gdal':
         from glass.pys    import execmd
         from glass.prop import drv_name
-    
+
+        nd = f"-dstnodata {str(nodataValue)}" if \
+            nodataValue else ""
+        
         outcmd = execmd((
-            "gdalwarp {ndata}-cutline {clipshp} -crop_to_cutline "
-            "-of {ext} {inraster} -overwrite {outrst}"
-        ).format(
-            clipshp=clipShp, inraster=raster, outrst=outRst,
-            ext=drv_name(outRst),
-            ndata="-dstnodata {} ".format(
-                str(nodataValue)) if nodataValue else ""
+            f"gdalwarp {nd}-cutline {clipshp} -crop_to_cutline "
+            f"-of {drv_name(outrst)} {raster} -overwrite {outrst}"
         ))
     
     elif api == 'pygrass':
         from grass.pygrass.modules import Module
         
         m = Module(
-            'r.clip', input=raster, output=outRst,
+            'r.clip', input=raster, output=outrst,
             overwrite=True, run_=False, quiet=True
         )
         
         m()
     
     elif api == 'grass':
-        from glass.pys  import execmd
+        from glass.pys import execmd
         
-        rcmd = execmd('r.clip input={} output={} --overwrite --quiet'.format(
-            raster, outRst
+        rcmd = execmd((
+            f'r.clip input={raster} output={outrst} '
+            '--overwrite --quiet'
         ))
     
     else:
-        raise ValueError('API {} is not available'.format(api))
+        raise ValueError(f'API {api} is not available')
     
-    return outRst
+    return outrst
 
 
 def grscliprst(in_rst, clip_ext, outrst):

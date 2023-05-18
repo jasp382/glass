@@ -82,10 +82,23 @@ def lst_ff(w, file_format=None, filename=None, fnpart=None, rfilename=None):
     # Prepare file format list
     if file_format:
         formats = obj_to_lst(file_format)
+
+        of = []
         
         for f in range(len(formats)):
             if formats[f][0] != '.':
-                formats[f] = '.' + formats[f]
+                formats[f] = f'.{formats[f]}'
+            
+            # Force UPPER CASE
+            if formats[f] == formats[f].lower():
+                if formats[f].upper() not in formats:
+                    of.append(formats[f].upper())
+            
+            else:
+                if formats[f].lower() not in formats:
+                    of.append(formats[f].lower())
+        
+        formats.extend(of)
     
     # List files
     r = []

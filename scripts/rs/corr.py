@@ -149,11 +149,13 @@ r.in.gdal input=C:\Landsat\mdt_WGS84.tif output=mdt_WGS --overwrite
 
        1. Primeiro o modelo de illuminacao do terreno a partir da DEM
 
-i.topo.corr -i --overwrite output=aster.illu basemap=mdt_WGS@landsat8 zenith=23.87426392 azimuth=128.64173925
+i.topo.corr -i --overwrite output=aster.illu basemap=mdt_WGS@landsat8
+    zenith=23.87426392 azimuth=128.64173925
 
        2. A correcaoo topografica
 
-i.topo.corr --overwrite input=toar.1,toar.2,toar.3,toar.4,toar.5,toar.6,toar.7,toar.8,toar.9,toar.10,toar.11 output=topo. basemap=mdt_WGS@landsat8 zenith=23.87426392 azimuth=128.64173925 method=minnaert
+i.topo.corr --overwrite input=toar.1,toar.2,toar.3,toar.4,toar.5,toar.6,toar.7,toar.8,toar.9,toar.10,toar.11 output=topo.
+basemap=mdt_WGS@landsat8 zenith=23.87426392 azimuth=128.64173925 method=minnaert
 
 
 ---------------------------------------exportacao em tiff --------------------------------

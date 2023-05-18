@@ -55,8 +55,14 @@ def closest_facility(incidents, incidents_id, facilities, output,
     # Split data
     # ArcGIS API only accepts 100 facilities
     # and 100 incidents in each request
-    fdfs = df_split(fdf, 100, nrows=True) if fdf.shape[0] > 100 else [fdf]
-    idfs = df_split(idf, 100, nrows=True) if idf.shape[0] > 100 else [idf]
+    fdfs = df_split(
+        fdf, 100, nrows=True,
+        resetidx=None
+    ) if fdf.shape[0] > 100 else [fdf]
+    idfs = df_split(
+        idf, 100, nrows=True,
+        resetidx=None
+    ) if idf.shape[0] > 100 else [idf]
 
     for i in range(len(idfs)):
         idfs[i].reset_index(inplace=True, drop=True)
@@ -154,7 +160,7 @@ def closest_facility(incidents, incidents_id, facilities, output,
 
     # Since facilities were divided
     # The same incident has several "nearest" facilities
-    # We just want one neares facility
+    # We just want one nearest facility
     # Lets group by using min operator
     gpdf = pd.DataFrame(fgdf.groupby([incidents_id]).agg({
         tv_col : 'min'
@@ -175,11 +181,9 @@ def closest_facility(incidents, incidents_id, facilities, output,
     fgdf.drop([iauxid, 'rn'], axis=1, inplace=True)
 
     # Re-project to original SRS
-    if type(facilities) != gp.GeoDataFrame:
-        epsg = get_shp_epsg(facilities)
+    epsg = crs if crs else get_shp_epsg(facilities) \
+        if type(facilities) != gp.GeoDataFrame else 4326
     
-    else:
-        epsg = 4326 if not crs else crs
     fgdf = df_prj(fgdf, epsg)
 
     # Export result
@@ -190,7 +194,7 @@ def closest_facility(incidents, incidents_id, facilities, output,
 
 def cf_based_on_relations(incidents, incidents_id, group_incidents_col,
     facilities, facilities_id, rel_inc_fac, sheet, group_fk, facilities_fk,
-    output, impedance='TravelTime'):
+    output, impedance='TravelTime', srs=None):
     """
     Calculate time travel considering specific facilities
     for each group of incidents
@@ -217,6 +221,9 @@ def cf_based_on_relations(incidents, incidents_id, group_incidents_col,
 
     rel_df = tbl_to_obj(rel_inc_fac, sheet=sheet)
 
+    # Force group_fk to string
+    rel_df[group_fk] = rel_df[group_fk].astype(str)
+
     # Get SRS
     epsg = get_shp_epsg(incidents)
 
@@ -242,21 +249,24 @@ def cf_based_on_relations(incidents, incidents_id, group_incidents_col,
         # Get incidents for that group
         new_i = incidents_df[incidents_df[group_incidents_col] == row[group_incidents_col]]
 
-        new_i = obj_to_shp(new_i, 'geometry', epsg, os.path.join(
+        _new_i = obj_to_shp(new_i, 'geometry', epsg, os.path.join(
             tmpdir, f'i_{row[group_incidents_col]}.shp'
         ))
 
         # Get facilities for that group
         new_f = facilities_df[facilities_df[group_fk] == row[group_incidents_col]]
-        new_f = obj_to_shp(new_f, 'geometry', epsg, os.path.join(
+        _new_f = obj_to_shp(new_f, 'geometry', epsg, os.path.join(
             tmpdir, f'f_{row[group_incidents_col]}.shp'
         ))
 
+        if not new_i.shape[0] or not new_f.shape[0]:
+            raise ValueError('Empty incidents or facilities')
+
         # calculate closest facility
         cf = closest_facility(
-            new_i, incidents_id, new_f,
+            _new_i, incidents_id, _new_f,
             os.path.join(tmpdir, f'cf_{row[group_incidents_col]}.shp'),
-            impedance=impedance,
+            impedance=impedance, crs=srs,
             save_temp_json=True
         )
 
@@ -303,7 +313,7 @@ def cf_ign_distfac(incidents, incidents_id, facilities, output,
     fdf = shp_to_obj(facilities) if type(facilities) != gp.GeoDataFrame else facilities
     idf = shp_to_obj(incidents) if type(incidents) != gp.GeoDataFrame else incidents
 
-    # Get Groups of incidents and incidents
+    # Get Groups of incidents and facilities
     # that can be processed together because they are
     # distant at least 43 Km from each other
 
@@ -323,7 +333,7 @@ def cf_ign_distfac(incidents, incidents_id, facilities, output,
     adf["dist"] = geom_i.distance(geom_f, align=True) / 1000
 
     # Exclude distances greater than 43 Km
-    adf = adf[adf.dist < 25]
+    adf = adf[adf.dist < 20]
     adf = adf[['fid_a', 'fid_b']]
 
     # Get groups
@@ -355,8 +365,18 @@ def cf_ign_distfac(incidents, incidents_id, facilities, output,
         # Split data
         # ArcGIS API only accepts 100 facilities
         # and 100 incidents in each request
-        fdfs = df_split(fac, 100, nrows=True) if fac.shape[0] > 100 else [fac]
-        idfs = df_split(inc, 100, nrows=True) if inc.shape[0] > 100 else [inc]
+        fdfs = df_split(
+            fac, 100, nrows=True,
+            resetidx=None
+        ) if fac.shape[0] > 100 else [fac]
+        idfs = df_split(
+            inc, 100, nrows=True,
+            resetidx=None
+        ) if inc.shape[0] > 100 else [inc]
+
+        for dfs in [fdfs, idfs]:
+            for i in range(len(dfs)):
+                dfs[i].reset_index(inplace=True, drop=True)
 
         # Go for analysis
         _c = 1
@@ -416,7 +436,7 @@ def cf_ign_distfac(incidents, incidents_id, facilities, output,
 
     # Since facilities were divided
     # The same incident has several "nearest" facilities
-    # We just want one neares facility
+    # We just want one nearest facility
     # Lets group by using min operator
     gpdf = pd.DataFrame(fgdf.groupby([incidents_id]).agg({
         tv_col : 'min'
@@ -437,11 +457,9 @@ def cf_ign_distfac(incidents, incidents_id, facilities, output,
     fgdf.drop([iauxid, 'rn'], axis=1, inplace=True)
 
     # Re-project to original SRS
-    if type(facilities) != gp.GeoDataFrame:
-        epsg = get_shp_epsg(facilities)
+    epsg = crs if crs else get_shp_epsg(facilities) \
+        if type(facilities) != gp.GeoDataFrame else 4326
     
-    else:
-        epsg = 4326 if not crs else crs
     fgdf = df_prj(fgdf, epsg)
 
     # Export result

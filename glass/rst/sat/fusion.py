@@ -13,7 +13,7 @@ def month_representative(img_folder, refimg, ofolder, bname, fformat='.tif'):
     same folder
     """
 
-    from glass.cons.stl import get_ibands, get_lwibands
+    from glass.cons.sat import get_ibands, get_lwibands
     from glass.pys.oss  import lst_ff, fprop
     from glass.pys.tm   import now_as_str
     from glass.wenv.grs import run_grass
