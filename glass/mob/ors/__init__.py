@@ -2,6 +2,12 @@
 Open Route Service Related
 """
 
+import requests as rq
+
+from glass.cons.ors import MAIN_URL
+from glass.cons.ors import get_ors_token
+from glass.pys.web import http_to_json
+
 
 """
 Open Route Service API Data Processing
@@ -11,9 +17,6 @@ Open Route Service API Data Processing
 Open Route Service tools
 """
 
-
-API_KEY  = ''
-MAIN_URL = 'https://api.openrouteservice.org/'
 
 
 def directions(lat_o, lng_o, lat_d, lng_d, modeTransportation='foot-walking'):
@@ -40,11 +43,11 @@ def directions(lat_o, lng_o, lat_d, lng_d, modeTransportation='foot-walking'):
     
     DOC: https://openrouteservice.org/documentation/#/authentication/UserSecurity
     """
-    
-    from glass.pys.web import http_to_json
+
+    key = get_ors_token()
     
     URL = (
-        f"{MAIN_URL}directions?api_key={API_KEY}&"
+        f"{MAIN_URL}directions?api_key={key}&"
         f"coordinates={lng_o},{lat_o}|{lng_d},{lat_d},&"
         f"profile={modeTransportation}&preferences=fastest&"
         "format=geojson"
@@ -68,13 +71,13 @@ def isochrones(locations, range, range_type='time',
     ORS Routing section which help you to further customize your request
     to obtain a more detailed reachability area response.
     """
-    
-    from glass.pys.web import http_to_json
+
+    key = get_ors_token()
     
     url_intervals = f"&interval={str(intervals)}" if intervals \
         else ""
     
-    API_KEY_TO_USE = API_KEY if not useKey else useKey
+    API_KEY_TO_USE = key if not useKey else useKey
     
     URL = (
         "{_url_}isochrones?api_key={apik}&"
@@ -109,29 +112,43 @@ def isochrones_to_file(locations, range, outFile,
     return outFile
 
 
-def matrix_od(locations, idxSources="all", idxDestinations="all",
-              useKey=None, modeTransportation='foot-walking'):
+def matrix_od(locations, idx_src="all", idx_dest="all",
+              impedance='foot-walking'):
     """
     Execute Matrix Service
     """
     
-    from glass.pys.web import http_to_json
+    key = get_ors_token()
+
+    body = {
+        "locations"    : locations,
+        "destinations" : idx_dest,
+        "sources"      : idx_src
+    }
+
+    headers = {
+        'Accept'        : 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8',
+        'Authorization' : key,
+        'Content-Type'  : 'application/json; charset=utf-8'
+    }
     
-    API_KEY_TO_USE = API_KEY if not useKey else useKey
+    url = f"{MAIN_URL}matrix/{impedance}"
     
-    URL = (
-        "{_main}matrix?api_key={apik}&profile={transport}&"
-        "locations={locStr}&sources={idx_src}&destinations={idx_des}"
-        "&metrics=duration&units=m&optimized=true"
-    ).format(
-        _main=MAIN_URL, apik=API_KEY_TO_USE,
-        transport=modeTransportation, locStr=locations,
-        idx_src=idxSources, idx_des=idxDestinations
-    )
+    rsp = rq.post(url, json=body, headers=headers)
+
+    code, reas = rsp.status_code, rsp.reason
+
+    if code == 200:
+        return {
+            "code" : code, "json" : rsp.json(),
+            "reason" : reas, 'text' : None
+        }
     
-    data = http_to_json(URL)
-    
-    return data
+    else:
+        return {
+            "code" : code, "json" : None,
+            "reason" : reas, 'text' : rsp.ext
+        }
 
 
 def path_from_coords_to_shp(latOrigin, lngOrigin, latDest, lngDest, outshp,
