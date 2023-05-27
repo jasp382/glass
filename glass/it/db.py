@@ -6,6 +6,7 @@ import os
 from glass.pys    import obj_to_lst
 from glass.rd     import tbl_to_obj
 from glass.wt.sql import df_to_db
+from glass.pys    import execmd
 
 
 def tbl_to_db(tblFile, db, sqlTbl, delimiter=None, encoding_='utf-8',
@@ -126,7 +127,7 @@ def db_to_db(db_a, db_b, typeDBA, typeDBB):
     # Table to Database B
     for tbl in tbls:
         df = q_to_obj(
-            db_a, "SELECT * FROM {}".format(tbl), db_api=typeDBA
+            db_a, f"SELECT * FROM {tbl}", db_api=typeDBA
         )
         
         df_to_db(db_b, df, tbl, append=None, api=typeDBB)
@@ -288,7 +289,6 @@ def shp_to_psql(dbname, shpData, pgTable=None, api="pandas",
         from glass.pd.geom   import force_multipart
     
     elif api == "shp2pgsql":
-        from glass.pys     import execmd
         from glass.sql     import psql_cmd
         from glass.pys.oss import del_file
     
@@ -395,8 +395,7 @@ def rst_to_psql(rst, srs, dbname, sql_script=None):
     """
     Run raster2pgsql to import a raster dataset into PostGIS Database
     """
-    
-    from glass.pys import execmd
+
     from glass.sql import psql_cmd
     
     rst_name = os.path.splitext(os.path.basename(rst))[0]
@@ -419,7 +418,6 @@ def osm_to_psql(osmXml, osmdb, dbsetup='default'):
     Use GDAL to import osmfile into PostGIS database
     """
     
-    from glass.pys       import execmd
     from glass.cons.psql import con_psql
     from glass.prop.sql  import db_exists
 
@@ -442,4 +440,30 @@ def osm_to_psql(osmXml, osmdb, dbsetup='default'):
     cmdout = execmd(cmd)
     
     return osmdb
+
+
+def db_to_gpkg(db, itbl, gpkg, otbl=None):
+    """
+    Database table to GeoPackage
+    """
+
+    from glass.cons.psql import con_psql
+
+    cdb = con_psql()
+
+    otbl = itbl if not otbl else otbl
+
+    up = f" -update -append" if os.path.exists(gpkg) \
+        else ""
+
+    cmd = (
+        f"ogr2ogr{up} -f \"GPKG\" {gpkg} -nln \"{otbl}\" "
+        f"PG:\"dbname='{db}' host='{cdb['HOST']}' port='{cdb['PORT']}' "
+        f"user='{cdb['USER']}' password='{cdb['PASSWORD']}'\" "
+        f"\"{itbl}\""
+    )
+
+    ocmd = execmd(cmd)
+
+    return gpkg
 

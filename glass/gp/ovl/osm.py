@@ -6,7 +6,7 @@ import os
 
 
 def osm_extraction(boundary, osmdata: str, output: str,
-    each_feat=None, epsg=None, outbasename=None):
+    each_feat=None, epsg=None, outbasename=None, api="osmosis"):
     """
     Extract OSM Data from a xml file with osmosis
     
@@ -17,6 +17,9 @@ def osm_extraction(boundary, osmdata: str, output: str,
     from glass.pys.oss import fprop
     from glass.prj.obj import prj_ogrgeom
     from glass.prop    import is_rst
+
+    apis = ['osmosis', 'osmconvert']
+    api = 'osmosis' if api not in apis else 'osmosis'
 
     refattr = []
     outbasename = 'osmexct' if not outbasename else outbasename
@@ -110,7 +113,7 @@ def osm_extraction(boundary, osmdata: str, output: str,
         path = output if os.path.isdir(output) else os.path.dirname(output)
 
         out_files = [os.path.join(
-            path, f"{outbasename}_{str(refattr[i])}.xml"
+            path, f"{outbasename}_{str(refattr[i])}{ff}"
         ) for i in range(len(boundaries))]
     
     # Extract data using OSMOSIS
@@ -129,23 +132,31 @@ def osm_extraction(boundary, osmdata: str, output: str,
         outff = fprop(out_files[g], 'ff')
         
         # Execute command
-        if osmext == '.bz2':
-            cmd = (
-                f"bzcat {osmdata} | osmosis --read-xml "
-                f"file=- --bounding-box top={str(top)} "
-                f"left={str(left)} bottom={str(bottom)} "
-                f"right={str(right)} "
-                f"--write-{outff[1:]} | bzip2 > {out_files[g]}"
-            )
+        if api == 'osmosis':
+            if osmext == '.bz2':
+                cmd = (
+                    f"bzcat {osmdata} | osmosis --read-xml "
+                    f"file=- --bounding-box top={str(top)} "
+                    f"left={str(left)} bottom={str(bottom)} "
+                    f"right={str(right)} "
+                    f"--write-{outff[1:]} | bzip2 > {out_files[g]}"
+                )
+        
+            else:
+                cmd = (
+                    f"osmosis --read-{'pbf' if osmext == '.pbf' else 'xml'} "
+                    f"{'' if osmext == '.pbf' else 'enableDataParsing=no '} "
+                    f"file={osmdata} --bounding-box top={str(top)} "
+                    f"left={str(left)} bottom={str(bottom)} right={str(right)} "
+                    f"--write-{outff[1:]} file={out_files[g]}"
+                )
+        
+        elif api == 'osmconvert':
+            bbox = f"{left},{bottom},{right},{top}"
+            cmd = f"osmconvert {osmdata} -b={bbox} -o={out_files[g]}"
         
         else:
-            cmd = (
-                f"osmosis --read-{'pbf' if osmext == '.pbf' else 'xml'} "
-                f"{'' if osmext == '.pbf' else 'enableDataParsing=no '} "
-                f"file={osmdata} --bounding-box top={str(top)} "
-                f"left={str(left)} bottom={str(bottom)} right={str(right)} "
-                f"--write-{outff[1:]} file={out_files[g]}"
-            )
+            raise ValueError(f"{api} API is not available!")
         
         outcmd = execmd(cmd)
     
@@ -184,13 +195,16 @@ def osmextract_foreachshp(osmfile, clipshps, outfolder, bname='osmpart'):
     return outfolder
 
 
-def osmextract_foreachfeat(osmfile, clipshp, featid, outfolder, bname='osmpart'):
+def osmextract_foreachfeat(osmfile, clipshp, featid, outfolder, bname='osmpart',
+                           api='osmosis', outff='xml'):
     """
     Clip OSM File for each feature in one shapefile
     """
 
     from glass.rd.shp   import shp_to_obj
     from glass.prop.prj import get_shp_epsg
+
+    off = 'xml' if outff != 'xml' and outff != 'pbf' else outff
 
     epsg = get_shp_epsg(clipshp)
 
@@ -199,8 +213,8 @@ def osmextract_foreachfeat(osmfile, clipshp, featid, outfolder, bname='osmpart')
     for i, row in df.iterrows():
         osm_extraction(
             str(row.geometry.wkt), osmfile,
-            os.path.join(outfolder, f"{bname}_{str(row[featid])}.xml"),
-            epsg=epsg
+            os.path.join(outfolder, f"{bname}_{str(row[featid])}.{outff}"),
+            epsg=epsg, api=api
         )
 
     return outfolder

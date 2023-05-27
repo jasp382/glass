@@ -13,23 +13,26 @@ def fix_geom(db, table, geom, out_tbl, colsSelect=None, whr=None):
     if not colsSelect:
         from glass.prop.sql import cols_name
         
-        cols_tbl = ['{}.{}'.format(table, x) for x in cols_name(
+        cols_tbl = [f'{table}.{x}' for x in cols_name(
             db, table, sanitizeSpecialWords=None
         ) if x != geom]
     
     else:
         from glass.pys  import obj_to_lst
         
-        cols_tbl = ['{}.{}'.format(
-            table, x) for x in obj_to_lst(colsSelect) if x != geom
-        ]
+        cols_tbl = [f'{table}.{x}' for x in obj_to_lst(colsSelect) if x != geom]
     
-    Q = "SELECT {c}, ST_MakeValid({g}) AS {g} FROM {t}{w}".format(
-        c=", ".join(cols_tbl), g=geom, t=table,
-        w="" if not whr else " WHERE {}".format(whr)
-    )
+    c = ", ".join(cols_tbl)
+    w = "" if not whr else f" WHERE {whr}"
     
-    ntbl = q_to_ntbl(db, out_tbl, Q, api='psql')
+    q = (
+        f"SELECT {c}, "
+            f"CASE WHEN ST_IsValid({geom}) THEN {geom} "
+            f"ELSE  ST_MakeValid({geom}) END "
+        f"AS {geom} FROM {table}{w}"
+        )
+    
+    ntbl = q_to_ntbl(db, out_tbl, q, api='psql')
     
     return ntbl
 
@@ -39,9 +42,9 @@ def rm_deadend(db, in_tbl, out_tbl):
     Remove deadend
     """
     
-    from glass.prop.sql   import cols_name, row_num
-    from glass.sql.q   import q_to_ntbl
-    from glass.sql.tbl import rename_tbl
+    from glass.prop.sql import cols_name, row_num
+    from glass.sql.q    import q_to_ntbl
+    from glass.sql.tbl  import rename_tbl
     
     # Sanitize In table
     cols = ", ".join([c for c in cols_name(

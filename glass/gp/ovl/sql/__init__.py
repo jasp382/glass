@@ -193,11 +193,11 @@ def line_intersection_pnt(db, inTbl, outTbl):
         "ST_Intersection(foo.geom, foo2.tstgeom) AS geom "
         "FROM (SELECT gid, geom FROM {t}) AS foo, ("
             "SELECT gid AS tstfid, geom AS tstgeom "
-            "FROM {t}"
+            f"FROM {inTbl}"
         ") AS foo2 "
         "WHERE foo.gid <> foo2.tstfid AND "
         "ST_Intersects(foo.geom, foo2.tstgeom)"
-    ).format(t=inTbl)
+    )
     
     Q_b = (
         "SELECT gid AS ogid, (ST_Dump(geom)).geom AS geom FROM ("
@@ -208,10 +208,10 @@ def line_intersection_pnt(db, inTbl, outTbl):
                 "ELSE geom "
             "END AS geom FROM ("
                 "SELECT gid, (ST_Dump(geom)).geom AS geom "
-                "FROM ({t}) AS ttbl"
+                f"FROM ({Q_a}) AS ttbl"
             ") AS tbl"
         ") AS tbll"
-    ).format(t=Q_a)
+    )
     
     allpnt = q_to_ntbl(db, "all_pnt", Q_b)
     
@@ -226,16 +226,16 @@ def line_intersection_pnt(db, inTbl, outTbl):
                 "WHEN mtbl.geom = st_tbl.end_pnt "
                 "THEN 1 ELSE 0 "
             "END AS is_end "
-            "FROM {bpnt} AS mtbl INNER JOIN ("
+            f"FROM {allpnt} AS mtbl INNER JOIN ("
                 "SELECT gid, ST_StartPoint(geom) AS st_pnt, "
                 "ST_EndPoint(geom) AS end_pnt FROM ("
                     "SELECT gid, (ST_Dump(geom)).geom AS geom "
-                    "FROM {t}"
+                    f"FROM {inTbl}"
                 ") AS foo"
             ") AS st_tbl "
             "ON mtbl.ogid = st_tbl.gid"
         ") AS foo WHERE is_start = 0 AND is_end = 0"
-    ).format(bpnt=allpnt, t=inTbl)
+    )
     
     return q_to_ntbl(db, outTbl, Q_main)
 
@@ -246,11 +246,11 @@ def del_topoerror_shps(db, shps, epsg, outfolder):
     """
     
     import os
-    from glass.pys         import obj_to_lst
+    from glass.pys      import obj_to_lst
     from glass.prop.sql import cols_name
     from glass.sql.q    import q_to_ntbl
     from glass.it.db    import shp_to_psql
-    from glass.it.shp    import dbtbl_to_shp
+    from glass.it.shp   import dbtbl_to_shp
     
     shps = obj_to_lst(shps)
     
@@ -295,43 +295,44 @@ def intersection(dbname, aShp, bShp, pk, aGeom, bGeom, output,
         cols_tbl.remove(bGeom)
     elif type(priority) == type([0]):
         cols_tbl = priority
+    
     cols_tbl.remove(pk)
     conn = sqlcon(dbname, sqlAPI='psql')
     cursor = conn.cursor()
 
     if primitive == 'point':
-        cols_tbl = ['{t}.{c}'.format(t=aShp, c=x) for x in cols_tbl]
+        cols_tbl = [f'{aShp}.{x}' for x in cols_tbl]
+
         if priority == 'a':
-            sel_geom = "{f}.{g}".format(f=aShp, g=aGeom)
+            sel_geom = f"{aShp}.{aGeom}"
         elif priority == 'b' or type(priority) == type([]):
-            sel_geom = "{f}.{g}".format(f=bShp, g=bGeom)
+            sel_geom = f"{bShp}.{bGeom}"
+        
         cursor.execute((
-            "CREATE TABLE {out} AS SELECT {cols}, {int_geom} AS {ngeom} FROM {pnt} "
-            "INNER JOIN {poly} ON ST_Within({pnt}.{geom_a}, "
-            "{poly}.{geom_b});").format(
-                out=output,
-                cols=','.join(cols_tbl),
-                pnt=aShp,
-                geom_a=aGeom,
-                geom_b=bGeom,
-                poly=bShp,
-                int_geom=sel_geom, ngeom=new_geom
+            f"CREATE TABLE {output} AS "
+            f"SELECT {','.join(cols_tbl)}, "
+            f"{sel_geom} AS {new_geom} FROM {aShp} "
+            f"INNER JOIN {bShp} ON ST_Within({aShp}.{aGeom}, "
+            f"{bShp}.{bGeom});"
         ))
 
     elif primitive == 'line':
-        cols_tbl = ['{t}.{c}'.format(t=output, c=x) for x in cols_tbl]
+        cols_tbl = [f'{output}.{x}' for x in cols_tbl]
+
         cols_tbl.append(new_geom)
+
         cursor.execute((
-            "CREATE TABLE {out} AS SELECT {cols} FROM (SELECT {shp_a}.*, "
-            "(ST_DUMP(ST_Intersection({shp_b}.geom, {shp_a}.{geom_fld}))).geom "
-            "FROM {shp_b} INNER JOIN {shp_a} ON ST_Intersects({shp_b}.geom, "
-            "{shp_a}.{geom_fld})) As {out} WHERE ST_Dimension({out}.geom) = "
-            "1;").format(
-                out=output,
-                cols=','.join(cols_tbl),
-                shp_a=aShp,
-                shp_b=bShp,
-                geom_fld=aGeom
+            f"CREATE TABLE {output} AS "
+            f"SELECT {','.join(cols_tbl)} FROM ("
+                f"SELECT {aShp}.*, "
+                f"(ST_DUMP(ST_Intersection("
+                    f"{bShp}.geom, {aShp}.{aGeom}))).geom "
+                f"FROM {bShp} "
+                f"INNER JOIN {aShp} "
+                f"ON ST_Intersects({bShp}.geom, "
+                f"{aShp}.{aGeom})"
+            f") As {output} "
+            f"WHERE ST_Dimension({output}.geom) = 1;"
         ))
 
     elif primitive == 'polygon':
@@ -350,12 +351,12 @@ def intersection(dbname, aShp, bShp, pk, aGeom, bGeom, output,
         ))
 
     cursor.execute(
-        "ALTER TABLE {out} ADD COLUMN {fid_pk} BIGSERIAL PRIMARY KEY;".format(
-            out=output, fid_pk=new_pk))
+        f"ALTER TABLE {output} ADD COLUMN {new_pk} BIGSERIAL PRIMARY KEY;")
 
     conn.commit()
     cursor.close()
     conn.close()
+
     return output, new_pk, new_geom
 
 
