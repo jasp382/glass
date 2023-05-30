@@ -2,6 +2,8 @@
 Shape To some Python Object
 """
 
+import os
+
 def shp_to_obj(shp, geom_col=None, fields=None, output='df', srs_to=None,
     colsAsArray=None, geom_as_wkt=None, lyr=None, outgeom=None):
     """
@@ -15,7 +17,16 @@ def shp_to_obj(shp, geom_col=None, fields=None, output='df', srs_to=None,
 
     import geopandas as gp
 
-    df = gp.read_file(shp) if not lyr else gp.read_file(shp, layer=lyr)
+    if '.gdb' in shp and not lyr:
+        lyr = os.path.basename(shp)
+        shp = os.path.dirname(shp)
+
+        if shp[-4:] != '.gdb':
+            shp = os.path.dirname(shp)
+
+
+    df = gp.read_file(shp) if not lyr else \
+        gp.read_file(shp, layer=lyr)
 
     # Get name of geometry col
     if not geom_col:
