@@ -43,3 +43,15 @@ def cols_calc(table, fld, expression, newcols=None, code=None):
 
     return nlyr
 
+
+def rename_col(tbl, col, new_name):
+    """
+    Rename column
+    """
+
+    nlyr = arcpy.management.AlterField(
+        tbl, col, new_name, new_name
+    )[0]
+
+    return nlyr
+
