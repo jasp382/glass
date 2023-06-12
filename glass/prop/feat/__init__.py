@@ -84,6 +84,7 @@ def get_gtype(shp, name=True, py_cls=None, geomCol="geometry",
     """
     
     if gisApi == 'pandas':
+        from glass.prop.gpd import geom_type
         from pandas import DataFrame
         
         if not isinstance(shp, DataFrame):
@@ -95,20 +96,7 @@ def get_gtype(shp, name=True, py_cls=None, geomCol="geometry",
         else:
             gdf = shp
         
-        g = gdf[geomCol].geom_type.unique()
-        
-        if len(g) == 1:
-            return g[0]
-        
-        elif len(g) == 0:
-            raise ValueError(
-                "It was not possible to identify geometry type"
-            )
-        
-        else:
-            for i in g:
-                if i.startswith('Multi'):
-                    return i
+        return geom_type(gdf, geomCol)
     
     elif gisApi == 'ogr':
         from osgeo      import ogr

@@ -357,10 +357,14 @@ def shp_to_psql(dbname, shpData, pgTable=None, api="pandas",
                 df = df_prj(df, to_srs)
             
             # Force multi-geometry if necessary
-            gtype = get_gtype(df, name=True, py_cls=False, gisApi='pandas')
+            gtype = get_gtype(
+                df, name=True,
+                py_cls=False, gisApi='pandas'
+            )
             df = force_multipart(
-                df, geomCol, gtype,
-                epsgs[_i] if not to_srs else to_srs   
+                df, geomCol,
+                epsgs[_i] if not to_srs else to_srs,
+                gtype=gtype   
             )
             
             # GeoDataFrame to PSQL
