@@ -235,7 +235,8 @@ def get_sub_buffers(x, y, radius):
 
 
 def cheese_buffer(inshp, dist, angles_int, outshp,
-                        epsg=None, regbuffer=None, precheese=None):
+                    epsg=None, regbuffer=None, precheese=None,
+                    uniqueid='sliceid', areaf=None, shpid=None):
     """
     Create a buffer in all directions
     """
@@ -256,7 +257,7 @@ def cheese_buffer(inshp, dist, angles_int, outshp,
         epsg = get_epsg(inshp)
 
 
-    def run_cheese_buffer(r):
+    def run_cheese_buffer(r, _featid):
         multipoly = []
     
         minangle = 0
@@ -274,7 +275,7 @@ def cheese_buffer(inshp, dist, angles_int, outshp,
     
             poly = create_polygon(coords, api='shapely')
         
-            multipoly.append([r.featid, poly, f"{str(minangle)} - {str(maxangle)}"])
+            multipoly.append([r[_featid], poly, f"{str(minangle)}-{str(maxangle)}"])
         
             minangle += angles_int
             maxangle += angles_int
@@ -283,12 +284,18 @@ def cheese_buffer(inshp, dist, angles_int, outshp,
     
         return r
     
+    featid = 'featid' if not shpid else shpid
+    
     pdf = shp_to_obj(inshp)
 
     # Get Regular Buffer
     rbf = geodf_buffer(pdf, dist)
 
-    rbf['ofeatid'] = rbf.index
+    if not shpid:
+        rbf['ofeatid'] = rbf.index
+    
+    else:
+        rbf.rename(columns={shpid: 'ofeatid'}, inplace=True)
 
     # Save original polygons
     odf = pdf.copy()
@@ -306,9 +313,10 @@ def cheese_buffer(inshp, dist, angles_int, outshp,
     pdf['x'] = s.envelope.centroid.x
     pdf['y'] = s.envelope.centroid.y
 
-    pdf["featid"] = pdf.index
+    if not shpid:
+        pdf[featid] = pdf.index
 
-    pdf = pdf.apply(lambda x: run_cheese_buffer(x), axis=1)
+    pdf = pdf.apply(lambda x: run_cheese_buffer(x, featid), axis=1)
 
     pdf.drop(["x", "y", "geometry"], axis=1, inplace=True)
 
@@ -350,7 +358,17 @@ def cheese_buffer(inshp, dist, angles_int, outshp,
     # Remove features with area == 0
     fdf = fdf[fdf.geometry.area > 0]
 
-    fdf.drop('geom', axis=1, inplace=True)
+    fdf.reset_index(inplace=True)
+
+    fdf.drop(['geom', 'ofid'], axis=1, inplace=True)
+
+    # Get Features UNIQUE IDENTIFIER
+    if uniqueid:
+        fdf[uniqueid] = fdf[featid] + '__' + fdf['direction']
+
+    # Return Area in SQUARE METERS
+    if areaf:
+        fdf[areaf] = fdf.geometry.area
 
     df_to_shp(fdf, outshp)
 
