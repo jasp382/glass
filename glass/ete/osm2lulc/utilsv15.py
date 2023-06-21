@@ -2,81 +2,14 @@
 OSM2LULC Utils
 """
 
-from glass.cons.osmtolulc import OSM2LULC_DB, DB_SCHEMA, OSM_TABLES, GEOM_AREA
+from glass.cons.otol import OSM2LULC_DB, DB_SCHEMA, OSM_TABLES, GEOM_AREA
 from glass.sql.q import q_to_obj
 
 
-def nomenclature_id(nomenclature):
-    """
-    Return nomenclature ID
-    """
-
-    nom = q_to_obj(OSM2LULC_DB, (
-        "SELECT fid, slug FROM nomenclatures "
-        f"WHERE slug='{nomenclature}'"
-    ), db_api='sqlite')
-
-    if not nom.shape[0]:
-        return 0
-    
-    else:
-        return nom.iloc[0].fid
 
 
-def get_legend(nomenclature, fid_col='fid', leg_col='leg'):
-    """
-    Return legend
-    """
-
-    tbl  = DB_SCHEMA["LULC"]["TABLE"]
-    fid  = DB_SCHEMA["LULC"]["ID"]
-    name = DB_SCHEMA["LULC"]["NAME"]
-    nom  = DB_SCHEMA["LULC"]["NOMENCLATURE"]
-
-    leg = q_to_obj(OSM2LULC_DB, (
-        f"SELECT mtbl.{fid} AS {fid_col}, "
-        f"mtbl.{name} AS {leg_col} "
-        f"FROM {tbl} AS mtbl "
-        f"WHERE mtbl.{nom}={nomenclature}"
-    ), db_api='sqlite')
-
-    return leg
 
 
-def osmfeat_by_rule(nomid):
-    """
-    Return OSM Features by rule and LULC class
-    """
-
-    keycol  = DB_SCHEMA['OSM_FEATURES']['KEY']
-    valcol  = DB_SCHEMA['OSM_FEATURES']['VALUE']
-    lulcid  = DB_SCHEMA['OSM_LULC']['LULCID']
-    bfcol   = DB_SCHEMA['OSM_LULC']['BUFFER']
-    areacol = DB_SCHEMA['OSM_LULC']['AREA']
-    module  = DB_SCHEMA['MODULES']['NAME']
-    
-
-    q = (
-        f"SELECT ofeat.{keycol} AS {keycol}, "
-        f"ofeat.{valcol} AS {valcol}, "
-        f"jtbl.{module} AS {module}, jtbl.{lulcid} AS {lulcid}, "
-        f"jtbl.{bfcol} AS {bfcol}, jtbl.{areacol} AS {areacol} "
-        f"FROM {DB_SCHEMA['OSM_FEATURES']['TABLE']} AS ofeat "
-        "INNER JOIN ("
-            f"SELECT cosm.*, mod.{module} AS {module} "
-            f"FROM {DB_SCHEMA['OSM_LULC']['TABLE']} AS cosm "
-            f"INNER JOIN {DB_SCHEMA['MODULES']['TABLE']} AS mod "
-            f"ON cosm.{DB_SCHEMA['OSM_LULC']['MODULE']} = "
-            f"mod.{DB_SCHEMA['MODULES']['ID']} "
-            f"INNER JOIN {DB_SCHEMA['LULC']['TABLE']} AS lcls "
-            f"ON cosm.{lulcid} = lcls.{DB_SCHEMA['LULC']['ID']} "
-            f"WHERE lcls.{DB_SCHEMA['LULC']['NOMENCLATURE']} = {nomid}"
-        ") AS jtbl "
-        f"ON ofeat.{DB_SCHEMA['OSM_FEATURES']['ID']} = "
-        f"jtbl.{DB_SCHEMA['OSM_LULC']['OSMID']}"
-    )
-
-    return q_to_obj(OSM2LULC_DB, q, db_api='sqlite')
 
 
 
@@ -240,4 +173,97 @@ def osm_project(osm_db, epsg, isGlobeLand=None):
         osm_tbl[table] = nt
     
     return osm_tbl
+
+
+def get_mods_views(osm_db, nomenclature_id, epsg):
+    """
+    Return Table Views for each Module
+
+    - Each view will be the input of each Module def
+    """
+
+    from glass.sql.q import q_to_ntbl
+
+    mod_qs = {}
+
+    keycol = DB_SCHEMA["OSM_FEATURES"]["KEY"]
+    valcol = DB_SCHEMA["OSM_FEATURES"]["VALUE"]
+    lulcol = DB_SCHEMA['OSM_LULC']['LULCID']
+    modcol = DB_SCHEMA['MODULES']['NAME']
+
+    df = osmfeat_by_rule(nomenclature_id)
+
+    df.loc[:, valcol] = 'tcls.' + df[keycol] + "='" + df[valcol] + "'"
+
+    geom_col = f"ST_Transform(wkb_geometry, {epsg}) AS geometry"
+
+    # Get modules
+    mods = df[modcol].unique()
+
+    # For each module
+    # Create a query to select features related to each module
+    for mod in mods:
+        # Get keys and values of each Module
+        fdf = df[df[modcol] == mod]
+
+        # Get Database table to be used
+        otbl = 'lines' if mod == 'roads' or mod == 'basic_buffer' \
+            else 'polygons'
+
+        bfcol = DB_SCHEMA['OSM_LULC']['BUFFER'] if mod == 'roads' \
+            or mod == 'basic_buffer' else None
+        
+        arcol = DB_SCHEMA['OSM_LULC']['AREA'] if mod == 'area_upper' \
+            or mod == 'area_lower' else None
+
+        lanes_width = ', lanes, width' if mod == "roads" else ''
+
+        # Get classes inside this module
+        lulcs = fdf[lulcol].unique()
+
+        # For each LULC Class, Get a query to select features
+        # to be related with that class
+        queries = []
+        for cls in lulcs:
+            # Get only the keys and values of this class
+            clsdf = fdf[fdf[lulcol] == cls]
+
+            # Create a query to select these keys and values
+            if not bfcol and not arcol:
+                q = (
+                    f"SELECT ogc_fid, '{mod}' AS module, {cls} AS lulc, "
+                    f"{geom_col} "
+                    f"FROM {OSM_TABLES[otbl]} AS tcls "
+                    f"WHERE {str(clsdf[valcol].str.cat(sep=' OR '))}"
+                )
+
+                queries.append(q)
+            
+            else:
+                refcol = bfcol if bfcol else arcol
+
+                clsdf[refcol] = clsdf[refcol].astype(int)
+
+                # List Buffer Distances or Area Thresholds
+                thrshols = clsdf[refcol].unique()
+
+                for th in thrshols:
+                    subclsdf = clsdf[clsdf[refcol] == th]
+
+                    q = (
+                        f"SELECT ogc_fid, '{mod}' AS module, {cls} AS lulc, "
+                        f"{th} AS {refcol}{lanes_width}, {geom_col} "
+                        f"FROM {OSM_TABLES[otbl]} AS tcls "
+                        f"WHERE {str(subclsdf[valcol].str.cat(sep=' OR '))}"
+                    )
+
+                    queries.append(q)
+        
+        mod_qs[mod] = " UNION ALL ".join(queries)
+    
+    # Create table views
+    for mod in mod_qs:
+        q_to_ntbl(osm_db, mod, mod_qs[mod], ntblIsView=True)
+
+    return mod_qs
 

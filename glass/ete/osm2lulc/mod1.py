@@ -2,14 +2,17 @@
 Rule 1 - Selection
 """
 
+import datetime as dt
+
+from glass.prop.sql import row_num
+
 def grs_rst(db, polyTbl, api='SQLITE'):
     """
     Simple selection, convert result to Raster
     """
-    
-    import datetime as dt
-    from glass.sql.q   import q_to_obj
-    from glass.it.shp   import dbtbl_to_shp as db_to_grs
+
+    from glass.sql.q     import q_to_obj
+    from glass.it.shp    import dbtbl_to_shp as db_to_grs
     from glass.dtr.torst import grsshp_to_grsrst as shp_to_rst
     
     # Get Classes 
@@ -55,34 +58,31 @@ def grs_vector(db, table):
     """
     Simple Selection using GRASS GIS
     """
-    
-    import datetime
+
     from glass.gp.gen   import dissolve
     from glass.tbl.grs  import add_table
     from glass.prop.sql import row_num as cont_row
     from glass.it.shp   import dbtbl_to_shp as db_to_grs
     
-    WHR = "selection IS NOT NULL"
-    
     # Check if we have interest data
-    time_a = datetime.datetime.now().replace(microsecond=0)
-    N = cont_row(db, table, where=WHR, api='psql')
-    time_b = datetime.datetime.now().replace(microsecond=0)
+    time_a = dt.datetime.now().replace(microsecond=0)
+    N = cont_row(db, table, where=None, api='psql')
+    time_b = dt.datetime.now().replace(microsecond=0)
     
     if not N: return None, {0 : ('count_rows', time_b - time_a)}
     
     # Data to GRASS GIS
     gv = db_to_grs(
         db, table, "geometry", "sel_rule",
-        where=WHR, filterByReg=True,
-        inDB='psql', outShpIsGRASS=True
+        where=None, filterByReg=True,
+        inDB='psql', api="grass"
     )
-    time_c = datetime.datetime.now().replace(microsecond=0)
+    time_c = dt.datetime.now().replace(microsecond=0)
     
-    dissVect = dissolve(gv, "diss_sel_rule", "selection", api="grass")
+    dissVect = dissolve(gv, "diss_sel_rule", "lulc", api="grass")
     
     add_table(dissVect, None, lyrN=1, asCMD=True)
-    time_d = datetime.datetime.now().replace(microsecond=0)
+    time_d = dt.datetime.now().replace(microsecond=0)
     
     return dissVect, {
         0 : ('count_rows', time_b - time_a),

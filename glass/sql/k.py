@@ -13,9 +13,9 @@ def create_pk(db, tbl, new_col):
     
     cs = conn.cursor()
     cs.execute((
-        "ALTER TABLE {} ADD COLUMN {} "
+        f"ALTER TABLE {tbl} ADD COLUMN {new_col} "
         "BIGSERIAL PRIMARY KEY;"
-    ).format(tbl, new_col))
+    ))
 
     conn.commit()
     cs.close()
@@ -81,7 +81,7 @@ def multiCols_FK_to_singleCol(db, tbl_wPk, pkCol, tbl_multiFk,
                 tbl_multiFk, fkCols[k], tbl_wPk, k
             ) for k in fkCols
         ]),
-        whr="" if not whrCls else " WHERE {}".format(whrCls)
+        whr="" if not whrCls else f" WHERE {whrCls}"
     )
     
     outbl = q_to_ntbl(db, newTable, q, api='psql')

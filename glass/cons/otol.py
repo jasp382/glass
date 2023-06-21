@@ -9,7 +9,7 @@ import json as js
 
 OSM2LULC_DB = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    'ete', 'osm2lulc', 'osm2lulc_v15.sqlite'
+    'ete', 'otol', 'osm2lulc_v15.sqlite'
 )
 
 DB_SCHEMA = {
@@ -48,6 +48,13 @@ OSM_TABLES = {
 }
 
 GEOM_AREA = 'geom_area'
+
+OSM_PK   = 'ogc_fid'
+OSM_GEOM = 'wkb_geometry'
+
+OTOL_MODULE = "osm_module"
+OTOL_GEOM = 'geometry'
+OTOL_LULC = 'lulc'
 
 PRIORITY = {
     'uatlas' : [22, 21, 6, 4, 8, 7, 5, 2, 3],

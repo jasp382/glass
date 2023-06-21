@@ -264,8 +264,9 @@ Database Table to Shape
 """
 
 def dbtbl_to_shp(db, tbl, geom_col, outShp, where=None, inDB='psql',
-                 notTable=None, filterByReg=None, outShpIsGRASS=None,
-                 tableIsQuery=None, api='psql', epsg=None, dbset='default'):
+                 notTable=None, filterByReg=None,
+                 tableIsQuery=None, api='psql', epsg=None, dbset='default',
+                 olyr=None):
     """
     Database Table to Feature Class file
     
@@ -277,6 +278,7 @@ def dbtbl_to_shp(db, tbl, geom_col, outShp, where=None, inDB='psql',
     * psql
     * sqlite
     * pgsql2shp
+    * grass
     
     if outShpIsGRASS if true, the method assumes that outShp is
     a GRASS Vector. That implies that a GRASS Session was been
@@ -287,7 +289,7 @@ def dbtbl_to_shp(db, tbl, geom_col, outShp, where=None, inDB='psql',
     from glass.pys       import execmd
     from glass.cons.psql import con_psql
     
-    if outShpIsGRASS:
+    if api == 'grass':
         db_con = con_psql(db_set=dbset)
         
         whr = "" if not where else f" where=\"{where}\""
@@ -310,35 +312,58 @@ def dbtbl_to_shp(db, tbl, geom_col, outShp, where=None, inDB='psql',
         
         rcmd = execmd(cmd_str)
     
+    elif api == 'pgsql2shp':
+        db_con = con_psql(db_set=dbset)
+            
+        geom = '' if not geom_col else f' -g {geom_col}'
+        t    = tbl if not tableIsQuery else f'"{tbl}"'
+            
+        outcmd = execmd((
+            f"pgsql2shp -f {outShp} -h {db_con['HOST']} "
+            f"-u {db_con['USER']} -p {db_con['PORT']} "
+            f"-P {db_con['PASSWORD']} -k"
+            f"{geom} {db} {t}"
+        ))
+        
+    elif api == 'psql' or api == 'sqlite':
+        from glass.sql.q import q_to_obj
+            
+        q = f"SELECT * FROM {tbl}" if not tableIsQuery else tbl
+            
+        df = q_to_obj(
+            db, q, db_api=api, geomCol=geom_col, epsg=epsg,
+            dbset=dbset
+        )
+            
+        outsh = df_to_shp(df, outShp)
+    
+    elif api == 'ogr2ogr':
+        from glass.prop import drv_name
+        from glass.pys.oss import fprop
+
+        cdb = con_psql(db_set=dbset)
+
+        drv = drv_name(outShp)
+
+        up = "" if drv != 'GPKG' else f" -update -append" \
+            if os.path.exists(outShp) else ""
+        
+        otbl = olyr if olyr else fprop(outShp, 'fn')
+
+        qtbl = f"\"{tbl}\"" if not tableIsQuery else f"-sql \"{tbl}\""
+        
+        cmd = (
+            f"ogr2ogr{up} -f \"{drv}\" {outShp} -nln \"{otbl}\" "
+            f"PG:\"dbname='{db}' host='{cdb['HOST']}' port='{cdb['PORT']}' "
+            f"user='{cdb['USER']}' password='{cdb['PASSWORD']}'\" "
+            f"{qtbl}"
+        )
+
+        ocmd = execmd(cmd)
+        
     else:
-        if api == 'pgsql2shp':
-            db_con = con_psql(db_set=dbset)
-            
-            geom = '' if not geom_col else f' -g {geom_col}'
-            t    = tbl if not tableIsQuery else f'"{tbl}"'
-            
-            outcmd = execmd((
-                f"pgsql2shp -f {outShp} -h {db_con['HOST']} "
-                f"-u {db_con['USER']} -p {db_con['PORT']} "
-                f"-P {db_con['PASSWORD']} -k"
-                f"{geom} {db} {t}"
-            ))
-        
-        elif api == 'psql' or api == 'sqlite':
-            from glass.sql.q import q_to_obj
-            
-            q = f"SELECT * FROM {tbl}" if not tableIsQuery else tbl
-            
-            df = q_to_obj(
-                db, q, db_api=api, geomCol=geom_col, epsg=epsg,
-                dbset=dbset
-            )
-            
-            outsh = df_to_shp(df, outShp)
-        
-        else:
-            raise ValueError((
-                'api value must be \'psql\', \'sqlite\' or \'pgsql2shp\''))
+        raise ValueError((
+            'api value must be \'psql\', \'sqlite\' or \'pgsql2shp\''))
     
     return outShp
 

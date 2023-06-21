@@ -3,85 +3,74 @@ Overlay operations using SQL
 """
 
 
-def feat_within(db, inTbl, inGeom, withinTbl, withinGeom, outTbl,
-    inTblCols=None, withinCols=None, outTblIsFile=None,
-    apiToUse='OGR_SPATIALITE', geom_col=None):
+def feat_within(db, left_tbl, left_geom, within_tbl, within_geom, out=None,
+    left_cols=None, within_cols=None, outTblIsFile=None,
+    geom_col='left', join='INNER', outlyr=None, geomname='geometry'):
     """
     Get Features within other Geometries in withinTbl
     e.g. Intersect points with Polygons
     
     apiToUse options:
-    * OGR_SPATIALITE;
-    * POSTGIS.
+    * sqlite;
+    * psql.
     """
     
     from glass.pys import obj_to_lst
+    from glass.sql.q import q_to_ntbl
+
+    join = "INNER" if join != 'INNER' and join != 'LEFT' \
+        and join != 'RIGHT' and join != 'OUTER' else join
     
-    if not inTblCols and not withinCols:
-        colSelect = "intbl.*, witbl.*"
+    lcols = None if not left_cols else ", ".join([
+        f"itbl.{c}" for c in obj_to_lst(left_cols)
+    ])
+
+    wcols = None if not within_cols else ", ".join([
+        f"wtbl.{c}" for c in obj_to_lst(within_cols)
+    ])
+
+    geom_col = f"itbl.{left_geom}" if geom_col == 'left' else \
+        f"wtbl.{within_geom}" if geom_col == 'within' \
+            else f"itbl.{left_geom}"
+    
+    geoname = 'geometry' if not geomname else geomname
+    
+    if not lcols and not wcols:
+        csel = "itbl.*, wtbl.*"
+    
+    elif lcols and not wcols:
+        csel = lcols
+        
+    elif not lcols and wcols:
+        csel = wcols
+        
     else:
-        if inTblCols and not withinCols:
-            colSelect = ", ".join([
-                "intbl.{}".format(c) for c in obj_to_lst(inTblCols)
-            ])
-        
-        elif not inTblCols and withinCols:
-            colSelect = ", ".join([
-                "witbl.{}".format(c) for c in obj_to_lst(withinCols)
-            ])
-        
-        else:
-            colSelect = "{}, {}".format(
-                ", ".join(["intbl.{}".format(c) for c in obj_to_lst(inTblCols)]),
-                ", ".join(["witbl.{}".format(c) for c in obj_to_lst(withinCols)])
-            )
+        csel = f"{lcols}, {wcols}"
     
-    Q = (
-        "SELECT {selcols} FROM {in_tbl} AS intbl "
-        "INNER JOIN {within_tbl} AS witbl ON "
-        "ST_Within(intbl.{in_geom}, witbl.{wi_geom})"
-    ).format(
-        selcols=colSelect, in_tbl=inTbl, within_tbl=withinTbl,
-        in_geom=inGeom, wi_geom=withinGeom
+    q = (
+        f"SELECT {csel}, {geom_col} AS {geoname} "
+        f"FROM {left_tbl} AS itbl "
+        f"{join} JOIN {within_tbl} AS wtbl ON "
+        f"ST_Within(itbl.{left_geom}, wtbl.{within_geom})"
     )
-    
-    if apiToUse == "OGR_SPATIALITE":
-        if outTblIsFile:
-            from glass.tbl.filter import sel_by_attr
-            
-            sel_by_attr(db, Q, outTbl, api_gis='ogr')
-        
-        else:
-            from glass.sql.q import q_to_ntbl
-            
-            q_to_ntbl(db, outTbl, Q, api='ogr2ogr')
-    
-    elif apiToUse == 'POSTGIS':
-        if outTblIsFile:
-            if not geom_col:
-                raise ValueError((
-                    "To export a PostGIS table to file, geom_col "
-                    "must be specified!"
-                ))
 
-            from glass.it.shp import dbtbl_to_shp
+    if out and not outTblIsFile:
+        q_to_ntbl(db, out, q, api="ogr2ogr")
 
-            dbtbl_to_shp(
-                db, Q, geom_col, outTbl, api="pgsql2shp",
-                tableIsQuery=True)
-        
-        else:
-            from glass.sql.q import q_to_ntbl
-            
-            q_to_ntbl(db, outTbl, Q, api='psql')
+        return out
+    
+    elif out and outTblIsFile:
+        from glass.it.shp import dbtbl_to_shp
+
+        dbtbl_to_shp(
+            db, q, geoname, out, api="ogr2ogr",
+            tableIsQuery=True, olyr=outlyr
+        )
+
+        return out
     
     else:
-        raise ValueError((
-            "API {} is not available. OGR_SPATIALITE and POSTGIS "
-            "are the only valid options"
-        ))
-    
-    return outTbl
+        return q
 
 
 def feat_not_within(db, inTbl, inGeom, withinTbl, withinGeom, outTbl,
@@ -143,7 +132,7 @@ def feat_not_within(db, inTbl, inGeom, withinTbl, withinGeom, outTbl,
     
     else:
         raise ValueError((
-            "API {} is not available. OGR_SPATIALITE and POSTGIS "
+            f"API {apiToUse} is not available. OGR_SPATIALITE and POSTGIS "
             "are the only valid options"
         ))
     
@@ -394,7 +383,9 @@ def check_autofc_overlap(checkShp, epsg, dbname, outOverlaps):
     q_to_ntbl(dbname, resultTable, q, api='psql')
     
     dbtbl_to_shp(
-        dbname, resultTable, "geom", outOverlaps, api='psql', epsg=epsg)
+        dbname, resultTable, "geom",
+        outOverlaps, api='psql', epsg=epsg
+    )
     
     return outOverlaps
 

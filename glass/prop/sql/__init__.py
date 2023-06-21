@@ -141,7 +141,7 @@ def lst_tbl(db, schema='public', excludeViews=None, api='psql',
         __tbls = c.table_names()
     
     else:
-        raise ValueError('API {} is not available!'.format(api))
+        raise ValueError(f'API {api} is not available!')
     
     return __tbls
 
@@ -160,14 +160,13 @@ def row_num(db, table, where=None, api='psql', dbset='default'):
     """
     
     from glass.sql.q import q_to_obj
+
+    whr = "" if not where else f" WHERE {where}"
     
     if not table.startswith('SELECT '):
-        Q = "SELECT COUNT(*) AS nrows FROM {}{}".format(
-            table,
-            "" if not where else " WHERE {}".format(where)
-        )
+        Q = f"SELECT COUNT(*) AS nrows FROM {table}{whr}"
     else:
-        Q = "SELECT COUNT(*) AS nrows FROM ({}) AS foo".format(table)
+        Q = f"SELECT COUNT(*) AS nrows FROM ({table}) AS foo"
     
     d = q_to_obj(db, Q, db_api=api, dbset=dbset)
     

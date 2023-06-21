@@ -308,13 +308,13 @@ def dsn_data_collection_by_multibuffer(inBuffers, workspace, db, datasource,
         # Export Results
         dbtbl_to_shp(
             db, inBuffers[city]["table"], 'geom',
-            os.path.join(workspace, "{}.shp".format(inBuffers[city]["table"])),
+            os.path.join(workspace, f"{inBuffers[city]['table']}.shp"),
             api='psql', epsg=inBuffers[city]["epsg"]
         )
         
         dbtbl_to_shp(
             db, inBuffers[city]["pg_buffer"], 'geom',
-            os.path.join(workspace, "{}.shp".format(inBuffers[city]["pg_buffer"])),
+            os.path.join(workspace, f"{inBuffers[city]['pg_buffer']}.shp"),
             api='psql', epsg=inBuffers[city]["epsg"]
         )
     
@@ -355,7 +355,7 @@ def dsnsearch_by_cell(GRID_PNT, EPSG, RADIUS, DATA_SOURCE, db, OUTPUT_TABLE):
             )
         
         else:
-            raise ValueError('{} as datasource is not a valid value'.format(datasrc))
+            raise ValueError(f'{datasrc} as datasource is not a valid value')
         
         if type(d) == int:
             return

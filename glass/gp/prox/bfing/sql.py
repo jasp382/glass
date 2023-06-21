@@ -3,17 +3,20 @@ Tools for process geographic data on PostGIS
 """
 
 
-def st_buffer(db, inTbl, bfDist, geomCol, outTbl, bufferField="geometry",
-              whrClause=None, dissolve=None, cols_select=None, outTblIsFile=None):
+def st_buffer(db, inTbl, bfDist, geomCol, output=None, bufferField="geometry",
+              whrClause=None, dissolve=None, cols_select=None, outTblIsFile=None,
+              olyr=None):
     """
     Using Buffer on PostGIS Data
     """
     
     from glass.pys import obj_to_lst
     
-    dissolve = obj_to_lst(dissolve) if dissolve != "ALL" else "ALL"
+    dissolve = dissolve if dissolve == "ALL" or dissolve == 'SEL' else None
+
+    dissolve = "ALL" if dissolve == 'SEL' and not cols_select else dissolve
     
-    selcols = " " if not cols_select else \
+    selcols = " " if not cols_select or dissolve == 'ALL' else \
         f" {', '.join(obj_to_lst(cols_select))}, "
     
     bf_start = "ST_Buffer(" if not dissolve else \
@@ -23,34 +26,36 @@ def st_buffer(db, inTbl, bfDist, geomCol, outTbl, bufferField="geometry",
 
     whr = "" if not whrClause else f" WHERE {whrClause}"
 
-
-    dsscols = "" if not dissolve or dissolve == "ALL" else ", ".join(dissolve)
-    gby = "" if not dissolve else f"{selcols} {dsscols}" if \
-        cols_select and dsscols else selcols[1:-2] \
-        if cols_select and not dsscols else \
-            dsscols if dsscols and not cols_select else ""
+    gby = selcols[1:-2] if cols_select and dissolve == 'SEL' else ""
     
     gby = gby if not gby else f" GROUP BY {gby}"
     
     Q = (
         f"SELECT{selcols}{bf_start}{geomCol}, {bfDist}"
         f"{bf_end} AS {bufferField} "
-        f"FROM {inTbl}{whr}{gby}"
+        f"FROM {inTbl} AS bft{whr}{gby}"
     )
     
-    if not outTblIsFile:
+    if output and not outTblIsFile:
         from glass.sql.q import q_to_ntbl
         
-        outTbl = q_to_ntbl(db, outTbl, Q, api='psql')
+        outTbl = q_to_ntbl(db, output, Q, api='psql')
+
+        return outTbl
     
-    else:
+    elif output and outTblIsFile:
         from glass.it.shp import dbtbl_to_shp
         
-        dbtbl_to_shp(db, Q, bufferField, outTbl, api='pgsql2shp',
-            tableIsQuery=True
+        dbtbl_to_shp(
+            db, Q, bufferField, output, api='ogr2ogr',
+            tableIsQuery=True, olyr=olyr
         )
+
+        return output
     
-    return outTbl
+    else:
+        return Q
+
 
 def splite_buffer(db, table, dist, geomField, outTbl,
               cols_select=None, bufferField="geometry",

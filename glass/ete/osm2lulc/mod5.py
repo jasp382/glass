@@ -3,6 +3,8 @@ Rule 5 - Basic buffer
 """
 
 import os
+import datetime as dt
+
 from glass.ete.osm2lulc import DB_SCHEMA
 
 def basic_buffer(osmdb, lineTable, dataFolder, apidb='SQLITE'):
@@ -66,51 +68,6 @@ def basic_buffer(osmdb, lineTable, dataFolder, apidb='SQLITE'):
         tk += 3
     
     return clsRst, timeGasto
-
-
-def grs_vect_bbuffer(osmdata, lineTbl):
-    """
-    Basic Buffer strategie
-    """
-    
-    import datetime
-    from glass.gp.prox.bfing import _buffer
-    from glass.gp.gen        import dissolve
-    from glass.tbl.grs       import add_table
-    from glass.prop.sql      import row_num as cnt_row
-    from glass.it.shp        import dbtbl_to_shp as db_to_shp
-    
-    WHR = "basic_buffer IS NOT NULL"
-    
-    # Check if we have data
-    time_a = datetime.datetime.now().replace(microsecond=0)
-    N = cnt_row(osmdata, lineTbl, where=WHR, api='psql')
-    time_b = datetime.datetime.now().replace(microsecond=0)
-    
-    if not N: return None, {0 : ('count_rows_roads', time_b - time_a)}
-    
-    grsVect = db_to_shp(
-        osmdata, lineTbl, "geometry", "bb_lnh", where=WHR,
-        filterByReg=True, inDB='psql', outShpIsGRASS=True
-    )
-    time_c = datetime.datetime.now().replace(microsecond=0)
-    
-    grsBuf  = _buffer(
-        grsVect, "bf_basic_buffer", "bb_poly",
-        api="grass", geom_type="line"
-    )
-    time_d = datetime.datetime.now().replace(microsecond=0)
-    
-    grsDiss = dissolve(grsBuf, "bb_diss", "basic_buffer", api="grass")
-    add_table(grsDiss, None, lyrN=1, asCMD=True)
-    time_e = datetime.datetime.now().replace(microsecond=0)
-    
-    return grsDiss, {
-        0 : ('count_rows', time_b - time_a),
-        1 : ('import', time_c - time_b),
-        2 : ('buffer', time_d - time_c),
-        3 : ('dissolve', time_e - time_d)
-    }
 
 
 def num_base_buffer(osmdb, lineTbl, folder, cells, srscode, rtemplate,

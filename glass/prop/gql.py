@@ -34,10 +34,11 @@ def tbl_geomtype(db, table, geomCol='geom'):
     
     return int(q_to_obj(db, (
         "SELECT COUNT(*) AS row_count FROM ("
-            "SELECT ST_GeometryType((ST_Dump({})).geom) AS cnt_geom "
-            "FROM {} GROUP BY ST_GeometryType((ST_Dump({})).geom)"
+            f"SELECT ST_GeometryType((ST_Dump({geomCol})).geom) AS cnt_geom "
+            f"FROM {table} "
+            f"GROUP BY ST_GeometryType((ST_Dump({geomCol})).geom)"
         ") AS foo"
-    ).format(geomCol, table, geomCol), db_api='psql').iloc[0].row_count)
+    ), db_api='psql').iloc[0].row_count)
 
 
 def select_main_geom_type(db, table, outbl, geomCol='geom'):
@@ -53,23 +54,23 @@ def select_main_geom_type(db, table, outbl, geomCol='geom'):
     COLS = [x for x in cols_name(
         db, table, sanitizeSpecialWords=None
     ) if x != geomCol]
+    cols = ", ".join(COLS)
     
     Q = (
-        "SELECT {cols}, {geomcol} FROM ("
+        f"SELECT {cols}, {geomCol} FROM ("
             "SELECT *, MAX(jtbl.geom_cont) OVER (PARTITION BY "
             "jtbl.tst) AS max_cnt FROM ("
-                "SELECT {cols}, (ST_Dump({geomcol})).geom AS {geomcol}, "
-                "ST_GeometryType((ST_Dump({geomcol})).geom) AS geom_type "
-                "FROM {tbl}"
+                f"SELECT {cols}, (ST_Dump({geomCol})).geom AS {geomCol}, "
+                f"ST_GeometryType((ST_Dump({geomCol})).geom) AS geom_type "
+                f"FROM {table}"
             ") AS foo INNER JOIN ("
-                "SELECT ST_GeometryType((ST_Dump({geomcol})).geom) AS gt, "
-                "COUNT(ST_GeometryType((ST_Dump({geomcol})).geom)) AS geom_cont, "
-                "1 AS tst FROM {tbl} GROUP BY ST_GeometryType((ST_Dump({geomcol})).geom)"
+                f"SELECT ST_GeometryType((ST_Dump({geomCol})).geom) AS gt, "
+                f"COUNT(ST_GeometryType((ST_Dump({geomCol})).geom)) AS geom_cont, "
+                "1 AS tst "
+                f"FROM {table} "
+                f"GROUP BY ST_GeometryType((ST_Dump({geomCol})).geom)"
             ") AS jtbl ON foo.geom_type = jtbl.gt"
         ") AS foo WHERE geom_cont = max_cnt"
-    ).format(
-        cols=", ".join(COLS), geomcol=geomCol,
-        tbl=table
     )
     
     return q_to_ntbl(db, outbl, Q, api='psql')
@@ -131,7 +132,7 @@ def check_endpoint_ispoint(db, lnhTable, pntTable, outTable,
         "GROUP BY {cols}, {stPnt}, {endPnt}, start_isstop, end_isstop, "
         "start_id, end_id"
     ).format(
-        fooCols = ", ".join(["foo.{}".format(c) for c in tCols]),
+        fooCols = ", ".join([f"foo.{c}" for c in tCols]),
         stPnt = nodeStart, endPnt = nodeEnd, lnhT = lnhTable,
         pntT = pntTable, pntG = pntGeom,
         cols = ", ".join(tCols), pntid=pointId

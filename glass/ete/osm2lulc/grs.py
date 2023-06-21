@@ -373,9 +373,9 @@ def osm_to_lulc(osm, nomenclature, ref, lulc, overwrite=None, savedb=None, tmpfl
     from glass.ete.osm2lulc.mod2 import roads_fmdb
     from glass.ete.osm2lulc.m3_4 import grs_vect_selbyarea
     from glass.ete.osm2lulc.mod5 import grs_vect_bbuffer
-    from glass.ete.osm2lulc.mod6 import vector_assign_pntags_to_build
+    from glass.ete.osm2lulc.mod6     import vector_assign_pntags_to_build
     from glass.ete.osm2lulc.utilsv15 import nomenclature_id, lulc_to_osmfeat, osm_project, get_legend
-    from glass.prj                import def_prj
+    from glass.prj                   import def_prj
     from glass.prop.prj import get_epsg
     from glass.prop.feat import feat_count
     from glass.pys.oss import mkdir, fprop

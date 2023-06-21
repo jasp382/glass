@@ -274,7 +274,7 @@ def osm_to_lulc(__VERSION, OSM_DATA, NOMENCLATURE, REF_RASTER, RESULT,
         )
     
     else:
-        raise ValueError('Version with tag {} is not available')
+        raise ValueError(f'Version with tag {__VERSION} is not available')
     
     return rr
 

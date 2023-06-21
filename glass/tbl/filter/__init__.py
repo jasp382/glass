@@ -17,19 +17,17 @@ def sel_by_attr(inShp, sql, outShp, geomType="area", lyrN=1, api_gis='ogr',
     """
     
     if api_gis == 'ogr':
-        from glass.pys    import execmd
+        from glass.pys  import execmd
         from glass.prop import drv_name
     
-        out_driver = drv_name(outShp)
+        drv = drv_name(outShp)
+
+        srs = f" -s_srs EPSG:{str(iEPSG)} -t_srs EPSG:{str(oEPSG)}" \
+            if oEPSG and iEPSG else ""
     
         cmd = (
-            'ogr2ogr -f "{drv}" {o} {i} -dialect sqlite -sql "{s}"'
-            '{srs}'
-        ).format(
-            o=outShp, i=inShp, s=sql, drv=out_driver,
-            srs=" -s_srs EPSG:{} -t_srs EPSG:{}".format(
-                str(iEPSG), str(oEPSG)
-            ) if oEPSG and iEPSG else ""
+            f'ogr2ogr -f "{drv}" {outShp} {inShp} -dialect sqlite '
+            f'-sql "{sql}"{srs}'
         )
     
         # Execute command

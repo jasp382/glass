@@ -4,6 +4,9 @@ Rule 2 - Select Roads
 
 import datetime as dt
 
+from glass.cons.otol import OSM_TABLES
+from glass.prop.sql          import row_num
+
 def grs_rst_roads(osmdb, lineTbl, polyTbl, LULC_CLS):
     """
     Raster Roads for GRASS
@@ -175,7 +178,6 @@ def roads_fmdb(osmdb, lnhTbl, plTbl, asRst=None):
     
     from glass.sql.q             import exec_write_q
     from glass.gp.prox.sql       import st_near
-    from glass.prop.sql          import row_num as cnt_rows
     from glass.it.shp            import dbtbl_to_shp as db_to_shp
     from glass.gp.prox.bfing.sql import st_buffer
     from glass.gp.gen            import dissolve
@@ -183,7 +185,7 @@ def roads_fmdb(osmdb, lnhTbl, plTbl, asRst=None):
     
     time_a = dt.datetime.now().replace(microsecond=0)
 
-    NR = cnt_rows(
+    NR = row_num(
         osmdb, lnhTbl, where="roads IS NOT NULL",
         api='psql'
     )
@@ -193,7 +195,7 @@ def roads_fmdb(osmdb, lnhTbl, plTbl, asRst=None):
     if not NR:
         return None, {0 : ('count_rows_roads', time_b - time_a)}
     
-    NB = cnt_rows(
+    NB = row_num(
         osmdb, plTbl, where="building IS NOT NULL",
         api='psql'
     )
@@ -479,3 +481,4 @@ def pg_num_roads(osmdb, nom, lnhTbl, polyTbl, folder, cellsize, srs, rstT):
         4 : ('buffer_roads', time_f - time_e if time_e else time_f - time_c),
         5 : ('roads_to_raster', time_g - time_f)
     }
+

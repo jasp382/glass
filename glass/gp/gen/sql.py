@@ -4,7 +4,7 @@ Generalization tools using SpatiaLite or PostGIS
 
 def st_dissolve(db, table, geomcol, outTable, whrClause=None,
                 diss_cols=None, outTblIsFile=None,
-                valascol=None,
+                valascol=None, olyr=None,
                 geomout=None, api='sqlite', multipart=True):
     """
     Dissolve a Polygon table
@@ -51,7 +51,8 @@ def st_dissolve(db, table, geomcol, outTable, whrClause=None,
             
             dbtbl_to_shp(
                 db, sql, gout, outTable,
-                api='pgsql2shp', tableIsQuery=True
+                api='ogr2ogr', tableIsQuery=True,
+                olyr=olyr
             )
     
     else:

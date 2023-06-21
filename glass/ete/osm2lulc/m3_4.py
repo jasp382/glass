@@ -2,6 +2,10 @@
 Rule 3 and 4 - Area upper than and less than
 """
 
+import datetime as dt
+
+from glass.prop.sql import row_num
+
 
 def rst_area(db, polygonTable, UPPER=True, api='SQLITE'):
     """
@@ -10,10 +14,9 @@ def rst_area(db, polygonTable, UPPER=True, api='SQLITE'):
     A field with threshold is needed in the database.
     """
     
-    import datetime as dt
-    from glass.sql.q     import q_to_obj
-    from glass.it.shp     import dbtbl_to_shp as db_to_grs
-    from glass.dtr.torst   import grsshp_to_grsrst as shp_to_rst
+    from glass.sql.q        import q_to_obj
+    from glass.it.shp       import dbtbl_to_shp as db_to_grs
+    from glass.dtr.torst    import grsshp_to_grsrst as shp_to_rst
     from glass.ete.osm2lulc import GEOM_AREA
     
     RULE_COL = 'area_upper' if UPPER else 'area_lower'
@@ -69,7 +72,6 @@ def grs_vect_selbyarea(osmdb, polyTbl, UPPER=True):
     A field with threshold is needed in the database.
     """
     
-    import datetime
     from glass.gp.gen       import dissolve
     from glass.tbl.grs      import add_table
     from glass.ete.osm2lulc import GEOM_AREA
@@ -82,9 +84,9 @@ def grs_vect_selbyarea(osmdb, polyTbl, UPPER=True):
     WHR = f"{GEOM_AREA} {o} t_area_{d} and area_{d} IS NOT NULL"
     
     # Check if we have interest data
-    time_a = datetime.datetime.now().replace(microsecond=0)
+    time_a = dt.datetime.now().replace(microsecond=0)
     N = cnt_row(osmdb, polyTbl, where=WHR, api='psql')
-    time_b = datetime.datetime.now().replace(microsecond=0)
+    time_b = dt.datetime.now().replace(microsecond=0)
     
     if not N: return None, {0 : ('count_rows', time_b - time_a)}
     
@@ -94,7 +96,7 @@ def grs_vect_selbyarea(osmdb, polyTbl, UPPER=True):
         f"area_{d}", where=WHR, inDB='psql',
         filterByReg=True, outShpIsGRASS=True
     )
-    time_c = datetime.datetime.now().replace(microsecond=0)
+    time_c = dt.datetime.now().replace(microsecond=0)
     
     dissVect = dissolve(
         grsVect, f"diss_area_{d}",
@@ -102,7 +104,7 @@ def grs_vect_selbyarea(osmdb, polyTbl, UPPER=True):
     )
     
     add_table(dissVect, None, lyrN=1, asCMD=True)
-    time_d = datetime.datetime.now().replace(microsecond=0)
+    time_d = dt.datetime.now().replace(microsecond=0)
     
     return dissVect, {
         0 : ('count_rows', time_b - time_a),
@@ -119,7 +121,7 @@ def num_selbyarea(db, polyTbl, folder, cellsize, srscode, rstTemplate,
     A field with threshold is needed in the database.
     """
     
-    import datetime as dt;  import os
+    import os
     from threading          import Thread
     from glass.sql.q     import q_to_obj
     if api == 'SQLITE':
@@ -206,3 +208,4 @@ def sel_by_dist_to_pop():
     # parques infantis, etc.
     
     return None
+
