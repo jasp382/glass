@@ -136,7 +136,8 @@ def dic_buffer_array_to_shp(arrayBf, outShp, epsg, fields=None):
     Array with dict with buffer proprieties to Feature Class
     """
     
-    import os; from osgeo        import ogr
+    import os
+    from osgeo                   import ogr
     from glass.prop              import drv_name
     from glass.prop.prj          import get_sref_from_epsg
     from glass.gp.prox.bfing.obj import xy_to_buffer
@@ -272,8 +273,15 @@ def cheese_buffer(inshp, dist, angles_int, outshp,
                 coords.append((x, y))
         
             coords.append((r.x, r.y))   
-    
-            poly = create_polygon(coords, api='shapely')
+
+            try:
+                poly = create_polygon(coords, api='shapely')
+            except:
+                print(r[_featid])
+                print(f"{str(minangle)}-{str(maxangle)}")
+
+                print(coords)
+                poly = create_polygon(coords, api='shapely')
         
             multipoly.append([r[_featid], poly, f"{str(minangle)}-{str(maxangle)}"])
         
@@ -296,6 +304,9 @@ def cheese_buffer(inshp, dist, angles_int, outshp,
     
     else:
         rbf.rename(columns={shpid: 'ofeatid'}, inplace=True)
+    
+    if not shpid:
+        pdf[featid] = pdf.index
 
     # Save original polygons
     odf = pdf.copy()
@@ -312,9 +323,6 @@ def cheese_buffer(inshp, dist, angles_int, outshp,
 
     pdf['x'] = s.envelope.centroid.x
     pdf['y'] = s.envelope.centroid.y
-
-    if not shpid:
-        pdf[featid] = pdf.index
 
     pdf = pdf.apply(lambda x: run_cheese_buffer(x, featid), axis=1)
 
@@ -338,10 +346,10 @@ def cheese_buffer(inshp, dist, angles_int, outshp,
     dfs = []
     for i, row in odf.iterrows():
         # Get slices
-        slices = pdf[pdf.ofid == i]
+        slices = pdf[pdf.ofid == row[featid]]
     
         # Get regular buffer
-        regbf = rbf[rbf.ofeatid == i]
+        regbf = rbf[rbf.ofeatid == row[featid]]
         regbf = regbf.to_dict(orient="records")
     
         bfgeom = regbf[0]["geometry"]
@@ -364,7 +372,7 @@ def cheese_buffer(inshp, dist, angles_int, outshp,
 
     # Get Features UNIQUE IDENTIFIER
     if uniqueid:
-        fdf[uniqueid] = fdf[featid] + '__' + fdf['direction']
+        fdf[uniqueid] = fdf[featid].astype(str) + '__' + fdf['direction']
 
     # Return Area in SQUARE METERS
     if areaf:
