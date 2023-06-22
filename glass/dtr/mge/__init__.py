@@ -21,19 +21,26 @@ def vpatch(shps, outshp):
 
 
 def shps_to_shp(shps, outShp, api="ogr2ogr", fformat='.shp',
-    dbname=None):
+    dbname=None, olyrname=None, gpkglyrs=None):
     """
     Get all features in several Shapefiles and save them in one file
 
     api options:
+    * gpkg_to_gpkg
     * ogr2ogr;
     * psql;
     * pandas;
     * psql;
     * grass;
+
+    if API == gpkg_to_gpkg:
+    shps and outShp should be geopackages
+    all layers in the shps geopackage will be merged
+    resulting in one layer that will be added to the
+    outShp GeoPackage
     """
 
-    if type(shps) != list:
+    if type(shps) != list and api != 'gpkg_to_gpkg':
         # Check if is dir
         if os.path.isdir(shps):
             from glass.pys.oss import lst_ff
@@ -60,6 +67,32 @@ def shps_to_shp(shps, outShp, api="ogr2ogr", fformat='.shp',
         lcmd = [execmd(
             f'ogr2ogr -f "{out_drv}" -update -append {outShp} {shps[i]}'
         ) for i in range(1, len(shps))]
+    
+    elif api == 'gpkg_to_gpkg':
+        from glass.pys import execmd
+        from glass.pys.oss import fprop
+        from glass.prop.gpkg import lst_gpkg_layers
+        from glass.prop import drv_name
+
+        # List GeoPackage layers
+        layers = lst_gpkg_layers(shps) if not gpkglyrs else \
+            gpkglyrs
+
+        # Get out Drive 
+        drv = drv_name(outShp)
+
+        olyrname = fprop(outShp, 'fn', forceLower=True) \
+            if not olyrname else olyrname
+
+        ocmd = execmd((
+            f'ogr2ogr -f "{drv}" {outShp} -nln {olyrname} '
+            f'{shps} {layers[0]}'
+        ))
+
+        ocmds = [execmd((
+            f'ogr2ogr -f "{drv}" -update -append {outShp} '
+            f'-nln {olyrname} {shps} {layers[i]}'
+        )) for i in range(1, len(layers))]
     
     elif api == 'pandas':
         """

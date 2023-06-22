@@ -2,12 +2,20 @@
 Python data to SHP
 """
 
-def df_to_shp(indf, outShp):
+def df_to_shp(indf, outShp, layername=None):
     """
-    Pandas Dataframe to ESRI Shapefile
+    Pandas Dataframe to Geospatial file
     """
+
+    from glass.prop import drv_name
+
+    drv = drv_name(outShp)
+
+    if drv == 'GPKG' and layername:
+        indf.to_file(outShp, driver=drv, layer=layername)
     
-    indf.to_file(outShp)
+    else:
+        indf.to_file(outShp)
     
     return outShp
 

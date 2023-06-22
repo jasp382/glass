@@ -29,7 +29,13 @@ def module_1(tags, osmdb, epsg, gpkg, layer):
 
     tdf.loc[:, valcol] = 'tcls.' + tdf[keycol] + "='" + tdf[valcol] + "'"
 
-    geom_col = f"ST_Transform({OSM_GEOM}, {epsg}) AS {OTOL_GEOM}"
+    geom_col = (
+        "CASE "
+            f"WHEN ST_IsValid(ST_Transform({OSM_GEOM}, {epsg})) "
+            f"THEN ST_Transform({OSM_GEOM}, {epsg}) "
+            f"ELSE ST_MakeValid(ST_Transform({OSM_GEOM}, {epsg})) "
+        f"END AS {OTOL_GEOM}"
+    )
 
     time_b = dt.datetime.now().replace(microsecond=0)
 
@@ -115,13 +121,21 @@ def module_2(tags, osmdb, epsg, gpkg, layer):
 
     geom_col = f"ST_Transform({OSM_GEOM}, {epsg}) AS {OTOL_GEOM}"
 
+    geom_ply = (
+        "CASE "
+            f"WHEN ST_IsValid(ST_Transform({OSM_GEOM}, {epsg})) "
+            f"THEN ST_Transform({OSM_GEOM}, {epsg}) "
+            f"ELSE ST_MakeValid(ST_Transform({OSM_GEOM}, {epsg})) "
+        f"END AS {OTOL_GEOM}"
+    )
+
     bfcol = DB_SCHEMA['OSM_LULC']['BUFFER']
 
     tdf[bfcol] = tdf[bfcol].astype(int)
 
     # Building's table
     build_tbl = (
-        f"SELECT building, {geom_col} "
+        f"SELECT building, {geom_ply} "
         f"FROM {OSM_TABLES['polygons']} "
         "WHERE building IS NOT NULL"
     )
@@ -276,7 +290,13 @@ def module_3_and_4(tags, osmdb, epsg, gpkg, layer, upper=True):
 
     tdf.loc[:, valcol] = 'tcls.' + tdf[keycol] + "='" + tdf[valcol] + "'"
 
-    geom_col = f"ST_Transform({OSM_GEOM}, {epsg}) AS {OTOL_GEOM}"
+    geom_col = (
+        "CASE "
+            f"WHEN ST_IsValid(ST_Transform({OSM_GEOM}, {epsg})) "
+            f"THEN ST_Transform({OSM_GEOM}, {epsg}) "
+            f"ELSE ST_MakeValid(ST_Transform({OSM_GEOM}, {epsg})) "
+        f"END AS {OTOL_GEOM}"
+    )
 
     area_col = DB_SCHEMA['OSM_LULC']['AREA']
 
@@ -309,7 +329,7 @@ def module_3_and_4(tags, osmdb, epsg, gpkg, layer, upper=True):
                 f"{lcls} AS {OTOL_LULC}, {geom_col} "
                 f"FROM {OSM_TABLES['polygons']} AS tcls "
                 f"WHERE ({str(subclsdf[valcol].str.cat(sep=' OR '))}) "
-                f"AND ST_Area(ST_Transform({OSM_GEOM}, {epsg})) {o} "
+                f"AND ST_Area(ST_MakeValid(ST_Transform({OSM_GEOM}, {epsg}))) {o} "
                 f"{t}"
             )
 
@@ -450,7 +470,15 @@ def module_6(tags, osmdb, epsg, gpkg, layer):
     lulcol = DB_SCHEMA['OSM_LULC']['LULCID']
     modcol = DB_SCHEMA['MODULES']['NAME']
 
-    geom_col = f"ST_Transform({OSM_GEOM}, {epsg}) AS {OTOL_GEOM}"
+    geom_pnt = f"ST_Transform({OSM_GEOM}, {epsg}) AS {OTOL_GEOM}"
+
+    geom_ply = (
+        "CASE "
+            f"WHEN ST_IsValid(ST_Transform({OSM_GEOM}, {epsg})) "
+            f"THEN ST_Transform({OSM_GEOM}, {epsg}) "
+            f"ELSE ST_MakeValid(ST_Transform({OSM_GEOM}, {epsg})) "
+        f"END AS {OTOL_GEOM}"
+    )
 
     # Get tags related with this module
     dfs = {
@@ -469,6 +497,8 @@ def module_6(tags, osmdb, epsg, gpkg, layer):
         dfs[k].loc[:, valcol] = 'tcls.' + dfs[k][keycol] + "='" + dfs[k][valcol] + "'"
 
         tbl = OSM_TABLES['points'] if k == 'pnt' else OSM_TABLES['polygons']
+
+        geom_col = geom_ply if k == 'ply' else geom_pnt
 
         # Get classes
         lulcs = dfs[k][lulcol].unique()
