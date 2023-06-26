@@ -3,7 +3,7 @@ GLASS | Setup development environment
 
 ## Clone glass repository
 
-```
+```Bash
 sudo apt install git
 
 mkdir ~/code
@@ -15,6 +15,8 @@ git clone https://github.com/jasp382/glass ~/glass
 * [Ubuntu 18.04](dep/ub18.md);
 
 * [Ubuntu 20.04](dep/ub20.md);
+
+* [Ubuntu 22.04](dep/ub22.md);
 
 * [MacOS](dep/macos.md);
 
@@ -53,9 +55,17 @@ echo "/home/$USER/glass" | sudo tee ~/.virtualenvs/genv/lib/python$pone.$ptwo/si
 
 ### Set PGPASSFILE Environment variable:
 
-```
+```Bash
 echo "export PGPASSFILE=/home/$USER/.pgpass" | sudo tee --append ~/.bashrc
 
 sudo chmod 600 ~/.pgpass
 source ~/.bashrc
+```
+
+### Replace osmconf file:
+
+```Bash
+sudo rm /usr/share/gdal/osmconf.ini
+
+sudo cp ~/glass/conf/osmconf-gdal.ini /usr/share/gdal/osmconf.ini
 ```

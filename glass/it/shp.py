@@ -338,7 +338,7 @@ def dbtbl_to_shp(db, tbl, geom_col, outShp, where=None, inDB='psql',
         outsh = df_to_shp(df, outShp)
     
     elif api == 'ogr2ogr':
-        from glass.prop import drv_name
+        from glass.prop    import drv_name
         from glass.pys.oss import fprop
 
         cdb = con_psql(db_set=dbset)
