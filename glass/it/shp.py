@@ -4,6 +4,8 @@ Change File Format
 
 import os
 
+from glass.pys import execmd
+
 def shp_to_shp(inshp, outshp, gapi='ogr', spatialite=None):
     """
     Convert a vectorial file to another with other file format
@@ -17,7 +19,6 @@ def shp_to_shp(inshp, outshp, gapi='ogr', spatialite=None):
     """
     
     if gapi == 'ogr':
-        from glass.pys  import execmd
         from glass.prop import drv_name
         
         drv = drv_name(outshp)
@@ -79,50 +80,14 @@ def foldershp_to_foldershp(inFld, outFld, destiny_file_format,
     geo_files = lst_ff(inFld, file_format=file_format)
     
     for f in geo_files:
-        shp_to_shp(f, os.path.join(outFld, '{}.{}'.format(
-            fprop(f, 'fn'), destiny_file_format if \
-                destiny_file_format[0] == '.' else '.' + destiny_file_format
-        )), gapi=useApi)
+        name = fprop(f, 'fn')
+
+        ff = destiny_file_format if \
+            destiny_file_format[0] == '.' else '.' + destiny_file_format
+        
+        shp_to_shp(f, os.path.join(outFld, f'{name}.{ff}'), gapi=useApi)
     
     return outFld
-
-
-def shps_to_gpkg(in_shps, gpkg, shp_ff='.shp', tbl_name=None):
-    """
-    Add Shapefile to GeoPackage File
-    """
-
-    from glass.pys     import execmd
-    from glass.pys.oss import fprop
-
-    if type(in_shps) == list:
-        shps = in_shps
-    
-    elif os.path.isdir(in_shps):
-        from glass.pys .oss import lst_ff
-
-        # List Feature Classes
-        shps = lst_ff(in_shps, file_format='.shp' if not shp_ff else shp_ff)
-    
-    else:
-        # Assuming in_shps as a file
-        shps = [in_shps]
-    
-    new_cmd = "ogr2ogr -f \"GPKG\" {} -nln \"{}\" {}"
-    upd_cmd = "ogr2ogr -update -append -f \"GPKG\" {} -nln \"{}\" {}"
-
-    for s in range(len(shps)):
-        if tbl_name and not s:
-            tname = tbl_name
-        else:
-            tname = fprop(shps[s], 'fn')
-        
-        if not s and not os.path.exists(gpkg):
-            rcmd = execmd(new_cmd.format(gpkg, tname, shps[s]))
-        else:
-            rcmd = execmd(upd_cmd.format(gpkg, tname, shps[s]))
-
-    return gpkg
 
 
 def pointXls_to_shp(xlsFile, outShp, x_col, y_col, epsg, sheet=None):
@@ -366,4 +331,72 @@ def dbtbl_to_shp(db, tbl, geom_col, outShp, where=None, inDB='psql',
             'api value must be \'psql\', \'sqlite\' or \'pgsql2shp\''))
     
     return outShp
+
+
+"""
+Something to GeoPackage
+"""
+
+
+def shps_to_gpkg(in_shps, gpkg, shp_ff='.shp', tbl_name=None):
+    """
+    Add Shapefile to GeoPackage File
+    """
+
+    from glass.pys.oss import fprop
+
+    if type(in_shps) == list:
+        shps = in_shps
+    
+    elif os.path.isdir(in_shps):
+        from glass.pys .oss import lst_ff
+
+        # List Feature Classes
+        shps = lst_ff(in_shps, file_format='.shp' if not shp_ff else shp_ff)
+    
+    else:
+        # Assuming in_shps as a file
+        shps = [in_shps]
+    
+    new_cmd = "ogr2ogr -f \"GPKG\" {} -nln \"{}\" {}"
+    upd_cmd = "ogr2ogr -update -append -f \"GPKG\" {} -nln \"{}\" {}"
+
+    for s in range(len(shps)):
+        if tbl_name and not s:
+            tname = tbl_name
+        else:
+            tname = fprop(shps[s], 'fn')
+        
+        if not s and not os.path.exists(gpkg):
+            rcmd = execmd(new_cmd.format(gpkg, tname, shps[s]))
+        else:
+            rcmd = execmd(upd_cmd.format(gpkg, tname, shps[s]))
+
+    return gpkg
+
+
+def db_to_gpkg(db, itbl, gpkg, otbl=None):
+    """
+    Database table to GeoPackage
+    """
+
+    from glass.cons.psql import con_psql
+
+    cdb = con_psql()
+
+    otbl = itbl if not otbl else otbl
+
+    up = f" -update -append" if os.path.exists(gpkg) \
+        else ""
+
+    cmd = (
+        f"ogr2ogr{up} -f \"GPKG\" {gpkg} -nln \"{otbl}\" "
+        f"PG:\"dbname='{db}' host='{cdb['HOST']}' port='{cdb['PORT']}' "
+        f"user='{cdb['USER']}' password='{cdb['PASSWORD']}'\" "
+        f"\"{itbl}\""
+    )
+
+    ocmd = execmd(cmd)
+
+    return gpkg
 

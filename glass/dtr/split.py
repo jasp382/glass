@@ -2,14 +2,16 @@
 Splitting with OGR
 """
 
+import os
+
+from glass.pys.oss import fprop
+
 
 def splitShp_by_range(shp, nrFeat, outFolder):
     """
     Split one feature class by range
     """
     
-    import os
-    from glass.pys.oss    import fprop
     from glass.prop.feat  import feat_count, lst_fld
     from glass.tbl.filter import sel_by_attr
     
@@ -23,16 +25,22 @@ def splitShp_by_range(shp, nrFeat, outFolder):
     exportedShp = []
     for i in range(nrShp):
         f = fprop(shp, ['fn', 'ff'], forceLower=True)
+
+        fn, ff = f['filename'], f['fileformat']
+
+        cols = ', '.join(fields)
+
+        q = (
+            f"SELECT {cols}, geometry "
+            f"FROM {fn} "
+            f"ORDER BY {cols} "
+            f"LIMIT {str(nrFeat)} OFFSET {str(offset)}"
+        )
+        
         outShp = sel_by_attr(
-            shp,
-            "SELECT {cols}, geometry FROM {t} ORDER BY {cols} LIMIT {l} OFFSET {o}".format(
-                t=os.path.splitext(os.path.basename(shp))[0],
-                l=str(nrFeat), o=str(offset),
-                cols=", ".join(fields)
-            ),
-            os.path.join(outFolder, "{}_{}{}".format(
-                f['filename'], str(i), f['fileformat']
-            )), api_gis='ogr'
+            shp, q,
+            os.path.join(outFolder, f"{fn}_{str(i)}{ff}"),
+            api_gis='ogr'
         )
         
         exportedShp.append(outShp)
@@ -46,12 +54,10 @@ def eachfeat_to_newshp(inShp, outFolder, epsg=None, idCol=None, idIsName=None):
     Export each feature in inShp to a new/single File
     """
     
-    import os
     from osgeo           import ogr
     from glass.prop      import drv_name
     from glass.prop.feat import get_gtype, lst_fld
     from glass.lyr.fld   import copy_flds
-    from glass.pys.oss   import fprop
     
     inDt = ogr.GetDriverByName(
         drv_name(inShp)).Open(inShp)
@@ -137,7 +143,6 @@ def shpcols_to_shp(inshp, tbl, col_cols, outcolname, outfolder):
     explain why col_cols could be a list
     """
 
-    import os
     from glass.pys    import obj_to_lst
     from glass.rd.shp import shp_to_obj
     from glass.rd     import tbl_to_obj
@@ -178,9 +183,7 @@ def split_shp_by_attr(inShp, attr, outDir, _format='.shp', outname=None, valinna
     Create a new shapefile for each value in a column
     """
     
-    import os
     from glass.rd.shp  import shp_to_obj
-    from glass.pys.oss import fprop
     from glass.pd.fld  import col_distinct
     from glass.wt.shp  import df_to_shp
     
@@ -210,5 +213,4 @@ def split_shp_by_attr(inShp, attr, outDir, _format='.shp', outname=None, valinna
         i += 1
     
     return shps_res
-
 

@@ -39,7 +39,6 @@ def st_dissolve(db, table, geomcol, outTable, whrClause=None,
         f"{dumps}ST_UnaryUnion(ST_Collect({geomcol})){dumpe} AS {gout} "
         f"FROM {table}{whr}{gby}"
     )
-    print(sql)
     
     if outTblIsFile:
         if api == 'sqlite':

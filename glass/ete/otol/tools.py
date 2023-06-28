@@ -19,8 +19,26 @@ def nomenclature_id(nomenclature):
     if not nom.shape[0]:
         return 0
     
-    else:
-        return nom.iloc[0].fid
+    return nom.iloc[0].fid
+
+
+def classes_priority(nomid):
+    """
+    Return classes order by priority
+    """
+
+    classes = q_to_obj(OSM2LULC_DB, (
+        "SELECT fid "
+        "FROM lulc_classes "
+        "WHERE priority IS NOT NULL AND "
+        f"nomenclature = {str(nomid)} "
+        "ORDER BY priority"
+    ), db_api='sqlite')
+
+    if not classes.shape[0]:
+        return 0
+    
+    return classes.fid.tolist()
 
 
 

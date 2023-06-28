@@ -446,28 +446,45 @@ def osm_to_psql(osmXml, osmdb, dbsetup='default'):
     return osmdb
 
 
-def db_to_gpkg(db, itbl, gpkg, otbl=None):
+
+def gpkg_lyr_attr_to_psql(gpkg, lyr, col, db, tbl_bname=None):
     """
-    Database table to GeoPackage
+    GeoPackage layer to PostgreSQL tables
+
+    For a given layer in a GeoPackage, the values in a given column
+    will be listen, for each value, the rows with that value
+    will be selected and sended to the database
     """
 
     from glass.cons.psql import con_psql
+    from glass.rd.shp    import shp_to_obj
 
-    cdb = con_psql()
+    otbls = []
 
-    otbl = itbl if not otbl else otbl
+    con = con_psql()
 
-    up = f" -update -append" if os.path.exists(gpkg) \
-        else ""
+    tbl_bname = col if not tbl_bname else tbl_bname
 
-    cmd = (
-        f"ogr2ogr{up} -f \"GPKG\" {gpkg} -nln \"{otbl}\" "
-        f"PG:\"dbname='{db}' host='{cdb['HOST']}' port='{cdb['PORT']}' "
-        f"user='{cdb['USER']}' password='{cdb['PASSWORD']}'\" "
-        f"\"{itbl}\""
-    )
+    # Open data
+    gdf = shp_to_obj(gpkg, lyr=lyr)
 
-    ocmd = execmd(cmd)
+    # Get Attributes
+    attrs = gdf[col].unique()
 
-    return gpkg
+    for attr in attrs:
+        ntbl = f"{tbl_bname}_{str(attr)}"
+
+        cmd = (
+            'ogr2ogr -f PostgreSQL "PG:dbname='
+            f'\'{db}\' host=\'{con["HOST"]}\' port=\'{con["PORT"]}\' '
+            f'user=\'{con["USER"]}\' password=\'{con["PASSWORD"]}\'" '
+            f'-nln {ntbl} {gpkg} {lyr} '
+            f'-where "\\"{col}\\" = {str(attr)}"'
+        )
+
+        ocmd = execmd(cmd)
+
+        otbls.append(ntbl)
+
+    return otbls
 

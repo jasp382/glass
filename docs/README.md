@@ -3,17 +3,19 @@ Welcome to GLASS documentation!
 
 ## Contents:
 
-1) [General Overview](#1-General-Overview)
+1) [General Overview](#1-general-overview)
 
-2) [User Guide](#2-User-Guide)
+2) [User Guide](#2-user-guide)
 
-    2.1. [Installation and Configuration](#21-Configuration)
+    2.1. [Installation and Configuration](#21-configuration)
 
-    2.2. [Usage and tools](#22-Usage)
+    2.2. [Usage](#22-usage)
 
-3) [Development](#3-Development)
+    2.3. [Tools](#23-tools)
 
-4) [Support](#4-Support)
+3) [Development](#3-development)
+
+4) [Support](#4-support)
 
 <hr><hr>
 
@@ -33,15 +35,21 @@ It consistes of a set of Python Methods to support the automatization of spatial
 
 todo
 
-### 2.2. Usage and tools:
+<hr><hr>
+
+### 2.2. Usage:
+
+<hr><hr>
+
+### 2.3. Tools:
 
 The GLASS package is composed by the following main modules:
 
 * **.ete** -> End-to-End methodologies.
 
-* [.tbl](tools/tables/README.md) -> **Tools to deal with tables data;**
+* **[.it.* -> Interoperability tools]()**
 
-    - Includes tools to... [Click here to know more](tools/ng/README.md)
+* **[.tbl.* -> Tools to deal with tables data](tools/tables.md)**
 
 
 
@@ -56,15 +64,15 @@ Follow the hyperlink of each module to get more information about it.
 
 todo
 
-________________________________________________________________________________________________________________________
-________________________________________________________________________________________________________________________
+<hr><hr>
+
 
 ## 4. Support:
 
 Any issue must be addressed to jpatriarca@mat.uc.pt
 
-________________________________________________________________________________________________________________________
-________________________________________________________________________________________________________________________
+<hr><hr>
+
 
 ## 5. License information:
 

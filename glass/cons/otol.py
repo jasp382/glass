@@ -56,7 +56,7 @@ OTOL_MODULE = "osm_module"
 OTOL_GEOM = 'geometry'
 OTOL_LULC = 'lulc'
 
-PRIORITY = {
+CLASS_PRIORITY = {
     'uatlas' : [22, 21, 6, 4, 8, 7, 5, 2, 3],
     'clc' : [
         87, 86, 29, 42, 41, 26, 103, 89, 102,

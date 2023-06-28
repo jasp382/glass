@@ -25,22 +25,20 @@ def q_to_obj(dbname, query, db_api='psql', geomCol=None, epsg=None, of='df',
 
         cols = cols_name(dbname, query) if not cols else \
             obj_to_lst(cols)
+        
+        qcols = ", ".join([f"{query}.{i} AS {i}" for i in cols])
 
-        query = "SELECT {} FROM {}".format(
-            ", ".join(["{t}.{c} AS {c}".format(
-                t=query, c=i
-            ) for i in cols]), query
-        )
+        query = f"SELECT {qcols} FROM {query}"
     
     if geomCol and db_api == 'psql':
-        from geopandas      import GeoDataFrame
+        from geopandas   import GeoDataFrame
         from glass.sql.c import sqlcon
         
         con = sqlcon(dbname, sqlAPI='psql', dbset=dbset)
         
         df = GeoDataFrame.from_postgis(
             query, con, geom_col=geomCol,
-            crs="EPSG:{}".format(str(epsg)) if epsg else None
+            crs=f"EPSG:{str(epsg)}" if epsg else None
         )
     
     else:
