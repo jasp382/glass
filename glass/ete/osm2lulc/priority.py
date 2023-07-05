@@ -12,7 +12,7 @@ def priority_rule(osmshps, priorities, gis_software, db=None):
     if gis_software != 'psql':
         from glass.gp.ovl import erase
     else:
-        from glass.gp.ovl.sql import pg_erase
+        from glass.gp.ovl.sql import st_erase
     from glass.pys.oss import fprop
     
     osmNameRef = copy.deepcopy(osmshps)
@@ -32,16 +32,14 @@ def priority_rule(osmshps, priorities, gis_software, db=None):
                     if gis_software == 'arcpy':
                         tmpOut = os.path.join(
                             os.path.dirname(osmshps[priorities[i]]),
-                            "{}_{}.shp".format(
-                                fprop(osmNameRef[priorities[i]], 'fn'), e
-                            )
+                            f"{fprop(osmNameRef[priorities[i]], 'fn')}_{e}.shp"
                         )
                     
                     else:
-                        tmpOut = "{}_{}".format(osmNameRef[priorities[i]], e)
+                        tmpOut = f"{osmNameRef[priorities[i]]}_{e}"
                     
                     if gis_software == 'psql':
-                        osmshps[priorities[i]] = pg_erase(
+                        osmshps[priorities[i]] = st_erase(
                             db, osmshps[priorities[i]],
                             osmshps[priorities[e]], 'geom', 'geom',
                             tmpOut

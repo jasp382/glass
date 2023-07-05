@@ -459,7 +459,7 @@ def gpkg_lyr_attr_to_psql(gpkg, lyr, col, db, tbl_bname=None):
     from glass.cons.psql import con_psql
     from glass.rd.shp    import shp_to_obj
 
-    otbls = []
+    otbls = {}
 
     con = con_psql()
 
@@ -484,7 +484,7 @@ def gpkg_lyr_attr_to_psql(gpkg, lyr, col, db, tbl_bname=None):
 
         ocmd = execmd(cmd)
 
-        otbls.append(ntbl)
+        otbls[attr] = ntbl
 
     return otbls
 

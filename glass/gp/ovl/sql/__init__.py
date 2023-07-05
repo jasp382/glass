@@ -85,18 +85,16 @@ def feat_not_within(db, inTbl, inGeom, withinTbl, withinGeom, outTbl,
     """
     
     from glass.pys import obj_to_lst
+
+    selcols = "*" if not inTblCols else ", ".join(obj_to_lst(inTblCols))
     
     Q = (
-        "SELECT {selCols} FROM {tbl} AS in_tbl WHERE ("
-        "in_tbl.{in_geom} NOT IN ("
-            "SELECT inin_tbl.{in_geom} FROM {wi_tbl} AS wi_tbl "
-            "INNER JOIN {tbl} AS inin_tbl ON "
-            "ST_Within(wi_tbl.{wi_geom}, inin_tbl.{in_geom})"
+        f"SELECT {selcols} FROM {inTbl} AS in_tbl WHERE ("
+        f"in_tbl.{inGeom} NOT IN ("
+            f"SELECT inin_tbl.{inGeom} FROM {withinTbl} AS wi_tbl "
+            f"INNER JOIN {inTbl} AS inin_tbl ON "
+            f"ST_Within(wi_tbl.{withinGeom}, inin_tbl.{inGeom})"
         "))"
-    ).format(
-        selCols = "*" if not inTblCols else ", ".join(obj_to_lst(inTblCols)),
-        tbl     = inTbl, in_geom = inGeom, wi_tbl  = withinTbl,
-        wi_geom = withinGeom
     )
     
     if apiToUse == "OGR_SPATIALITE":
@@ -146,25 +144,26 @@ def intersect_in_same_table(db_name, table, geomA, geomB, outtable,
     Intersect two Geometries in the same table
     """
     
-    from glass.pys      import obj_to_lst
+    from glass.pys   import obj_to_lst
     from glass.sql.q import q_to_ntbl
     
-    COLS = obj_to_lst(colsSel)
+    cols = obj_to_lst(colsSel)
+    csel = "*" if not cols else ", ".join(cols)
+
+    intgeom= "" if not intersectGeom else \
+        f", ST_Intersection({geomA}, {geomB}) AS intersect_geom "
+    
+    intgeomcol = "" if not intersectGeom else ", intersect_geom "
     
     return q_to_ntbl(db_name, outtable, (
-        "SELECT {cls}, CASE WHEN interse IS TRUE THEN 1 ELSE 0 END AS {intF} "
-         "{intgeomF}FROM ("
-            "SELECT {cls}, ST_Intersects({gA}, {gB}) AS interse "
-            "{intgeom}FROM {t}"
+        f"SELECT {csel}, CASE "
+            "WHEN interse IS TRUE "
+            "THEN 1 ELSE 0 "
+        f"END AS {intersectField} "
+         f"{intgeomcol}FROM ("
+            f"SELECT {csel}, ST_Intersects({geomA}, {geomB}) AS interse "
+            f"{intgeom}FROM {table}"
          ") AS tst"
-    ).format(
-        gA=geomA, gB=geomB, t=table, intF=intersectField,
-        cls="*" if not COLS else ", ".join(COLS),
-        intgeom= "" if not intersectGeom else \
-            ", ST_Intersection({}, {}) AS intersect_geom".format(
-                geomA, geomB
-            ),
-        intgeomF = "" if not intersectGeom else ", intersect_geom"
     ), api='psql')
 
 
@@ -390,31 +389,66 @@ def check_autofc_overlap(checkShp, epsg, dbname, outOverlaps):
     return outOverlaps
 
 
-def pg_erase(db, inTbl, eraseTbl, inGeom, eraseGeom, outTbl):
+def st_erase(db, itbl, erase_tbl, igeom, erase_geom, otbl=None, method=1):
     """
     Erase
     """
     
     from glass.prop.sql import cols_name
-    from glass.sql.q import q_to_ntbl
+    from glass.sql.q    import q_to_ntbl
     
-    cols = ["mtbl.{}".format(
-        x) for x in cols_name(db, inTbl, api='psql') if x != inGeom]
+    cols = ", ".join([f"tbla.{x}" for x in cols_name(
+        db, itbl, api='psql'
+    ) if x != igeom])
+
+    method = 1 if method != 2 and method != 3 else method
+
+    if method == 1:
+        mq = (
+            f"SELECT {cols}, "
+            "CASE "
+    	        f"WHEN tblb.{erase_geom} IS NOT NULL THEN "
+    	        f"ST_Difference(tbla.{igeom}, tblb.{erase_geom}) "
+    	        f"ELSE tbla.{igeom} "
+            f"END AS {igeom} "
+            f"FROM {itbl} AS tbla "
+            f"LEFT JOIN {erase_tbl} AS tblb "
+            f"ON ST_Intersects(tbla.{igeom}, tblb.{erase_geom})"
+        )
+
+        q = (
+            f"SELECT {cols}, "
+            f"(ST_Dump(ST_UnaryUnion(ST_Collect({igeom})))).geom AS {igeom} "
+            f"FROM ({mq}) AS tbla "
+            f"GROUP BY {cols}"
+        )
     
-    q = (
-        "SELECT {}, ST_Difference(mtbl.{}, foo.erase_geom) AS {} "
-        "FROM {} AS mtbl, "
-        "("
-            "SELECT ST_UnaryUnion(ST_Collect(eetbl.{})) AS erase_geom "
-            "FROM {} AS eetbl "
-            "INNER JOIN {} AS jtbl ON ST_Intersects(eetbl.{}, jtbl.{})"
-        ") AS foo"
-    ).format(
-        ", ".join(cols), inGeom, inGeom, inTbl, eraseGeom, eraseTbl,
-        inTbl, eraseGeom, inGeom
-    )
+    elif method == 2:
+        q = (
+            f"SELECT {cols}, "
+            f"ST_Difference(tbla.{igeom}, tblb.{erase_geom}) AS {igeom} "
+            f"FROM {itbl} AS tbla, ("
+                f"SELECT ST_UnaryUnion(ST_Collect({erase_geom})) AS {erase_geom} "
+                f"FROM {erase_tbl}"
+            ") AS tblb "
+        )
     
-    return q_to_ntbl(db, outTbl, q, api='psql')
+    elif method == 3:
+        q = (
+            f"SELECT {cols}, "
+            f"ST_Difference(tbla.{igeom}, tblb.{erase_geom}) AS {igeom} "
+            f"FROM {itbl} AS tbla, ("
+                f"SELECT ST_UnaryUnion(ST_Collect(mtbl.{erase_geom})) AS {erase_geom} "
+                f"FROM {erase_tbl} AS mtbl "
+                f"INNER JOIN {itbl} AS jtbl "
+                f"ON ST_Intersects(mtbl.{erase_geom}, jtbl.{igeom})"
+            ") AS tblb"
+        )
+    
+    if otbl:
+        return q_to_ntbl(db, otbl, q, api='psql')
+    
+    return q
 
 
 """
@@ -432,25 +466,20 @@ def intersect_point_with_polygon(sqDB, pntTbl, pntGeom,
     What TODO with this?
     """
     
-    import os
-    
     if not pntSelect and not polySelect:
         raise ValueError("You have to select something")
     
+    pnt_tq  = pntTbl if not pntQuery else pntQuery
+    poly_tq = polyTbl if not polyQuery else polyQuery
+
+    col_pnt = pntSelect if pntSelect else ""
+    col_ply = polySelect if polySelect and not pntSelect else \
+        ", " + polySelect if polySelect and pntSelect else ""
+    
     sql = (
-        "SELECT {colPnt}{colPoly} FROM {pnt_tq} "
-        "INNER JOIN {poly_tq} ON "
-        "ST_Within({pnt}.{pnGeom}, {poly}.{pgeom})"
-    ).format(
-        colPnt  = pntSelect if pntSelect else "",
-        colPoly = polySelect if polySelect and not pntSelect else \
-            ", " + polySelect if polySelect and pntSelect else "",
-        pnt_tq  = pntTbl if not pntQuery else pntQuery,
-        poly_tq = polyTbl if not polyQuery else polyQuery,
-        pnt     = pntTbl,
-        poly    = polyTbl,
-        pnGeom  = pntGeom,
-        pgeom   = polyGeom
+        f"SELECT {col_pnt}{col_ply} FROM {pnt_tq} "
+        f"INNER JOIN {poly_tq} ON "
+        f"ST_Within({pntTbl}.{pntGeom}, {polyTbl}.{polyGeom})"
     )
     
     if outTblIsFile:
@@ -475,26 +504,21 @@ def disjoint_polygons_rel_points(sqBD, pntTbl, pntGeom,
     What TODO with this?
     """
     
-    import os
-    
     if not polySelect:
         raise ValueError("Man, select something!")
     
+
+    selcols ="*" if not polySelect else polySelect
+    ply_tbl = polyTbl if not polyQuery else polyQuery
+    pnt_tbl = pntTbl if not pntQuery else pntQuery,
+    
     sql = (
-        "SELECT {selCols} FROM {polTable} WHERE ("
-        "{polName}.{polGeom} not in ("
-            "SELECT {polName}.{polGeom} FROM {pntTable} "
-            "INNER JOIN {polTable} ON "
-            "ST_Within({pntName}.{pntGeom_}, {polName}.{polGeom})"
+        f"SELECT {selcols} FROM {ply_tbl} WHERE ("
+        f"{polyTbl}.{polyGeom} not in ("
+            f"SELECT {polyTbl}.{polyGeom} FROM {pnt_tbl} "
+            f"INNER JOIN {ply_tbl} ON "
+            f"ST_Within({pntTbl}.{pntGeom}, {polyTbl}.{polyGeom})"
         "))"
-    ).format(
-        selCols  = "*" if not polySelect else polySelect,
-        polTable = polyTbl if not polyQuery else polyQuery,
-        polGeom  = polyGeom,
-        pntTable = pntTbl if not pntQuery else pntQuery,
-        pntGeom_ = pntGeom,
-        pntName  = pntTbl,
-        polName  = polyTbl
     )
     
     if outTblIsFile:
