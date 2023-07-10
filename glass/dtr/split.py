@@ -183,9 +183,9 @@ def split_shp_by_attr(inShp, attr, outDir, _format='.shp', outname=None, valinna
     Create a new shapefile for each value in a column
     """
     
-    from glass.rd.shp  import shp_to_obj
-    from glass.pd.fld  import col_distinct
-    from glass.wt.shp  import df_to_shp
+    from glass.rd.shp import shp_to_obj
+    from glass.pd.fld import col_distinct
+    from glass.wt.shp import df_to_shp
     
     # Sanitize format
     FFF = _format if _format[0] == '.' else '.' + _format

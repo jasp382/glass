@@ -170,7 +170,7 @@ def lst_fld(shp):
     Return a list with every field name in a vectorial layer
     """
     
-    from osgeo           import ogr
+    from osgeo      import ogr
     from glass.prop import drv_name
     
     if type(shp) == ogr.Layer:

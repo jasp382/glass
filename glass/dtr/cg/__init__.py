@@ -469,7 +469,7 @@ def lnh_to_polygons(inShp, outShp, api='saga', db=None):
         
         import os
         from glass.wenv.grs import run_grass
-        from glass.pys.oss    import fprop
+        from glass.pys.oss  import fprop
         
         # Create GRASS GIS Session
         wk = os.path.dirname(outShp)
@@ -481,7 +481,7 @@ def lnh_to_polygons(inShp, outShp, api='saga', db=None):
         gsetup.init(gs, wk, lo, 'PERMANENT')
         
         # Import Packages
-        from glass.it.shp  import shp_to_grs, grs_to_shp
+        from glass.it.shp import shp_to_grs, grs_to_shp
         
         # Send data to GRASS GIS
         lnh_shp = shp_to_grs(inShp, asCMD=True if api == 'grass' else None)

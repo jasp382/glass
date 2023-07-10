@@ -147,12 +147,12 @@ def calc_savi(nir, red, out):
     return obj_to_rst(savi, out, nir, noData=savi_nd)
 
 
-def calc_evi(nir, red, green, blue, out):
+def calc_evi(nir, red, blue, out):
     """
     Apply Enhanced Vegetation Index
     """
 
-    d = {'n' : nir, 'r' : red, 'g' : green, 'b' : blue}
+    d = {'n' : nir, 'r' : red, 'b' : blue}
 
     # Open Images
     src = {k: gdal.Open(d[k], gdal.GA_ReadOnly) for k in d}
@@ -162,9 +162,11 @@ def calc_evi(nir, red, green, blue, out):
         1).ReadAsArray().astype(float) for k in d}
 
     # Do calculation
-    evi = 2.5 * ((num['n'] - num['r']) / (
-        num['n'] + num['g'] * num['r'] - 7.5 * num['b'] + 1
-    ))
+    deno = (num['n'] + 6.0 * num['r'] - 7.5 * num['b']) + 1.0
+    evi = np.where(
+        deno == 0, -1,
+        2.5 * ((num['n'] - num['r']) / deno)
+    )
 
     # Place NoData Value
     evi_nd = np.amin(evi) - 1
@@ -173,6 +175,10 @@ def calc_evi(nir, red, green, blue, out):
         nd = src[k].GetRasterBand(1).GetNoDataValue()
 
         np.place(evi, num[k]==nd, evi_nd)
+    
+    np.place(evi, deno == 0, evi_nd)
+    np.place(evi, evi < -1, -1)
+    np.place(evi, evi > 1, 1)
     
     # Export Result
     return obj_to_rst(evi, out, nir, noData=evi_nd)

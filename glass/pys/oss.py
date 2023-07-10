@@ -5,6 +5,8 @@ Methods to interact with the Operating System
 import os
 import re
 
+from glass.pys import obj_to_lst
+
 def os_name():
     import platform
     return str(platform.system())
@@ -29,8 +31,6 @@ def fprop(__file, prop, forceLower=None, fs_unit=None):
     prop options:
     * filename or fn - return filename
     """
-
-    from glass.pys import obj_to_lst
 
     prop = obj_to_lst(prop)
 
@@ -74,8 +74,6 @@ def lst_ff(w, file_format=None, filename=None, fnpart=None, rfilename=None):
     """
     List the abs path of all files with a specific extension on a folder
     """
-    
-    from glass.pys import obj_to_lst
     
     filename = None if filename and fnpart else filename
     
@@ -151,7 +149,7 @@ def lst_ff(w, file_format=None, filename=None, fnpart=None, rfilename=None):
         return _t
 
 
-def lst_fld(w, name=None):
+def lst_fld(w, name=None, namepart=None):
     """
     List folders path or name in one folder
     """
@@ -161,11 +159,23 @@ def lst_fld(w, name=None):
         foldersname.extend(dirsname)
         break
     
-    if name:
+    if name and not namepart:
         return foldersname
     
-    else:
-        return [os.path.join(w, fld) for fld in foldersname]
+    if namepart:
+        fnp = obj_to_lst(namepart)
+        l = []
+
+        for fld in foldersname:
+            for _f in fnp:
+                if _f in fld:
+                    l.append(fld if name else os.path.join(w, fld))
+
+                    break
+        
+        return l
+    
+    return foldersname if name else [os.path.join(w, fld) for fld in foldersname]
 
 
 def list_folders_files(w, name=None):
@@ -186,23 +196,24 @@ def list_folders_files(w, name=None):
         return [os.path.join(w, f) for f in fld_file]
 
 
-def list_folders_subfiles(path, files_format=None,
+def lst_folders_subfiles(path, filter_folder=None, files_format=None,
                           only_filename=None):
     """
     List folders in path and the files inside each folder
     """
     
-    folders_in_path = lst_fld(path)
+    folders_in_path = lst_fld(path, namepart=filter_folder)
     
     out = {}
     for folder in folders_in_path:
-        out[folder] = lst_ff(
+        fname = os.path.basename(folder)
+        out[fname] = lst_ff(
             folder, file_format=files_format
         )
         
         if only_filename:
-            for i in range(len(out[folder])):
-                out[folder][i] = os.path.basename(out[folder][i])
+            for i in range(len(out[fname])):
+                out[fname][i] = os.path.basename(out[fname][i])
     
     return out
 

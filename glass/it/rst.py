@@ -2,6 +2,9 @@
 Data to Raster File
 """
 
+import os
+import numpy as np
+
 
 """
 Data type conversion
@@ -22,8 +25,7 @@ def conv_rst_dtype(rst, out, odtype):
     * float32
     """
 
-    import numpy as np
-    from osgeo import gdal
+    from osgeo        import gdal
     from glass.wt.rst import obj_to_rst
     
     # Open Raster
@@ -84,8 +86,7 @@ def floatrst_to_intrst(in_rst, out_rst):
     Raster with float data to Raster with Integer Values
     """
 
-    import numpy          as np
-    from osgeo            import gdal
+    from osgeo          import gdal
     from glass.prop.img import get_nd
     from glass.wt.rst   import obj_to_rst
 
@@ -199,7 +200,7 @@ def rst_to_rst(inRst, outRst):
     Convert a raster file to another raster format
     """
     
-    from glass.pys    import execmd
+    from glass.pys  import execmd
     from glass.prop import drv_name
     
     outDrv = drv_name(outRst)
@@ -217,10 +218,8 @@ def rsts_to_gpkg(in_rsts, gpkg, rst_ff='.tif', basename=None):
     Raster Files to GeoPackage
     """
 
-    import os
-    import numpy as np
-    from glass.pys        import execmd
-    from glass.pys.oss    import fprop
+    from glass.pys      import execmd
+    from glass.pys.oss  import fprop
     from glass.prop.rst import rst_dtype
 
     if type(in_rsts) == list:
@@ -233,29 +232,28 @@ def rsts_to_gpkg(in_rsts, gpkg, rst_ff='.tif', basename=None):
     
     else:
         rsts = [in_rsts]
-    
-    new_cmd = "gdal_translate -of GPKG {} {} -CO RASTER_TABLE={}{}"
-    upd_cmd = (
-        "gdal_translate -of GPKG {} {} -co APPEND_SUBDATASET=YES -CO "
-        "RASTER_TABLE={}{}"
-    )
 
     for r in range(len(rsts)):
         rst_type = rst_dtype(rsts[r])
+        ot = ' -ot Float32' if rst_type == np.float64 else ''
 
         tname = fprop(rsts[r], 'fn') if not basename else \
-            "{}_{}".format(basename, fprop(rsts[r], 'fn').split('_')[-1])
+            f"{basename}_{fprop(rsts[r], 'fn').split('_')[-1]}"
         
         if not r and not os.path.exists(gpkg):
-            rcmd = execmd(new_cmd.format(
-                rsts[r], gpkg, tname,
-                " -ot Float32" if rst_type == np.float64 else ""
-            ))
+            cmd = (
+                f"gdal_translate -of GPKG {rsts[r]} {gpkg} "
+                f"-CO RASTER_TABLE={tname}{ot}"
+            )
+            
         else:
-            rcmd = execmd(upd_cmd.format(
-                rsts[r], gpkg, tname,
-                " -ot Float32" if rst_type == np.float64 else ""
-            ))
+            cmd = (
+                f"gdal_translate -of GPKG {rsts[r]} {gpkg} "
+                "-co APPEND_SUBDATASET=YES -CO "
+                f"RASTER_TABLE={tname}{ot}"
+            )
+        
+        rcmd = execmd(cmd)
 
     return gpkg
 
@@ -265,11 +263,12 @@ def gpkgrst_to_rst(gpkg, tbl, outrst):
     Convert Raster in GeoPackage to single file
     """
 
-    from glass.pys import execmd
+    from glass.pys  import execmd
     from glass.prop import drv_name
 
-    rcmd = execmd("gdal_translate -of {} {} {} -b 1 -oo TABLE={}".format(
-        drv_name(outrst), gpkg, outrst, tbl
+    rcmd = execmd((
+        f"gdal_translate -of {drv_name(outrst)} {gpkg} "
+        f"{outrst} -b 1 -oo TABLE={tbl}"
     ))
 
     return outrst
@@ -313,7 +312,7 @@ def grs_to_rst(grsRst, rst, as_cmd=None, allBands=None, is_int=None):
     GRASS Raster to Raster
     """
     
-    from glass.prop  import grs_rst_drv
+    from glass.prop    import grs_rst_drv
     from glass.pys.oss import fprop
     
     rstDrv = grs_rst_drv()
@@ -381,12 +380,10 @@ def saga_to_tif(inFile, outFile):
             'Outfile should have GeoTiff format'
         )
     
-    cmd = (
-        "saga_cmd io_gdal 2 -GRIDS {} "
-        "-FILE {}"
-    ).format(inFile, outFile)
-    
-    outcmd = execmd(cmd)
+    outcmd = execmd((
+        f"saga_cmd io_gdal 2 -GRIDS {inFile} "
+        f"-FILE {outFile}"
+    ))
     
     return outFile
 
@@ -398,12 +395,10 @@ def tif_to_grid(inFile, outFile):
     
     from glass.pys import execmd
     
-    comand = (
-        "saga_cmd io_gdal 0 -FILES {} "
-        "-GRIDS {}"
-    ).format(inFile, outFile)
-    
-    outcmd = execmd(comand)
+    outcmd = execmd((
+        f"saga_cmd io_gdal 0 -FILES {inFile} "
+        f"-GRIDS {outFile}"
+    ))
     
     return outFile
 
@@ -413,9 +408,9 @@ def folder_nc_to_tif(inFolder, outFolder):
     Convert all nc existing on a folder to GTiff
     """
     
-    import netCDF4;    import os
-    from glass.pys.oss  import lst_ff
-    from glass.it.rst import bands_to_rst
+    import netCDF4
+    from glass.pys.oss import lst_ff
+    from glass.it.rst  import bands_to_rst
     
     # List nc files
     lst_nc = lst_ff(inFolder, file_format='.nc')
@@ -468,9 +463,9 @@ def comp_bnds(rsts, outRst):
     Composite Bands
     """
     
-    from osgeo            import gdal, gdal_array
-    from glass.rd.rst    import rst_to_array
-    from glass.prop  import drv_name
+    from osgeo          import gdal, gdal_array
+    from glass.rd.rst   import rst_to_array
+    from glass.prop     import drv_name
     from glass.prop.rst import get_nodata
     from glass.prop.prj import get_rst_epsg, epsg_to_wkt
     
@@ -517,8 +512,7 @@ def bands_to_rst(inRst, outFolder):
     TODO: this could be done using gdal_translate
     """
     
-    import numpy;         import os
-    from osgeo            import gdal
+    from osgeo          import gdal
     from glass.wt.rst   import obj_to_rst
     from glass.prop.rst import get_nodata
     
@@ -537,13 +531,12 @@ def bands_to_rst(inRst, outFolder):
             continue
         else:
             # Convert to array
-            array = numpy.array(src_band.ReadAsArray())
+            array = np.array(src_band.ReadAsArray())
+            bname = os.path.basename(os.path.splitext(inRst)[0])
             obj_to_rst(array, os.path.join(
-                outFolder, '{r}_{b}.tif'.format(
-                    r=os.path.basename(os.path.splitext(inRst)[0]),
-                    b=str(band)
-                )), inRst, noData=nodata
-            )
+                outFolder,
+                f'{bname}_{str(band)}.tif'
+            ), inRst, noData=nodata)
 
 
 def rst_to_tiles(rst, n_tiles_x, n_tiles_y, out_folder):
@@ -551,10 +544,9 @@ def rst_to_tiles(rst, n_tiles_x, n_tiles_y, out_folder):
     Raster file to tiles
     """
 
-    import os
-    from glass.pys.oss import fprop
     from osgeo import gdal
-    from glass.wt.rst import obj_to_rst
+    from glass.pys.oss import fprop
+    from glass.wt.rst  import obj_to_rst
 
     rstprop = fprop(rst, ['fn', 'ff'])
     rstn, rstf = rstprop['filename'], rstprop['fileformat']
@@ -623,8 +615,6 @@ def grsws_to_rst(f, outfolder, exclude=None):
     Export All Rasters in several GRASS GIS 
     Workspaces to file
     """
-
-    import os
 
     from glass.wenv.grs import run_grass
     from glass.pys      import obj_to_lst

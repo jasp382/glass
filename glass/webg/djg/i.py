@@ -8,13 +8,13 @@ def list_djg_apps(path_to_django_proj):
     """
     
     import os
-    from glass.pys.oss import list_folders_subfiles
+    from glass.pys.oss import lst_folders_subfiles
     
     # Get project name
     projectName = os.path.basename(path_to_django_proj)
     
     # List folders and files in the folders
-    projFolders = list_folders_subfiles(
+    projFolders = lst_folders_subfiles(
         path_to_django_proj, files_format='.py',
         only_filename=True
     )
