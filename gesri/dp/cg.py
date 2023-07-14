@@ -55,7 +55,7 @@ def polygons_from_points(inputPnt, outputPol, prj, POLYGON_FIELD,
     """
     
     from gesri.rd.shp     import shp_to_lyr
-    from gesri.dtr.featcls import create_feat_class
+    from gesri.dtt.featcls import create_feat_class
     from gesri.tbl.cols   import add_col
     from gesri.prop.cols  import type_fields
     

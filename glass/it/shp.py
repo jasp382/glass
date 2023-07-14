@@ -152,14 +152,15 @@ def tblpnt_to_shp(tbl, shp, xcol, ycol, epsg, outepsg=None,
 GRASS GIS conversions
 """
 
-def shp_to_grs(ilyr, olyr=None, filterByReg=None, asCMD=None):
+def shp_to_grs(ilyr, olyr=None, filterByReg=None, lyrname=None, asCMD=None):
     """
     Add Shape to GRASS GIS
     """
 
     from glass.pys.oss import fprop
 
-    olyr = fprop(ilyr, 'fn', forceLower=True) if not olyr else olyr
+    if not olyr:
+        olyr = lyrname if lyrname else fprop(ilyr, 'fn', forceLower=True)
     
     if not asCMD:
         from grass.pygrass.modules import Module
@@ -167,7 +168,8 @@ def shp_to_grs(ilyr, olyr=None, filterByReg=None, asCMD=None):
         f = 'o' if not filterByReg else 'ro'
         
         m = Module(
-            "v.in.ogr", input=ilyr, output=olyr, flags=f,
+            "v.in.ogr", input=ilyr, layer=lyrname,
+            output=olyr, flags=f,
             overwrite=True, run_=False, quiet=True
         )
         
@@ -177,10 +179,11 @@ def shp_to_grs(ilyr, olyr=None, filterByReg=None, asCMD=None):
         from glass.pys import execmd
 
         f = " -r" if filterByReg else ""
+        lyr = '' if not lyrname else f" layer={lyrname}"
         
         rcmd = execmd((
-            f"v.in.ogr input={ilyr} output={olyr} -o{f} "
-            "--overwrite --quiet"
+            f"v.in.ogr input={ilyr}{lyr} "
+            f"output={olyr} -o{f} --overwrite --quiet"
         ))
     
     return olyr

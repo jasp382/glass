@@ -14,7 +14,7 @@ def surf_rst(ishp, col, orst, ws=None, cellsize=10):
 
     from glass.pys.oss import fprop
     from glass.pys.tm import now_as_str
-    from glass.dtr.ext.torst import shpext_to_rst
+    from glass.dtt.ext.torst import shpext_to_rst
 
     # Get Reference Raster
     rref = shpext_to_rst(ishp, os.path.join(

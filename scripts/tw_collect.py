@@ -103,7 +103,7 @@ def search_by_keyword(db, out_tbl, qarea, wgrp=None):
     import pandas         as pd
     from multiprocessing  import Process, Manager
     from glass.cons.dsn   import search_words, tw_key
-    from glass.dtr.mge.pd import merge_df
+    from glass.dtt.mge.pd import merge_df
     from glass.pd.split   import df_split
     from glass.wt.sql     import df_to_db
 

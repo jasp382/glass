@@ -18,7 +18,7 @@ from glass.prj.obj    import df_prj
 from glass.pd.split   import df_split
 from glass.wt.js      import dict_to_json
 from glass.wt.shp     import df_to_shp
-from glass.dtr.mge.pd import merge_df
+from glass.dtt.mge.pd import merge_df
 from glass.prop.prj   import get_shp_epsg
 from glass.it.pd      import df_to_geodf
 from glass.it.pd      import json_obj_to_geodf
@@ -209,7 +209,7 @@ def cf_based_on_relations(incidents, incidents_id, group_incidents_col,
     from glass.wt.shp   import obj_to_shp
     from glass.prop.prj import get_shp_epsg
     from glass.pys.oss  import mkdir, fprop
-    from glass.dtr.mge  import shps_to_shp
+    from glass.dtt.mge  import shps_to_shp
 
     # Avoid problems when facilities_id == facilities_fk
     facilities_fk = facilities_fk + '_fk' if facilities_id == facilities_fk else \

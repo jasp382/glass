@@ -204,9 +204,7 @@ def rst_to_rst(inRst, outRst):
     from glass.prop import drv_name
     
     outDrv = drv_name(outRst)
-    cmd = 'gdal_translate -of {drv} {_in} {_out}'.format(
-        drv=outDrv, _in=inRst, _out=outRst
-    )
+    cmd = f'gdal_translate -of {outDrv} {inRst} {outRst}'
     
     cmdout = execmd(cmd)
     
@@ -452,52 +450,6 @@ def folder_nc_to_tif(inFolder, outFolder):
                     output
                 )
                 bands_to_rst(output, outFolder)
-
-
-"""
-Join Bands
-"""
-
-def comp_bnds(rsts, outRst):
-    """
-    Composite Bands
-    """
-    
-    from osgeo          import gdal, gdal_array
-    from glass.rd.rst   import rst_to_array
-    from glass.prop     import drv_name
-    from glass.prop.rst import get_nodata
-    from glass.prop.prj import get_rst_epsg, epsg_to_wkt
-    
-    # Get Arrays
-    _as = [rst_to_array(r) for r in rsts]
-    
-    # Get nodata values
-    nds = [get_nodata(r) for r in rsts]
-    
-    # Assume that first raster is the template
-    img_temp = gdal.Open(rsts[0])
-    geo_tran = img_temp.GetGeoTransform()
-    band = img_temp.GetRasterBand(1)
-    dataType = gdal_array.NumericTypeCodeToGDALTypeCode(_as[0].dtype)
-    rows, cols = _as[0].shape
-    epsg = get_rst_epsg(rsts[0])
-    
-    # Create Output
-    drv = gdal.GetDriverByName(drv_name(outRst))
-    out = drv.Create(outRst, cols, rows, len(_as), dataType)
-    out.SetGeoTransform(geo_tran)
-    out.SetProjection(epsg_to_wkt(epsg))
-    
-    # Write all bands
-    for i in range(len(_as)):
-        outBand = out.GetRasterBand(i+1)
-        outBand.SetNoDataValue(nds[i])
-        outBand.WriteArray(_as[i])
-        
-        outBand.FlushCache()
-    
-    return outRst
 
 
 """

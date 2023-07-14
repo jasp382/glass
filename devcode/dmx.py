@@ -43,7 +43,7 @@ def dist_matrix_by_shp(oShp, dShp, oEpsg, dEpsg, result, transMode=None):
     from glass.prj         import proj
     from glass.pys.df.fld     import listval_to_newcols
     from glass.prop.feat   import get_gtype
-    from glass.dtr.mge.pd import merge_df
+    from glass.dtt.mge.pd import merge_df
     from glass.adv.glg.distmx import dist_matrix
     from glass.wt          import obj_to_tbl
     from glass.pys.df.to      import df_to_list

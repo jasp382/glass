@@ -17,9 +17,9 @@ def prod_matrix(origins, destinations, networkGrs, speedLimitCol, onewayCol,
     from glass.tbl.grs         import add_table, cols_calc
     from glass.mob.grstbx.vnet import pnts_to_net
     from glass.mob.grstbx.anls import run_allpairs
-    from glass.dtr.cp.grs      import copy_insame_vector
+    from glass.dtt.cp.grs      import copy_insame_vector
     from glass.tbl.attr        import geomattr_to_db
-    from glass.dtr.mge         import shps_to_shp
+    from glass.dtt.mge         import shps_to_shp
     from glass.prop.feat       import feat_count
     from glass.it.shp          import shp_to_grs
     
@@ -163,8 +163,8 @@ def thrd_matrix_od(origins, destinationShp, network, costCol, oneway, output):
     from threading      import Thread
     from glass.wenv.grs import run_grass
     from glass.pys.oss  import fprop, mkdir
-    from glass.dtr.mge   import shps_to_shp
-    from glass.dtr.split import splitShp_by_range
+    from glass.dtt.mge   import shps_to_shp
+    from glass.dtt.split import splitShp_by_range
 
     ws = os.path.dirname(output)
     loc = f"loc_{fprop(output, 'fn')}"
@@ -227,8 +227,8 @@ def bash_matrix_od(origins, destinationShp, network, costCol, oneway,
     
     from glass.wenv.grs import run_grass
     from glass.pys.oss  import fprop, mkdir
-    from glass.dtr.split import splitShp_by_range
-    from glass.dtr.mge   import shps_to_shp
+    from glass.dtt.split import splitShp_by_range
+    from glass.dtt.mge   import shps_to_shp
     
     # SPLIT ORIGINS IN PARTS
     originsFld = mkdir(os.path.join(grsWork, 'origins_parts'))

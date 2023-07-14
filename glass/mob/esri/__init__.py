@@ -17,7 +17,7 @@ def service_areas(facilities, breaks, output, impedance='TravelTime'):
     from glass.wt.shp import df_to_shp
     from glass.cons.esri import get_tv_by_impedancetype
     from glass.pd.split import df_split
-    from glass.dtr.mge.pd import merge_df
+    from glass.dtt.mge.pd import merge_df
     from glass.prop.prj import get_shp_epsg
 
     # Get Token

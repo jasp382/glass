@@ -10,7 +10,7 @@ from glass.pys.oss     import mkdir, fprop
 
 def lulc_by_cell(tid, boundary, lulc_shps, fishnet, result, workspace):
     from glass.wenv.grs import run_grass
-    from glass.dtr.torst import shp_to_rst
+    from glass.dtt.torst import shp_to_rst
 
     bname = fprop(boundary, 'fn')
     # Boundary to Raster
@@ -85,7 +85,7 @@ def lulc_by_cell(tid, boundary, lulc_shps, fishnet, result, workspace):
             from glass.tbl.grs import reset_table
 
             if len(ist_shp) > 1:
-                from glass.dtr.mge import shps_to_shp
+                from glass.dtt.mge import shps_to_shp
 
                 # Export shapes
                 _ist_shp = [grs_to_shp(s, os.path.join(
@@ -140,7 +140,7 @@ def osmlulc_to_s2grid(ref_raster, osmtolulc, lucol, tmp_folder, results):
     from glass.pd.split      import df_split
     from glass.rd.shp        import shp_to_obj
     from glass.wt.shp        import df_to_shp
-    from glass.dtr.ext.torst import shpext_to_boundshp
+    from glass.dtt.ext.torst import shpext_to_boundshp
 
     # Create Fishnets
     fishnets = mkdir(os.path.join(tmp_folder, 'fishnets_shp'))

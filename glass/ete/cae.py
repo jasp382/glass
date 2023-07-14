@@ -15,7 +15,7 @@ def cae_vs_polygon(caeshp, polyshp, lulccls_col, refshp, oshp, source, polycae=N
     import pandas      as pd
     import numpy       as np
     from glass.pys.oss   import fprop
-    from glass.dtr.torst  import shp_to_rst
+    from glass.dtt.torst  import shp_to_rst
     from glass.wenv.grs  import run_grass
     from glass.rd.shp    import shp_to_obj
     from glass.wt.shp    import df_to_shp

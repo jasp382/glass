@@ -71,7 +71,7 @@ def obj_to_tbl(pyObj, outTbl, delimiter=None, wIndex=None,
                 index=wIndex
             )
         
-        writer.save()
+        writer.close()
     
     elif ff == '.dbf':
         import numpy as np

@@ -21,7 +21,7 @@ def osm_vs_imd(osmshp, imdrst, outshp, outrst=None):
     from glass.smp      import nfishnet_fm_rst
     from glass.rd.shp   import shp_to_obj
     from glass.wt.shp   import df_to_shp
-    from glass.dtr.mge  import shps_to_shp
+    from glass.dtt.mge  import shps_to_shp
 
     obname = fprop(outshp, 'fn')
 

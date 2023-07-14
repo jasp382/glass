@@ -113,7 +113,7 @@ def dfcolstorows(inDf, colField, valField, colFid=None):
     7 | id_unit | 3618
     """
 
-    from glass.dtr.mge.pd import merge_df
+    from glass.dtt.mge.pd import merge_df
     
     newDfs = []
     cols = list(inDf.columns.values)
@@ -173,7 +173,7 @@ def df_cols_to_rows(inDf, TO_COLS, col_old_col_name, key_old_col_name, col_manta
     """
     
     from glass.pys        import obj_to_lst
-    from glass.dtr.mge.pd import merge_df
+    from glass.dtt.mge.pd import merge_df
     
     col_mantain = obj_to_lst(col_mantain)
     newCols     = list(TO_COLS.keys())
@@ -232,7 +232,7 @@ def df_cols_to_rows_smp(df, idcol, colstoval, colstovalname, valcol):
     """
 
     from glass.pys        import obj_to_lst
-    from glass.dtr.mge.pd import merge_df
+    from glass.dtt.mge.pd import merge_df
     
     colstoval = obj_to_lst(colstoval)
 

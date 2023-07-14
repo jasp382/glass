@@ -79,7 +79,7 @@ def sel_by_loc(shp, boundary_filter, filtered_output):
     from glass.prop      import drv_name
     from glass.prop.feat import get_gtype
     from glass.lyr.fld   import copy_flds
-    from glass.dtr.cp     import copy_feat
+    from glass.dtt.cp     import copy_feat
     from glass.pys.oss   import fprop
     
     # Open main data

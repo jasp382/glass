@@ -297,7 +297,7 @@ def get_measures_for_mtx(mtxdf, cls_col):
         'overall_accuracy', 'kappa', 'macro-f1', 'weighted-f1'
     ], columns=df.columns.values)
 
-    df = df.append(new_df, ignore_index=False)
+    df = pd.concat([df, new_df], ignore_index=True)
 
     df.loc['class_area', 'row_area'] = total_area
 

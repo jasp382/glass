@@ -13,7 +13,7 @@ def distance_between_catpoints(srcShp, facilitiesShp, networkShp, speedLimitCol,
     import os
     from glass.pys.oss   import fprop
     from glass.wenv.grs  import run_grass
-    from glass.dtr.mge    import shps_to_shp
+    from glass.dtt.mge    import shps_to_shp
     from glass.prop.feat import feat_count
     
     # Merge Source points and Facilities into the same Feature Class
@@ -37,7 +37,7 @@ def distance_between_catpoints(srcShp, facilitiesShp, networkShp, speedLimitCol,
     # Import GRASS GIS Module
     from glass.it.shp          import shp_to_grs, grs_to_shp
     from glass.tbl.attr        import geomattr_to_db
-    from glass.dtr.cp.grs       import copy_insame_vector
+    from glass.dtt.cp.grs       import copy_insame_vector
     from glass.tbl             import category
     from glass.tbl.grs         import add_table, cols_calc
     from glass.mob.grstbx.vnet import network_from_arcs

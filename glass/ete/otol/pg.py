@@ -17,7 +17,7 @@ def osm_to_lulc(osm, nomenclature, epsg, outfile, savedb=None, tmpfld=None):
     # glass dependencies #
     # ************************************************************************ #
     from glass.cons.otol import OTOL_LULC
-    from glass.dtr.mge import shps_to_shp
+    from glass.dtt.mge import shps_to_shp
     from glass.ete.otol.tools import nomenclature_id, module_osmtags
     from glass.ete.otol.tools import get_legend
     from glass.ete.otol.vec import module_1, module_2, module_3_and_4, module_5

@@ -68,7 +68,7 @@ def count_region_in_shape(folder, ref, out):
     from glass.it.rst    import grs_to_rst
     from glass.rst.alg   import grsrstcalc
     from glass.rst.rcls  import null_to_value
-    from glass.dtr.torst import grsshp_to_grsrst
+    from glass.dtt.torst import grsshp_to_grsrst
 
     # For each shape
     # Import it to GRASS GIS

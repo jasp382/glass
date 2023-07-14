@@ -17,7 +17,7 @@ def resample_s2img_shp(shp, folder, ofolder, refgeo=None):
     from glass.rd.shp  import shp_to_obj
     from glass.pys.tm  import now_as_str
     from glass.pys.oss import lst_ff, mkdir, del_folder
-    from glass.dtr.stl import unzip_img
+    from glass.dtt.stl import unzip_img
     from glass.rst.rmp import match_cellsize_and_clip
 
     # List images in folder

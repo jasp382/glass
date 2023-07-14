@@ -26,7 +26,7 @@ def ob_ref_rst(ref, folder, cellsize=None):
         else:
             # We have a shapefile
             # Convert it to Raster
-            from glass.dtr.torst import shp_to_rst
+            from glass.dtt.torst import shp_to_rst
 
             ref_rst = shp_to_rst(
                 ref, None, 10 if not cellsize else cellsize,
@@ -102,7 +102,7 @@ def make_dem(grass_workspace, data, field, output, extent_template,
 
         # Convert to points if necessary
         if data_gtype != 'POINT' and data_gtype != 'MULTIPOINT':
-            from glass.dtr.cg import feat_vertex_to_pnt
+            from glass.dtt.cg import feat_vertex_to_pnt
 
             elev_pnt = feat_vertex_to_pnt(elv, "elev_pnt", nodes=None)
         else:
@@ -115,7 +115,7 @@ def make_dem(grass_workspace, data, field, output, extent_template,
 
         # Convert to points if necessary
         if data_gtype != 'POINT' and data_gtype != 'MULTIPOINT':
-            from glass.dtr.cg import feat_vertex_to_pnt
+            from glass.dtt.cg import feat_vertex_to_pnt
             elev_pnt = feat_vertex_to_pnt(elv, "elev_pnt", nodes=None)
         else:
             elev_pnt = elv
@@ -123,7 +123,7 @@ def make_dem(grass_workspace, data, field, output, extent_template,
         outRst = surfrst(elev_pnt, field, OUTPUT_NAME, lyrN=1, ascmd=True)
     
     elif method == "CONTOUR":
-        from glass.dtr.torst import grsshp_to_grsrst as shp_to_rst
+        from glass.dtt.torst import grsshp_to_grsrst as shp_to_rst
         from glass.rst.itp  import surfcontour
         
         # Apply mask if mask
@@ -142,7 +142,7 @@ def make_dem(grass_workspace, data, field, output, extent_template,
     elif method == "IDW":
         from glass.rst.itp  import ridw
         from glass.rst.alg  import grsrstcalc
-        from glass.dtr.torst import grsshp_to_grsrst
+        from glass.dtt.torst import grsshp_to_grsrst
         
         # Elevation (GRASS Vector) to Raster
         elevRst = grsshp_to_grsrst(elv, field, 'rst_elevation')

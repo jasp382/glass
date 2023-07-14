@@ -16,7 +16,7 @@ def matrix_od(originsShp, destinationShp, originsEpsg, destinationEpsg,
     from glass.df.fld        import listval_to_newcols
     from glass.tbl.col     import pointxy_to_cols
     from glass.prj       import proj
-    from glass.dtr.mge.pd import merge_df
+    from glass.dtt.mge.pd import merge_df
     from glass.prop.feat   import get_gtype
     from glass.wt.shp    import df_to_shp
     

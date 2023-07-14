@@ -28,7 +28,7 @@ def run_close_facility(rdv, incidents, facilities, kph, oneway, output):
     from glass.mob.grstbx.anls import closest_facility
     from glass.tbl             import category
     from glass.tbl.grs         import add_table, cols_calc
-    from glass.dtr.cp.grs       import copy_insame_vector
+    from glass.dtt.cp.grs       import copy_insame_vector
     from glass.tbl.attr        import geomattr_to_db
 
     # Add data to GRASS GIS

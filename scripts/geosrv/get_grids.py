@@ -9,7 +9,7 @@ import geopandas as gp
 from glass.smp.obj  import fishnet
 from glass.rd.shp   import shp_to_obj
 from glass.wt.shp   import obj_to_shp
-from glass.dtr.torst import shp_to_rst
+from glass.dtt.torst import shp_to_rst
 from glass.wenv.grs import run_grass
 from glass.pys.oss    import mkdir
 from glass.pd.fld  import del_cols_notin_ref

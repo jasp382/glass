@@ -48,7 +48,7 @@ def lst_prod(shpext, start_time, end_time,
     
         else:
             if is_rst(shpext):
-                from glass.dtr.ext.toshp import rstext_to_shp
+                from glass.dtt.ext.toshp import rstext_to_shp
 
                 # Raster extent to shape
                 shpext = rstext_to_shp(shpext, os.path.join(
@@ -133,7 +133,7 @@ def lst_prod_by_cell_and_year(shp, id_col, year, outshp,
     """
 
     from glass.rd.shp     import shp_to_obj
-    from glass.dtr.mge.pd import merge_df
+    from glass.dtt.mge.pd import merge_df
     from glass.wt.shp     import df_to_shp
     from glass.it.pd      import df_to_geodf
 

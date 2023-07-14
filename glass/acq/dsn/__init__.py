@@ -331,7 +331,7 @@ def dsnsearch_by_cell(GRID_PNT, EPSG, RADIUS, DATA_SOURCE, db, OUTPUT_TABLE):
     from glass.sql.db            import create_db
     from glass.acq.dsn.fb.places import places_by_query
     from glass.prj.obj           import df_prj
-    from glass.dtr.mge.pd        import merge_df
+    from glass.dtt.mge.pd        import merge_df
     from glass.it.shp            import dbtbl_to_shp
     from glass.sql.q             import q_to_ntbl
     from glass.wt.sql            import df_to_db
