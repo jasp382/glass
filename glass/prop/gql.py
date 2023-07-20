@@ -13,10 +13,10 @@ def tbl_ext(db, table, geomCol):
         "SELECT MIN(ST_X(pnt_geom)) AS eleft, MAX(ST_X(pnt_geom)) AS eright, "
         "MIN(ST_Y(pnt_geom)) AS bottom, MAX(ST_Y(pnt_geom)) AS top "
         "FROM ("
-            "SELECT (ST_DumpPoints({geomcol})).geom AS pnt_geom "
-            "FROM {tbl}"
+            f"SELECT (ST_DumpPoints({geomCol})).geom AS pnt_geom "
+            f"FROM {table}"
         ") AS foo"
-    ).format(tbl=table, geomcol=geomCol)
+    )
     
     ext = q_to_obj(db, q, db_api='psql').to_dict(orient='index')[0]
     

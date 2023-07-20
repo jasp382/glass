@@ -224,9 +224,8 @@ def optimized_union_anls(lyr_a, lyr_b, outShp, ref_boundary,
     """
     
     import multiprocessing   as mp
-    from glass.pys.oss       import mkdir, fprop, lst_ff
-    from glass.pys.oss       import cpu_cores
-    from glass.smp           import create_fishnet
+    from glass.pys.oss       import mkdir, fprop, lst_ff, cpu_cores
+    from glass.smp.fish      import create_fishnet
     from glass.wenv.grs      import run_grass
     from glass.dtt.split     import eachfeat_to_newshp
     from glass.dtt.mge       import shps_to_shp
@@ -597,7 +596,7 @@ def check_shape_diff(SHAPES_TO_COMPARE, OUT_FOLDER, REPORT, DB,
     from glass.dtt.rst.toshp import rst_to_polyg
     from glass.it.db         import shp_to_psql
     from glass.dtt.tomtx.sql import tbl_to_area_mtx
-    from glass.prop          import is_rst
+    from glass.prop.df       import is_rst
     from glass.sql.db        import create_db
     from glass.sql.tbl       import tbls_to_tbl
     from glass.sql.q         import q_to_ntbl
@@ -844,7 +843,7 @@ def shp_diff_fm_ref(refshp, refcol, shps, out_folder,
     - PostgreSQL with Postgis or GeoPandas;
     """
 
-    from glass.prop      import is_rst
+    from glass.prop.df   import is_rst
     from glass.dtt.tomtx import tbl_to_areamtx
 
     # Check if folder exists, if not create it

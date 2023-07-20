@@ -22,7 +22,7 @@ def summarize_table_fields(table, outFld, fld_name_fld_name=None):
     cmd = 'ogr2ogr {o} {i} -dialect sqlite -sql "{s};"'
     
     if not os.path.exists(outFld):
-        tmp = mkdir(outFld)
+        mkdir(outFld)
     
     for field in fields:
         outTbl = os.path.join(outFld, f'{field}.dbf')

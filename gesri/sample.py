@@ -70,8 +70,8 @@ def fishnet(output, templateExtent, geomType='POLYGON',
     """
     
     from glass.prop.ext import rst_ext, get_extent
-    from glass.g.prop  import vector_formats, raster_formats
-    from glass.pys.oss      import fprop
+    from glass.prop.df  import vector_formats, raster_formats
+    from glass.pys.oss  import fprop
     
     templateFormat = fprop(templateExtent, 'ff')
     

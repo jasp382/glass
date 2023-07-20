@@ -39,8 +39,8 @@ def get_shp_sref(shp):
     Get Spatial Reference Object from Feature Class/Lyr
     """
     
-    from osgeo      import ogr
-    from glass.prop import drv_name
+    from osgeo         import ogr
+    from glass.prop.df import drv_name
     
     if type(shp) == ogr.Layer:
         lyr = shp
@@ -171,7 +171,7 @@ def get_epsg(inFile, is_proj=None):
     Get EPSG of any GIS File
     """
     
-    from glass.prop import is_rst, is_shp
+    from glass.prop.df import is_rst, is_shp
 
     irst, ishp = is_rst(inFile), is_shp(inFile)
     

@@ -11,7 +11,7 @@ def comp_bnds(rsts, outRst):
     from osgeo          import gdal, gdal_array
     from glass.prop.img import get_nd
     from glass.rd.rsrc  import imgsrc_to_num
-    from glass.prop     import drv_name
+    from glass.prop.df  import drv_name
     from glass.prop.prj import get_rst_epsg, epsg_to_wkt
 
     srcs = [gdal.Open(r) for r in rsts]

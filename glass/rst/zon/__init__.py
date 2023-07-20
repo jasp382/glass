@@ -2,6 +2,8 @@
 Grouping and Zonal geometries
 """
 
+import os
+
 def region_group(in_rst, out_rst, diagonal=True):
     """
     Equivalent to ArcGIS Region Group Tool
@@ -46,7 +48,6 @@ def zonal_geometry(in_rst, out_rst, work):
     value (e.g. output of r.clump or i.segment).
     """
     
-    import os
     import codecs
     from grass.pygrass.modules import Module
     from glass.rst.rcls import rcls_rst
@@ -67,9 +68,7 @@ def zonal_geometry(in_rst, out_rst, work):
                 c+=1
             else:
                 cols = line.split(',')
-                f.write('{}  = {} \n'.format(
-                    cols[0], str(int(float(cols[1])))
-                ))
+                f.write(f'{cols[0]}  = {str(int(float(cols[1])))} \n')
         f.close()
         opened_rules.close()
     
@@ -78,49 +77,46 @@ def zonal_geometry(in_rst, out_rst, work):
     return out_rst
 
 
-def rst_stats_by_feat(vec, rst, ncol, method, as_cmd=True):
+def rst_stats_eachfeat(vec, rst, col, meth, outvec):
     """
     DESCRIPTION
-    v.rast.stats calculates basic univariate statistics from a raster map only
+    calculates basic univariate statistics from a raster map only
     for the parts covered by the specified vector map. The vector map will be
     rasterized according to the raster map resolution. Then univariate statistics
     are calculated per vector category (cat) from the raster map and the results
     uploaded to the vector map attribute table. A new column is generated in the
     attribute table for each statistic requested in method (if not already present).
-    
-    The univariate statistics include the number of raster cells counted, the
-    number of raster NULL cells counted, minimum and maximum cell values,
-    range, average, standard deviation, variance, coefficient of variation,
-    sum, first quartile, median, third quartile, and percentile.
-
-    method options:
-    number, null_cells, minimum, maximum, range, average, stddev,
-    variance, coeff_var, sum, first_quartile, median, third_quartile, percentile
     """
 
-    from glass.pys import obj_to_lst
+    from glass.pys.oss  import fprop
+    from glass.wenv.grs import run_grass
+    from glass.tbl.col  import rn_cols
 
-    ncol   = obj_to_lst(ncol)
-    method = obj_to_lst(method)
+    # Create GRASS GIS Session
+    gw = os.path.dirname(vec)
+    vname = fprop(vec, 'fn')
+    lc = 'l_' + vname
 
-    if as_cmd:
-        from glass.pys import execmd
+    gbase = run_grass(gw, location=lc, srs=rst)
 
-        rcmd = execmd((
-            f"v.rast.stats map={vec} raster={rst} "
-            f"column_prefix={','.join(ncol)} "
-            f" method={','.join(method)} -c --quiet"
-        ))
-    
-    else:
-        from grass.pygrass.modules import Module
+    import grass.script.setup as gsetup
 
-        m = Module(
-            'v.rst.stats', map=vec, raster=rst, column_prefix=ncol,
-            method=method, flags='c', quiet=True, run_=False
-        )
+    gsetup.init(gbase, gw, lc, 'PERMANENT')
 
-        m()
+    from glass.it.shp import shp_to_grs, grs_to_shp
+    from glass.it.rst import rst_to_grs
+    from glass.rst.zon.grs import grs_rst_stats_by_feat
 
-    return vec
+    # Import data
+    gvec = shp_to_grs(vec, vname)
+    grst = rst_to_grs(rst, fprop(rst, 'fn'))
+
+    nvec = grs_rst_stats_by_feat(gvec, grst, col, meth, as_cmd=True)
+
+    rn_cols(nvec, {f"{col}_{meth}" : col}, api="grass")
+
+    # Export data
+    res = grs_to_shp(nvec, outvec, 'area')
+
+    return outvec
 

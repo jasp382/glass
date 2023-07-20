@@ -16,7 +16,7 @@ def osm_extraction(boundary, osmdata: str, output: str,
     from glass.pys     import execmd
     from glass.pys.oss import fprop
     from glass.prj.obj import prj_ogrgeom
-    from glass.prop    import is_rst
+    from glass.prop.df import is_rst
 
     apis = ['osmosis', 'osmconvert']
     api = 'osmosis' if api not in apis else 'osmosis'
@@ -62,8 +62,8 @@ def osm_extraction(boundary, osmdata: str, output: str,
         
             else:
                 # Get Extent of each feature
-                from osgeo        import ogr
-                from glass.prop import drv_name
+                from osgeo         import ogr
+                from glass.prop.df import drv_name
 
                 src = ogr.GetDriverByName(drv_name(boundary)).Open(boundary)
                 lyr = src.GetLayer()

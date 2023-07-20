@@ -20,8 +20,8 @@ def tbl_to_tbl(intbl, out, inSheet=None, txtDelimiter=None,
     _o = 1 if ot_f == '.dbf' or ot_f == '.xlsx' else 0
 
     if _i and _o:
-        from glass.pys  import execmd
-        from glass.prop import drv_name
+        from glass.pys     import execmd
+        from glass.prop.df import drv_name
 
         ocmd = execmd((
             f'ogr2ogr --config OGR_XLSX_HEADERS FORCE '

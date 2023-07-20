@@ -138,7 +138,7 @@ def dic_buffer_array_to_shp(arrayBf, outShp, epsg, fields=None):
     
     import os
     from osgeo                   import ogr
-    from glass.prop              import drv_name
+    from glass.prop.df           import drv_name
     from glass.prop.prj          import get_sref_from_epsg
     from glass.gp.prox.bfing.obj import xy_to_buffer
     

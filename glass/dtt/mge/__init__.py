@@ -55,8 +55,8 @@ def shps_to_shp(shps, outShp, api="ogr2ogr", fformat='.shp',
 
     
     if api == "ogr2ogr":
-        from glass.pys  import execmd
-        from glass.prop import drv_name
+        from glass.pys     import execmd
+        from glass.prop.df import drv_name
         
         out_drv = drv_name(outShp)
         
@@ -69,10 +69,10 @@ def shps_to_shp(shps, outShp, api="ogr2ogr", fformat='.shp',
         ) for i in range(1, len(shps))]
     
     elif api == 'gpkg_to_gpkg':
-        from glass.pys import execmd
-        from glass.pys.oss import fprop
+        from glass.pys       import execmd
+        from glass.pys.oss   import fprop
         from glass.prop.gpkg import lst_gpkg_layers
-        from glass.prop import drv_name
+        from glass.prop.df   import drv_name
 
         # List GeoPackage layers
         layers = lst_gpkg_layers(shps) if not gpkglyrs else \
@@ -176,43 +176,32 @@ def shps_to_shp(shps, outShp, api="ogr2ogr", fformat='.shp',
     return outShp
 
 
-def same_attr_to_shp(inShps, interestCol, outFolder, basename="data_",
-                     resultDict=None):
+def same_attr_to_shp(inShps, col, outFolder, basename="data_", res_as_dict=None):
     """
     For several SHPS with the same field, this program will list
     all values in such field and will create a new shp for all
     values with the respective geometry regardeless the origin shp.
     """
     
-    from glass.rd.shp     import shp_to_obj
-    from glass.dtr.mge.pd import merge_df
-    from glass.wt.shp     import df_to_shp
-    
-    EXT = os.path.splitext(inShps[0])[1]
-    
-    shpDfs = [shp_to_obj(shp) for shp in inShps]
-    
-    DF = merge_df(shpDfs, ignIndex=True)
-    #DF.dropna(axis=0, how='any', inplace=True)
-    
-    uniqueVal = DF[interestCol].unique()
-    
-    nShps = [] if not resultDict else {}
-    for val in uniqueVal:
-        ndf = DF[DF[interestCol] == val]
-        
-        KEY = str(val).split('.')[0] if '.' in str(val) else str(val)
-        
-        nshp = df_to_shp(ndf, os.path.join(
-            outFolder, f'{basename}{KEY}{EXT}'
-        ))
-        
-        if not resultDict:
-            nShps.append(nshp)
-        else:
-            nShps[KEY] = nshp
-    
-    return nShps
+    from glass.pys.oss import mkdir, del_folder
+    from glass.pys.tm import now_as_str
+    from glass.dtt.split import split_shp_by_attr
+
+    tmpfld = mkdir(os.path.join(outFolder, now_as_str()), overwrite=True)
+
+    shpall = shps_to_shp(
+        inShps, os.path.join(tmpfld, 'alldata.shp'),
+        api="ogr2ogr"
+    )
+
+    nshps = split_shp_by_attr(
+        shpall, col, outFolder,
+        _format='.shp', outname=basename
+    )
+
+    del_folder(tmpfld)
+
+    return nshps if res_as_dict else list(nshps.values())
 
 
 def merge_sameshp_in_diffld(folder, fname, oshp):

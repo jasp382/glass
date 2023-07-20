@@ -13,7 +13,7 @@ def osm_vs_imd(osmxlsx, osmxml, imd, outfishnet, outshp):
     
     #Create a fishnet use raster file
 
-    from dgt.smp.__init__ import nfishnet_fm_rst
+    from glass.smp.fish import nfishnet_fm_rst
     #fishnet = nfishnet_fm_rst(imd, 500, 500, outfishnet)
 
     osm_ref_tags = {

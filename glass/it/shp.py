@@ -19,7 +19,7 @@ def shp_to_shp(inshp, outshp, gapi='ogr', spatialite=None):
     """
     
     if gapi == 'ogr':
-        from glass.prop import drv_name
+        from glass.prop.df import drv_name
         
         drv = drv_name(outshp)
     
@@ -194,7 +194,7 @@ def grs_to_shp(ilyr, olyr, geomtype, lyrn=1, ascmd=True, asMultiPart=None):
     GRASS Vector to Shape File
     """
     
-    from glass.prop    import VectorialDrivers
+    from glass.prop.df import VectorialDrivers
     from glass.pys.oss import fprop
     
     vecDriv = VectorialDrivers()
@@ -306,7 +306,7 @@ def dbtbl_to_shp(db, tbl, geom_col, outShp, where=None, inDB='psql',
         outsh = df_to_shp(df, outShp)
     
     elif api == 'ogr2ogr':
-        from glass.prop    import drv_name
+        from glass.prop.df import drv_name
         from glass.pys.oss import fprop
 
         cdb = con_psql(db_set=dbset)

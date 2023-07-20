@@ -9,7 +9,7 @@ def coords_to_boundshp(topLeft, lowerRight, epsg, outshp,
     """
     
     from osgeo          import ogr
-    from glass.prop     import drv_name
+    from glass.prop.df  import drv_name
     from glass.prop.prj import get_sref_from_epsg
     from glass.pys.oss  import fprop
     from glass.pys      import obj_to_lst
@@ -130,7 +130,7 @@ def shpext_to_boundshp(inShp, outShp, epsg=None):
     """
     
     from osgeo         import ogr
-    from glass.prop    import drv_name
+    from glass.prop.df import drv_name
     from glass.pys.oss import fprop
     
     # Get SRS for the output

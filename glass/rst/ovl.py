@@ -8,8 +8,8 @@ def clip_rst(raster, clipshp, outrst, nodataValue=None, api='gdal'):
     """
     
     if api == 'gdal':
-        from glass.pys    import execmd
-        from glass.prop import drv_name
+        from glass.pys     import execmd
+        from glass.prop.df import drv_name
 
         nd = f"-dstnodata {str(nodataValue)}" if \
             nodataValue else ""

@@ -22,7 +22,7 @@ def raster_based(osmdata, nomenclature, refRaster, lulcRst,
     # glass dependencies #
     # ************************************************************************ #
     from glass.pys.oss               import mkdir, fprop
-    from glass.prop                  import is_rst
+    from glass.prop.df               import is_rst
     from glass.wenv.grs              import run_grass
     if roadsAPI == 'POSTGIS':
         from glass.sql.db            import create_db
@@ -573,7 +573,10 @@ def osm_to_lulc(osm, nomenclature, ref, lulc, overwrite=None, savedb=None, tmpfl
     for shp in oshps:
         def_prj(f'{os.path.splitext(shp)[0]}.prj', epsg=epsg, api='epsgio')
     
-    oshps = same_attr_to_shp(oshps, "cat", ws, "osm_", resultDict=True)
+    oshps = same_attr_to_shp(
+        oshps, "cat", ws,
+        basename="osm_", res_as_dict=True
+    )
 
     time_o = dt.datetime.now().replace(microsecond=0)
 

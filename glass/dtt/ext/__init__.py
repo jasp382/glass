@@ -5,10 +5,10 @@ def fext_to_geof(inF, outF, ocellsize=10, epsg=None, oepsg=None):
     Extent of a File to Raster or Shapefile
     """
     
-    from glass.dtr.ext.toshp import coords_to_boundshp
-    from glass.dtr.ext.torst import ext_to_rst
+    from glass.dtt.ext.toshp import coords_to_boundshp
+    from glass.dtt.ext.torst import ext_to_rst
     from glass.prop.ext      import get_ext
-    from glass.prop          import is_shp, is_rst
+    from glass.prop.df       import is_shp, is_rst
     from glass.prop.prj      import get_epsg
     
     # Get extent

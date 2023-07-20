@@ -2,8 +2,8 @@
 Data to Raster File
 """
 
-from osgeo      import gdal, osr, gdal_array
-from glass.prop import drv_name
+from osgeo         import gdal, osr, gdal_array
+from glass.prop.df import drv_name
 
 """
 Array to Raster

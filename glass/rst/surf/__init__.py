@@ -340,7 +340,7 @@ def thrd_viewshed(dem, pnt_obs, obs_id, out_folder):
             frst = grs_to_rst(vrst, os.path.join(output, vrst + '.tif'))
 
     thrds = [mp.Process(
-        target=run_viewshed_by_cpu, name='th-{}'.format(str(i+1)),
+        target=run_viewshed_by_cpu, name=f'th-{str(i+1)}',
         args=(i+1, dfs[i], dem, out_folder,
             'vistoburn', 10000, 200)
     ) for i in range(len(dfs))]
@@ -419,7 +419,7 @@ def thrd_viewshed_v2(dbname, dem, pnt_obs, obs_id):
             # Get Viewshed raster
             vrst = grs_viewshed(
                 grs_dem, (row.geometry.x, row.geometry.y),
-                '{}_{}'.format(vis_basename, str(row[obs_id])),
+                f'{vis_basename}_{str(row[obs_id])}',
                 max_dist=maxdst, obs_elv=obselevation
             )
             

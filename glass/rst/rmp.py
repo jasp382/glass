@@ -16,7 +16,7 @@ def match_cellsize_and_clip(rstBands, refRaster, outFolder,
     """
     
     import os
-    from glass.prop     import is_rst
+    from glass.prop.df  import is_rst
     from glass.prop.prj import get_rst_epsg
     from glass.wenv.grs import run_grass
     from glass.pys.oss  import fprop, mkdir
@@ -83,7 +83,7 @@ def match_cellsize_and_clip(rstBands, refRaster, outFolder,
     # Export bands
     return [grs_to_rst(
         i, os.path.join(outFolder, i + '.tif'),
-        is_int=isint
+        is_int=int if isint else float
     ) for i in grs_bands]
 
 

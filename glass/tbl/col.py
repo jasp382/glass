@@ -28,7 +28,7 @@ def add_fields(tbl, fields, lyrN=1, api='ogr'):
 
     if api == 'ogr':
         from osgeo         import ogr
-        from glass.prop    import drv_name
+        from glass.prop.df import drv_name
         from glass.lyr.fld import fields_to_lyr
 
         if os.path.exists(tbl) and os.path.isfile(tbl):

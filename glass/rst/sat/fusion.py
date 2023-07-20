@@ -113,13 +113,13 @@ def month_representative(img_folder, refimg, ofolder, bname, fformat='.tif'):
     
         grs_to_rst(patch_i, os.path.join(
             ofolder, f'{bname}_{patch_i}.tif'
-        ), is_int=True)
+        ), rtype=int)
     
         for s in stats:
             orst = rseries(timeseries[b], f'{b}_{s}', stats[s],as_cmd=True)
             grs_to_rst(orst, os.path.join(
                 ofolder, f'{bname}_{orst}.tif'
-            ), is_int=True if s != 'avg' and s != 'ddev' else False)
+            ), rtype=int if s != 'avg' and s != 'ddev' else float)
 
     return ofolder
 

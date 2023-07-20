@@ -81,7 +81,7 @@ def rm_anyclouds(folder, bands, scl, ff, ofolder, noclouds_raster):
     cloud_rst = grsrstcalc(" + ".join(rscl), 'no_clouds')
 
     # Export clouds
-    rcld = grs_to_rst(cloud_rst, noclouds_raster, is_int=True)
+    rcld = grs_to_rst(cloud_rst, noclouds_raster, rtype=int)
 
     return ofolder
 

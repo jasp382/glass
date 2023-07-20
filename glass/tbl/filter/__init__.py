@@ -17,8 +17,8 @@ def sel_by_attr(inShp, sql, outShp, geomType="area", lyrN=1, api_gis='ogr',
     """
     
     if api_gis == 'ogr':
-        from glass.pys  import execmd
-        from glass.prop import drv_name
+        from glass.pys     import execmd
+        from glass.prop.df import drv_name
     
         drv = drv_name(outShp)
 
@@ -76,10 +76,10 @@ def sel_by_loc(shp, boundary_filter, filtered_output):
     """
     
     from osgeo           import ogr
-    from glass.prop      import drv_name
+    from glass.prop.df   import drv_name
     from glass.prop.feat import get_gtype
     from glass.lyr.fld   import copy_flds
-    from glass.dtt.cp     import copy_feat
+    from glass.dtt.cp    import copy_feat
     from glass.pys.oss   import fprop
     
     # Open main data
@@ -126,8 +126,8 @@ def geom_by_idx(inShp, idx):
     Get Geometry by index in file
     """
     
-    from osgeo        import ogr
-    from glass.prop import drv_name
+    from osgeo         import ogr
+    from glass.prop.df import drv_name
     
     src = ogr.GetDriverByName(drv_name(inShp)).Open(inShp)
     lyr = src.GetLayer()
@@ -158,8 +158,8 @@ def get_attr_values_in_location(inShp, attr, geomFilter=None, shpFilter=None):
     or shpFilter
     """
     
-    from osgeo           import ogr
-    from glass.prop import drv_name
+    from osgeo         import ogr
+    from glass.prop.df import drv_name
     
     if not geomFilter and not shpFilter:
         raise ValueError(

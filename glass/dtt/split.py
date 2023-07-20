@@ -55,7 +55,7 @@ def eachfeat_to_newshp(inShp, outFolder, epsg=None, idCol=None, idIsName=None):
     """
     
     from osgeo           import ogr
-    from glass.prop      import drv_name
+    from glass.prop.df   import drv_name
     from glass.prop.feat import get_gtype, lst_fld
     from glass.lyr.fld   import copy_flds
     
@@ -183,9 +183,9 @@ def split_shp_by_attr(inshp, attr, outdir, _format='.shp', outname=None, valinna
     Create a new shapefile for each value in a column
     """
     
-    from glass.rd.shp import shp_to_obj
-    from glass.prop   import drv_name
-    from glass.pys    import execmd
+    from glass.rd.shp  import shp_to_obj
+    from glass.prop.df import drv_name
+    from glass.pys     import execmd
 
     is_gpkg = True if _format == 'gpkg' or \
         _format == '.gpkg' else None

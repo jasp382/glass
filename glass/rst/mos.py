@@ -46,7 +46,7 @@ def rsts_to_mosaic(inRasterS, o, api="grass", fformat='.tif', method=None):
     elif api == 'rasterio':
         import rasterio
         from rasterio.merge import merge
-        from glass.prop     import drv_name
+        from glass.prop.df  import drv_name
         from glass.prop.prj import get_epsg, epsg_to_wkt
 
         if type(inRasterS) != list:
@@ -152,7 +152,6 @@ def bnds_to_mosaic(bands, outdata, ref_raster, loc=None):
         location=LOC, srs=epsg
     )
     
-    import grass.script as grass
     import grass.script.setup as gsetup
     
     gsetup.init(grass_base, outdata, LOC, 'PERMANENT')

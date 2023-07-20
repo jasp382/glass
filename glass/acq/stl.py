@@ -4,9 +4,15 @@ Download Sentinel Data
 
 import os
 
+from sentinelsat    import SentinelAPI, geojson_to_wkt
+from glass.cons.sat import con_datahub
+from glass.pys      import obj_to_lst
+from glass.rd.shp   import shp_to_obj
+
+
 def lst_prod(shpext, start_time, end_time,
              outshp=None, platname="Sentinel-2", plevel="Level-2A",
-             max_cloud_cover=None, s2_cellid=None):
+             max_cloud_cover=None, s2_tileid=None):
     """
     List Sentinel Products for one specific area
     
@@ -22,20 +28,17 @@ def lst_prod(shpext, start_time, end_time,
     * Level-2A
     ...
     """
+    
+    from glass.pys     import obj_to_lst
+    from glass.pys.oss import fprop
+    from glass.wt.shp  import df_to_shp
+    from glass.prop.df import is_rst
+    from glass.gobj    import wkt_to_geom
 
-    def get_grid_id(row):
-        row['cellid'] = row.title.split('_')[5][1:]
+    def get_tileid(row):
+        row['tileid'] = row.title.split('_')[5][1:]
     
         return row
-    
-    from sentinelsat    import SentinelAPI, geojson_to_wkt
-    from glass.rd.shp   import shp_to_obj
-    from glass.pys      import obj_to_lst
-    from glass.pys.oss  import fprop
-    from glass.wt.shp   import df_to_shp
-    from glass.cons.sat import con_datahub
-    from glass.prop     import is_rst
-    from glass.gobj     import wkt_to_geom
 
     # Get global vars
     gvar = con_datahub()
@@ -107,13 +110,13 @@ def lst_prod(shpext, start_time, end_time,
     df_prod.drop(['index'], axis=1, inplace=True)
 
     # ID Cell ID
-    df_prod = df_prod.apply(lambda x: get_grid_id(x), axis=1)
+    df_prod = df_prod.apply(lambda x: get_tileid(x), axis=1)
 
-    if s2_cellid:
-        s2_cellid = obj_to_lst(s2_cellid)
+    if s2_tileid:
+        s2_tileid = obj_to_lst(s2_tileid)
 
         # Filter
-        df_prod = df_prod[df_prod.cellid.isin(s2_cellid)]        
+        df_prod = df_prod[df_prod.tileid.isin(s2_tileid)]        
     
     # Export results to Shapefile
     if outshp:
@@ -205,14 +208,73 @@ def lst_prod_by_cell_and_year(shp, id_col, year, outshp,
     return outshp
 
 
+def lst_prod_bytile(stime, etime, tiles, platname="Sentinel-2", procLevel="Level-2A",
+    max_cloud_cover=None):
+    """
+    List Sentinel Products for one specific sentinel tile
+    
+    platformname:
+    * Sentinel-1
+    * Sentinel-2
+    * Sentinel-3
+
+    processinglevel:
+    * Level-1A
+    * Level-1B
+    * Level-1C
+    * Level-2A
+    ...
+    """
+
+    gvar = con_datahub()
+    user, passw, url = gvar["USER"], gvar["PASSWORD"], gvar["URL"]
+
+    tiles = obj_to_lst(tiles)
+
+    # Create API instance
+    api = SentinelAPI(user, passw, url)
+
+    # Query
+    p = []
+    for t in tiles:
+        pp = api.query(
+            date = (stime, etime),
+            platformname=platname,
+            cloudcoverpercentage=(
+                0,
+                100 if not max_cloud_cover else max_cloud_cover
+            ),
+            processinglevel=procLevel,
+            tileid=t
+        )
+
+        dfp = api.to_geodataframe(pp)
+
+        p.append(dfp)
+    
+    return p
+
+
+def down_img(imgid, out_folder):
+    """
+    Download one image by id
+    """
+
+    v = con_datahub()
+
+    api = SentinelAPI(
+        v["USER"], v["PASSWORD"], v["URL"]
+    )
+
+    api.download(imgid, out_folder)
+
+    return out_folder
+
+
 def down_imgs(inTbl, imgIDcol, outFolder=None):
     """
     Download Images in Table
     """
-    
-    from sentinelsat    import SentinelAPI
-    from glass.rd.shp   import shp_to_obj
-    from glass.cons.sat import con_datahub
     
     of = outFolder if outFolder else os.path.dirname(inTbl)
 
@@ -246,9 +308,6 @@ def down_imgs_v2(itbl, idcol, ofolder=None):
     """
 
     import time
-    from sentinelsat    import SentinelAPI
-    from glass.rd.shp   import shp_to_obj
-    from glass.cons.sat import con_datahub
 
     ofolder = ofolder if ofolder else os.path.dirname(itbl)
 

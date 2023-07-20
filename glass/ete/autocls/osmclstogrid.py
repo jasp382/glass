@@ -134,7 +134,7 @@ def osmlulc_to_s2grid(ref_raster, osmtolulc, lucol, tmp_folder, results):
     OSM LULC to Sentinel-2 GRID
     """
 
-    from glass.smp           import nfishnet_fm_rst
+    from glass.smp.fish      import nfishnet_fm_rst
     from glass.pys.oss       import lst_ff, cpu_cores
     from glass.wt            import obj_to_tbl
     from glass.pd.split      import df_split

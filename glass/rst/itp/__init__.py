@@ -44,7 +44,7 @@ def surf_rst(ishp, col, orst, ws=None, cellsize=10):
     out_grsrst = surfrst(grs_shp, col, fprop(orst, 'fn'), lyrN=1, ascmd=True)
 
     # Export result
-    grs_to_rst(out_grsrst, orst, is_int=None)
+    grs_to_rst(out_grsrst, orst, rtype=float)
 
     return orst
 

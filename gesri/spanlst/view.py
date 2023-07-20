@@ -311,7 +311,7 @@ def viewshed_by_feat_class(inRaster, observerDataset, feat_class_folder,
     arcpy.CheckOutExtension('Spatial')
     
     from glass.pys.oss               import mkdir
-    from glass.g.prop               import vector_formats, raster_formats
+    from glass.prop.df               import vector_formats, raster_formats
     from glass.prop.rst              import get_cellsize, rst_distinct
     from glass.anls.prox.bf          import _buffer
     from glass.cpu.arcg.mng.rst.proc import clip_raster
@@ -500,14 +500,13 @@ def viewshed_by_feat_class2(inRaster, observerDataset, feat_class_folder,
     import os
     
     from glass.pys.oss               import mkdir
-    from glass.g.prop              import vector_formats, raster_formats
-    from gesri.rd.shp          import shp_to_lyr
+    from glass.prop.df               import vector_formats, raster_formats
+    from gesri.rd.shp                import shp_to_lyr
     from glass.prop.rst              import get_cell_coord
     from glass.prop.ext              import rst_ext
     from glass.prop.rst              import rst_shape, rst_distinct, get_nodata, get_cellsize
     from glass.anls.prox.bf          import _buffer
     from glass.cpu.arcg.mng.rst.proc import clip_raster
-    from glass.cpu.arcg.spanlst.surf import viewshed
     from glass.cpu.arcg.spanlst.rcls import reclassify
     from glass.cpu.arcg._3D.view     import line_of_sight
     from glass.to.rst                import shp_to_raster

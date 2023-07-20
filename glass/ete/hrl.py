@@ -9,7 +9,7 @@ import pandas as pd
 def osm_vs_imd(osmshp, imdrst, outshp, outrst=None):
     """
     This program compare selected OSM data in Portugal with high-resolution-layers (imperviousness density maps) from Copernicus.
-    The objectiv is:
+    The objective is:
     - Create a fishnet whit 10m, same cellsize of idm;
     - Intersect OSM data with fishnet;
     - Insert the value of the OSM area in the fishnet cell
@@ -18,7 +18,7 @@ def osm_vs_imd(osmshp, imdrst, outshp, outrst=None):
 
     from glass.pys.oss  import mkdir, fprop
     from glass.wenv.grs import run_grass
-    from glass.smp      import nfishnet_fm_rst
+    from glass.smp.fish import nfishnet_fm_rst
     from glass.rd.shp   import shp_to_obj
     from glass.wt.shp   import df_to_shp
     from glass.dtt.mge  import shps_to_shp
@@ -43,13 +43,13 @@ def osm_vs_imd(osmshp, imdrst, outshp, outrst=None):
     gsetup.init(gb, ws, loc, 'PERMANENT')
 
     # GRASS GIS Modules
-    from dgt.it.shp   import shp_to_grs, grs_to_shp
-    from dgt.it.rst   import rst_to_grs, grs_to_rst
-    from dgt.gp.gen   import dissolve
-    from dgt.tbl.col  import add_fields, cols_calc
-    from dgt.gp.ovl   import grsintersection
-    from dgt.smp      import sample_to_points
-    from dgt.dp.torst import grsshp_to_grsrst
+    from glass.it.shp    import shp_to_grs, grs_to_shp
+    from glass.it.rst    import rst_to_grs, grs_to_rst
+    from glass.gp.gen    import dissolve
+    from glass.tbl.col   import add_fields, cols_calc
+    from glass.gp.ovl    import grsintersection
+    from glass.smp       import sample_to_points
+    from glass.dtt.torst import grsshp_to_grsrst
 
     # Import data
     osmgrs = shp_to_grs(osmshp, fprop(osmshp, 'fn'), filterByReg=True)
@@ -140,7 +140,7 @@ def osm_vs_imd(osmshp, imdrst, outshp, outrst=None):
 
         rstgrs = grsshp_to_grsrst(outgrs, 'urbanp', fprop(outrst, 'fn'))
 
-        grs_to_rst(rstgrs, outrst, as_cmd=True)
+        grs_to_rst(rstgrs, outrst, as_cmd=True, rtype=float)
 
     return outshp
 

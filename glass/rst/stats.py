@@ -88,7 +88,7 @@ def count_region_in_shape(folder, ref, out):
     frst = grsrstcalc(" + ".join(rsts), orst_name)
 
     # Export final raster
-    grs_to_rst(frst, out, is_int=True)
+    grs_to_rst(frst, out, rtype=int)
 
     return out
 

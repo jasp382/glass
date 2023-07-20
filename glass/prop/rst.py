@@ -102,7 +102,7 @@ def get_cellsize(rst, xy=False, bnd=None, gisApi='gdal'):
         if type(rst) != list:
             if os.path.exists(rst) and os.path.isdir(rst):
                 from glass.pys.oss import lst_ff
-                from glass.prop  import raster_formats
+                from glass.prop.df import raster_formats
 
                 rsts = lst_ff(rst, file_format=raster_formats())
             
@@ -371,7 +371,7 @@ def adjust_ext_to_snap(outExt, snapRst):
     Adjust extent for a output raster to snap with other raster
     """
     
-    from glass.prop     import is_shp, is_rst
+    from glass.prop.df  import is_shp, is_rst
     from glass.prop.rst import rst_ext, get_cellsize
     from glass.gobj     import new_pnt, create_polygon
     

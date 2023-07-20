@@ -20,9 +20,9 @@ def rst_to_polyg(inRst, outShp, rstColumn=None, gisApi='gdal', epsg=None):
                 'Spatial Reference System of input raster.'
             ))
         
-        import os;from osgeo import gdal, ogr, osr
-        from glass.prop import drv_name
-        from glass.pys.oss   import fprop
+        from osgeo import gdal, ogr, osr
+        from glass.prop.df import drv_name
+        from glass.pys.oss import fprop
         
         src = gdal.Open(inRst)
         bnd = src.GetRasterBand(1)
@@ -63,9 +63,9 @@ def rst_to_polyg(inRst, outShp, rstColumn=None, gisApi='gdal', epsg=None):
         rstField = "value" if not rstColumn else rstColumn
         
         rcmd = execmd((
-            "r.to.vect input={} output={} type=area column={} "
-            "--overwrite --quiet"
-        ).format(inRst, outShp, rstField))
+            f"r.to.vect input={inRst} output={outShp} "
+            f"type=area column={rstField} --overwrite --quiet"
+        ))
     
     else:
         raise ValueError(f'Sorry, API {gisApi} is not available')

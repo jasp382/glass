@@ -200,8 +200,8 @@ def rst_to_rst(inRst, outRst):
     Convert a raster file to another raster format
     """
     
-    from glass.pys  import execmd
-    from glass.prop import drv_name
+    from glass.pys     import execmd
+    from glass.prop.df import drv_name
     
     outDrv = drv_name(outRst)
     cmd = f'gdal_translate -of {outDrv} {inRst} {outRst}'
@@ -261,8 +261,8 @@ def gpkgrst_to_rst(gpkg, tbl, outrst):
     Convert Raster in GeoPackage to single file
     """
 
-    from glass.pys  import execmd
-    from glass.prop import drv_name
+    from glass.pys     import execmd
+    from glass.prop.df import drv_name
 
     rcmd = execmd((
         f"gdal_translate -of {drv_name(outrst)} {gpkg} "
@@ -305,18 +305,24 @@ def rst_to_grs(rst, grst=None, lmtExt=None, as_cmd=None):
     return grst
 
 
-def grs_to_rst(grsRst, rst, as_cmd=None, allBands=None, is_int=None):
+def grs_to_rst(grsRst, rst, as_cmd=None, allBands=None, rtype=None):
     """
     GRASS Raster to Raster
     """
     
-    from glass.prop    import grs_rst_drv
+    from glass.prop.df import grs_rst_drv
     from glass.pys.oss import fprop
     
     rstDrv = grs_rst_drv()
     rstExt = fprop(rst, 'ff')
 
-    predictor = "2" if is_int else "3"
+    predictor = "2" if rtype == int else "3" if rtype \
+        == float else None
+    
+    if not predictor:
+        compress = "COMPRESS=DEFLATE"
+    else:
+        compress = f"COMPRESS=LZW,PREDICTOR={predictor},BIGTIFF=YES"
     
     if not as_cmd:
         from grass.pygrass.modules import Module
@@ -325,7 +331,7 @@ def grs_to_rst(grsRst, rst, as_cmd=None, allBands=None, is_int=None):
             "r.out.gdal", input=grsRst, output=rst,
             format=rstDrv[rstExt], flags='c' if not allBands else '',
             createopt="INTERLEAVE=PIXEL,TFW=YES" if allBands else \
-                f'COMPRESS=LZW,PREDICTOR={predictor},BIGTIFF=YES',
+                compress,
             overwrite=True, run_=False, quiet=True
         )
         
@@ -335,7 +341,7 @@ def grs_to_rst(grsRst, rst, as_cmd=None, allBands=None, is_int=None):
         from glass.pys import execmd
         
         if not allBands:
-            opt = f"createopt=\"COMPRESS=LZW,PREDICTOR={predictor},BIGTIFF=YES\""
+            opt = compress
         else:
             opt = "createopt=\"INTERLEAVE=PIXEL,TFW=YES\""
         

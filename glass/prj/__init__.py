@@ -94,7 +94,7 @@ def proj(inShp, outShp, outEPSG, inEPSG=None,
         from osgeo           import ogr
         from glass.lyr.fld   import copy_flds
         from glass.prop.feat import get_gtype
-        from glass.prop      import drv_name
+        from glass.prop.df   import drv_name
         from glass.prop.prj  import get_sref_from_epsg, get_trans_param
         from glass.pys.oss   import fprop
         
@@ -151,8 +151,8 @@ def proj(inShp, outShp, outEPSG, inEPSG=None,
         if not inEPSG:
             raise ValueError('To use ogr2ogr, you must specify inEPSG')
         
-        from glass.pys  import execmd
-        from glass.prop import drv_name
+        from glass.pys     import execmd
+        from glass.prop.df import drv_name
 
         _sql = '' if not sql else f' -dialect sqlite -sql "{sql}"'
         

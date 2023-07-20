@@ -74,7 +74,7 @@ def download_by_boundary(input_boundary, folder_out, osm_name, epsg,
                 ))
         
             # Check if is a raster
-            from glass.prop import is_rst
+            from glass.prop.df import is_rst
             isRst = is_rst(input_boundary)
         
             # Get EPSG
@@ -90,7 +90,7 @@ def download_by_boundary(input_boundary, folder_out, osm_name, epsg,
                 EXTENTS.append(rst_ext(input_boundary))
         
             else:
-                from glass.prop import drv_name
+                from glass.prop.df import drv_name
                 
                 # Todo: check if it is shape
                 

@@ -47,7 +47,7 @@ def osm2lulc(osmdata, nomenclature, refRaster, lulcRst,
     # Dependencies #
     # ************************************************************************ #
     from glass.rd.rst                import rst_to_array
-    from glass.prop                  import is_rst
+    from glass.prop.df               import is_rst
     from glass.prop.rst              import get_cellsize
     from glass.pys.oss               import mkdir, copy_file
     from glass.pys.oss               import fprop

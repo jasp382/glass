@@ -5,7 +5,7 @@ Compare tables Shape (number of columns and rows)
 import os
 import pandas as pd
 
-from glass.prop    import is_shp
+from glass.prop.df import is_shp
 from glass.rd      import tbl_to_obj
 from glass.rd.shp  import shp_to_obj
 from glass.wt      import obj_to_tbl

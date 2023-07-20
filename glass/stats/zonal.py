@@ -15,9 +15,9 @@ def statistics_by_line_feat(lines, raster, statistic, new_field):
     of each line
     """
     
-    from osgeo           import ogr, gdal
-    from glass.prop import drv_name
-    from glass.smp  import pnt_val_on_rst
+    from osgeo         import ogr, gdal
+    from glass.prop.df import drv_name
+    from glass.smp     import pnt_val_on_rst
     
     # Open feature class
     shp = ogr.GetDriverByName(

@@ -163,7 +163,7 @@ def mtx_binary_class(tbl, refcol, tstcol, posval, negval, outmtx):
     from glass.rd import tbl_to_obj
     from glass.rd.shp import shp_to_obj
     from glass.wt import obj_to_tbl
-    from glass.prop import is_shp
+    from glass.prop.df import is_shp
 
     l = ['TP', 'TN', 'FP', 'FN']
 

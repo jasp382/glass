@@ -9,14 +9,12 @@ def ob_ref_rst(ref, folder, cellsize=None):
     Get Reference Raster
     """
 
-    from glass.prop import is_rst
+    from glass.prop.df import is_rst, is_shp
 
     # Check if refRaster is really a Raster
     isRst = is_rst(ref)
 
     if not isRst:
-        from glass.prop import is_shp
-
         if not is_shp(ref):
             raise ValueError((
                 'Extent Template File has an invalid file format. '

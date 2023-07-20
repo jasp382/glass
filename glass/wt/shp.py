@@ -7,7 +7,7 @@ def df_to_shp(indf, outShp, layername=None):
     Pandas Dataframe to Geospatial file
     """
 
-    from glass.prop import drv_name
+    from glass.prop.df import drv_name
 
     drv = drv_name(outShp)
 

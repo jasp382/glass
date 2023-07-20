@@ -12,7 +12,7 @@ def generate_waterlines(mdt, waterbodies, accumulation_value=500,
     
     import os
     from gesri.rd.rst import rst_to_lyr
-    from glass.g.prop                import vector_formats, raster_formats
+    from glass.prop.df import vector_formats, raster_formats
     from glass.spanlst.algebra        import rstcalc
     from glass.cpu.arcg.spanlst.hydro import fill
     from glass.cpu.arcg.spanlst.hydro import flow_accumulation

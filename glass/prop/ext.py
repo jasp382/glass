@@ -10,7 +10,7 @@ def get_ext(inFile, outEpsg=None):
     return None if inFile is not a GIS File
     """
     
-    from glass.prop import is_rst, is_shp
+    from glass.prop.df import is_rst, is_shp
     
     if is_rst(inFile):
         from glass.prop.rst import rst_ext

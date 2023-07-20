@@ -19,9 +19,9 @@ def euclidean_distance(shpRst, cellsize, outRst, template=None,
     
     arcpy.CheckOutExtension('Spatial')
     
-    from glass.g.prop import vector_formats, raster_formats
-    from gesri.rd.rst import rst_to_lyr
-    from gesri.rd.shp import shp_to_lyr
+    from glass.prop.df import vector_formats, raster_formats
+    from gesri.rd.rst  import rst_to_lyr
+    from gesri.rd.shp  import shp_to_lyr
 
     fp = fprop(outRst, ['fn', 'ff'])
     fn, ff = fp['filename'], fp['fileformat']

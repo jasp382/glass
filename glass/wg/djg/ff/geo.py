@@ -14,8 +14,8 @@ def save_geodata(request, field_tag, folder):
     """
     
     import os
-    from glass.webg.djg.ff import save_file
-    from glass.prop import vector_formats, raster_formats
+    from glass.wg.djg.ff import save_file
+    from glass.prop.df   import vector_formats, raster_formats
     
     files = request.FILES.getlist(field_tag)
     

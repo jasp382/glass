@@ -125,7 +125,7 @@ def rstcalc(expression, output, api='saga', grids=None):
         )
 
         # Export
-        grs_to_rst(or_name, output, as_cmd=None, is_int=None)
+        grs_to_rst(or_name, output, as_cmd=None, rtype=float)
     
     else:
         raise ValueError(f"{api} is not available!")

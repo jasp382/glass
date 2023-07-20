@@ -1,8 +1,6 @@
 def osm_vs_imd(osmxlsx, osmxml, imd, outfishnet, outshp):  
     
     #Create a fishnet use raster file
-    #from dgt.smp.__init__ import nfishnet_fm_rst
-    #fishnet = nfishnet_fm_rst(imd, 500, 500, outfishnet)
     while imd:
         
         osm_ref_tags = {
@@ -37,22 +35,13 @@ def osm_vs_imd(osmxlsx, osmxml, imd, outfishnet, outshp):
         epsg = 3763    
     
         import os
-        import pandas as pd
-        import numpy as np
-        import glob
 
-        from dgt.it.osm import osm_to_psql
-        from dgt.it.shp import dbtbl_to_shp
-        from dgt.wenv.grs import run_grass
-        from dgt.dp.torst import shp_to_rst
-        from dgt.rd.shp import shp_to_obj
-        from dgt.wt.shp import df_to_shp
+        from glass.it.osm import osm_to_psql
 
-        from dgt.prop.sql import cols_name
-        from dgt.rd import tbl_to_obj
-        from dgt.sql.q import exec_write_q
-        from dgt.sql.db import create_db
-        from dgt.pys.oss import mkdir, fprop
+        from glass.prop.sql import cols_name
+        from glass.rd import tbl_to_obj
+        from glass.sql.db import create_db
+        from glass.pys.oss import mkdir
 
         # Prepare workspace
         ws = mkdir(os.path.join(

@@ -10,7 +10,7 @@ def pnts_to_boundary(pntShp, outBound, distMeters):
     
     from osgeo          import ogr
     from glass.pys.oss  import fprop
-    from glass.prop     import drv_name
+    from glass.prop.df  import drv_name
     from glass.gobj     import new_pnt
     from glass.prop.prj import get_shp_sref
     
@@ -72,8 +72,8 @@ def polyline_to_points(inShp, outShp, attr=None, epsg=None):
     """
     
     import os
-    from osgeo           import ogr
-    from glass.prop import drv_name
+    from osgeo         import ogr
+    from glass.prop.df import drv_name
     from glass.lyr.fld import copy_flds
     
     # Open Input
@@ -171,10 +171,11 @@ def polylines_from_points(points, polylines, POLYLINE_COLUMN,
     by reading order.
     """
     
-    import os; from osgeo import ogr
-    from glass.prop  import drv_name
+    import os
+    from osgeo import ogr
+    from glass.prop.df  import drv_name
     from glass.prop.col import ogr_list_fields_defn
-    from glass.lyr.fld   import fields_to_lyr
+    from glass.lyr.fld  import fields_to_lyr
     
     # TODO: check if geometry is correct
     
@@ -257,7 +258,7 @@ def feat_to_pnt(inShp, outPnt, epsg=None):
     """
     
     import os; from osgeo  import ogr
-    from glass.prop   import drv_name
+    from glass.prop.df   import drv_name
     from glass.lyr.fld   import copy_flds
     from glass.prop.feat import lst_fld
     
@@ -509,7 +510,7 @@ def lnh_to_polygons(inShp, outShp, api='saga', db=None):
         from glass.sql.db     import create_db
         from glass.it.db      import shp_to_psql
         from glass.it.shp     import dbtbl_to_shp
-        from glass.dtr.cg.sql import lnh_to_polg
+        from glass.dtt.cg.sql import lnh_to_polg
         from glass.prop.prj   import get_shp_epsg
         from glass.sql.q      import exec_write_q
         

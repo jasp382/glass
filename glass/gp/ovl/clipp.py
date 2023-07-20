@@ -84,8 +84,8 @@ def clip(inFeat, clipFeat, outFeat, api_gis="grass", clip_by_region=None):
         grs_to_shp(rslt, outFeat, 'area')
     
     elif api_gis == 'ogr2ogr':
-        from glass.pys  import execmd
-        from glass.prop import drv_name
+        from glass.pys     import execmd
+        from glass.prop.df import drv_name
 
         rcmd = execmd((
             f"ogr2ogr -f \"{drv_name(outFeat)}\" {outFeat} {inFeat} "

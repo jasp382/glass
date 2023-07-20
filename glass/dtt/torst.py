@@ -46,14 +46,13 @@ def grsshp_to_grsrst(inshp, src, outrst, cmd=None):
     
     else:
         from glass.pys import execmd
+
+        ac_val = "" if __USE == "cat" else f" attribute_column={src}" \
+            if __USE == "attr" else f" val={src}"
             
         rcmd = execmd((
-            "v.to.rast input={} output={} use={}{} "
-            "--overwrite --quiet"
-        ).format(
-            inshp, outrst, __USE,
-            "" if __USE == "cat" else f" attribute_column={src}" \
-                if __USE == "attr" else f" val={src}"
+            f"v.to.rast input={inshp} output={outrst} "
+            f"use={__USE}{ac_val} --overwrite --quiet"
         ))
 
     return outrst
@@ -73,8 +72,8 @@ def shp_to_rst(shp, inSource, cellsize, nodata, outRaster, epsg=None,
     """
     
     if api == 'gdal':
-        from osgeo      import gdal, ogr
-        from glass.prop import drv_name
+        from osgeo         import gdal, ogr
+        from glass.prop.df import drv_name
     
         if not epsg:
             from glass.prop.prj import get_shp_sref
@@ -142,7 +141,7 @@ def shp_to_rst(shp, inSource, cellsize, nodata, outRaster, epsg=None,
         """
         
         import os
-        from glass.pys.oss    import fprop
+        from glass.pys.oss  import fprop
         from glass.wenv.grs import run_grass
         from glass.prop.prj import get_epsg
 
@@ -169,13 +168,13 @@ def shp_to_rst(shp, inSource, cellsize, nodata, outRaster, epsg=None,
         shp_to_region(gshp, cellsize)
 
         # Convert
-        grst = grsshp_to_grsrst(gshp, inSource, gshp+'__rst', api="grass")
+        grst = grsshp_to_grsrst(gshp, inSource, f"{gshp}__rst", api="grass")
 
         # Export
         grs_to_rst(grst, outRaster, as_cmd=True)
     
     else:
-        raise ValueError('API {} is not available'.format(api))
+        raise ValueError(f'API {api} is not available')
     
     return outRaster
 

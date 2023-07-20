@@ -15,8 +15,8 @@ def feat_count(shp, gisApi='pandas', work=None, loc=None):
     """
     
     if gisApi == 'ogr':
-        from osgeo        import ogr
-        from glass.prop import drv_name
+        from osgeo         import ogr
+        from glass.prop.df import drv_name
     
         data = ogr.GetDriverByName(drv_name(shp)).Open(shp, 0)
         lyr = data.GetLayer()
@@ -100,7 +100,7 @@ def get_gtype(shp, name=True, py_cls=None, geomCol="geometry",
     
     elif gisApi == 'ogr':
         from osgeo      import ogr
-        from glass.prop import drv_name
+        from glass.prop.df import drv_name
         
         geom_types = {
             "POINT"           : ogr.wkbPoint,
@@ -149,8 +149,8 @@ def get_ext(shp):
     gisApi = 'ogr'
     
     if gisApi == 'ogr':
-        from osgeo        import ogr
-        from glass.prop import drv_name
+        from osgeo         import ogr
+        from glass.prop.df import drv_name
     
         dt = ogr.GetDriverByName(drv_name(shp)).Open(shp, 0)
         lyr = dt.GetLayer()
@@ -170,8 +170,8 @@ def lst_fld(shp):
     Return a list with every field name in a vectorial layer
     """
     
-    from osgeo      import ogr
-    from glass.prop import drv_name
+    from osgeo         import ogr
+    from glass.prop.df import drv_name
     
     if type(shp) == ogr.Layer:
         lyr = shp
@@ -208,8 +208,8 @@ def get_cntr_bnd(shp, isFile=None):
     feature).
     """
     
-    from osgeo           import ogr
-    from glass.prop import drv_name
+    from osgeo         import ogr
+    from glass.prop.df import drv_name
     
     if isFile:
         shp = ogr.GetDriverByName(
@@ -242,8 +242,8 @@ def area_to_dic(shp):
     }
     """
     
-    from osgeo           import ogr
-    from glass.prop import drv_name
+    from osgeo         import ogr
+    from glass.prop.df import drv_name
     
     o = ogr.GetDriverByName(drv_name(shp)).Open(shp, 0)
     l = o.GetLayer()

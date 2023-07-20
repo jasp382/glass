@@ -2,8 +2,8 @@
 Fields Properties
 """
 
-from osgeo           import ogr
-from glass.prop import drv_name
+from osgeo         import ogr
+from glass.prop.df import drv_name
 
 def map_fldCode_fldName(code=None, name=None):
     """
