@@ -2,16 +2,21 @@
 Image classification
 """
 
+import os
+import joblib
+import numpy as np
+
+from osgeo import gdal, gdal_array
+
+from glass.wt.rst import obj_to_rst
+
+
 def k_means(imgFiles, out, n_cls=8):
     """
     K-Means implementation
     """
     
-    import os
-    from osgeo        import gdal, gdal_array
-    import numpy      as np
-    from sklearn      import cluster
-    from glass.wt.rst import obj_to_rst
+    from sklearn import cluster
     
     gdal.UseExceptions()
     gdal.AllRegister()
@@ -99,19 +104,30 @@ def k_means(imgFiles, out, n_cls=8):
     )
 
 
-def train_to_mdl(train_rst, imgs, outmdl, ntrees=1000, fileformat='.tif'):
+def train_to_mdl(train_rst, imgs, outmdl, ntrees=1000, fileformat='.tif',
+                 method='RandomForest'):
     """
     Train a model for classification and save the model in a file
 
     Classifiers available:
     * Random Forest;
+    * NaiveBayes;
+    * LinearSupportVectorMachine;
+    * LogisticRegression.
     """
 
-    import joblib
-    import numpy as np
-    import os
-    from osgeo import gdal, gdal_array
-    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.ensemble     import RandomForestClassifier
+    from sklearn.naive_bayes  import MultinomialNB
+    from sklearn.svm          import LinearSVC
+    from sklearn.linear_model import LogisticRegression
+
+    mavailable = [
+        'RandomForest', 'LinearSupportVectorMachine',
+        'LogisticRegression', 'NaiveBayes'
+    ]
+
+    method = 'RandomForest' if method not in mavailable \
+        else method
 
     # Open Data
     img_ref = gdal.Open(train_rst, gdal.GA_ReadOnly)
@@ -142,9 +158,10 @@ def train_to_mdl(train_rst, imgs, outmdl, ntrees=1000, fileformat='.tif'):
         rst_shp = (r.RasterYSize, r.RasterXSize)
 
         if ref_shp != rst_shp:
-            raise ValueError(
-                'There are at least two raster files with different shape'
-            )
+            raise ValueError((
+                'There are at least two raster '
+                'files with different shape'
+            ))
 
     # Get NoData Value
     nd_val = img_ref.GetRasterBand(1).GetNoDataValue()
@@ -179,10 +196,23 @@ def train_to_mdl(train_rst, imgs, outmdl, ntrees=1000, fileformat='.tif'):
             f += 1
 
     # Fit model
-    m = RandomForestClassifier(
-        n_estimators=ntrees, random_state=0, n_jobs=-1
-    )
-
+    if method == 'RandomForest':
+        m = RandomForestClassifier(
+            n_estimators=ntrees, random_state=0, n_jobs=-1
+        )
+    
+    elif method == 'NaiveBayes':
+        m = MultinomialNB()
+    
+    elif method == 'LinearSupportVectorMachine':
+        m = LinearSVC()
+    
+    elif method == 'LogisticRegression':
+        m = LogisticRegression(
+            n_jobs=1, C=1e5, multi_class='auto',
+            solver='lbfgs'
+        )
+    
     m.fit(X, Y)
 
     # Save model
@@ -199,9 +229,6 @@ def random_train_to_mdl(train_rst, imgs, outmdl, sample_dim=500000, ntrees=1000)
     Works for random forest
     """
 
-    import joblib
-    import numpy as np
-    from osgeo import gdal, gdal_array
     from sklearn.ensemble import RandomForestClassifier
 
     # Open Data
@@ -302,11 +329,7 @@ def imgcls_from_mdl(mdl, imgvar, outrst, fileformat='.tif'):
     Classification from Model File
     """
 
-    import os
     from joblib import load
-    from osgeo import gdal, gdal_array
-    import numpy as np
-    from glass.wt.rst import obj_to_rst
 
     if type(imgvar) != list:
         # Check if it is a folder
