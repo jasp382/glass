@@ -5,6 +5,7 @@ Tools to manage Table Keys
 
 from glass.sql.c import sqlcon
 
+
 def create_pk(db, tbl, new_col):
     """
     Creates a new primary key field on a existent table
@@ -68,20 +69,22 @@ def multiCols_FK_to_singleCol(db, tbl_wPk, pkCol, tbl_multiFk,
     from glass.sql.q import q_to_ntbl
     
     colsSel = obj_to_lst(colsSel)
+
+    cols = f"{tbl_multiFk}.*" if not colsSel else \
+        ", ".join([f"{tbl_wPk}.{c}" for c in colsSel])
+    
+    whr="" if not whrCls else f" WHERE {whrCls}"
+
+    onrel = " AND ".join([(
+        f"{tbl_multiFk}.{fkCols[k]} = "
+        f"{tbl_wPk}.{k}"
+    ) for k in fkCols])
     
     q = (
-        "SELECT {tpk}.{pk}, {cls} FROM {tfk} "
-        "INNER JOIN {tpk} ON {tblRel}{whr}"
-    ).format(
-        tpk=tbl_wPk, pk=pkCol, tfk=tbl_multiFk,
-        cls="{}.*".format(tbl_multiFk) if not colsSel else \
-            ", ".join(["{}.{}".format(tbl_wPk, pkCol) for c in colsSel]),
-        tblRel=" AND ".join([
-            "{}.{} = {}.{}".format(
-                tbl_multiFk, fkCols[k], tbl_wPk, k
-            ) for k in fkCols
-        ]),
-        whr="" if not whrCls else f" WHERE {whrCls}"
+        f"SELECT {tbl_wPk}.{pkCol}, {cols} "
+        f"FROM {tbl_multiFk} "
+        f"INNER JOIN {tbl_wPk} "
+        f"ON {onrel}{whr}"
     )
     
     outbl = q_to_ntbl(db, newTable, q, api='psql')

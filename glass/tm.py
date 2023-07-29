@@ -11,10 +11,10 @@ def randomtime_to_shprows(in_shp, o_shp, start_date, end_date):
     start_data and end_data must be datetime objects.
     """
 
-    import datetime     as dt
-    import random       as rdn
-    from calendar       import monthrange
-    from glass.rd    import tbl_to_obj
+    import datetime   as dt
+    import random     as rdn
+    from calendar     import monthrange
+    from glass.rd     import tbl_to_obj
     from glass.wt.shp import df_to_shp
 
     # Shape to Pandas.Dataframe

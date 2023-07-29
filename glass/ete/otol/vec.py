@@ -583,4 +583,91 @@ def module_6(tags, osmdb, epsg, gpkg, layer):
         3 : ('feat_within_export', time_e - time_d)
     }
 
-        
+
+def priority_rule(gpkg, lyr, rst, col, osm_db):
+    """
+    Apply priority rule v1.5
+    """
+
+    import datetime as dt
+    import copy
+
+    from glass.cons.otol  import OTOL_GEOM, OTOL_LULC, classes_priority
+    from glass.gp.ovl.sql import st_erase_opt
+    from glass.gp.seg.sql import geomseg_to_newtbl
+    from glass.it.db      import gpkg_lyr_attr_to_psql
+    from glass.prop.prj   import get_epsg
+    from glass.prop.sql   import row_num
+    from glass.sql.q      import exec_write_q
+
+    # Get EPSG
+    epsg = get_epsg(rst)
+
+    # Get Classes Priority
+    order_cls = classes_priority(2)
+
+    # Import data into the database
+    table_cls = gpkg_lyr_attr_to_psql(gpkg, lyr, col, osm_db, 'tblcls')
+
+    # Create segments table if necessary
+    for cls in order_cls:
+        if not cls['bigbox']: continue
+
+        if cls['fid'] not in table_cls: continue
+    
+        table_cls[cls['fid']] = geomseg_to_newtbl(
+            osm_db, table_cls[cls['fid']],
+            'fid', 'geom', 'polygon', epsg,
+            f"{table_cls[cls['fid']]}_seg",
+            cols={'lulc' : 'integer', 'leg': 'text'},
+            subdivide_factor=10
+        )
+    
+    # Go for erasing
+    refname = copy.deepcopy(table_cls)
+
+    for e in range(len(order_cls)):
+        if e + 1 == len(order_cls): break
+
+        if order_cls[e]['fid'] not in table_cls: continue
+
+        for i in range(e+1, len(order_cls)):
+            if order_cls[i]['fid'] not in table_cls: continue
+
+            time_a = dt.datetime.now().replace(microsecond=0)
+
+            table_cls[order_cls[i]['fid']] = st_erase_opt(
+                osm_db,
+                table_cls[order_cls[i]['fid']], 'fid',
+                table_cls[order_cls[e]['fid']],
+                "geom", "geom",
+                otbl=f"{refname[order_cls[i]['fid']]}_{str(e)}"
+            )
+
+            time_b = dt.datetime.now().replace(microsecond=0)
+
+            print((
+                f'{table_cls[order_cls[i]["fid"]]} <-> '
+                f'{table_cls[order_cls[e]["fid"]]} || {time_b - time_a}'
+            ))
+            print('---------------------------------')
+
+            nrows = row_num(osm_db, table_cls[order_cls[i]['fid']], api='psql')
+
+            if not nrows:
+                del table_cls[order_cls[i]['fid']]
+                continue
+
+            # Create Geometry index for the new table
+            qs = [(
+                f"ALTER TABLE {table_cls[order_cls[i]['fid']]} ADD CONSTRAINT "
+                f"{table_cls[order_cls[i]['fid']]}_pk PRIMARY KEY (fid)"
+            ), (
+                f"CREATE INDEX {table_cls[order_cls[i]['fid']]}_geom_idx ON "
+                f"{table_cls[order_cls[i]['fid']]} "
+                f"USING gist ({OTOL_GEOM})"
+            )]
+
+            exec_write_q(osm_db, qs, api='psql')
+
+    return 1

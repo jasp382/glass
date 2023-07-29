@@ -2,6 +2,8 @@
 Overlay operations using SQL
 """
 
+from glass.sql.q import q_to_ntbl
+
 
 def feat_within(db, left_tbl, left_geom, within_tbl, within_geom, out=None,
     left_cols=None, within_cols=None, outTblIsFile=None,
@@ -16,7 +18,6 @@ def feat_within(db, left_tbl, left_geom, within_tbl, within_geom, out=None,
     """
     
     from glass.pys import obj_to_lst
-    from glass.sql.q import q_to_ntbl
 
     join = "INNER" if join != 'INNER' and join != 'LEFT' \
         and join != 'RIGHT' and join != 'OUTER' else join
@@ -124,8 +125,6 @@ def feat_not_within(db, inTbl, inGeom, withinTbl, withinGeom, outTbl,
             )
         
         else:
-            from glass.sql.q import q_to_ntbl
-            
             q_to_ntbl(db, outTbl, Q, api='psql')
     
     else:
@@ -144,8 +143,7 @@ def intersect_in_same_table(db_name, table, geomA, geomB, outtable,
     Intersect two Geometries in the same table
     """
     
-    from glass.pys   import obj_to_lst
-    from glass.sql.q import q_to_ntbl
+    from glass.pys import obj_to_lst
     
     cols = obj_to_lst(colsSel)
     csel = "*" if not cols else ", ".join(cols)
@@ -172,8 +170,6 @@ def line_intersection_pnt(db, inTbl, outTbl):
     Get Points where two line features of the same feature class
     intersects.
     """
-    
-    from glass.sql.q import q_to_ntbl
     
     # Get Points representing intersection
     Q_a = (
@@ -236,7 +232,6 @@ def del_topoerror_shps(db, shps, epsg, outfolder):
     import os
     from glass.pys      import obj_to_lst
     from glass.prop.sql import cols_name
-    from glass.sql.q    import q_to_ntbl
     from glass.it.db    import shp_to_psql
     from glass.it.shp   import dbtbl_to_shp
     
@@ -247,7 +242,7 @@ def del_topoerror_shps(db, shps, epsg, outfolder):
     NTABLE = [q_to_ntbl(
         db, "nt_{}".format(t),
         "SELECT {cols}, ST_MakeValid({tbl}.geom) AS geom FROM {tbl}".format(
-            cols = ", ".join(["{}.{}".format(TABLES[t], x) for x in cols_name(
+            cols = ", ".join([f"{TABLES[t]}.{x}" for x in cols_name(
                 db, TABLES[t], sanitizeSpecialWords=None
             ) if x != 'geom']),
             tbl=TABLES[t]
@@ -355,7 +350,6 @@ def check_autofc_overlap(checkShp, epsg, dbname, outOverlaps):
     
     import os
     from glass.sql.db import create_db
-    from glass.sql.q  import q_to_ntbl
     from glass.it.db  import shp_to_psql
     from glass.it.shp import dbtbl_to_shp
     
@@ -395,7 +389,6 @@ def st_erase(db, itbl, erase_tbl, igeom, erase_geom, otbl=None, method=1):
     """
     
     from glass.prop.sql import cols_name
-    from glass.sql.q    import q_to_ntbl
     
     cols = ", ".join([f"tbla.{x}" for x in cols_name(
         db, itbl, api='psql'
@@ -448,6 +441,45 @@ def st_erase(db, itbl, erase_tbl, igeom, erase_geom, otbl=None, method=1):
     if otbl:
         return q_to_ntbl(db, otbl, q, api='psql')
     
+    return q
+
+
+def st_erase_opt(db, itbl, ipk, erase_tbl, igeom, erase_geom, otbl=None):
+    """
+    Optimize ST_Difference with ST_Subdivide result
+    """
+
+    from glass.prop.sql import cols_name
+
+    cols = ", ".join([f"tbla.{x}" for x in cols_name(
+        db, itbl, api='psql'
+    ) if x != igeom and x != ipk])
+
+    q = (
+        f"SELECT fid, {cols}, "
+        f"(ST_Dump(ST_UnaryUnion(ST_Collect({igeom})))).geom AS {igeom} "
+        "FROM ("
+            f"SELECT tbla.{ipk}, {cols}, "
+            "CASE "
+	            f"WHEN tblb.{ipk} IS NOT NULL THEN "
+	            f"ST_Difference(tbla.{igeom}, tblb.{erase_geom}) "
+	            f"ELSE tbla.{igeom} " 
+            f"END AS {igeom} "
+            f"FROM {itbl} AS tbla "
+            "LEFT JOIN ("
+	            f"SELECT DISTINCT j.{ipk}, r.{erase_geom} "
+	            f"FROM {erase_tbl} AS r "
+	            f"INNER JOIN {itbl} AS j "
+	            f"ON ST_Intersects(r.{erase_geom}, j.{igeom})"
+            ") AS tblb "
+            f"ON tbla.{ipk} = tblb.{ipk}"
+        ") AS tbla "
+        f"GROUP BY tbla.{ipk}, {cols}"
+    )
+
+    if otbl:
+        return q_to_ntbl(db, otbl, q, api='psql')
+
     return q
 
 
