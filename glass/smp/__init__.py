@@ -188,7 +188,7 @@ def extract_random_features(inshp, nfeat, outshp, is_percentage=None):
     import numpy as np
     from glass.rd.shp   import shp_to_obj
     from glass.wt.shp   import obj_to_shp
-    from glass.prop.prj import get_shp_epsg
+    from glass.prop.prj import shp_epsg
 
     # Open data
     df = shp_to_obj(inshp)
@@ -206,7 +206,7 @@ def extract_random_features(inshp, nfeat, outshp, is_percentage=None):
     rnd_df.drop('idx', axis=1, inplace=True)
 
     # Save result
-    epsg = get_shp_epsg(inshp)
+    epsg = shp_epsg(inshp)
     return obj_to_shp(rnd_df, 'geometry', epsg, outshp)
 
 

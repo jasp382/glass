@@ -189,25 +189,34 @@ def shp_to_grs(ilyr, olyr=None, filterByReg=None, lyrname=None, asCMD=None):
     return olyr
 
 
-def grs_to_shp(ilyr, olyr, geomtype, lyrn=1, ascmd=True, asMultiPart=None):
+def grs_to_shp(ilyr, olyr, geomtype, lyrn=1,
+               ascmd=True, asMultiPart=None, lname=None):
     """
     GRASS Vector to Shape File
     """
     
-    from glass.prop.df import VectorialDrivers
+    from glass.prop.df import grs_shp_drv
     from glass.pys.oss import fprop
     
-    vecDriv = VectorialDrivers()
+    vecDriv = grs_shp_drv()
     outEXT  = fprop(olyr, 'ff')
+    geoff   = vecDriv[outEXT]
+
+    _update = True if geoff == 'GPKG' and \
+        os.path.exists(olyr) else None
     
     if not ascmd:
         from grass.pygrass.modules import Module
         
-        __flg = '' if not asMultiPart else 'm'
+        __flg = None if not asMultiPart and not _update else (
+            f'{"m" if asMultiPart else ""}'
+            f'{"u" if _update else ""}'
+        )
         
         m = Module(
             "v.out.ogr", input=ilyr, type=geomtype, output=olyr,
-            format=vecDriv[outEXT], flags=__flg, layer=lyrn,
+            format=geoff, flags=__flg, layer=lyrn,
+            output_layer=lname,
             overwrite=True, run_=False, quiet=True
         )
         
@@ -216,12 +225,15 @@ def grs_to_shp(ilyr, olyr, geomtype, lyrn=1, ascmd=True, asMultiPart=None):
     else:
         from glass.pys import execmd
         
-        mp = " -m" if asMultiPart else ""
-
+        mp    = " -m" if asMultiPart else ""
+        up    = " -u" if _update else ""
+        olyrn = '' if not lname else f"output_layer={lname}"
+ 
         rcmd = execmd((
             f"v.out.ogr input={ilyr} type={geomtype} "
-            f"output={olyr} format={vecDriv[outEXT]} "
-            f"layer={lyrn}{mp} --overwrite --quiet"  
+            f"output={olyr} format={geoff} "
+            f"layer={lyrn}{olyrn}{mp}{up} "
+            "--overwrite --quiet"  
         ))
     
     return olyr
@@ -352,7 +364,7 @@ def shps_to_gpkg(in_shps, gpkg, shp_ff='.shp', tbl_name=None):
         shps = in_shps
     
     elif os.path.isdir(in_shps):
-        from glass.pys .oss import lst_ff
+        from glass.pys.oss import lst_ff
 
         # List Feature Classes
         shps = lst_ff(in_shps, file_format='.shp' if not shp_ff else shp_ff)

@@ -19,7 +19,7 @@ from glass.pd.split   import df_split
 from glass.wt.js      import dict_to_json
 from glass.wt.shp     import df_to_shp
 from glass.dtt.mge.pd import merge_df
-from glass.prop.prj   import get_shp_epsg
+from glass.prop.prj   import shp_epsg
 from glass.it.pd      import df_to_geodf
 from glass.it.pd      import json_obj_to_geodf
 
@@ -181,7 +181,7 @@ def closest_facility(incidents, incidents_id, facilities, output,
     fgdf.drop([iauxid, 'rn'], axis=1, inplace=True)
 
     # Re-project to original SRS
-    epsg = crs if crs else get_shp_epsg(facilities) \
+    epsg = crs if crs else shp_epsg(facilities) \
         if type(facilities) != gp.GeoDataFrame else 4326
     
     fgdf = df_prj(fgdf, epsg)
@@ -207,7 +207,7 @@ def cf_based_on_relations(incidents, incidents_id, group_incidents_col,
     from glass.rd       import tbl_to_obj
     from glass.rd.shp   import shp_to_obj
     from glass.wt.shp   import obj_to_shp
-    from glass.prop.prj import get_shp_epsg
+    from glass.prop.prj import shp_epsg
     from glass.pys.oss  import mkdir, fprop
     from glass.dtt.mge  import shps_to_shp
 
@@ -225,7 +225,7 @@ def cf_based_on_relations(incidents, incidents_id, group_incidents_col,
     rel_df[group_fk] = rel_df[group_fk].astype(str)
 
     # Get SRS
-    epsg = get_shp_epsg(incidents)
+    epsg = shp_epsg(incidents)
 
     # Create dir for temporary files
     tmpdir = mkdir(os.path.join(
@@ -457,7 +457,7 @@ def cf_ign_distfac(incidents, incidents_id, facilities, output,
     fgdf.drop([iauxid, 'rn'], axis=1, inplace=True)
 
     # Re-project to original SRS
-    epsg = crs if crs else get_shp_epsg(facilities) \
+    epsg = crs if crs else shp_epsg(facilities) \
         if type(facilities) != gp.GeoDataFrame else 4326
     
     fgdf = df_prj(fgdf, epsg)

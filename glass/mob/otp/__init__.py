@@ -10,7 +10,7 @@ def otp_closest_facility(incidents, facilities, hourday, date, output):
     
     import os
     from glass.rd.shp      import shp_to_obj
-    from glass.prop.prj    import get_shp_epsg
+    from glass.prop.prj    import shp_epsg
     from glass.wt.shp      import obj_to_shp
     from glass.pys.oss       import fprop
     from glass.prj.obj     import df_prj
@@ -21,7 +21,7 @@ def otp_closest_facility(incidents, facilities, hourday, date, output):
     facilities_df = df_prj(shp_to_obj(facilities), 4326)
 
     # Run closest facility
-    out_epsg = get_shp_epsg(incidents)
+    out_epsg = shp_epsg(incidents)
     res, logs = clsfacility(
         incidents_df, facilities_df, hourday, date,
         out_epsg=out_epsg
@@ -63,7 +63,7 @@ def otp_cf_based_on_rel(incidents, group_incidents_col,
     from glass.rd.shp      import shp_to_obj
     from glass.wt.shp      import obj_to_shp
     from glass.mob.otp.log import clsfacility
-    from glass.prop.prj    import get_shp_epsg
+    from glass.prop.prj    import shp_epsg
     from glass.dtt.mge.pd  import merge_df
     from glass.pys.oss     import fprop
     from glass.prj.obj     import df_prj
@@ -78,7 +78,7 @@ def otp_cf_based_on_rel(incidents, group_incidents_col,
 
     rel_df = tbl_to_obj(rel_inc_fac, sheet=sheet)
 
-    oepsg = get_shp_epsg(incidents)
+    oepsg = shp_epsg(incidents)
 
     # Relate facilities with incidents groups
     fdf = fdf.merge(
@@ -142,7 +142,7 @@ def otp_servarea(facilities, hourday, date, breaks, output, vel=None):
     from glass.cons.otp   import ISO_URL
     from glass.rd.shp     import shp_to_obj
     from glass.prj.obj    import df_prj
-    from glass.prop.prj   import get_shp_epsg
+    from glass.prop.prj   import shp_epsg
     from glass.wt.shp     import obj_to_shp
     from glass.pys.oss    import fprop
     from glass.it.pd      import json_obj_to_geodf
@@ -196,7 +196,7 @@ def otp_servarea(facilities, hourday, date, breaks, output, vel=None):
     # Merge all Isochrones
     df_res = merge_df(results)
 
-    out_epsg = get_shp_epsg(facilities)
+    out_epsg = shp_epsg(facilities)
 
     if out_epsg != 4326:
         df_res = df_prj(df_res, out_epsg)

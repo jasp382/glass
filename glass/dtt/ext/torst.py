@@ -90,9 +90,9 @@ def rstext_to_rst(inrst, outrst, cellsize=None, epsg=None, rstval=None):
 
     # GET EPSG
     if not epsg:
-        from glass.prop.prj import get_rst_epsg
+        from glass.prop.prj import rst_epsg
 
-        epsg = get_rst_epsg(inrst)
+        epsg = rst_epsg(inrst)
     
     # Create raster
     ext_to_rst(

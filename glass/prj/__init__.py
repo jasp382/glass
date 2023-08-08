@@ -95,7 +95,7 @@ def proj(inShp, outShp, outEPSG, inEPSG=None,
         from glass.lyr.fld   import copy_flds
         from glass.prop.feat import get_gtype
         from glass.prop.df   import drv_name
-        from glass.prop.prj  import get_sref_from_epsg, get_trans_param
+        from glass.prop.prj  import sref_from_epsg, trans_param
         from glass.pys.oss   import fprop
         
         def copyShp(out, outDefn, lyr_in, trans):
@@ -113,7 +113,7 @@ def proj(inShp, outShp, outEPSG, inEPSG=None,
         # ####### #
         # Project #
         # ####### #
-        transP = get_trans_param(inEPSG, outEPSG)
+        transP = trans_param(inEPSG, outEPSG)
         
         inData = ogr.GetDriverByName(
             drv_name(inShp)).Open(inShp, 0)
@@ -123,7 +123,7 @@ def proj(inShp, outShp, outEPSG, inEPSG=None,
             drv_name(outShp)).CreateDataSource(outShp)
         
         outlyr = out.CreateLayer(
-            fprop(outShp, 'fn'), get_sref_from_epsg(outEPSG),
+            fprop(outShp, 'fn'), sref_from_epsg(outEPSG),
             geom_type=get_gtype(
                 inShp, name=None, py_cls=True, gisApi='ogr'
             )
@@ -145,8 +145,8 @@ def proj(inShp, outShp, outEPSG, inEPSG=None,
         """
 
         if not inEPSG:
-            from glass.prop.prj import get_shp_epsg
-            inEPSG = get_shp_epsg(inShp)
+            from glass.prop.prj import shp_epsg
+            inEPSG = shp_epsg(inShp)
         
         if not inEPSG:
             raise ValueError('To use ogr2ogr, you must specify inEPSG')

@@ -107,7 +107,7 @@ def add_and_update(table, new_flds, val_to_write):
         raise ValueError("values2write must be a dict")
     
     add_table(table, ", ".join([
-        '{} {}'.format(f, new_flds[f]) for f in new_flds
+        f'{f} {new_flds[f]}' for f in new_flds
     ]))
     
     for fld in val_to_write:

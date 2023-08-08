@@ -18,7 +18,7 @@ def service_areas(facilities, breaks, output, impedance='TravelTime'):
     from glass.cons.esri import get_tv_by_impedancetype
     from glass.pd.split import df_split
     from glass.dtt.mge.pd import merge_df
-    from glass.prop.prj import get_shp_epsg
+    from glass.prop.prj import shp_epsg
 
     # Get Token
     token = rest_token()
@@ -68,7 +68,7 @@ def service_areas(facilities, breaks, output, impedance='TravelTime'):
     # Compute final result
     fgdf = merge_df(gdfs)
 
-    epsg = get_shp_epsg(facilities)
+    epsg = shp_epsg(facilities)
     fgdf = df_prj(fgdf, epsg)
 
     df_to_shp(fgdf, output)

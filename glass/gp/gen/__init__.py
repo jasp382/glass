@@ -13,7 +13,8 @@ def df_dissolve(df, field):
 
 
 def dissolve(inShp, outShp, fld,
-             statistics=None, api='ogr', inputIsLines=None):
+             statistics=None, api='ogr',
+             ilyrname=None, olyrname=None):
     """
     Dissolve Geometries
     
@@ -24,6 +25,8 @@ def dissolve(inShp, outShp, fld,
     * pygrass;
     * grass;
     """
+
+    from glass.pys import obj_to_lst
     
     if api == 'qgis':
         import processing
@@ -37,19 +40,21 @@ def dissolve(inShp, outShp, fld,
         This algorithm doesn't allow self intersections
         """
         
-        from glass.pys  import execmd
+        from glass.pys import execmd
+        from glass.prop.feat import get_gtype
+
+        gt = get_gtype(inShp, gisApi='pandas')
+
+        ilines = True if gt == 'LineString' or gt == 'MultiLineString' \
+            else None
         
-        if not inputIsLines:
-            cmd = (
-                f'saga_cmd shapes_polygons 5 -POLYGONS {inShp} -FIELDS {fld} '
-                f'-DISSOLVED {outShp}'
-            )
-        
-        else:
-            cmd = (
-                f'saga_cmd shapes_lines 5 -LINES {inShp} -FIELD_1 '
-                f'{fld} -DISSOLVED {outShp} -ALL 0'
-            )
+        cmd = (
+            f'saga_cmd shapes_polygons 5 -POLYGONS {inShp} -FIELDS {fld} '
+            f'-DISSOLVED {outShp}'
+        ) if not ilines else (
+            f'saga_cmd shapes_lines 5 -LINES {inShp} -FIELD_1 '
+            f'{fld} -DISSOLVED {outShp} -ALL 0'
+        )
         
         outcmd = execmd(cmd)
     
@@ -64,14 +69,26 @@ def dissolve(inShp, outShp, fld,
         TODO: DISSOLVE WITHOUT FIELD
         """
         
+        import os
+        from glass.prop.df import drv_name
         from glass.pys     import execmd
         from glass.pys.oss import fprop
 
-        tname = fprop(inShp, 'fn')
+        idrv, odrv = drv_name(inShp), drv_name(outShp)
+
+        tname = ilyrname if ilyrname and idrv == 'GPKG' \
+            else fprop(inShp, 'fn')
+        
+        up = "-update -append " if odrv == 'GPKG' and os.path.exists(outShp) \
+            else ""
+        
+        nln = f' -nln {olyrname}' if olyrname and idrv == 'GPKG' else ""
 
         stat = '' if not statistics else ', ' + ','.join([
             f'{statistics[fld]}({fld}) AS {fld}' for fld in statistics
         ])
+
+        fld = ", ".join(obj_to_lst(fld))
 
         q = (
             f'SELECT {fld}{stat}, ST_Union(geometry) '
@@ -80,8 +97,8 @@ def dissolve(inShp, outShp, fld,
         )
         
         cmd = (
-            f'ogr2ogr {outShp} {inShp} -dialect '
-            f'sqlite -sql "{q};"'
+            f'ogr2ogr -f "{odrv}" {up}{outShp}{nln} {inShp} '
+            f'-dialect sqlite -sql "{q};"'
         )
         
         # Execute command

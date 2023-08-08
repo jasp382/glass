@@ -103,11 +103,11 @@ def buffer_ext(inShp, meterTolerance, outShp, inEpsg=None):
     from glass.rd.shp            import shp_to_obj
     from glass.wt.shp            import df_to_shp
     from glass.gp.prox.bfing.obj import df_buffer_extent
-    from glass.prop.prj          import get_shp_epsg
+    from glass.prop.prj          import shp_epsg
     
     inDf = shp_to_obj(inShp)
 
-    epsg = get_shp_epsg(inShp) if not inEpsg else inEpsg
+    epsg = shp_epsg(inShp) if not inEpsg else inEpsg
     
     result = df_buffer_extent(inDf, epsg, meterTolerance)
     
@@ -139,11 +139,11 @@ def dic_buffer_array_to_shp(arrayBf, outShp, epsg, fields=None):
     import os
     from osgeo                   import ogr
     from glass.prop.df           import drv_name
-    from glass.prop.prj          import get_sref_from_epsg
+    from glass.prop.prj          import sref_from_epsg
     from glass.gp.prox.bfing.obj import xy_to_buffer
     
     # Get SRS for output
-    srs = get_sref_from_epsg(epsg)
+    srs = sref_from_epsg(epsg)
     
     # Create output DataSource and Layer
     outData = ogr.GetDriverByName(

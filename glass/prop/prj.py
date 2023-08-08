@@ -2,9 +2,11 @@
 Spatial Reference Systems Properties
 """
 
-from osgeo import osr
+import os
+from osgeo import gdal, osr, ogr
 
-def get_trans_param(in_epsg, out_epsg, export_all=None):
+
+def trans_param(in_epsg, out_epsg, export_all=None):
     """
     Return transformation parameters for two Spatial Reference Systems
     """
@@ -27,19 +29,18 @@ def epsg_to_wkt(epsg):
     return s.ExportToWkt()
 
 
-def get_sref_from_epsg(epsg):
+def sref_from_epsg(epsg):
     s = osr.SpatialReference()
     s.ImportFromEPSG(epsg)
     
     return s
 
 
-def get_shp_sref(shp):
+def shp_sref(shp, lyrn=None):
     """
     Get Spatial Reference Object from Feature Class/Lyr
     """
     
-    from osgeo         import ogr
     from glass.prop.df import drv_name
     
     if type(shp) == ogr.Layer:
@@ -51,7 +52,9 @@ def get_shp_sref(shp):
         data = ogr.GetDriverByName(
             drv_name(shp)).Open(shp)
         
-        lyr = data.GetLayer()
+        lyr = data.GetLayer() if not lyrn \
+            else data.GetLayer(lyrn)
+        
         c = 1
     
     spref = lyr.GetSpatialRef()
@@ -63,7 +66,7 @@ def get_shp_sref(shp):
     return spref
 
 
-def get_gml_epsg(gmlFile):
+def gml_epsg(gmlFile):
     """
     Get EPSG of GML File
     """
@@ -94,7 +97,7 @@ def get_gml_epsg(gmlFile):
     return epsgValue
 
 
-def get_shp_epsg(shp, returnIsProj=None):
+def shp_epsg(shp, returnIsProj=None, lyrname=None):
     """
     Return EPSG code of the Spatial Reference System of a Feature Class
     """
@@ -102,14 +105,14 @@ def get_shp_epsg(shp, returnIsProj=None):
     from glass.pys.oss import fprop
     
     if fprop(shp, 'ff') != '.gml':
-        proj = get_shp_sref(shp)
+        proj = shp_ref(shp, lyrn=lyrname)
     else:
-        epsg = get_gml_epsg(shp)
+        epsg = gml_epsg(shp)
         
         if not epsg:
             raise ValueError(f'{shp} file has not Spatial Reference assigned!')
         
-        proj = get_sref_from_epsg(int(epsg))
+        proj = sref_from_epsg(int(epsg))
     
     if not proj:
         raise ValueError(f'{shp} file has not Spatial Reference assigned!')
@@ -135,13 +138,11 @@ def get_shp_epsg(shp, returnIsProj=None):
 Raster Spatial Reference Systems
 """
 
-def get_rst_epsg(rst, returnIsProj=None):
+def rst_epsg(rst, returnIsProj=None):
     """
     Return the EPSG Code of the Spatial Reference System of a Raster
     """
     
-    import os
-    from osgeo import gdal
     from glass.prop.img import rst_epsg
     
     if not os.path.exists(rst):
@@ -176,10 +177,10 @@ def get_epsg(inFile, is_proj=None):
     irst, ishp = is_rst(inFile), is_shp(inFile)
     
     if irst and not ishp:
-        return get_rst_epsg(inFile, returnIsProj=is_proj)
+        return rst_epsg(inFile, returnIsProj=is_proj)
     
     elif not irst and ishp:
-        return get_shp_epsg(inFile, returnIsProj=is_proj)
+        return shp_epsg(inFile, returnIsProj=is_proj)
     
     else:
         return None
@@ -192,5 +193,5 @@ def get_srs(in_file):
 
     epsg = get_epsg(in_file)
 
-    return None if not epsg else get_sref_from_epsg(epsg)
+    return None if not epsg else sref_from_epsg(epsg)
 

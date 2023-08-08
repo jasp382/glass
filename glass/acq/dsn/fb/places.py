@@ -24,10 +24,10 @@ def places_by_query(bfShp, epsgIn, keyword=None, epsgOut=4326,
     """
     
     import pandas
-    from geopandas                 import GeoDataFrame
-    from shapely.geometry          import Polygon, Point
-    from glass.prop.feat.bf import getBufferParam
-    from glass.acq.dsn.fb.search    import by_query
+    from geopandas               import GeoDataFrame
+    from shapely.geometry        import Polygon, Point
+    from glass.prop.feat.bf      import getBufferParam
+    from glass.acq.dsn.fb.search import by_query
     
     search_type = 'place'
     
@@ -84,7 +84,7 @@ def places_by_query(bfShp, epsgIn, keyword=None, epsgOut=4326,
     gdata = GeoDataFrame(data, crs='EPSG:4326', geometry=geoms)
     
     if onlySearchAreaContained:
-        from shapely.wkt               import loads
+        from shapely.wkt             import loads
         from glass.prj.obj           import prj_ogrgeom
         from glass.gp.prox.bfing.obj import xy_to_buffer
         

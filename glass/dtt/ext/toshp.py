@@ -10,7 +10,7 @@ def coords_to_boundshp(topLeft, lowerRight, epsg, outshp,
     
     from osgeo          import ogr
     from glass.prop.df  import drv_name
-    from glass.prop.prj import get_sref_from_epsg
+    from glass.prop.prj import sref_from_epsg
     from glass.pys.oss  import fprop
     from glass.pys      import obj_to_lst
     from glass.gp.cnv   import coords_to_boundary
@@ -38,8 +38,8 @@ def coords_to_boundshp(topLeft, lowerRight, epsg, outshp,
     shp = ogr.GetDriverByName(
         drv_name(outshp)).CreateDataSource(outshp)
     
-    SRS_OBJ = get_sref_from_epsg(epsg) if not outEpsg else \
-        get_sref_from_epsg(outEpsg)
+    SRS_OBJ = sref_from_epsg(epsg) if not outEpsg else \
+        sref_from_epsg(outEpsg)
     
     lyr = shp.CreateLayer(fprop(
         outshp, 'fn'), SRS_OBJ, geom_type=ogr.wkbPolygon
@@ -103,9 +103,9 @@ def shpext_to_boundary(in_shp, out_srs=None):
     polygon = create_polygon(boundary_points)
 
     if out_srs:
-        from glass.prop.prj import get_shp_epsg
+        from glass.prop.prj import shp_epsg
 
-        in_srs = get_shp_epsg(in_shp)
+        in_srs = shp_epsg(in_shp)
 
         if in_srs != out_srs:
             from glass.prj.obj import prj_ogrgeom
@@ -135,14 +135,14 @@ def shpext_to_boundshp(inShp, outShp, epsg=None):
     
     # Get SRS for the output
     if not epsg:
-        from glass.prop.prj import get_shp_sref
+        from glass.prop.prj import shp_ref
         
-        srs = get_shp_sref(inShp)
+        srs = shp_ref(inShp)
     
     else:
-        from glass.prop.prj import get_sref_from_epsg
+        from glass.prop.prj import sref_from_epsg
         
-        srs= get_sref_from_epsg(epsg)
+        srs= sref_from_epsg(epsg)
     
     # Write new file
     shp = ogr.GetDriverByName(
@@ -173,14 +173,14 @@ def rstext_to_shp(inRst, outShp, epsg=None):
     """
     
     from glass.prop.rst import rst_ext
-    from glass.prop.prj import get_rst_epsg
+    from glass.prop.prj import rst_epsg
     
     # Get Raster Extent
     left, right, bottom, top = rst_ext(inRst)
     
     # Get EPSG
     if not epsg:
-        epsg = get_rst_epsg(inRst)
+        epsg = rst_epsg(inRst)
     
     # Create Boundary
     return coords_to_boundshp((left, top), (right, bottom), epsg, outShp)
@@ -195,12 +195,12 @@ def featext_to_shp(shp, oshp, epsg=None):
     from geopandas import GeoDataFrame as gdf
     from glass.rd.shp import shp_to_obj
     from glass.wt.shp import df_to_shp
-    from glass.prop.prj import get_shp_epsg
+    from glass.prop.prj import shp_epsg
     from glass.prop.ext import featext_to_dfcols
 
     idf = shp_to_obj(shp)
 
-    epsg = get_shp_epsg(shp) if not epsg else epsg
+    epsg = shp_epsg(shp) if not epsg else epsg
 
     idf = featext_to_dfcols(idf, "geometry")
 

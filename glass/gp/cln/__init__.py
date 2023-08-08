@@ -7,8 +7,8 @@ def remove_deadend(inShp, outShp, db=None):
     Remove deadend
     """
     
-    from glass.pys.oss      import fprop
-    from glass.sql.db    import create_db
+    from glass.pys.oss    import fprop
+    from glass.sql.db     import create_db
     from glass.it.db      import shp_to_psql
     from glass.gp.cln.sql import rm_deadend
     from glass.it.shp     import dbtbl_to_shp
@@ -33,7 +33,7 @@ def remove_deadend(inShp, outShp, db=None):
     
     # Export result
     return dbtbl_to_shp(
-        db, out_tbl, "geom", outShp, inDB='psql', tableIsQuery=None,
-        api="pgsql2shp"
+        db, out_tbl, "geom", outShp, inDB='psql',
+        tableIsQuery=None, api="pgsql2shp"
     )
 

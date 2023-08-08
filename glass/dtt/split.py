@@ -66,12 +66,12 @@ def eachfeat_to_newshp(inShp, outFolder, epsg=None, idCol=None, idIsName=None):
     
     # Get SRS for the output
     if not epsg:
-        from glass.prop.prj import get_shp_sref
-        srs = get_shp_sref(lyr)
+        from glass.prop.prj import shp_ref
+        srs = shp_ref(lyr)
     
     else:
-        from glass.prop.prj import get_sref_from_epsg
-        srs = get_sref_from_epsg(epsg)
+        from glass.prop.prj import sref_from_epsg
+        srs = sref_from_epsg(epsg)
     
     # Get fields name
     fields = lst_fld(lyr)

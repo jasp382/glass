@@ -139,12 +139,12 @@ def bnds_to_mosaic(bands, outdata, ref_raster, loc=None):
     """
     
     import os
-    from glass.pys.oss    import fprop
-    from glass.prop.prj import get_rst_epsg
+    from glass.pys.oss  import fprop
+    from glass.prop.prj import rst_epsg
     from glass.wenv.grs import run_grass
 
     # Get EPSG from refRaster
-    epsg = get_rst_epsg(ref_raster, returnIsProj=None)
+    epsg = rst_epsg(ref_raster, returnIsProj=None)
     
     LOC = loc if loc else 'gr_loc'
     grass_base = run_grass(

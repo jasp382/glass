@@ -31,11 +31,11 @@ def osm_extraction(boundary, osmdata: str, output: str,
 
         if isrst:
             # Get Raster EPSG and Extent
-            from glass.prop.prj import get_rst_epsg
+            from glass.prop.prj import rst_epsg
             from glass.prop.rst import rst_ext
             from glass.gobj     import create_polygon
 
-            in_epsg = get_rst_epsg(boundary)
+            in_epsg = rst_epsg(boundary)
             left, right, bottom, top = rst_ext(boundary)
             boundaries = [create_polygon([
                 (left, top), (right, top), (right, bottom),
@@ -45,9 +45,9 @@ def osm_extraction(boundary, osmdata: str, output: str,
     
         else:
             # Get Shape EPSG
-            from glass.prop.prj import get_shp_epsg
+            from glass.prop.prj import shp_epsg
 
-            in_epsg = get_shp_epsg(boundary)
+            in_epsg = shp_epsg(boundary)
 
             if not each_feat:
                 # Get Shape Extent
@@ -202,11 +202,11 @@ def osmextract_foreachfeat(osmfile, clipshp, featid, outfolder, bname='osmpart',
     """
 
     from glass.rd.shp   import shp_to_obj
-    from glass.prop.prj import get_shp_epsg
+    from glass.prop.prj import shp_epsg
 
     off = 'xml' if outff != 'xml' and outff != 'pbf' else outff
 
-    epsg = get_shp_epsg(clipshp)
+    epsg = shp_epsg(clipshp)
 
     df = shp_to_obj(clipshp)
 

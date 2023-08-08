@@ -365,18 +365,19 @@ def thrd_viewshed_v2(dbname, dem, pnt_obs, obs_id):
     import numpy           as np
     from osgeo             import gdal
     import multiprocessing as mp
-    from glass.rd.shp    import shp_to_obj
-    from glass.pys.oss     import cpu_cores, mkdir
+
+    from glass.rd.shp   import shp_to_obj
+    from glass.pys.oss  import cpu_cores, mkdir
     from glass.pd.split import df_split
-    from glass.wenv.grs  import run_grass
-    from glass.prop.prj  import get_shp_epsg
-    from glass.wt.sql    import df_to_db
-    from glass.pys.oss     import del_file
+    from glass.wenv.grs import run_grass
+    from glass.prop.prj import shp_epsg
+    from glass.wt.sql   import df_to_db
+    from glass.pys.oss  import del_file
     from glass.sql.db   import create_db
-    from glass.pys.num     import get_minmax_fm_seq_values
+    from glass.pys.num  import get_minmax_fm_seq_values
     
     # Get Work EPSG
-    epsg = get_shp_epsg(pnt_obs)
+    epsg = shp_epsg(pnt_obs)
     
     # Points to DataFrame
     obs_df = shp_to_obj(pnt_obs)
@@ -388,7 +389,7 @@ def thrd_viewshed_v2(dbname, dem, pnt_obs, obs_id):
     def run_viewshed_by_cpu(tid, db, obs, dem, srs,
         vis_basename='vis', maxdst=None, obselevation=None):
         # Create Database
-        new_db = create_db("{}_{}".format(db, str(tid)), api='psql')
+        new_db = create_db(f"{db}_{str(tid)}", api='psql')
         
         # Points to Database
         pnt_tbl = df_to_db(
@@ -397,19 +398,19 @@ def thrd_viewshed_v2(dbname, dem, pnt_obs, obs_id):
 
         # Create GRASS GIS Session
         workspace = mkdir(os.path.join(
-            os.path.dirname(dem), 'work_{}'.format(str(tid))
+            os.path.dirname(dem),
+            f'work_{str(tid)}'
         ))
         loc_name = 'vis_loc'
         gbase = run_grass(workspace, location=loc_name, srs=dem)
 
         # Start GRASS GIS Session
-        import grass.script as grass
         import grass.script.setup as gsetup
         gsetup.init(gbase, workspace, loc_name, 'PERMANENT')
 
         from glass.it.rst   import rst_to_grs, grs_to_rst
         from glass.rst.surf import grs_viewshed
-        from glass.deldt    import del_rst
+        from glass.wenv.grs import del_rst
 
         # Send DEM to GRASS GIS
         grs_dem = rst_to_grs(dem, 'grs_dem', as_cmd=True)
@@ -496,7 +497,7 @@ def thrd_viewshed_v2(dbname, dem, pnt_obs, obs_id):
             frst = None
 
     thrds = [mp.Process(
-        target=run_viewshed_by_cpu, name='th-{}'.format(str(i+1)),
+        target=run_viewshed_by_cpu, name=f'th-{str(i+1)}',
         args=(i+1, dbname, dfs[i], dem, epsg,
             'vistoburn', 10000, 500)
     ) for i in range(len(dfs))]

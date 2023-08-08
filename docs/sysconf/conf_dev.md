@@ -12,10 +12,6 @@ git clone https://github.com/jasp382/glass ~/glass
 
 ## Install dependencies
 
-* [Ubuntu 18.04](dep/ub18.md);
-
-* [Ubuntu 20.04](dep/ub20.md);
-
 * [Ubuntu 22.04](dep/ub22.md);
 
 * [MacOS](dep/macos.md);

@@ -16,9 +16,9 @@ def exp_by_group_relfeat(shp, group_col, relfeat, relfeat_id,
     from glass.wt      import obj_to_tbl
     from glass.rd.shp   import shp_to_obj
     from glass.wt.shp   import obj_to_shp
-    from glass.prop.prj import get_shp_epsg
+    from glass.prop.prj import shp_epsg
 
-    epsg = get_shp_epsg(shp)
+    epsg = shp_epsg(shp)
 
     # Open data
     shp_df = shp_to_obj(shp)

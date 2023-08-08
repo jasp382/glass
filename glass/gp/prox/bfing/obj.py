@@ -104,7 +104,7 @@ def ogr_buffer(geom, radius, out_file, srs=None):
     from osgeo                   import ogr
     from glass.prj               import def_prj
     from glass.prop.df           import drv_name
-    from glass.prop.prj          import get_sref_from_epsg
+    from glass.prop.prj          import sref_from_epsg
     from glass.gp.prox.bfing.obj import draw_buffer
     
     # Create output
@@ -113,7 +113,7 @@ def ogr_buffer(geom, radius, out_file, srs=None):
     
     buffer_lyr = buffer_shp.CreateLayer(
         os.path.splitext(os.path.basename(out_file))[0],
-        get_sref_from_epsg(srs) if srs else None,
+        sref_from_epsg(srs) if srs else None,
         geom_type=ogr.wkbPolygon
     )
     

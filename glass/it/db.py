@@ -275,7 +275,7 @@ def shp_to_psql(dbname, shpData, pgTable=None, api="pandas",
     """
     
     from glass.pys.oss  import fprop
-    from glass.prop.prj import get_shp_epsg
+    from glass.prop.prj import shp_epsg
     
     # If defined, srsEpsgCode must be a integer value
     if srs and type(srs) != int:
@@ -309,7 +309,7 @@ def shp_to_psql(dbname, shpData, pgTable=None, api="pandas",
         shapes = obj_to_lst(shpData)
     
     epsgs = [
-        get_shp_epsg(i) if not srs else srs for i in shapes
+        shp_epsg(i) if not srs else srs for i in shapes
     ]
     
     if None in epsgs:

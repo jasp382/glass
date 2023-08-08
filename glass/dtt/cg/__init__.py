@@ -12,9 +12,9 @@ def pnts_to_boundary(pntShp, outBound, distMeters):
     from glass.pys.oss  import fprop
     from glass.prop.df  import drv_name
     from glass.gobj     import new_pnt
-    from glass.prop.prj import get_shp_sref
+    from glass.prop.prj import shp_ref
     
-    SRS = get_shp_sref(pntShp)
+    SRS = shp_ref(pntShp)
     
     shp = ogr.GetDriverByName(drv_name(pntShp)).Open(pntShp)
     lyr = shp.GetLayer()
@@ -83,12 +83,12 @@ def polyline_to_points(inShp, outShp, attr=None, epsg=None):
     
     # Get SRS for the output
     if not epsg:
-        from glass.prop.prj import get_shp_sref
-        srs = get_shp_sref(polyLyr)
+        from glass.prop.prj import shp_ref
+        srs = shp_ref(polyLyr)
     
     else:
-        from glass.prop.prj import get_sref_from_epsg
-        srs = get_sref_from_epsg(epsg)
+        from glass.prop.prj import sref_from_epsg
+        srs = sref_from_epsg(epsg)
     
     # Create Output
     pntData = ogr.GetDriverByName(
@@ -208,12 +208,12 @@ def polylines_from_points(points, polylines, POLYLINE_COLUMN,
         drv_name(polylines)).CreateDataSource(polylines)
     
     if not epsg:
-        from glass.prop.prj import get_shp_sref
-        srs = get_shp_sref(points)
+        from glass.prop.prj import shp_ref
+        srs = shp_ref(points)
     
     else:
-        from glass.prop.prj import get_sref_from_epsg
-        srs = get_sref_from_epsg(epsg)
+        from glass.prop.prj import sref_from_epsg
+        srs = sref_from_epsg(epsg)
     
     lineLyr = lineSrc.CreateLayer(
         os.path.splitext(os.path.basename(polylines))[0],
@@ -257,7 +257,8 @@ def feat_to_pnt(inShp, outPnt, epsg=None):
     Get Centroid from each line in a PolyLine Feature Class
     """
     
-    import os; from osgeo  import ogr
+    import os
+    from osgeo  import ogr
     from glass.prop.df   import drv_name
     from glass.lyr.fld   import copy_flds
     from glass.prop.feat import lst_fld
@@ -272,12 +273,12 @@ def feat_to_pnt(inShp, outPnt, epsg=None):
     
     # Get SRS for the output
     if not epsg:
-        from glass.prop.prj import get_shp_sref
-        srs = get_shp_sref(polyLyr)
+        from glass.prop.prj import shp_ref
+        srs = shp_ref(polyLyr)
     
     else:
-        from glass.prop.prj import get_sref_from_epsg
-        srs = get_sref_from_epsg(epsg)
+        from glass.prop.prj import sref_from_epsg
+        srs = sref_from_epsg(epsg)
     
     # Create output
     pntData = ogr.GetDriverByName(
@@ -511,7 +512,7 @@ def lnh_to_polygons(inShp, outShp, api='saga', db=None):
         from glass.it.db      import shp_to_psql
         from glass.it.shp     import dbtbl_to_shp
         from glass.dtt.cg.sql import lnh_to_polg
-        from glass.prop.prj   import get_shp_epsg
+        from glass.prop.prj   import shp_epsg
         from glass.sql.q      import exec_write_q
         
         # Create DB
@@ -543,7 +544,7 @@ def lnh_to_polygons(inShp, outShp, api='saga', db=None):
         # Export Result
         outshp = dbtbl_to_shp(
             db, result, "geom", outShp, api='psql',
-            epsg=get_shp_epsg(inShp))
+            epsg=shp_epsg(inShp))
     
     else:
         raise ValueError(f"API {api} is not available")

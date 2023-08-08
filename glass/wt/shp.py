@@ -20,10 +20,10 @@ def df_to_shp(indf, outShp, layername=None):
     return outShp
 
 
-def obj_to_shp(dd, geomkey, srs, outshp):
+def obj_to_shp(dd, geomkey, srs, outshp, lyrname=None):
     from glass.it.pd import df_to_geodf as obj_to_geodf
     
     geodf = obj_to_geodf(dd, geomkey, srs)
     
-    return df_to_shp(geodf, outshp)
+    return df_to_shp(geodf, outshp, layername=lyrname)
 

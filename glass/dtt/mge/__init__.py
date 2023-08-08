@@ -147,11 +147,11 @@ def shps_to_shp(shps, outShp, api="ogr2ogr", fformat='.shp',
     elif api == 'grass':
         from glass.wenv.grs import run_grass
         from glass.pys.oss  import fprop, lst_ff
-        from glass.prop.prj import get_shp_epsg
+        from glass.prop.prj import shp_epsg
 
         lshps = lst_ff(shps, file_format='.shp')
         
-        epsg = get_shp_epsg(lshps[0])
+        epsg = shp_epsg(lshps[0])
 
         gwork = os.path.dirname(outShp)
         outshpname = fprop(outShp, "fn")

@@ -14,7 +14,7 @@ def df_to_db(db, df, table, append=None, api='psql',
     """
     
     if api != 'psql' and api != 'sqlite':
-        raise ValueError('API {} is not available'.format(api))
+        raise ValueError(f'API {api} is not available')
     
     from glass.sql.c import alchemy_engine
     

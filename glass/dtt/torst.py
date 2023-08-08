@@ -76,9 +76,9 @@ def shp_to_rst(shp, inSource, cellsize, nodata, outRaster, epsg=None,
         from glass.prop.df import drv_name
     
         if not epsg:
-            from glass.prop.prj import get_shp_sref
+            from glass.prop.prj import shp_ref
 
-            srs = get_shp_sref(shp).ExportToWkt()
+            srs = shp_ref(shp).ExportToWkt()
         else:
             from glass.prop.prj import epsg_to_wkt
             srs = epsg_to_wkt(epsg)

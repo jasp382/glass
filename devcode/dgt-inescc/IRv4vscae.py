@@ -33,13 +33,12 @@ import math
 import pandas as pd
 import numpy as np
 
-from dgt.rd.shp import shp_to_obj
-from dgt.wt.shp import df_to_shp
+from glass.rd.shp import shp_to_obj
+from glass.wt.shp import df_to_shp
 
-from dgt.wenv.grs import run_grass
-
-from dgt.prop.prj import get_shp_epsg
-from dgt.pys.oss import fprop
+from glass.wenv.grs import run_grass
+from glass.pys.oss import fprop
+from glass.prop.prj import shp_epsg
 
 # INPUT
 #dados IRv4 - datasets (facilities, installtions, sites) were buffered, dissolved and merged into a single file, buffer of 25m
@@ -66,7 +65,7 @@ IRv4_no_cae='/media/mooi/tcr_1tb/pcloud/DGT_INESCC-hrl/codigo_alvaro/results/AE_
 refshp= '/media/mooi/tcr_1tb/pcloud/DGT_INESCC-hrl/codigo_alvaro/dados/lim_adminis/PT/Lim_PT.shp'
 workingfolder= '/media/mooi/tcr_1tb/pcloud/DGT_INESCC-hrl/codigo_alvaro/results/'
 
-epsg = get_shp_epsg(refshp)
+epsg = shp_epsg(refshp)
 
 loc = 'pext'
 
@@ -76,20 +75,16 @@ gb = run_grass(
     srs=epsg
 )
 import grass.script.setup as gsetup
-from grass.pygrass.modules import Module  # import grass modules
 
 # __flag = 'o' if not lmtExt else 'or'
 
 gsetup.init(gb, workingfolder, loc, 'PERMANENT')
 
-
-
-
 # GRASS GIS Modules
 
-from dgt.it.shp import shp_to_grs, grs_to_shp
-from dgt.it.shp import overlay_grs, add_column_grs, distance_grs
-from dgt.gp.gen import dissolve
+from glass.it.shp import shp_to_grs, grs_to_shp
+from glass.it.shp import overlay_grs, add_column_grs, distance_grs
+from glass.gp.gen import dissolve
 
 
 # Import data
@@ -196,7 +191,10 @@ no_cae=no_cae.reset_index()
 
 no_cae['id_n_cae'] = no_cae.index + 1
 
-resultado_2=no_cae[['id_n_cae', 'id_obj','id_IRv4','geometry', 'fonte', 'classuos', 'areaha', 'dist_cae']]
+resultado_2=no_cae[[
+    'id_n_cae', 'id_obj','id_IRv4','geometry',
+    'fonte', 'classuos', 'areaha', 'dist_cae'
+]]
 
 #export to shapefille
 df_to_shp(resultado_2, IRv4_no_cae)

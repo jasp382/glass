@@ -15,13 +15,13 @@ def shply_break_lines_on_points(lineShp, pointShp, lineIdInPntShp, splitedShp):
     
     from shapely.ops      import split
     from shapely.geometry import Point, LineString
-    from glass.rd.shp   import shp_to_obj
-    from glass.pd.dagg import col_list_val_to_row
-    from glass.prop.prj import get_shp_epsg
-    from glass.wt.shp   import df_to_shp
-    from glass.pd      import dict_to_df
+    from glass.rd.shp     import shp_to_obj
+    from glass.pd.dagg    import col_list_val_to_row
+    from glass.prop.prj   import shp_epsg
+    from glass.wt.shp     import df_to_shp
+    from glass.pd         import dict_to_df
     
-    srs_code = get_shp_epsg(lineShp)
+    srs_code = shp_epsg(lineShp)
     
     # Sanitize line geometry
     def fix_line(line, point):
@@ -103,7 +103,7 @@ def vedit_break(inShp, pntBreakShp,
         
         pnt = VectorTopo(pntBreakShp)
         pnt.open(mode='r')
-        lstPnt = ["{},{}".format(str(p.x), str(p.y)) for p in pnt]
+        lstPnt = [f"{str(p.x)},{str(p.y)}" for p in pnt]
     
     # Run v.edit
     m = Module(
@@ -127,18 +127,17 @@ def v_break_at_points(workspace, loc, lineShp, pntShp, db, srs, out_correct,
     """
     
     import os
-    from glass.it.db   import shp_to_psql
+    from glass.it.db    import shp_to_psql
     from glass.it.shp   import dbtbl_to_shp
     from glass.wenv.grs import run_grass
-    from glass.pys.oss    import fprop
-    from glass.sql.db  import create_db
-    from glass.sql.q   import q_to_ntbl
+    from glass.pys.oss  import fprop
+    from glass.sql.db   import create_db
+    from glass.sql.q    import q_to_ntbl
     
     tmpFiles = os.path.join(workspace, loc)
     
     gbase = run_grass(workspace, location=loc, srs=srs)
-    
-    import grass.script       as grass
+
     import grass.script.setup as gsetup
     
     gsetup.init(gbase, workspace, loc, 'PERMANENT')
@@ -157,39 +156,37 @@ def v_break_at_points(workspace, loc, lineShp, pntShp, db, srs, out_correct,
     # Sanitize output of v.edit.break using PostGIS
     create_db(db, overwrite=True, api='psql')
     
-    LINES_TABLE = shp_to_psql(
+    lt = shp_to_psql(
         db, LINES, srsEpsgCode=srs,
         pgTable=fprop(LINES, 'fn', forceLower=True), api="shp2pgsql"
     )
     
     # Delete old/original lines and stay only with the breaked one
     Q = (
-        "SELECT {t}.*, foo.cat_count FROM {t} INNER JOIN ("
+        f"SELECT {lt}.*, foo.cat_count FROM {lt} INNER JOIN ("
             "SELECT cat, COUNT(cat) AS cat_count, "
             "MAX(ST_Length(geom)) AS max_len "
-            "FROM {t} GROUP BY cat"
-        ") AS foo ON {t}.cat = foo.cat "
+            f"FROM {lt} GROUP BY cat"
+        f") AS foo ON {lt}.cat = foo.cat "
         "WHERE foo.cat_count = 1 OR foo.cat_count = 2 OR ("
-            "foo.cat_count = 3 AND ST_Length({t}.geom) <= foo.max_len)"
-    ).format(t=LINES_TABLE)
-    
-    CORR_LINES = q_to_ntbl(
-        db, "{}_corrected".format(LINES_TABLE), Q, api='psql'
+            f"foo.cat_count = 3 AND ST_Length({lt}.geom) <= foo.max_len)"
     )
+    
+    CORR_LINES = q_to_ntbl(db, f"{lt}_corrected", Q, api='psql')
     
     # TODO: Delete Rows that have exactly the same geometry
     
     # Highlight problems that the user must solve case by case
     Q = (
-        "SELECT {t}.*, foo.cat_count FROM {t} INNER JOIN ("
-            "SELECT cat, COUNT(cat) AS cat_count FROM {t} GROUP BY cat"
-        ") AS foo ON {t}.cat = foo.cat "
-        "WHERE foo.cat_count > 3"
-    ).format(t=LINES_TABLE)
-    
-    ERROR_LINES = q_to_ntbl(
-        db, "{}_not_corr".format(LINES_TABLE), Q, api='psql'
+        f"SELECT {lt}.*, foo.cat_count FROM {lt} INNER JOIN ("
+            f"SELECT cat, COUNT(cat) AS cat_count "
+            f"FROM {lt} "
+            "GROUP BY cat"
+        f") AS foo ON {lt}.cat = foo.cat "
+        f"WHERE foo.cat_count > 3"
     )
+    
+    ERROR_LINES = q_to_ntbl(db, f"{lt}_not_corr", Q, api='psql')
     
     dbtbl_to_shp(
         db, CORR_LINES, "geom", out_correct,
@@ -217,8 +214,8 @@ def break_lines_on_points(lineShp, pntShp, outShp, lnhidonpnt,
             lineShp, pntShp, lnhidonpnt, outShp)
     
     elif api == 'psql':
-        from glass.pys.oss      import fprop
-        from glass.sql.db    import create_db
+        from glass.pys.oss    import fprop
+        from glass.sql.db     import create_db
         from glass.it.db      import shp_to_psql
         from glass.it.shp     import dbtbl_to_shp
         from glass.gp.brk.sql import split_lines_on_pnt

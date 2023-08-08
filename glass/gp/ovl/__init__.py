@@ -478,7 +478,7 @@ def count_pntinpol(inpnt, inpoly, cntcol, out):
     from glass.gp.ovl.obj import count_pnt_inside_poly
     from glass.rd.shp     import shp_to_obj
     from glass.wt.shp     import obj_to_shp
-    from glass.prop.prj   import get_shp_epsg
+    from glass.prop.prj   import shp_epsg
 
     # Open data
     pnt_df = shp_to_obj(inpnt)
@@ -488,7 +488,7 @@ def count_pntinpol(inpnt, inpoly, cntcol, out):
     pol_df = count_pnt_inside_poly(pnt_df, cntcol, pol_df)
 
     # Export to file
-    obj_to_shp(pol_df, "geometry", get_shp_epsg(inpoly), out)
+    obj_to_shp(pol_df, "geometry", shp_epsg(inpoly), out)
 
     return out
 

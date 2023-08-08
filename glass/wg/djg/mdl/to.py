@@ -12,7 +12,7 @@ def shp_to_djg_mdl(in_shp, app, mdl, cols_map, djg_proj):
     from glass.pys                     import __import
     from glass.webg.djg                import get_djgprj
     from glass.rd.shp                  import shp_to_obj
-    from glass.prop.prj                import get_shp_epsg
+    from glass.prop.prj                import shp_epsg
     from shapely.geometry.multipolygon import MultiPolygon
 
     def force_multi(geom):
@@ -31,7 +31,7 @@ def shp_to_djg_mdl(in_shp, app, mdl, cols_map, djg_proj):
     if 'FID' in cols_map.values():
         in_df["FID"] = in_df.index.astype(int)
     
-    epsg = int(get_shp_epsg(in_shp))
+    epsg = int(shp_epsg(in_shp))
     if not epsg:
         raise ValueError('Is not possible to recognize EPSG code of in_shp')
         

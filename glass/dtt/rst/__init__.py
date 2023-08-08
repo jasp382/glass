@@ -12,7 +12,7 @@ def comp_bnds(rsts, outRst):
     from glass.prop.img import get_nd
     from glass.rd.rsrc  import imgsrc_to_num
     from glass.prop.df  import drv_name
-    from glass.prop.prj import get_rst_epsg, epsg_to_wkt
+    from glass.prop.prj import rst_epsg, epsg_to_wkt
 
     srcs = [gdal.Open(r) for r in rsts]
     
@@ -35,7 +35,7 @@ def comp_bnds(rsts, outRst):
     
     dataType = gdal_array.NumericTypeCodeToGDALTypeCode(_as[0].dtype)
     rows, cols = _as[0].shape
-    epsg = get_rst_epsg(rsts[0])
+    epsg = rst_epsg(rsts[0])
     
     # Create Output
     drv = gdal.GetDriverByName(drv_name(outRst))

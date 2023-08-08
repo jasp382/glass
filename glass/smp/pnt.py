@@ -109,24 +109,30 @@ def get_random_point(minX, maxX, minY, maxY):
     return pnt
 
 
-def grs_random_points(inShp, nPoints, outShp, cmd=None):
+def grs_random_points(inShp, nPoints, outShp, npoints_in_all_poly=None, cmd=None):
     """
     Generate Random Points Feature Class
     """
     
     if not cmd:
         from grass.pygrass.modules import Module
+
+        fl = 'a' if npoints_in_all_poly else ''
         
         aleatorio = Module(
             "v.random", output=outShp, npoints=nPoints,
-            restrict=inShp, overwrite=True, run_=False
+            restrict=inShp, flags=fl,
+            overwrite=True, run_=False
         )
         aleatorio()
     
     else:
+        fl = '-a ' if npoints_in_all_poly else ''
+
         ocmd = execmd((
             f"v.random output={outShp} npoints={str(nPoints)} "
-            f"restrict={inShp} --overwrite --quiet"
+            f"restrict={inShp} {fl}"
+            "--overwrite --quiet"
         ))
         
     return outShp

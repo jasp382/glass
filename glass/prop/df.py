@@ -91,7 +91,7 @@ def drv_name(_file):
 GRASS GIS Drivers
 """
 
-def VectorialDrivers():
+def grs_shp_drv():
     return {
         '.shp' : 'ESRI_Shapefile',
         '.gml' : 'GML'

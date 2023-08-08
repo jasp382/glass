@@ -241,7 +241,7 @@ def points_by_polutation(pnt, mapunits, popcol, outcol, output,
     """
     
     from glass.rd.shp     import shp_to_obj
-    from glass.prop.prj   import get_shp_epsg
+    from glass.prop.prj   import shp_epsg
     from glass.wt.shp     import obj_to_shp
     from glass.gp.ovl.obj import count_pnt_inside_poly
 
@@ -260,7 +260,7 @@ def points_by_polutation(pnt, mapunits, popcol, outcol, output,
     if not count_pnt:
         units_df.drop([cpnt], axis=1, inplace=True)
     
-    obj_to_shp(units_df, "geometry", get_shp_epsg(mapunits), output)
+    obj_to_shp(units_df, "geometry", shp_epsg(mapunits), output)
 
     return output
 

@@ -15,11 +15,11 @@ def prj_ogrgeom(geom, in_epsg, out_epsg, api='ogr'):
     
 
     if api == 'ogr':
-        from glass.prop.prj import get_trans_param
+        from glass.prop.prj import trans_param
 
         newg = ogr.CreateGeometryFromWkt(geom.ExportToWkt())
 
-        newg.Transform(get_trans_param(in_epsg, out_epsg))
+        newg.Transform(trans_param(in_epsg, out_epsg))
     
     elif api == 'shapely' or api == 'shply':
         import pyproj

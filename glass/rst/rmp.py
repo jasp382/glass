@@ -17,7 +17,7 @@ def match_cellsize_and_clip(rstBands, refRaster, outFolder,
     
     import os
     from glass.prop.df  import is_rst
-    from glass.prop.prj import get_rst_epsg
+    from glass.prop.prj import rst_epsg
     from glass.wenv.grs import run_grass
     from glass.pys.oss  import fprop, mkdir
     from glass.pys.tm   import now_as_str
@@ -27,7 +27,7 @@ def match_cellsize_and_clip(rstBands, refRaster, outFolder,
         mkdir(outFolder, overwrite=None)
     
     # Get EPSG from refRaster
-    epsg = get_rst_epsg(refRaster, returnIsProj=None)
+    epsg = rst_epsg(refRaster, returnIsProj=None)
     
     """
     Start GRASS GIS Session
