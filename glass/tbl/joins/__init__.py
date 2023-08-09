@@ -64,9 +64,9 @@ def join_attr_by_distance(mainTable, joinTable, workGrass, epsg_code,
     
     # Export data from GRASS GIS
     ogrMain = grs_to_shp(grsMain, os.path.join(
-        workGrass, 'join_loc', grsMain + '_grs.shp'), None, asMultiPart=True
+        workGrass, 'join_loc', f'{grsMain}_grs.shp'), None, asMultiPart=True
     ); ogrJoin = grs_to_shp(grsJoin, os.path.join(
-        workGrass, 'join_loc', grsJoin + '_grs.shp'), None, asMultiPart=True)
+        workGrass, 'join_loc', f'{grsJoin}_grs.shp'), None, asMultiPart=True)
     
     dfMain = shp_to_obj(ogrMain)
     dfJoin = shp_to_obj(ogrJoin)

@@ -25,13 +25,14 @@ def pnt_dfwxy_to_geodf(df, colX, colY, epsg):
     return gdata
 
 
-def df_to_geodf(df, colGeom, epsg):
+def df_to_geodf(df, colGeom, epsg, cols=None):
     """
     Regular Pandas Dataframe To GeoDataframe
     """
     
-    return GeoDataFrame(df, crs=f'EPSG:{epsg}',
-        geometry=colGeom
+    return GeoDataFrame(
+        df, columns=cols,
+        crs=f'EPSG:{epsg}', geometry=colGeom
     )
 
 

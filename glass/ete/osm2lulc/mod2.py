@@ -304,7 +304,8 @@ def num_roads(osmdata, nom, lineTbl, polyTbl, folder, cellsize, srs, rstTemplate
     from glass.rd.rst            import rst_to_array
     from glass.tbl.filter        import sel_by_attr
     from glass.gp.prox.bfing.sql import splite_buffer
-    from glass.dtt.torst          import shp_to_rst
+    from glass.dtt.torst         import shp_to_rst
+    from glass.prop.rst          import rst_geoprop
     from glass.wt.rst            import obj_to_rst
     from glass.prop.sql          import row_num
     
@@ -390,10 +391,13 @@ def num_roads(osmdata, nom, lineTbl, polyTbl, folder, cellsize, srs, rstTemplate
     BUILD_ARRAY = rst_to_array(BUILDINGS[0], with_nodata=True)
     rst_array = rst_to_array(bfShps[0], with_nodata=True)
     np.place(rst_array, BUILD_ARRAY==1, 0)
+
+    left, cellx, top, celly = rst_geoprop(rstTemplate)
+    gtrans = (left, cellx, 0, top, 0, celly)
         
     newRaster = obj_to_rst(
         rst_array, os.path.join(folder, 'fin_roads.tif'),
-        rstTemplate, noData=-1
+        gtrans, srs, noData=-1
     )
     
     time_z = dt.datetime.now().replace(microsecond=0)

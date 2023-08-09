@@ -13,7 +13,7 @@ def get_djgprj(path_to_proj):
     # This is so Django knows where to find stuff.
     os.environ.setdefault(
         "DJANGO_SETTINGS_MODULE",
-        "{}.settings".format(os.path.basename(path_to_proj))
+        f"{os.path.basename(path_to_proj)}.settings"
     )
     
     sys.path.append(path_to_proj)

@@ -2,6 +2,9 @@
 Get Raster properties
 """
 
+from osgeo import gdal, gdal_array
+
+
 def compress_option(drv):
     """
     Return compress option for some gdal driver
@@ -20,13 +23,23 @@ def rst_dtype(rst):
     return numpy class
     """
 
-    from osgeo import gdal, gdal_array
-
     img = gdal.Open(rst, gdal.GA_ReadOnly)
 
     bnd = img.GetRasterBand(1).DataType
 
     return gdal_array.GDALTypeCodeToNumericTypeCode(bnd)
+
+
+def rst_geoprop(rst):
+    """
+    Return Geometric properties of a raster file
+    """
+
+    img = gdal.Open(rst)
+
+    left, cellx, z, top, c, celly = img.GetGeoTransform()
+
+    return left, cellx, top, celly
 
 
 def rst_ext(rst):
@@ -35,8 +48,6 @@ def rst_ext(rst):
     
     array order = Xmin (left), XMax (right), YMin (bottom), YMax (top)
     """
-    
-    from osgeo import gdal
         
     img = gdal.Open(rst)
         
@@ -75,7 +86,21 @@ def rst_shape(rst):
     return shapes if len(rst) > 1 else shapes[rst[0]]
 
 
-def get_cellsize(rst, xy=False, bnd=None, gisApi='gdal'):
+def get_cellsize(rst):
+    """
+    Return a array with the cell size of one raster layer
+
+    array order = cellsizex , cellsizey
+    """
+
+    img = gdal.Open(rst)
+
+    left, cellx, z, top, c, celly = img.GetGeoTransform()
+
+    return [cellx, celly]
+
+
+def rst_cellsize(rst, xy=False, bnd=None, gisApi='gdal'):
     """
     Return cellsize of one or more Raster Datasets
     
@@ -96,7 +121,6 @@ def get_cellsize(rst, xy=False, bnd=None, gisApi='gdal'):
     import os
     
     if gisApi == 'gdal':
-        from osgeo            import gdal
         from glass.prop.img import get_cell_size
 
         if type(rst) != list:
@@ -183,8 +207,8 @@ def count_cells(raster, countNodata=None):
     Return number of cells in a Raster Dataset
     """
     
-    from glass.rd.rst import rst_to_array
-    from glass.pys.num  import count_where
+    from glass.rd.rst  import rst_to_array
+    from glass.pys.num import count_where
     
     a = rst_to_array(raster)
     
@@ -212,14 +236,13 @@ def get_nodata(r):
     
     if gisApi == 'gdal':
         from glass.prop.img import get_nd
-        from osgeo import gdal
         
         img = gdal.Open(r)
         
         ndVal = get_nd(img)
     
     else:
-        raise ValueError('The api {} is not available'.format(gisApi))
+        raise ValueError(f'The api {gisApi} is not available')
     
     return ndVal
 
@@ -253,8 +276,6 @@ def rst_stats(rst, bnd=None):
     * Mean - Mean value
     * StdDev - Standard Deviation
     """
-
-    from osgeo import gdal
         
     r = gdal.Open(rst)
         
@@ -275,7 +296,6 @@ def frequencies(r, excludeNoData=True):
     """
     
     import numpy as np
-    from osgeo            import gdal
     from glass.prop.img import get_nd
     
     if type(r).__name__ == 'str':
@@ -314,10 +334,8 @@ def get_percentage_value(rst, value, includeNodata=None):
     Return the % of cells with a certain value
     """
     
-    import numpy
-    from osgeo                 import gdal
-    from glass.pys.num         import count_where
-    from glass.rd.rst    import rst_to_array
+    from glass.pys.num  import count_where
+    from glass.rd.rst   import rst_to_array
     from glass.prop.rst import get_nodata
     
     array = rst_to_array(rst)
@@ -344,9 +362,8 @@ def percentage_nodata(rst):
     Return the % of cells with nodata value
     """
     
-    import numpy
-    from glass.pys.num     import count_where
-    from glass.rd.rst    import rst_to_array
+    from glass.pys.num  import count_where
+    from glass.rd.rst   import rst_to_array
     from glass.prop.rst import get_nodata
     
     array = rst_to_array(rst)
@@ -372,7 +389,7 @@ def adjust_ext_to_snap(outExt, snapRst):
     """
     
     from glass.prop.df  import is_shp, is_rst
-    from glass.prop.rst import rst_ext, get_cellsize
+    from glass.prop.rst import rst_ext
     from glass.gobj     import new_pnt, create_polygon
     
     # Check if outExt is a raster or not
@@ -512,10 +529,12 @@ def raster_report(rst, rel, _units=None, ascmd=None):
     
     else:
         from glass.pys import obj_to_lst, execmd
+
+        units = f" units={','.join(obj_to_lst(_units))}" if _units else ""
         
-        rcmd = execmd("r.report map={} output={}{} -h".format(
-            rst, rel,
-            " units={}".format(",".join(obj_to_lst(_units))) if _units else ""
+        rcmd = execmd((
+            f"r.report map={rst} output={rel}"
+            f"{units} -h"
         ))
     
     return rel
@@ -556,7 +575,7 @@ def sanitize_report(report):
 
 def san_report_combine(report):
     from glass.rd     import tbl_to_obj
-    from glass.pd.fld import splitcol_to_newcols
+    from glass.pd.cols import splitcol_to_newcols
     
     repdata = tbl_to_obj(report, _delimiter="z")
     
@@ -592,7 +611,7 @@ def get_rst_report_data(rst, UNITS=None):
     
     REPORT_PATH = raster_report(rst, os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
-        "{}.txt".format(random_str(6))
+        f"{random_str(6)}.txt"
     ), _units=UNITS)
     
     report_data = sanitize_report(REPORT_PATH)

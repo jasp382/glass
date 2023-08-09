@@ -48,11 +48,11 @@ def osm2lulc(osmdata, nomenclature, refRaster, lulcRst,
     # ************************************************************************ #
     from glass.rd.rst                import rst_to_array
     from glass.prop.df               import is_rst
-    from glass.prop.rst              import get_cellsize
+    from glass.prop.rst              import rst_cellsize, rst_geoprop
     from glass.pys.oss               import mkdir, copy_file
     from glass.pys.oss               import fprop
     if roadsAPI == 'POSTGIS':
-        from glass.sql.db            import create_db
+        from glass.sql.db            import create_pgdb
         from glass.it.db             import osm_to_psql
         from glass.ete.osm2lulc.mod2 import pg_num_roads
         from glass.sql.bkup          import dump_db
@@ -102,7 +102,9 @@ def osm2lulc(osmdata, nomenclature, refRaster, lulcRst,
     
     # Get Ref Raster and EPSG
     refRaster, epsg = get_ref_raster(refRaster, workspace, cellsize=2)
-    CELLSIZE = get_cellsize(refRaster, gisApi='gdal')
+    left, cellx, top, celly = rst_geoprop(refRaster)
+    gtrans = (left, cellx, 0, top, 0, celly)
+    CELLSIZE = rst_cellsize(refRaster)
         
     from glass.ete.osm2lulc import osmTableData, PRIORITIES
     
@@ -111,7 +113,7 @@ def osm2lulc(osmdata, nomenclature, refRaster, lulcRst,
     # Convert OSM file to SQLITE DB or to POSTGIS DB #
     # ************************************************************************ #
     if roadsAPI == 'POSTGIS':
-        osm_db = create_db(fprop(
+        osm_db = create_pgdb(fprop(
             osmdata, 'fn', forceLower=True), overwrite=True)
         osm_db = osm_to_psql(osmdata, osm_db)
     
@@ -341,10 +343,11 @@ def osm2lulc(osmdata, nomenclature, refRaster, lulcRst,
         )
     
     np.place(resultSum, resultSum==0, 1)
-    obj_to_rst(resultSum, lulcRst, refRaster, noData=1)
+    obj_to_rst(resultSum, lulcRst, gtrans, epsg, noData=1)
     
-    osmlulc_rsttbl(nomenclature + "_NUMPY", os.path.join(
-        os.path.dirname(lulcRst), os.path.basename(lulcRst) + '.vat.dbf'
+    osmlulc_rsttbl(f"{nomenclature}_NUMPY", os.path.join(
+        os.path.dirname(lulcRst),
+        os.path.basename(lulcRst) + '.vat.dbf'
     ))
     
     time_q = dt.datetime.now().replace(microsecond=0)

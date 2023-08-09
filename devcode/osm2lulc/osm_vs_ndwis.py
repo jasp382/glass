@@ -4,18 +4,9 @@ def osm_vs_ndwis(shp, imds):
     import numpy as np
     import glob
 
-    from dgt.it.osm import osm_to_psql
-    from dgt.it.shp import dbtbl_to_shp
-    from dgt.wenv.grs import run_grass
-    from dgt.dtt.torst import shp_to_rst
-    from dgt.rd.shp import shp_to_obj
-    from dgt.wt.shp import df_to_shp
-
-    from dgt.prop.sql import cols_name
-    from dgt.rd import tbl_to_obj
-    from dgt.sql.q import exec_write_q
-    from dgt.sql.db import create_db
-    from dgt.pys.oss import mkdir, fprop
+    
+    from glass.wenv.grs import run_grass
+    from glass.pys.oss import mkdir, fprop
     
     # Prepare workspace
     ws = mkdir(os.path.join(
@@ -54,13 +45,10 @@ def osm_vs_ndwis(shp, imds):
         gsetup.init(gb, ws, loc, 'PERMANENT')
 
         # GRASS GIS Modules
-        from dgt.it.shp import shp_to_grs, grs_to_shp
-        from dgt.it.rst import rst_to_grs
-        from dgt.gp.gen import dissolve
-        from dgt.gp.ovl import grsintersection
-        from dgt.smp import sample_to_points
+        from glass.it.shp import shp_to_grs, grs_to_shp
+        from glass.it.rst import rst_to_grs
         from grass.pygrass.modules import Module
-        from dgt.it.rst import grs_to_rst
+        from glass.it.rst import grs_to_rst
         
         # Import shp data
         watergrs = shp_to_grs(shp)

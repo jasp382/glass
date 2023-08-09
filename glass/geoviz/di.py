@@ -18,7 +18,7 @@ def datatocls_meanstd(shp_data, maps_table, sheet, slug, attrs,
     from glass.wt.shp      import df_to_shp
     from glass.rd          import tbl_to_obj
     from glass.wt          import obj_to_tbl
-    from glass.pd.fld      import listval_to_newcols
+    from glass.pd.cols      import listval_to_newcols
     from glass.geoviz.diutils import eval_intervals
     from glass.pys         import obj_to_lst
 
@@ -225,7 +225,7 @@ def datatocls(shpfile, mapstbl, sheet, slug, title, ncls, decplace,
     from glass.wt.shp      import df_to_shp
     from glass.rd         import tbl_to_obj
     from glass.wt         import obj_to_tbl
-    from glass.pd.fld     import listval_to_newcols
+    from glass.pd.cols     import listval_to_newcols
     from glass.geoviz.diutils import eval_intervals
 
     methods = ["QUANTILE", "JENKS"]
@@ -367,7 +367,7 @@ def datatocls_multiref(shpfile, mapstbl, sheet, slugs, titles, ncls, decplace,
     from glass.wt.shp      import df_to_shp
     from glass.rd         import tbl_to_obj
     from glass.wt         import obj_to_tbl
-    from glass.pd.fld     import listval_to_newcols
+    from glass.pd.cols     import listval_to_newcols
     from glass.geoviz.diutils import eval_intervals
 
     methods = ["QUANTILE", "JENKS"]

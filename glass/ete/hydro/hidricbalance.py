@@ -11,6 +11,8 @@ def hidric_balance(tempbymonth, rainbymonth, outrst, texture=None,
     
     import numpy as np
     from glass.rd.rst import rst_to_array
+    from glass.prop.rst import rst_geoprop
+    from glass.prop.prj import rst_epsg
     from glass.wt.rst import obj_to_rst
     
     def SomaRstOnLst(l):
@@ -116,7 +118,10 @@ def hidric_balance(tempbymonth, rainbymonth, outrst, texture=None,
         rst_textura = None
     
     # Lista Raster com valores de precipitacao
-    tempbymonth, rainbymonth
+    
+    epsg    = rst_epsg(tempbymonth[0])
+    left, cellx, top, celly = rst_geoprop(tempbymonth[0])
+    gtrans = (left, cellx, 0, top, 0, celly)
     
     ica = indexCaloricoAnual(tempbymonth)
     n_dias = fileTexto(file_insolacao)
@@ -130,5 +135,5 @@ def hidric_balance(tempbymonth, rainbymonth, outrst, texture=None,
     def_hidrico = DeficeHidrico(EvapotranspiracaoP, etr)
     # Soma defice hidrico
     rst_hidrico = SomaRstOnLst(def_hidrico)
-    obj_to_rst(rst_hidrico, outrst, tempbymonth[0])
+    obj_to_rst(rst_hidrico, outrst, gtrans, epsg)
 

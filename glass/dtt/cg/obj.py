@@ -35,7 +35,37 @@ def multipart_to_single(df, geomType, use_explode=True):
     return ndf
 
 
-def pntDf_to_convex_hull(pntDf, xCol, yCol, epsg, outEpsg=None, outShp=None):
+def single_to_multipart(singlegeom, iswkt=None, out_wkt=None):
+    """
+    Array with single geometries to multi-type geometry
+    """
+
+    from osgeo import ogr
+
+    ref_g = singlegeom[0] if not iswkt else \
+        ogr.CreateGeometryFromWkt(singlegeom[0])
+
+    gtype = ref_g.GetGeometryName()
+
+    if gtype == 'POINT':
+        ngeom = ogr.Geometry(ogr.wkbMultiPoint)
+    
+    elif gtype == 'LINESTRING':
+        ngeom = ogr.Geometry(ogr.wkbMultiLineString)
+    
+    elif gtype == 'POLYGON':
+        ngeom = ogr.Geometry(ogr.wkbMultiPolygon)
+    
+    for g in singlegeom:
+        p = ogr.CreateGeometryFromWkt(g) if iswkt else g
+
+        ngeom.AddGeometry(p)
+    
+    return ngeom if not out_wkt else ngeom.ExportToWkt()
+
+
+
+def dfpnt_to_convex_hull(pntDf, xCol, yCol, epsg, outEpsg=None, outShp=None):
     """
     Create a GeoDataFrame with a Convex Hull Polygon from a DataFrame
     with points in two columns, one with the X Values, other with the Y Values

@@ -5,7 +5,7 @@ with OSM Data
 
 
 def update_globe_land_cover(
-    original_globe_raster, osm_urban_atlas_raster, osm_globe_raster, epsg,
+    original_globe_raster, osm_urban_atlas_raster, osm_globe_raster,
     updated_globe_raster, detailed_globe_raster):
     """
     Update the original Glob Land 30 with the result of the conversion of
@@ -18,8 +18,14 @@ def update_globe_land_cover(
     import os
     import numpy as np
     from glass.rd.rst   import rst_to_array
-    from glass.prop.rst import get_cellsize, get_nodata
+    from glass.prop.rst import rst_cellsize, get_nodata, rst_geoprop
+    from glass.prop.prj import rst_epsg
+    from glass.pys.oss  import fprop
     from glass.wt.rst   import obj_to_rst
+
+    epsg    = rst_epsg(osm_globe_raster)
+    left, cellx, top, celly = rst_geoprop(osm_globe_raster)
+    gtrans = (left, cellx, 0, top, 0, celly)
     
     # ############################# #
     # Convert images to numpy array #
@@ -55,7 +61,7 @@ def update_globe_land_cover(
     # ############## #
     # Check Cellsize #
     # ############## #
-    cell_of_rsts = get_cellsize(
+    cell_of_rsts = rst_cellsize(
         [original_globe_raster, osm_globe_raster, osm_urban_atlas_raster],
         xy=True, gisApi='gdal'
     )
@@ -132,21 +138,16 @@ def update_globe_land_cover(
         int(nodata_glob_original)
     )
     
+    fp = fprop(updated_globe_raster, ['fn', 'ff'])
     updated_meta = os.path.join(
         os.path.dirname(updated_globe_raster),
-        '{n}_meta{e}'.format(
-            n = os.path.splitext(os.path.basename(updated_globe_raster))[0],
-            e = os.path.splitext(os.path.basename(updated_globe_raster))[1]
-        )
+        f'{fp["filename"]}_meta{fp["fileformat"]}'
     )
     # Create Updated Globe Cover 30
-    obj_to_rst(
-        update_array, updated_globe_raster, original_globe_raster,
-        noData=int(nodata_glob_original)
-    )
+    obj_to_rst(update_array, updated_globe_raster, gtrans, epsg)
     # Create Updated Globe Cover 30 meta
     obj_to_rst(
-        update_meta_array, updated_meta, original_globe_raster,
+        update_meta_array, updated_meta, gtrans, epsg,
         noData=int(nodata_glob_original)
     )
     
@@ -204,20 +205,18 @@ def update_globe_land_cover(
     
     # Create Detailed Globe Cover 30
     obj_to_rst(
-        detailed_array, detailed_globe_raster, original_globe_raster,
+        detailed_array, detailed_globe_raster, gtrans, epsg,
         noData=0
     )
     
     # Create Detailed Globe Cover 30 meta
+    _fp = fprop(detailed_meta, ['fn', 'ff'])
     detailed_meta = os.path.join(
         os.path.dirname(detailed_globe_raster),
-        '{n}_meta{e}'.format(
-            n = os.path.splitext(os.path.basename(detailed_meta))[0],
-            e = os.path.splitext(os.path.basename(detailed_meta))[1]
-        )
+        f'{_fp["filename"]}_meta{_fp["fileformat"]}'
     )
     obj_to_rst(
-        detailed_meta_array, detailed_meta, original_globe_raster,
+        detailed_meta_array, detailed_meta, gtrans, epsg,
         noData=0
     )
 

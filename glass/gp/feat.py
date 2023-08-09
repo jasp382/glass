@@ -32,7 +32,7 @@ def id_isolated_lines(shp, oshp):
     """
 
     from glass.pys.oss  import fprop
-    from glass.sql.db   import create_db
+    from glass.sql.db   import create_pgdb
     from glass.prop.prj import shp_epsg
     from glass.it.db    import shp_to_psql
     from glass.it.shp   import dbtbl_to_shp
@@ -40,9 +40,9 @@ def id_isolated_lines(shp, oshp):
     epsg = shp_epsg(shp)
 
     # Create DB
-    db = create_db(
+    db = create_pgdb(
         fprop(shp, 'fn', forceLower=True),
-        api='psql', overwrite=True
+        overwrite=True
     )
 
     # Send data to db
@@ -102,7 +102,7 @@ def id_some_lines(shp, oshp):
     """
 
     from glass.pys.oss  import fprop
-    from glass.sql.db   import create_db
+    from glass.sql.db   import create_pgdb
     from glass.prop.prj import shp_epsg
     from glass.it.db    import shp_to_psql
     from glass.it.shp   import dbtbl_to_shp
@@ -110,9 +110,9 @@ def id_some_lines(shp, oshp):
     epsg = shp_epsg(shp)
 
     # Create DB
-    db = create_db(
+    db = create_pgdb(
         fprop(shp, 'fn', forceLower=True),
-        api='psql', overwrite=True
+        overwrite=True
     )
 
     # Send data to db

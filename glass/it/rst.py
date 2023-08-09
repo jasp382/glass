@@ -4,13 +4,17 @@ Data to Raster File
 
 import os
 import numpy as np
+from osgeo import gdal
+
+from glass.wt.rst   import obj_to_rst
+from glass.prop.img import rst_epsg
 
 
 """
 Data type conversion
 """
 
-def conv_rst_dtype(rst, out, odtype):
+def conv_rst_dtype(rst, out, odtype, place_nodata=None, newndval=None):
     """
     Change Raster Dtype
 
@@ -24,13 +28,16 @@ def conv_rst_dtype(rst, out, odtype):
     * uint32
     * float32
     """
-
-    from osgeo        import gdal
-    from glass.wt.rst import obj_to_rst
     
     # Open Raster
     src = gdal.Open(rst, gdal.GA_ReadOnly)
     imgnum = src.ReadAsArray()
+
+    # Get geotrans
+    gtrans = src.GetGeoTransform()
+
+    # Get EPSG
+    epsg = rst_epsg(src)
 
     # Get nodata value
     ndval = src.GetRasterBand(1).GetNoDataValue()
@@ -75,8 +82,14 @@ def conv_rst_dtype(rst, out, odtype):
     # Data type conversion
     newnum = imgnum.astype(dt)
 
+    if place_nodata and newndval:
+        if place_nodata[0] == '<':
+            exp = newnum < place_nodata[1]
+        
+        np.place(newnum, exp, newndval)
+
     # Export new raster
-    obj_to_rst(newnum, out, src, noData=ndval)
+    obj_to_rst(newnum, out, gtrans, epsg, noData=ndval)
 
     return out
 
@@ -86,9 +99,7 @@ def floatrst_to_intrst(in_rst, out_rst):
     Raster with float data to Raster with Integer Values
     """
 
-    from osgeo          import gdal
     from glass.prop.img import get_nd
-    from glass.wt.rst   import obj_to_rst
 
     nds = {
         'int8' : -128, 'int16' : -32768, 'int32' : -2147483648,
@@ -100,6 +111,9 @@ def floatrst_to_intrst(in_rst, out_rst):
 
     # Raster to Array
     rstnum = img.ReadAsArray()
+
+    gtrans = img.GetGeoTransform()
+    epsg = rst_epsg(img)
 
     # Round data
     rstint = np.around(rstnum, decimals=0)
@@ -188,7 +202,7 @@ def floatrst_to_intrst(in_rst, out_rst):
     rstint = rstint.astype(nt)
 
     # Export result to file and return
-    return obj_to_rst(rstint, out_rst, img, noData=new_nd)
+    return obj_to_rst(rstint, out_rst, gtrans, epsg, noData=new_nd)
 
 
 """
@@ -305,7 +319,8 @@ def rst_to_grs(rst, grst=None, lmtExt=None, as_cmd=None):
     return grst
 
 
-def grs_to_rst(grsRst, rst, as_cmd=None, allBands=None, rtype=None):
+def grs_to_rst(grsRst, rst, as_cmd=None, allBands=None,
+                rtype=None, dtype=None, nodata=None):
     """
     GRASS Raster to Raster
     """
@@ -326,10 +341,14 @@ def grs_to_rst(grsRst, rst, as_cmd=None, allBands=None, rtype=None):
     
     if not as_cmd:
         from grass.pygrass.modules import Module
+
+        _flags = 'c' if not allBands else ''
+        _flags = f'{_flags}f' if dtype == 'Float32' else _flags
         
         m = Module(
             "r.out.gdal", input=grsRst, output=rst,
-            format=rstDrv[rstExt], flags='c' if not allBands else '',
+            format=rstDrv[rstExt], flags=_flags,
+            nodata=nodata,
             createopt="INTERLEAVE=PIXEL,TFW=YES" if allBands else \
                 compress,
             overwrite=True, run_=False, quiet=True
@@ -345,9 +364,18 @@ def grs_to_rst(grsRst, rst, as_cmd=None, allBands=None, rtype=None):
         else:
             opt = "createopt=\"INTERLEAVE=PIXEL,TFW=YES\""
         
+        flags = [
+            '-c' if not allBands else '',
+            '-f' if dtype == 'Float32' else '',
+            '--overwrite', '--quiet'
+        ]
+        _flags = ' '.join(flags)
+        
         rcmd = execmd((
             f"r.out.gdal input={grsRst} output={rst} "
-            f"format={rstDrv[rstExt]} {opt} -c --overwrite --quiet"
+            f"{'' if not dtype else f'type={dtype} '}"
+            f"{f'nodata={str(nodata)} ' if nodata != None else ''}"
+            f"format={rstDrv[rstExt]} {opt} {_flags}"
         ))
     
     return rst
@@ -470,12 +498,12 @@ def bands_to_rst(inRst, outFolder):
     TODO: this could be done using gdal_translate
     """
     
-    from osgeo          import gdal
-    from glass.wt.rst   import obj_to_rst
     from glass.prop.rst import get_nodata
     
-    
     rst = gdal.Open(inRst)
+
+    gtrans = rst.GetGeoTransform()
+    epsg = rst_epsg(rst)
     
     if rst.RasterCount == 1:
         return
@@ -494,7 +522,7 @@ def bands_to_rst(inRst, outFolder):
             obj_to_rst(array, os.path.join(
                 outFolder,
                 f'{bname}_{str(band)}.tif'
-            ), inRst, noData=nodata)
+            ), gtrans, epsg, noData=nodata)
 
 
 def rst_to_tiles(rst, n_tiles_x, n_tiles_y, out_folder):
@@ -502,9 +530,7 @@ def rst_to_tiles(rst, n_tiles_x, n_tiles_y, out_folder):
     Raster file to tiles
     """
 
-    from osgeo import gdal
     from glass.pys.oss import fprop
-    from glass.wt.rst  import obj_to_rst
 
     rstprop = fprop(rst, ['fn', 'ff'])
     rstn, rstf = rstprop['filename'], rstprop['fileformat']
@@ -514,6 +540,9 @@ def rst_to_tiles(rst, n_tiles_x, n_tiles_y, out_folder):
 
     # Get raster Geo Properties
     geotrans = img.GetGeoTransform()
+
+    # Get EPSG
+    epsg = rst_epsg(img)
 
     # Get rows and columns number of original raster
     nrows, ncols = img.RasterYSize, img.RasterXSize
@@ -559,11 +588,15 @@ def rst_to_tiles(rst, n_tiles_x, n_tiles_y, out_folder):
             ]
 
             # New array to file
-            obj_to_rst(nr, os.path.join(
-                out_folder, rstn + '_' + str(tr) + '_' + str(tc) + rstf 
-            ), img, noData=nd, geotrans=(
-                left, geotrans[1], geotrans[2], top, geotrans[4], geotrans[5]
-            ))
+            fn = f'{rstn}_{str(tr)}_{str(tc)}{rstf}'
+            ngt = (
+                left, geotrans[1], geotrans[2],
+                top, geotrans[4], geotrans[5]
+            )
+            obj_to_rst(
+                nr, os.path.join(out_folder, fn),
+                ngt, epsg, noData=nd
+            )
 
     return out_folder
 

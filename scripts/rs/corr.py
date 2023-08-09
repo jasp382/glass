@@ -11,9 +11,9 @@ def lnd8_dn_to_ref(folder, img_format, meta_json, outWorkspace, srs):
     import math
     import json
     import os
-    from glass.pys.oss    import lst_ff
+    from glass.pys.oss  import lst_ff
     from glass.rd.rst   import rst_to_array
-    from glass.prop.rst import get_cellsize, rst_stats
+    from glass.prop.rst import rst_cellsize, rst_stats
     from glass.wt.rst   import obj_to_rst
     
     
@@ -57,7 +57,7 @@ def lnd8_dn_to_ref(folder, img_format, meta_json, outWorkspace, srs):
     lst_bands = lst_ff(folder, file_format=img_format)
     json_file = open(meta_json, 'r')
     json_data = json.load(json_file)
-    cellsize = get_cellsize(lst_bands[0], gisApi='gdal')
+    cellsize = rst_cellsize(lst_bands[0], gisApi='gdal')
     
     # Estimate Surface Reflectance for each band
     for bnd in lst_bands:

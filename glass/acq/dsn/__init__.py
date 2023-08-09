@@ -40,7 +40,7 @@ def dsn_data_collection_by_multibuffer(inBuffers, workspace, db, datasource,
     
     import os; from osgeo      import ogr
     from glass.pys             import obj_to_lst
-    from glass.sql.db       import create_db
+    from glass.sql.db       import create_pgdb
     from glass.sql.q        import q_to_ntbl
     from glass.wt.sql        import df_to_db
     from glass.it.db         import shp_to_psql
@@ -57,7 +57,7 @@ def dsn_data_collection_by_multibuffer(inBuffers, workspace, db, datasource,
     keywords = ["None"] if not keywords else keywords
     
     # Create Database to Store Data
-    create_db(db, overwrite=True, api='psql')
+    create_pgdb(db, overwrite=True, api='psql')
     
     for city in inBuffers:
         # Get Smaller Buffers

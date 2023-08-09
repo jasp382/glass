@@ -15,7 +15,7 @@ def search_tweets(lat=None, lng=None, radius=None, keyword=None,
     """
     
     import tweepy;       import pandas as pd
-    from glass.pd.fld import listval_to_newcols
+    from glass.pd.cols import listval_to_newcols
     from glass.pys       import obj_to_lst
 
     if not lat and not lng and not radius and not in_geom and not keyword:

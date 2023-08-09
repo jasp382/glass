@@ -27,7 +27,7 @@ def grsshp_to_grsrst(inshp, src, outrst, cmd=None):
 
     __USE = "cat" if not src else "attr" if type(src) == str \
         else "val" if type(src) == int or \
-        type(src) == float else None
+            type(src) == float else None
     
     if not __USE:
         raise ValueError('\'source\' parameter value is not valid')

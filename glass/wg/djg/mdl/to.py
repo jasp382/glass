@@ -2,6 +2,8 @@
 Data to Django Model
 """
 
+import os
+
 def shp_to_djg_mdl(in_shp, app, mdl, cols_map, djg_proj):
     """
     Add Geometries to Django Model
@@ -10,7 +12,7 @@ def shp_to_djg_mdl(in_shp, app, mdl, cols_map, djg_proj):
     from django.contrib.gis.geos       import GEOSGeometry
     from django.contrib.gis.db         import models
     from glass.pys                     import __import
-    from glass.webg.djg                import get_djgprj
+    from glass.wg.djg                  import get_djgprj
     from glass.rd.shp                  import shp_to_obj
     from glass.prop.prj                import shp_epsg
     from shapely.geometry.multipolygon import MultiPolygon
@@ -54,9 +56,7 @@ def shp_to_djg_mdl(in_shp, app, mdl, cols_map, djg_proj):
                     # estao a ser restaurados
                     related_name = field_obj.related_model.__name__
                     
-                    related_model = __import('{}.models.{}'.format(
-                        app, related_name
-                    ))
+                    related_model = __import(f'{app}.models.{related_name}')
                     
                     related_obj = related_model.objects.get(
                         pk=int(row[cols_map[FLD]])
@@ -87,11 +87,11 @@ def pgtbl_to_mdl(djg_proj, app, model, datadb, datatbl, geom=None, epsg=None):
     Import data from one PostgreSQL Table into Django Model
     """
 
-    from glass.sql.q          import q_to_obj
+    from glass.sql.q             import q_to_obj
     from glass.pys               import __import
     from django.contrib.gis.geos import GEOSGeometry
     from django.contrib.gis.db   import models
-    from glass.webg.djg          import get_djgprj
+    from glass.wg.djg            import get_djgprj
 
     # Get data
     data = q_to_obj(datadb, "SELECT * FROM {}".format(datatbl), geomCol=geom, epsg=epsg)
@@ -102,7 +102,7 @@ def pgtbl_to_mdl(djg_proj, app, model, datadb, datatbl, geom=None, epsg=None):
     application = get_djgprj(djg_proj)
 
     # Get Model
-    mdl_cls = __import('{}.models.{}'.format(app, model))
+    mdl_cls = __import(f'{app}.models.{model}')
     mdl_obj = mdl_cls()
 
     def upmdl(row):
@@ -150,9 +150,9 @@ def txt_to_db(txt, proj_path=None, delimiter='\t', encoding_='utf-8'):
     of their models.
     """
     
-    import codecs;          import os
-    from glass.pys           import __import
-    from glass.webg.djg.mdl.i import get_special_tables
+    import codecs
+    from glass.pys          import __import
+    from glass.wg.djg.mdl.i import get_special_tables
     
     def sanitize_value(v):
         _v = None if v=='None' or v =='' else v
@@ -174,7 +174,7 @@ def txt_to_db(txt, proj_path=None, delimiter='\t', encoding_='utf-8'):
     
     # Open Django Project
     if proj_path:
-        from glass.webg.djg import get_djgprj
+        from glass.wg.djg import get_djgprj
         
         application = get_djgprj(proj_path)
     
@@ -192,9 +192,7 @@ def txt_to_db(txt, proj_path=None, delimiter='\t', encoding_='utf-8'):
         
         djg_model_name = '_'.join(table_name.split('_')[1:])
         
-        str_to_import_cls = '{a}.models.{t}'.format(
-            a=djg_app, t=djg_model_name
-        )
+        str_to_import_cls = f'{djg_app}.models.{djg_model_name}'
     
     djangoCls = __import(str_to_import_cls)
     
@@ -247,14 +245,12 @@ def txts_to_db(folder, delimiter='\t', _encoding_='utf-8', proj_path=None):
     Proj_path is not necessary if you are running this method in Django shell
     """
     
-    import os, sys
-    from glass.pys             import __import
-    from glass.pys.oss         import lst_ff
-    from glass.webg.djg.mdl.rel import order_mdl_by_rel
+    from glass.pys.oss        import lst_ff
+    from glass.wg.djg.mdl.rel import order_mdl_by_rel
     
     # Open Django Project
     if proj_path:
-        from glass.webg.djg import get_djgprj
+        from glass.wg.djg import get_djgprj
         application = get_djgprj(proj_path)
     
     # List txt files
@@ -278,9 +274,9 @@ def txts_to_db(folder, delimiter='\t', _encoding_='utf-8', proj_path=None):
                 delimiter=delimiter,
                 encoding_=_encoding_
             )
-            print('{} is in the database'.format(table))
+            print(f'{table} is in the database')
         else:
-            print('Skipping {} - there is no file for this table'.format(table))
+            print(f'Skipping {table} - there is no file for this table')
 
 
 def psql_to_djgdb(sql_dumps, db_name, djg_proj=None, mapTbl=None, userDjgAPI=None):
@@ -292,15 +288,14 @@ def psql_to_djgdb(sql_dumps, db_name, djg_proj=None, mapTbl=None, userDjgAPI=Non
     equal to the name of the 'db_column' clause.
     """
     
-    import os
-    from glass.pys              import __import
-    from glass.pys              import obj_to_lst
-    from glass.sql.db        import restore_tbls 
-    from glass.sql.db        import create_db, drop_db
-    from glass.prop.sql      import lst_tbl
-    from glass.sql.q         import q_to_obj
-    from glass.webg.djg.mdl.rel import order_mdl_by_rel
-    from glass.webg.djg.mdl.i   import lst_mdl_proj
+    from glass.pys            import __import
+    from glass.pys            import obj_to_lst
+    from glass.sql.db         import restore_tbls 
+    from glass.sql.db         import create_pgdb, drop_db
+    from glass.prop.sql       import lst_tbl
+    from glass.sql.q          import q_to_obj
+    from glass.wg.djg.mdl.rel import order_mdl_by_rel
+    from glass.wg.djg.mdl.i   import lst_mdl_proj
 
     # Global variables
     TABLES_TO_EXCLUDE = [
@@ -313,8 +308,8 @@ def psql_to_djgdb(sql_dumps, db_name, djg_proj=None, mapTbl=None, userDjgAPI=Non
     sql_scripts = obj_to_lst(sql_dumps)
 
     # Create Database
-    tmp_db_name = db_name + '_xxxtmp'
-    create_db(tmp_db_name)
+    tmp_db_name = f'{db_name}_xxxtmp'
+    create_pgdb(tmp_db_name)
     
     # Restore tables in SQL files
     for sql in sql_scripts:
@@ -327,7 +322,7 @@ def psql_to_djgdb(sql_dumps, db_name, djg_proj=None, mapTbl=None, userDjgAPI=Non
     
     # Open Django Project
     if djg_proj:
-        from glass.webg.djg import get_djgprj
+        from glass.wg.djg import get_djgprj
         application = get_djgprj(djg_proj)
     
     # List models in project
@@ -348,7 +343,7 @@ def psql_to_djgdb(sql_dumps, db_name, djg_proj=None, mapTbl=None, userDjgAPI=Non
             data_tbl["{}.models.{}".format(t.split('_')[0], app_mdls[t])] = t
     
     from django.contrib.gis.db import models
-    mdl_cls = ["{}.models.{}".format(m.split('_')[0], app_mdls[m]) for m in app_mdls]
+    mdl_cls = [f"{m.split('_')[0]}.models.{app_mdls[m]}" for m in app_mdls]
     orderned_table = order_mdl_by_rel(mdl_cls)
 
     # Add default tables of Django
@@ -398,9 +393,9 @@ def psql_to_djgdb(sql_dumps, db_name, djg_proj=None, mapTbl=None, userDjgAPI=Non
                         # Get model of the table related com aquela cujos dados 
                         # estao a ser restaurados
                         related_name = field_obj.related_model.__name__
-                        related_model = __import('{a}.models.{m}'.format(
-                            a=table.split('_')[0], m=related_name
-                        ))
+                        related_model = __import(
+                            f'{table.split("_")[0]}.models.{related_name}'
+                        )
                     
                         # If NULL, continue
                         if not row[col]:
@@ -422,7 +417,7 @@ def psql_to_djgdb(sql_dumps, db_name, djg_proj=None, mapTbl=None, userDjgAPI=Non
             if tbl not in data_tbl:
                 continue
             
-            data = q_to_obj(tmp_db_name, "SELECT * FROM {}".format(data_tbl[tbl]))
+            data = q_to_obj(tmp_db_name, f"SELECT * FROM {data_tbl[tbl]}")
             
             if tbl == 'auth_user':
                 data['last_login'] = pd.to_datetime(data.last_login, utc=True)

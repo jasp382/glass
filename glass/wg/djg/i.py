@@ -2,6 +2,7 @@
 Information about Django Project
 """
 
+
 def list_djg_apps(path_to_django_proj):
     """
     List Django App's avaiable in a Django Project

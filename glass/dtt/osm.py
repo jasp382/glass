@@ -62,7 +62,7 @@ def osm_to_relationaldb(osmData, inSchema, osmGeoTbl, osmCatTbl, osmRelTbl,
     from glass.pys.oss  import fprop
     from glass.prop.sql import cols_name
     from glass.sql.q    import q_to_ntbl
-    from glass.sql.db   import create_db
+    from glass.sql.db   import create_pgdb
     from glass.it.db    import osm_to_psql
 
     inSchema["TBL"] = obj_to_lst(inSchema["TBL"])
@@ -70,7 +70,7 @@ def osm_to_relationaldb(osmData, inSchema, osmGeoTbl, osmCatTbl, osmRelTbl,
     # Create DB
     osm_fn = fprop(osmData, 'fn')
     osm_fn = osm_fn.replace('-', '').replace('.', '')
-    db = create_db(osm_fn if not db_name else db_name, api='psql')
+    db = create_pgdb(osm_fn if not db_name else db_name)
     
     # Send OSM data to Database
     osm_to_psql(osmData, db)
@@ -84,10 +84,9 @@ def osm_to_relationaldb(osmData, inSchema, osmGeoTbl, osmCatTbl, osmRelTbl,
     
     # Create osmGeoTbl
     osmgeotbl = [q_to_ntbl(db, osmGeoTbl[tbl]['TBL'], (
-        "SELECT {} AS {}, {} FROM {}"
-    ).format(
-        inSchema["FID"], osmGeoTbl[tbl]["FID"],
-        ", ".join(inSchema["COLS"]), tbl
+        f'SELECT {inSchema["FID"]} AS {osmGeoTbl[tbl]["FID"]}, '
+        f'{", ".join(inSchema["COLS"])} '
+        f'FROM {tbl}'
     ), api='psql') for tbl in inSchema["TBL"]]
     
     # Create OSM categories table

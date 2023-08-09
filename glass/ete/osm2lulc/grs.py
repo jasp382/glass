@@ -25,7 +25,7 @@ def raster_based(osmdata, nomenclature, refRaster, lulcRst,
     from glass.prop.df               import is_rst
     from glass.wenv.grs              import run_grass
     if roadsAPI == 'POSTGIS':
-        from glass.sql.db            import create_db
+        from glass.sql.db            import create_pgdb
         from glass.it.db             import osm_to_psql 
         from glass.ete.osm2lulc.mod2 import roads_sqdb
         from glass.sql.bkup          import dump_db
@@ -84,7 +84,7 @@ def raster_based(osmdata, nomenclature, refRaster, lulcRst,
     # Convert OSM file to SQLITE DB or to POSTGIS DB #
     # ************************************************************************ #
     if roadsAPI == 'POSTGIS':
-        osm_db = create_db(fprop(
+        osm_db = create_pgdb(fprop(
             osmdata, 'fn', forceLower=True), overwrite=True)
         osm_db = osm_to_psql(osmdata, osm_db)
     else:
@@ -366,7 +366,7 @@ def osm_to_lulc(osm, nomenclature, ref, lulc, overwrite=None, savedb=None, tmpfl
     from glass.cons.osmtolulc import PRIORITY
     from glass.dtt.ext        import fext_to_geof
     from glass.dtt.mge        import same_attr_to_shp, shps_to_shp
-    from glass.sql.db           import create_db, drop_db
+    from glass.sql.db           import create_pgdb, drop_db
     from glass.it.db             import osm_to_psql
     from glass.sql.bkup          import dump_db
     from glass.ete.osm2lulc.mod1 import grs_vector
@@ -437,7 +437,7 @@ def osm_to_lulc(osm, nomenclature, ref, lulc, overwrite=None, savedb=None, tmpfl
     # ******************************************************************** #
     # Convert OSM file to PSQL DB #
     # ******************************************************************** #
-    osm_db = create_db(fprop(osm, 'fn', forceLower=True), overwrite=True)
+    osm_db = create_pgdb(fprop(osm, 'fn', forceLower=True), overwrite=True)
     osm_db = osm_to_psql(osm, osm_db)
 
     time_c = dt.datetime.now().replace(microsecond=0)

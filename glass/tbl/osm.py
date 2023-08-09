@@ -37,7 +37,7 @@ def get_osm_with_refclasses(osm_ref_tags, osmdata, ref_classes, oshp,
     clscol = 'lulc_cls'
     """
 
-    from glass.sql.db   import create_db
+    from glass.sql.db   import create_pgdb
     from glass.it.db    import osm_to_psql
     from glass.rd       import tbl_to_obj
     from glass.prop.sql import cols_name
@@ -48,7 +48,7 @@ def get_osm_with_refclasses(osm_ref_tags, osmdata, ref_classes, oshp,
     clscol = 'lulc_cls' if not clscol or type(clscol) != str else clscol
 
     # Import data into a database
-    create_db(osmdata["DB"], api='psql', overwrite=True, dbset=osmdata["DBSET"])
+    create_pgdb(osmdata["DB"], overwrite=True, dbset=osmdata["DBSET"])
 
     osm_to_psql(osmdata["FILE"], osmdata["DB"], dbsetup=osmdata["DBSET"])
 
@@ -149,7 +149,7 @@ def osm_to_lucls_mtag(reftbl, osm, lucls, oshp, epsg=4326, lucol=None):
     """
 
     from glass.rd       import tbl_to_obj
-    from glass.sql.db   import create_db
+    from glass.sql.db   import create_pgdb
     from glass.it.db    import osm_to_psql
     from glass.prop.sql import cols_name
     from glass.sql.q    import exec_write_q
@@ -164,7 +164,7 @@ def osm_to_lucls_mtag(reftbl, osm, lucls, oshp, epsg=4326, lucol=None):
     ]
 
     # Import data into a database
-    create_db(osm["DB"], api='psql', overwrite=True, dbset=osm["DBSET"])
+    create_pgdb(osm["DB"], overwrite=True, dbset=osm["DBSET"])
 
     osm_to_psql(osm["FILE"], osm["DB"], dbsetup=osm["DBSET"])
 

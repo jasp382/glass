@@ -6,6 +6,8 @@ Use GDAL to apply index
 
 import numpy      as np
 from osgeo        import gdal
+
+from glass.prop.img import rst_epsg
 from glass.wt.rst import obj_to_rst
 
 
@@ -21,8 +23,7 @@ def calc_ndwi(green, nir_swir, outRst):
     ((green / toReflectance) + (nir /toReflectance))
     """
 
-    api = 'gdal'
-    nir = nir_swir
+    api, nir = 'gdal', nir_swir
 
     if api == 'gdal':
         srcg   = gdal.Open(green, gdal.GA_ReadOnly)
@@ -45,7 +46,10 @@ def calc_ndwi(green, nir_swir, outRst):
         np.place(ndwir, num_nir==nnd, nd)
     
         # Export Result
-        outrst = obj_to_rst(ndwir, outRst, nir, noData=nd)
+        outrst = obj_to_rst(
+            ndwir, outRst, srcg.GetGeoTransform(),
+            rst_epsg(srcg), noData=nd
+        )
     
     else:
         raise ValueError(f'Sorry, API {api} is not available')
@@ -84,7 +88,10 @@ def calc_ndvi(nir, red, outRst):
     np.place(ndvir, num_red==redNdVal, ndNdvi)
     
     # Export Result
-    return obj_to_rst(ndvir, outRst, nir, noData=ndNdvi)
+    return obj_to_rst(
+        ndvir, outRst, src_nir.GetGeoTransform(),
+        rst_epsg(src_nir), noData=ndNdvi
+    )
 
 
 def calc_nbr(nir, swir, outrst):
@@ -115,7 +122,10 @@ def calc_nbr(nir, swir, outrst):
     np.place(nbr, numSwir == swirNdVal, nd)
     
     # Export Result
-    return obj_to_rst(nbr, outrst, nir, noData=nd)
+    return obj_to_rst(
+        nbr, outrst, srcNir.GetGeoTransform(),
+        rst_epsg(srcNir), noData=nd
+    )
 
 
 def calc_savi(nir, red, out):
@@ -144,7 +154,10 @@ def calc_savi(nir, red, out):
     np.place(savi, nred==red_nd, savi_nd)
     
     # Export Result
-    return obj_to_rst(savi, out, nir, noData=savi_nd)
+    return obj_to_rst(
+        savi, out, nir, snir.GetGeoTransform(),
+        rst_epsg(snir), noData=savi_nd
+    )
 
 
 def calc_evi(nir, red, blue, out):
@@ -181,7 +194,10 @@ def calc_evi(nir, red, blue, out):
     np.place(evi, evi > 1, 1)
     
     # Export Result
-    return obj_to_rst(evi, out, nir, noData=evi_nd)
+    return obj_to_rst(
+        evi, out, src['n'].GetGeoTransform(),
+        rst_epsg(src['n']), noData=evi_nd
+    )
 
 
 def calc_ndre(nir, re, out):
@@ -210,7 +226,10 @@ def calc_ndre(nir, re, out):
     np.place(ndre, nre==re_nd, ndre_nd)
     
     # Export Result
-    return obj_to_rst(ndre, out, nir, noData=ndre_nd)
+    return obj_to_rst(
+        ndre, out, snir.GetGeoTransform(),
+        rst_epsg(snir), noData=ndre_nd
+    )
 
 
 def calc_ngrdi(green, red, out):
@@ -239,7 +258,10 @@ def calc_ngrdi(green, red, out):
     np.place(ngrdi, nred==red_nd, ngrdi_nd)
     
     # Export Result
-    return obj_to_rst(ngrdi, out, green, noData=ngrdi_nd)
+    return obj_to_rst(
+        ngrdi, out, sgre.GetGeoTransform(),
+        rst_epsg(sgre), noData=ngrdi_nd
+    )
 
 
 def calc_ndbi(swir, nir, out):
@@ -268,7 +290,10 @@ def calc_ndbi(swir, nir, out):
     np.place(ndbi, nnir==nir_nd, nd)
     
     # Export Result
-    return obj_to_rst(ndbi, out, swir, noData=nd)
+    return obj_to_rst(
+        ndbi, out, sswir.GetGeoTransform(),
+        rst_epsg(sswir), noData=nd
+    )
 
 
 def calc_ndsi(swir2, blue, out):
@@ -297,5 +322,8 @@ def calc_ndsi(swir2, blue, out):
     np.place(ndsi, nblue==blue_nd, nd)
     
     # Export Result
-    return obj_to_rst(ndsi, out, swir2, noData=nd)
+    return obj_to_rst(
+        ndsi, out, sswir.GetGeoTransform(),
+        rst_epsg(sswir), noData=nd
+    )
 

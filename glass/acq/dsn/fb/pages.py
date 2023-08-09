@@ -7,7 +7,7 @@ from . import FACEBOOK_TOKEN
 
 
 def sanitizeData(df, FACE_PAGE=None):
-    from glass.pd.fld import listval_to_newcols
+    from glass.pd.cols import listval_to_newcols
     
     if FACE_PAGE:
         df['page_ref'] = FACE_PAGE

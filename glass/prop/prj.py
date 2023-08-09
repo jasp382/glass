@@ -105,7 +105,7 @@ def shp_epsg(shp, returnIsProj=None, lyrname=None):
     from glass.pys.oss import fprop
     
     if fprop(shp, 'ff') != '.gml':
-        proj = shp_ref(shp, lyrn=lyrname)
+        proj = shp_sref(shp, lyrn=lyrname)
     else:
         epsg = gml_epsg(shp)
         
@@ -143,7 +143,7 @@ def rst_epsg(rst, returnIsProj=None):
     Return the EPSG Code of the Spatial Reference System of a Raster
     """
     
-    from glass.prop.img import rst_epsg
+    from glass.prop.img import rst_epsg as repsg
     
     if not os.path.exists(rst):
         raise ValueError((
@@ -154,11 +154,11 @@ def rst_epsg(rst, returnIsProj=None):
     d = gdal.Open(rst)
     
     if not returnIsProj:
-        epsg = rst_epsg(d, isproj=None)
+        epsg = repsg(d, isproj=None)
 
         return epsg
     else:
-        epsg, isproj = rst_epsg(d, isproj=True)
+        epsg, isproj = repsg(d, isproj=True)
 
         return epsg, isproj
 

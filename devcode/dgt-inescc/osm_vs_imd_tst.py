@@ -40,7 +40,7 @@ def osm_vs_imd(osmxlsx, osmxml, imd, outfishnet, outshp):
 
         from glass.prop.sql import cols_name
         from glass.rd import tbl_to_obj
-        from glass.sql.db import create_db
+        from glass.sql.db import create_pgdb
         from glass.pys.oss import mkdir
 
         # Prepare workspace
@@ -53,7 +53,7 @@ def osm_vs_imd(osmxlsx, osmxml, imd, outfishnet, outshp):
     #ws = os.path.join(os.path.dirname(outshp), 'grswork')
 
     # Import data into a database
-        create_db(osmdata["DB"], api='psql', overwrite=True, dbset=osmdata["DBSET"])
+        create_pgdb(osmdata["DB"], overwrite=True, dbset=osmdata["DBSET"])
 
         osm_to_psql(osmdata["FILE"], osmdata["DB"])
     

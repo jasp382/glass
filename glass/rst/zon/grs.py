@@ -44,3 +44,27 @@ def grs_rst_stats_by_feat(vec, rst, ncol, method, as_cmd=True):
 
     return vec
 
+
+def rstatszonal(base, cover, method, output, api='grass', grids=None):
+    """
+    Zonal Raster Statistics (overlay input as Raster)
+
+    method :: count, average, sum, etc. check r.stats.zonal doc
+    base :: the grass raster which has the various regions mask (e.g. r.clump)
+    cover :: the grass raster which contains the values used in statistics
+
+    """
+
+    if api == 'grass':
+        from glass.pys import execmd
+
+        rcmd = execmd((
+            f"r.stats.zonal base={base} cover={cover} method={method} "
+            "output={output} --overwrite --quiet"
+        ))
+
+    else:
+        raise ValueError(f"{api} is not available!")
+
+    return output
+

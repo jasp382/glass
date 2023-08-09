@@ -18,18 +18,18 @@ def pop_within_area(mapunits, mapunits_id, outcol, subunits,
     """
 
     import os
-    from glass.rd.shp        import shp_to_obj
-    from glass.dtt.ext.torst import shpext_to_rst
-    from glass.wt.shp        import obj_to_shp
-    from glass.pys.oss       import mkdir, fprop
-    from glass.gp.ovl        import grsintersection
-    from glass.prop.prj      import get_epsg
-    from glass.wenv.grs      import run_grass
+    from glass.rd.shp   import shp_to_obj
+    from glass.wt.rst   import shpext_to_rst
+    from glass.wt.shp   import obj_to_shp
+    from glass.pys.oss  import mkdir, fprop
+    from glass.gp.ovl   import grsintersection
+    from glass.prop.prj import get_epsg
+    from glass.wenv.grs import run_grass
 
     # Prepare GRASS GIS Workspace configuration
     oname = fprop(output, 'fn')
     gw = mkdir(os.path.join(
-        os.path.dirname(output), 'ww_' + oname
+        os.path.dirname(output), f'ww_{oname}'
     ), overwrite=True)
 
     # Boundary to Raster
@@ -273,14 +273,15 @@ def shparea_by_mapunitpopulation(polygons, mapunits, units_id, outcol, output,
     """
 
     import os
-    import geopandas         as gp
-    from glass.dtt.ext.torst import shpext_to_rst
-    from glass.pys.oss       import mkdir, fprop
-    from glass.gp.ovl        import grsintersection
-    from glass.prop.prj      import get_epsg
-    from glass.wenv.grs      import run_grass
-    from glass.rd.shp        import shp_to_obj
-    from glass.wt.shp        import obj_to_shp
+    import geopandas as gp
+
+    from glass.wt.rst   import shpext_to_rst
+    from glass.pys.oss  import mkdir, fprop
+    from glass.gp.ovl   import grsintersection
+    from glass.prop.prj import get_epsg
+    from glass.wenv.grs import run_grass
+    from glass.rd.shp   import shp_to_obj
+    from glass.wt.shp   import obj_to_shp
 
     delareacol = 1 if not areacol else 0
     areacol = outcol if not units_pop else areacol if areacol else 'areav'
@@ -289,7 +290,7 @@ def shparea_by_mapunitpopulation(polygons, mapunits, units_id, outcol, output,
     oname = fprop(output, 'fn')
 
     gw = mkdir(os.path.join(
-        os.path.dirname(output), 'ww_' + oname
+        os.path.dirname(output), f'ww_{oname}'
     ), overwrite=True)
 
     # Boundary to raster
@@ -340,7 +341,7 @@ def shparea_by_mapunitpopulation(polygons, mapunits, units_id, outcol, output,
     )
 
     # Export result
-    i_res = grs_to_shp(i_shp, os.path.join(gw, i_shp + '.shp'), 'area')
+    i_res = grs_to_shp(i_shp, os.path.join(gw, f'{i_shp}.shp'), 'area')
 
     # Open intersection result and mapunits
     mapunits_df = shp_to_obj(mapunits) if type(mapunits) != gp.GeoDataFrame \
@@ -350,18 +351,18 @@ def shparea_by_mapunitpopulation(polygons, mapunits, units_id, outcol, output,
     int_df['garea'] = int_df.geometry.area
 
     int_gp = pd.DataFrame({
-        areacol : int_df.groupby(['a_' + units_id])['garea'].agg('sum')
+        areacol : int_df.groupby([f'a_{units_id}'])['garea'].agg('sum')
     }).reset_index()
 
     mapunits_df = mapunits_df.merge(
         int_gp, how='left',
-        left_on=units_id, right_on='a_' + units_id
+        left_on=units_id, right_on=f'a_{units_id}'
     )
 
     if units_pop:
         mapunits_df[outcol] = mapunits_df[areacol] / mapunits_df[units_pop]
         
-    dc = ['a_' + units_id, areacol] if units_pop and delareacol else ['a_' + units_id]
+    dc = [f'a_{units_id}', areacol] if units_pop and delareacol else [f'a_{units_id}']
     
     mapunits_df.drop(dc, axis=1, inplace=True)
 

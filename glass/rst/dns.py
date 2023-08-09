@@ -12,30 +12,24 @@ def kernel_density(pnt_feat, popField, radius, template, outRst):
     """
     
     import os
-    from glass.it.rst    import saga_to_tif
-    from glass.prop.rst import rst_ext, get_cellsize
-    from glass.pys .oss     import fprop
+    from glass.it.rst   import saga_to_tif
+    from glass.prop.rst import rst_ext, rst_cellsize
+    from glass.pys .oss import fprop
     
     left, right, bottom, top = rst_ext(template)
-    cellsize = get_cellsize(template)
+    cellsize = rst_cellsize(template)
     
     SAGA_RASTER = os.path.join(
         os.path.dirname(outRst),
-        'saga_{}.sgrd'.format(fprop(outRst, 'fn'))
+        f'saga_{fprop(outRst, "fn")}.sgrd'
     )
     
     cmd = (
-        "saga_cmd grid_gridding 6 -POINTS {} -POPULATION {} "
-        "-RADIUS {} -TARGET_DEFINITION 0 -TARGET_USER_SIZE {} "
-        "-TARGET_USER_XMIN {} -TARGET_USER_XMAX {} "
-        "-TARGET_USER_YMIN {} -TARGET_USER_YMAX {} "
-        "-TARGET_OUT_GRID {}"
-    ).format(
-        pnt_feat, popField,
-        str(radius), str(abs(cellsize)),
-        str(left), str(right),
-        str(bottom), str(top),
-        SAGA_RASTER
+        f"saga_cmd grid_gridding 6 -POINTS {pnt_feat} -POPULATION {popField} "
+        f"-RADIUS {str(radius)} -TARGET_DEFINITION 0 -TARGET_USER_SIZE {str(abs(cellsize))} "
+        f"-TARGET_USER_XMIN {str(left)} -TARGET_USER_XMAX {str(right)} "
+        f"-TARGET_USER_YMIN {str(bottom)} -TARGET_USER_YMAX {str(top)} "
+        f"-TARGET_OUT_GRID {SAGA_RASTER}"
     )
     
     outcmd = execmd(cmd)
@@ -59,10 +53,7 @@ def loop_kernel_density(points, radius, template):
                 shp, points[shp]["FIELD"], rad, template, 
                 os.path.join(
                     points[shp]["OUTPUT_FOLDER"],
-                    '{}_{}.tif'.format(
-                        os.path.splitext(os.path.basename(shp))[0],
-                        str(rad)
-                    )
+                    f'{os.path.splitext(os.path.basename(shp))[0]}_{str(rad)}.tif'
                 )
             )
 

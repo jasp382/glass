@@ -34,3 +34,40 @@ def coords_to_boundary(topLeft, lowerRight, epsg, outEpsg=None):
     else:
         return polygon
 
+
+def ext_to_polygon(ingeo, out_srs=None, outaswkt=None):
+    """
+    Read one feature class/raster extent 
+    and create a boundary with that
+    extent
+    """
+
+    from glass.prop.ext import get_ext
+    from glass.gobj     import create_polygon
+
+    # Get Extent
+    ext = get_ext(ingeo)
+
+    # Create points of the new boundary based on the extent
+    boundary_points = [
+        (ext[0], ext[3]), (ext[1], ext[3]),
+        (ext[1], ext[2]), (ext[0], ext[2]), (ext[0], ext[3])
+    ]
+
+    polygon = create_polygon(boundary_points)
+
+    if out_srs:
+        from glass.prop.prj import get_epsg
+
+        in_srs = get_epsg(ingeo)
+
+        if in_srs != out_srs:
+            from glass.prj.obj import prj_ogrgeom
+
+            polygon = prj_ogrgeom(polygon, in_srs, out_srs,
+                api='shply')
+    
+    polygon.FlattenTo2D()
+    
+    return polygon if not outaswkt else polygon.ExportToWkt()
+

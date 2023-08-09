@@ -2,63 +2,63 @@
 Deal with DBMS Databases
 """
 
-def create_db(newdb, overwrite=True, api='psql', use_template=True, dbset='default',
+def create_pgdb(newdb, overwrite=True, use_template=True, dbset='default',
     geosupport=None):
     """
     Create Relational Database
-    
-    APIS Available:
-    * psql;
-    * sqlite;
     """
     
-    if api == 'psql':
-        from glass.sql.c    import sqlcon
-        from glass.prop.sql import lst_db
-        from glass.cons.psql   import con_psql
+    from glass.sql.c     import sqlcon
+    from glass.cons.psql import con_psql
+    from glass.prop.sql  import lst_db
 
-        conparam = con_psql(db_set=dbset)
+    conparam = con_psql(db_set=dbset)
     
-        dbs = lst_db(dbset=dbset)
+    dbs = lst_db()
     
-        con = sqlcon(None, sqlAPI='psql', dbset=dbset)
-        cs = con.cursor()
+    con = sqlcon(None, dbset=dbset)
+    cs = con.cursor()
     
-        if newdb in dbs and overwrite:
-            cs.execute(f"DROP DATABASE {newdb};")
-        
-        tmplt = f" TEMPLATE={conparam['TEMPLATE']}" \
-            if "TEMPLATE" in conparam and use_template else ""
+    if newdb in dbs and overwrite:
+        cs.execute(f"DROP DATABASE {newdb};")
     
-        cs.execute(f"CREATE DATABASE {newdb}{tmplt};")
+    tmplt = f" TEMPLATE={conparam['TEMPLATE']}" \
+        if "TEMPLATE" in conparam and use_template else ""
+    
+    cs.execute(f"CREATE DATABASE {newdb}{tmplt};")
 
-        if not use_template and geosupport:
-            ge = ['postgis', 'hstore', 'postgis_topology', 'postgis_raster', 'pgrouting']
-            for e in ge:
-                cs.execute(f"CREATE EXTENSION {e};")
+    if not use_template and geosupport:
+        ge = [
+            'postgis', 'hstore', 'postgis_topology', 'postgis_raster',
+            'pgrouting'
+        ]
+        for e in ge:
+            cs.execute(f"CREATE EXTENSION {e};")
     
-        cs.close()
-        con.close()
-    
-    elif api == 'sqlite':
-        import os
-        import sqlite3
-        
-        try:
-            if os.path.exists(newdb) and overwrite:
-                from glass.pys.oss import del_file
-                del_file(newdb)
-            
-            conn = sqlite3.connect(newdb)
-        except Error as e:
-            print(e)
-        finally:
-            conn.close()
-    
-    else:
-        raise ValueError('API {} is not available'.format(api))
+    cs.close()
+    con.close()
     
     return newdb
+
+
+def create_sqlitedb(dbpath, overwrite=None):
+    """
+    Create a new sqlite DB
+    """
+
+    import os, sqlite3
+        
+    try:
+        if os.path.exists(dbpath) and overwrite:
+            from glass.pys.oss import del_file
+            del_file(dbpath)
+            
+        conn = sqlite3.connect(dbpath)
+    
+    except Error as e:
+        print(e)
+    finally:
+        conn.close()
 
 
 """
@@ -71,27 +71,27 @@ def drop_db(database):
     
     Return 0 if the database does not exist
     """
-    
-    from glass.sql.c import sqlcon
+
+    from glass.sql.c    import sqlcon
     from glass.prop.sql import lst_db
     
     databases = lst_db()
     
     if database not in databases: return 0
     
-    con = sqlcon(None, sqlAPI='psql')
+    con = sqlcon(None)
     cursor = con.cursor()
     
     try:
-        cursor.execute("DROP DATABASE {};".format(database))
+        cursor.execute(f"DROP DATABASE {database};")
     except:
         cursor.execute((
             "SELECT pg_terminate_backend(pg_stat_activity.pid) "
             "FROM pg_stat_activity "
-            "WHERE pg_stat_activity.datname = '{}';"
-        ).format(database))
+            f"WHERE pg_stat_activity.datname = '{database}';"
+        ))
         
-        cursor.execute("DROP DATABASE {};".format(database))
+        cursor.execute(f"DROP DATABASE {database};")
         
     cursor.close()
     con.close()
@@ -198,7 +198,7 @@ def merge_dbs(destinationDb, dbs,
     from glass.pys.oss  import fprop, del_file
     from glass.sql      import psql_cmd
     from glass.prop.sql import db_exists, lst_tbl
-    from glass.sql.db   import create_db, drop_db
+    from glass.sql.db   import create_pgdb, drop_db
     from glass.sql.tbl  import rename_tbl, tbls_to_tbl
     from glass.sql.bkup import dump_tbls
     from glass.sql.db   import restore_tbls
@@ -208,8 +208,7 @@ def merge_dbs(destinationDb, dbs,
     fdb = fprop(destinationDb, ['fn', 'ff'])
     if fdb['fileformat'] != '':
         if fdb['fileformat'] == '.sql':
-            newdb = create_db(fdb['filename'], 
-                overwrite=None, api='psql')
+            newdb = create_pgdb(fdb['filename'], overwrite=None)
             
             psql_cmd(newdb, destinationDb)
             
@@ -229,7 +228,7 @@ def merge_dbs(destinationDb, dbs,
         
         # Check if destination db exists
         if not db_exists(destinationDb):
-            create_db(destinationDb, overwrite=None, api='psql')
+            create_pgdb(destinationDb, overwrite=None)
     
     # Check if dbs is a list or a dir
     if type(dbs) == list:
@@ -257,7 +256,7 @@ def merge_dbs(destinationDb, dbs,
 
         if fp['fileformat'] == '.sql':
             # Create DB        
-            create_db(DB_NAME, overwrite=True, api='psql')
+            create_pgdb(DB_NAME, overwrite=True)
         
             # Restore DB
             psql_cmd(DB_NAME, dbs[i])

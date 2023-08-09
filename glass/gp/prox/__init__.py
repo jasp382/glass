@@ -505,7 +505,7 @@ def pd_near(dfa, dfb):
     Find the closest point of each point in dfa
     """
 
-    import numpy as np
+    import numpy  as np
     import pandas as pd
 
     from scipy.spatial import cKDTree
@@ -519,14 +519,11 @@ def pd_near(dfa, dfb):
 
     dfbnear = dfb.iloc[idx].drop(columns="geometry").reset_index(drop=True)
 
-    gdf = pd.concat(
-        [
-            dfa.reset_index(drop=True),
-            dfbnear,
-            pd.Series(dist, name='dist')
-        ],
-        axis=1
-    )
+    gdf = pd.concat([
+        dfa.reset_index(drop=True),
+        dfbnear,
+        pd.Series(dist, name='dist')
+    ], axis=1)
 
     return gdf
 

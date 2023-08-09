@@ -15,7 +15,7 @@ def fishnet(top_left, bottom_right, x, y, outfishnet=None, epsg=None, xy_row_col
     from shapely import wkt
     import geopandas as gp
     from glass.pd.dagg import dfcolstorows
-    from glass.wt.shp   import df_to_shp
+    from glass.wt.shp  import df_to_shp
     
     x_min, y_max  = top_left
     x_max, y_min  = bottom_right

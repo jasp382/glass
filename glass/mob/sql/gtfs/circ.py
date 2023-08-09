@@ -355,15 +355,13 @@ def relate_busEntrances_circ(conGTFS_DB, conOTHER_DB, GTFS_SCHEMA,
     (eg: from 04:00:00 to 31:00:00)
     """
     
-    import os; import pandas
+    import os
     from glass.pys import obj_to_lst
-    from glass.cpu.psql.mng      import create_db
-    from glass.cpu.psql.mng.copy import copy_fromdb_todb
-    from glass.cpu.psql.mng._del import del_tables
-    from glass.sql.q    import q_to_ntbl, update_table
-    from glass.cpu.psql.mng.fld  import text_columns_to_column
-    from glass.fm.psql           import sql_query
-    from glass.to.xls            import psql_to_xls
+    from glass.sql.db      import create_pgdb
+    from glass.it.db import tbl_fromdb_todb
+    from glass.sql.col import txt_cols_to_col
+    from glass.sql.q import q_to_obj, q_to_ntbl
+    from glass.it import db_to_tbl
     
     # Merge ROUTE ID into one column
     OTHER_SCHEMA["STOPS"]["ROUTE"]     = obj_to_lst(
@@ -375,7 +373,7 @@ def relate_busEntrances_circ(conGTFS_DB, conOTHER_DB, GTFS_SCHEMA,
         OTHER_SCHEMA["STOPS"]["ROUTE"] = OTHER_SCHEMA["STOPS"]["ROUTE"][0]
     
     else:
-        OTHER_SCHEMA["STOPS"]["TNAME"] = text_columns_to_column(
+        OTHER_SCHEMA["STOPS"]["TNAME"] = txt_cols_to_col(
             conParam, OTHER_SCHEMA["STOPS"]["TNAME"],
             OTHER_SCHEMA["STOPS"]["ROUTE"], "|", "rouid",
             "{}_nr".format(OTHER_SCHEMA["STOPS"]["TNAME"])
@@ -387,7 +385,7 @@ def relate_busEntrances_circ(conGTFS_DB, conOTHER_DB, GTFS_SCHEMA,
         OTHER_SCHEMA["ENTRANCES"]["ROUTE"] = OTHER_SCHEMA["ENTRANCES"]["ROUTE"][0]
     
     else:
-        OTHER_SCHEMA["ENTRANCES"]["TNAME"] = text_columns_to_column(
+        OTHER_SCHEMA["ENTRANCES"]["TNAME"] = txt_cols_to_col(
             conParam, OTHER_SCHEMA["ENTRANCES"]["TNAME"],
             OTHER_SCHEMA["ENTRANCES"]["ROUTE"], "", "rouid",
             "{}_nr".format(OTHER_SCHEMA["ENTRANCES"]["TNAME"])
@@ -402,7 +400,7 @@ def relate_busEntrances_circ(conGTFS_DB, conOTHER_DB, GTFS_SCHEMA,
         "HOST" : conGTFS_DB["HOST"], "PORT" : conGTFS_DB["PORT"],
         "USER" : conGTFS_DB["USER"], "PASSWORD" : conGTFS_DB["PASSWORD"]
     }
-    create_db(newConParam, newDb, overwrite=True)
+    create_pgdb(newConParam, newDb, overwrite=True)
     newConParam["DATABASE"] = newDb
     
     # Copy GTFS Tables
@@ -843,7 +841,7 @@ def relate_busEntrances_circ(conGTFS_DB, conOTHER_DB, GTFS_SCHEMA,
     q_to_ntbl(newConParam, outpg, finalQ)
     
     if os.path.splitext(OutTable)[1] == '.xlsx':
-        psql_to_xls(outpg, OutTable, outpg, newConParam)
+        db_to_tbl(outpg, OutTable, outpg, newConParam)
     
     return OutTable
 

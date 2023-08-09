@@ -83,9 +83,9 @@ def mdl_to_kml(mdl, outKml, filter=None):
     """
     
     import os
-    from django.http               import HttpResponse
-    from glass.pys.oss             import fprop
-    from glass.webg.djg.mdl.serial import mdl_serialize_to_json
+    from django.http             import HttpResponse
+    from glass.pys.oss           import fprop
+    from glass.wg.djg.mdl.serial import mdl_serialize_to_json
     from glass.it.shp            import shp_to_shp
     
     # Write data in JSON

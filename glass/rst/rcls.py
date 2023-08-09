@@ -3,6 +3,12 @@ Reclassify Raster files
 """
 
 import os
+import numpy as np
+from osgeo import gdal
+
+from glass.prop.img import get_nd, rst_epsg
+from glass.wt.rst   import obj_to_rst
+
 
 def rcls_rst(inrst, rclsRules, outrst, api='gdal', maintain_ext=True):
     """
@@ -28,17 +34,15 @@ def rcls_rst(inrst, rclsRules, outrst, api='gdal', maintain_ext=True):
     """
     
     if api == 'gdal':
-        import numpy        as np
-        from osgeo          import gdal
-        from glass.wt.rst   import obj_to_rst
-        from glass.rd.rsrc  import imgsrc_to_num
-        from glass.prop.img import get_nd
+        from glass.rd.rsrc import imgsrc_to_num
 
         if not os.path.exists(inrst):
             raise ValueError(f'File {inrst} does not exist!')
 
         # Open Raster
         img = gdal.Open(inrst)
+
+        epsg = rst_epsg(img)
     
         # Raster to Array
         rst_num = imgsrc_to_num(img)
@@ -49,11 +53,9 @@ def rcls_rst(inrst, rclsRules, outrst, api='gdal', maintain_ext=True):
     
         # Change values
         for k in rclsRules:
-            if rclsRules[k] == 'NoData':
-                continue
+            if rclsRules[k] == 'NoData': continue
             
-            if type(k) == str:
-                continue
+            if type(k) == str: continue
             
             elif type(k) == tuple:
                 q = (rst_num > k[0]) & (rst_num <= k[1])
@@ -76,11 +78,13 @@ def rcls_rst(inrst, rclsRules, outrst, api='gdal', maintain_ext=True):
 
             clip_rcls, n_left, n_top = rshp_to_data(rcls_num, 255, left, cellx, top, celly)
 
-            return obj_to_rst(clip_rcls, outrst, img, noData=255, geotrans=(
-                n_left, cellx, z, n_top, c, celly
-            ))
+            gt = (n_left, cellx, z, n_top, c, celly)
+            return obj_to_rst(clip_rcls, outrst, gt, epsg, noData=255)
         else:
-            return obj_to_rst(rcls_num, outrst, img, noData=255)
+            return obj_to_rst(
+                rcls_num, outrst, img.GetGeoTransform(),
+                epsg, noData=255
+            )
     
     elif api == "pygrass":
         from grass.pygrass.modules import Module
@@ -237,9 +241,6 @@ def rstval_to_binrst(rst, outfld, fileformat=None):
     Export all values in a raster to new binary raster
     """
     
-    import numpy       as np
-    from osgeo         import gdal
-    from glass.wt.rst  import obj_to_rst
     from glass.pys.oss import fprop
 
     fileformat = fileformat if fileformat else '.tif'
@@ -263,6 +264,9 @@ def rstval_to_binrst(rst, outfld, fileformat=None):
         np.place(val_a, rst_num == v, 1)
 
         # Export to new raster
-        obj_to_rst(val_a, os.path.join(
-            outfld, fn + '_val' + str(v) + fileformat
-        ), rst_src, noData=0)
+        _fn = f'{fn}_val{v}{fileformat}'
+        obj_to_rst(
+            val_a, os.path.join(outfld, _fn),
+            rst_src.GetGeoTransform(),
+            rst_epsg(rst_src), noData=0
+        )

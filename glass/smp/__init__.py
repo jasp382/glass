@@ -226,7 +226,8 @@ def proprndcells_to_rst(inrst, class_proportion, out_rst,
 
     from osgeo        import gdal
     import numpy      as np
-    from glass.wt.rst import obj_to_rst
+    from glass.prop.img import rst_epsg
+    from glass.wt.rst   import obj_to_rst
 
     img = gdal.Open(inrst, gdal.GA_ReadOnly)
 
@@ -311,6 +312,6 @@ def proprndcells_to_rst(inrst, class_proportion, out_rst,
     res = res.reshape(num_ref.shape)
 
     # Save result
-    obj_to_rst(res, out_rst, img, noData=nd_val)
+    obj_to_rst(res, out_rst, img.GetGeoTransform(), rst_epsg(img), noData=nd_val)
 
     return out_rst

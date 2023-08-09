@@ -349,11 +349,11 @@ def check_autofc_overlap(checkShp, epsg, dbname, outOverlaps):
     """
     
     import os
-    from glass.sql.db import create_db
+    from glass.sql.db import create_pgdb
     from glass.it.db  import shp_to_psql
     from glass.it.shp import dbtbl_to_shp
     
-    create_db(dbname, api='psql')
+    create_pgdb(dbname)
     
     # Send data to postgresql
     table = shp_to_psql(dbname, checkShp, srsEpsgCode=epsg, api="pandas")
@@ -562,4 +562,41 @@ def disjoint_polygons_rel_points(sqBD, pntTbl, pntGeom,
         from glass.sql.q import q_to_ntbl
         
         q_to_ntbl(sqBD, outTbl, sql, api='ogr2ogr')
+
+
+def points_in_polygons(db, pnt, pnt_geom, poly, poly_attr, poly_geom,
+    outtbl=None, pnt_whr=None, pntattr=None):
+    """
+    Return polygons containing each point
+    """
+
+    from glass.pys   import obj_to_lst
+    from glass.sql.q import q_to_obj, q_to_ntbl
+
+    icols = obj_to_lst(pntattr) if pntattr else []
+    pntcols = "pnt.*" if not pntattr else ", ".join([
+        f"pnt.{c}" for c in icols
+    ])
+
+    polycols = ", ".join([f"poly.{c}" for c in obj_to_lst(poly_attr)])
+
+    whr = f" AND {pnt_whr}"
+
+    q = (
+        f"SELECT {pntcols}, {polycols} "
+        f"FROM {pnt} AS pnt, {poly} AS poly "
+        f"WHERE ST_Contains({poly_geom}, {pnt_geom}) IS TRUE{whr}"
+    )
+
+    if outtbl:
+        _out = q_to_ntbl(db, outtbl, q)
+    
+    else:
+        if pnt_geom in icols or not pntattr:
+            _out = q_to_obj(db, q, geomCol=pnt_geom)
+        else:
+            _out = q_to_obj(db, q, geomCol=None)
+    
+    return _out
+
 

@@ -37,7 +37,7 @@ def shp_to_obj(shp, geom_col=None, fields=None, output='df', srs_to=None,
     
     # Get Fields to Mantain
     if fields:
-        from glass.pd.fld import del_cols_notin_ref
+        from glass.pd.cols import del_cols_notin_ref
 
         df = del_cols_notin_ref(df, fields, geomCol=geom_col)
     

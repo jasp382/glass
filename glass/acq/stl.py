@@ -51,12 +51,12 @@ def lst_prod(shpext, start_time, end_time,
     
         else:
             if is_rst(shpext):
-                from glass.dtt.ext.toshp import rstext_to_shp
+                from glass.wt.shp import rstext_to_shp
 
                 # Raster extent to shape
                 shpext = rstext_to_shp(shpext, os.path.join(
                     os.path.dirname(shpext),
-                    fprop(shpext, 'fn') + '.shp'
+                    f"{fprop(shpext, 'fn')}.shp"
                 ))
             
             boundary = shp_to_obj(

@@ -17,7 +17,7 @@ def find_neighbords_cells(grid, otbl):
     from glass.pys.oss  import fprop
     from glass.prop.ext import featext_to_dfcols
     from glass.prop.prj import get_epsg
-    from glass.sql.db   import create_db
+    from glass.sql.db   import create_pgdb
     from glass.wt.sql   import df_to_db
     from glass.sql.q    import q_to_obj
     from glass.wt       import obj_to_tbl
@@ -62,7 +62,7 @@ def find_neighbords_cells(grid, otbl):
     )
 
     # Create database
-    db = create_db(fprop(otbl, 'fn'))
+    db = create_pgdb(fprop(otbl, 'fn'))
 
     # Send data to database
     grid_tbl = df_to_db(

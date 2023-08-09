@@ -3,7 +3,7 @@ Extent related
 """
 
 
-def get_ext(inFile, outEpsg=None):
+def get_ext(ingeo, oepsg=None):
     """
     Get Extent of any GIS Data
     
@@ -11,48 +11,47 @@ def get_ext(inFile, outEpsg=None):
     """
     
     from glass.prop.df import is_rst, is_shp
+
+    ishp, irst = is_shp(ingeo), is_rst(ingeo)
     
-    if is_rst(inFile):
-        from glass.prop.rst import rst_ext
+    if irst and not ishp:
+        from glass.prop.rst import rst_ext as gext
+    
+    elif not irst and ishp:
+        from glass.prop.shp import get_ext as gext
         
-        extent = rst_ext(inFile)
-    
     else:
-        if is_shp(inFile):
-            from glass.prop.feat import get_ext as gext
-            
-            extent = gext(inFile)
-        
-        else:
-            return None
+        return None
     
-    if outEpsg:
+    ext = gext(ingeo)
+    
+    if oepsg:
         from glass.prop.prj import get_epsg
         
-        fileEpsg = get_epsg(inFile)
+        iepsg = get_epsg(ingeo)
         
-        if not fileEpsg:
+        if not iepsg:
             raise ValueError('cannot get EPSG of input file')
         
-        if fileEpsg != outEpsg:
+        if iepsg != oepsg:
             from glass.gobj    import new_pnt
             from glass.prj.obj import prj_ogrgeom
             
             bt_left = prj_ogrgeom(new_pnt(
-                extent[0], extent[2]), fileEpsg, outEpsg,
-                api='ogr' if outEpsg != 4326 else 'shapely'
+                ext[0], ext[2]), iepsg, oepsg,
+                api='ogr' if oepsg != 4326 else 'shapely'
             )
             top_right = prj_ogrgeom(new_pnt(
-                extent[1], extent[3]), fileEpsg, outEpsg,
-                api='ogr' if outEpsg != 4326 else 'shapely'
+                ext[1], ext[3]), iepsg, oepsg,
+                api='ogr' if oepsg != 4326 else 'shapely'
             )
             
             left , bottom = bt_left.GetX(), bt_left.GetY()
             right, top    = top_right.GetX(), top_right.GetY()
             
-            extent = [left, right, bottom, top]
+            ext = [left, right, bottom, top]
     
-    return extent
+    return ext
 
 
 

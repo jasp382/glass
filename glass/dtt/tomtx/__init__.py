@@ -90,18 +90,18 @@ def tbl_to_areamtx(inShp, col_a, col_b, outXls, db=None, with_metrics=None):
         return obj_to_tbl(outDf, outXls)
     
     else:
-        from glass.pys.oss        import fprop
-        from glass.sql.db      import create_db
-        from glass.prop.sql    import db_exists
-        from glass.it.db       import shp_to_psql
+        from glass.pys.oss       import fprop
+        from glass.sql.db        import create_pgdb
+        from glass.prop.sql      import db_exists
+        from glass.it.db         import shp_to_psql
         from glass.dtt.tomtx.sql import tbl_to_area_mtx
-        from glass.it          import db_to_tbl
+        from glass.it            import db_to_tbl
 
         # Create database if not exists
         is_db = db_exists(db)
 
         if not is_db:
-            create_db(db, api='psql')
+            create_pgdb(db, api='psql')
 
         # Add data to database
         tbl = shp_to_psql(db, inShp, api='shp2pgsql')

@@ -9,6 +9,7 @@ def rst_mean(rsts, out_rst):
 
     import numpy as np
     from osgeo import gdal
+    from glass.prop.img import rst_epsg
     from glass.wt.rst import obj_to_rst
 
     # Open images
@@ -33,7 +34,11 @@ def rst_mean(rsts, out_rst):
         np.place(num_out, num_rst[r] == nd_val, nd_out)
     
     # Export result
-    return obj_to_rst(num_out, out_rst, src_rst[0], noData=nd_out)
+    return obj_to_rst(
+        num_out, out_rst,
+        src_rst[0].GetGeoTransform(),
+        rst_epsg(src_rst[0]), noData=nd_out
+    )
 
 
 

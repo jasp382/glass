@@ -17,12 +17,20 @@ def pca(bands, ofolder, oname):
     from osgeo import gdal, gdal_array
     from sklearn.decomposition import PCA
 
+    from glass.prop.img import rst_epsg
     from glass.wt.rst import obj_to_rst
 
     # Open Images
     img_src = [gdal.Open(i, gdal.GA_ReadOnly) for i in bands]
 
+    # Get NoData Value
     ndVal = img_src[0].GetRasterBand(1).GetNoDataValue()
+
+    # Get GeoTrans
+    geotrans = img_src[0].GetGeoTransform()
+
+    # Get SRS
+    srs = rst_epsg(img_src[0])
 
     img_x = np.zeros((
         img_src[0].RasterYSize, img_src[0].RasterXSize, len(img_src)),
@@ -62,7 +70,7 @@ def pca(bands, ofolder, oname):
         obj_to_rst(
             pca_array[i],
             os.path.join(ofolder, f'{oname}_c{str(i+1)}.tif'),
-            bands[0], noData=nd_nd
+            geotrans, srs, noData=nd_nd
         )
 
     return ofolder

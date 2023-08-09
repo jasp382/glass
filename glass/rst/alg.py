@@ -2,6 +2,12 @@
 Algebra tools
 """
 
+import numpy as np
+from osgeo import gdal
+
+from glass.prop.img import rst_epsg, get_nd
+from glass.wt.rst   import obj_to_rst
+
 
 def gdal_mapcalc(expression, exp_val_paths, outRaster, template_rst,
     outNodata=-99999):
@@ -11,20 +17,25 @@ def gdal_mapcalc(expression, exp_val_paths, outRaster, template_rst,
     TODO: Check if rasters dimensions are equal
     """
     
-    import numpy            as np
-    from osgeo              import gdal
     from py_expression_eval import Parser
-    from glass.prop.img   import get_nd
-    from glass.wt.rst     import obj_to_rst
     
     parser = Parser()
     
     EXPRESSION = parser.parse(expression)
     
-    evalValue = {}
-    noDatas   = {}
+    evalValue, noDatas = {}, {}
+
+    gtrans, epsg = None, None
+
     for x in EXPRESSION.variables():
         img = gdal.Open(exp_val_paths[x])
+
+        if not gtrans:
+            gtrans = img.GetGeoTransform()
+        
+        if not epsg:
+            epsg = rst_epsg(img)
+        
         arr = img.ReadAsArray().astype(float)
         
         evalValue[x] = arr
@@ -71,14 +82,14 @@ def rstcalc(expression, output, api='saga', grids=None):
     """
     Basic Raster Calculator
     """
+
+    import os
+    from glass.pys.oss import fprop
     
     if api == 'saga':
         # Using SAGA GIS
-        
-        import os
-        from glass.pys     import execmd
-        from glass.pys.oss import fprop
-        from glass.it.rst  import saga_to_tif
+        from glass.pys    import execmd
+        from glass.it.rst import saga_to_tif
         
         SAGA_RASTER = os.path.join(
             os.path.dirname(output),
@@ -142,10 +153,6 @@ def repnd_by_rstval(ref_rst, val_rst, out_rst):
     Replace NoData Values with values from another raster
     """
 
-    import numpy as np
-    from osgeo import gdal
-    from glass.wt.rst import obj_to_rst
-
     # TODO check if shape of two rasters are the same
 
     # Open Rasters and Get data as array
@@ -162,7 +169,11 @@ def repnd_by_rstval(ref_rst, val_rst, out_rst):
     np.copyto(refnum, popnum, where=refnum==nd_val)
 
     # Export to file
-    obj_to_rst(refnum, out_rst, refsrc, noData=nd_pop)
+    obj_to_rst(
+        refnum, out_rst,
+        refsrc.GetGeoTransform(), rst_epsg(refsrc),
+        noData=nd_pop
+    )
 
     return out_rst
 

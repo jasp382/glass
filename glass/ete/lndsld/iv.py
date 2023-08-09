@@ -12,13 +12,13 @@ def infovalue(landslides, variables, iv_rst):
     import math
     import numpy
     from glass.rd.rst    import rst_to_array
-    from glass.rd       import tbl_to_obj
+    from glass.rd        import tbl_to_obj
     from glass.prop.feat import get_gtype
-    from glass.prop.rst  import rst_shape
-    from glass.prop.rst  import count_cells
-    from glass.prop.rst  import get_cellsize
+    from glass.prop.prj  import rst_epsg
+    from glass.prop.rst  import rst_shape, count_cells
+    from glass.prop.rst  import rst_geoprop, rst_cellsize
     from glass.prop.rst  import frequencies
-    from glass.pys.oss     import mkdir
+    from glass.pys.oss   import mkdir
     from glass.wt.rst    import obj_to_rst
     
     # Create Workspace for temporary files
@@ -43,9 +43,10 @@ def infovalue(landslides, variables, iv_rst):
         
         if [lrows, lcols] != varShapes[variables[0]]:
             raise ValueError((
-                "Raster with Landslides ({}) has to have the same "
+                f"Raster with Landslides ({landslides}) has "
+                "to have the same "
                 "dimension that Raster Variables"
-            ).format(landslides))
+            ))
     
     except:
         # Landslides are not Raster
@@ -70,7 +71,7 @@ def infovalue(landslides, variables, iv_rst):
         from glass.dtt.torst import shp_to_rst
         
         land_raster = shp_to_rst(
-            land_poly, None, get_cellsize(variables[0], gisApi='gdal'), -9999,
+            land_poly, None, rst_cellsize(variables[0], gisApi='gdal'), -9999,
             os.path.join(workspace, 'landslides_rst.tif'),
             rst_template=variables[0], api='gdal'
         )
@@ -146,8 +147,12 @@ def infovalue(landslides, variables, iv_rst):
         vi_rst = vi_rst + resultArrays[variables[v]]
     
     numpy.place(vi_rst, vi_rst == len(variables) * -128, -128)
+
+    epsg    = rst_epsg(variables[i])
+    left, cellx, top, celly = rst_geoprop(variables[i])
+    gtrans = (left, cellx, 0, top, 0, celly)
     
-    result = obj_to_rst(vi_rst, iv_rst, variables[i], noData=-128)
+    result = obj_to_rst(vi_rst, iv_rst, gtrans, epsg, noData=-128)
     
     return iv_rst
 
@@ -159,11 +164,11 @@ def grs_infovalue(movs, _var, refrst, out):
 
     import os
     import math as m
-    from glass.dtt.ext.torst import rstext_to_rst
-    from glass.prop.df       import is_rst
-    from glass.prop.rst      import rst_shape, frequencies
-    from glass.wenv.grs      import run_grass
-    from glass.pys.oss       import lst_ff, fprop
+    from glass.wt.rst   import rstext_to_rst
+    from glass.prop.df  import is_rst
+    from glass.prop.rst import rst_shape, frequencies
+    from glass.wenv.grs import run_grass
+    from glass.pys.oss  import lst_ff, fprop
 
     # Get reference raster
     ws = os.path.dirname(out)

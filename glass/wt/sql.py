@@ -2,6 +2,8 @@
 Data to a Relational Database
 """
 
+from glass.sql.c import alchemy_engine
+
 
 def df_to_db(db, df, table, append=None, api='psql',
              epsg=None, geomType=None, colGeom='geometry', dbset='default'):
@@ -15,8 +17,6 @@ def df_to_db(db, df, table, append=None, api='psql',
     
     if api != 'psql' and api != 'sqlite':
         raise ValueError(f'API {api} is not available')
-    
-    from glass.sql.c import alchemy_engine
     
     pgengine = alchemy_engine(db, api=api, dbset=dbset)
     

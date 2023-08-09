@@ -17,7 +17,7 @@ def search_photos(lat=None, lng=None, radius=None, keyword=None,
     
     import pandas
     from flickrapi       import FlickrAPI
-    from glass.pd.fld import listval_to_newcols
+    from glass.pd.cols import listval_to_newcols
     
     if apiKey:
         FLIC_PUB, FLIC_SEC = apiKey

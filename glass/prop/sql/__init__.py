@@ -54,18 +54,13 @@ def lst_views(db, schema='public', basename=None, dbset='default'):
     
     basename = obj_to_lst(basename)
     
-    basenameStr = "" if not basename else "{}".format(
-        " OR ".join(["{} LIKE '%%{}%%'".format(
-            "table_name", b
-        ) for b in basename])
-    )
+    bnamestr = "" if not basename else " AND (" + " OR ".join([
+        f"table_name LIKE '%%{b}%%'" for b in basename]) + ")"
     
     views = q_to_obj(db, (
         "SELECT table_name FROM information_schema.views "
-        "WHERE table_schema='{}'{}"
-    ).format(schema, "" if not basename else " AND ({})".format(
-        basenameStr
-    )), db_api='psql', dbset=dbset)
+        f"WHERE table_schema='{schema}'{bnamestr}"
+    ), dbset=dbset)
     
     return views.table_name.tolist()
 
@@ -85,18 +80,15 @@ def lst_tbl(db, schema='public', excludeViews=None, api='psql',
     
     basename = obj_to_lst(basename)
     
-    basenameStr = "" if not basename else " OR ".join([(
-        f"{'table_name' if api == 'psql' else 'name'} "
-        f"LIKE '%%{b}%%'"
-    ) for b in basename])
+    bnamestr = "" if not basename else " AND (" + " OR ".join([
+        f"table_name LIKE '%%{b}%%'" for b in basename]) + ")"
     
     if api == 'psql':
         from glass.sql.q import q_to_obj
         
         Q = (
             "SELECT table_name FROM information_schema.tables "
-            f"WHERE table_schema='{schema}'"
-            f"{'' if not basename else f' AND ({basenameStr})'}"
+            f"WHERE table_schema='{schema}'{bnamestr}"
         )
     
         tbls = q_to_obj(db, Q, db_api='psql', dbset=db_set)
@@ -120,8 +112,8 @@ def lst_tbl(db, schema='public', excludeViews=None, api='psql',
         cursor = conn.cursor()
         
         tables = cursor.execute((
-            "SELECT name FROM sqlite_master WHERE type='table'"
-            f"{'' if not basename else f' AND ({basenameStr})'};"
+            "SELECT name FROM sqlite_master "
+            f"WHERE type='table'{bnamestr}"
         ))
         
         __tbls = [n[0] for n in tables]
@@ -186,7 +178,7 @@ def cols_name(dbname, table, sanitizeSpecialWords=True, api='psql', dbset='defau
         c = sqlcon(dbname, sqlAPI='psql', dbset=dbset)
     
         cursor = c.cursor()
-        cursor.execute("SELECT * FROM {} LIMIT 1;".format(table))
+        cursor.execute(f"SELECT * FROM {table} LIMIT 1;")
         colnames = [desc[0] for desc in cursor.description]
     
         if sanitizeSpecialWords:
@@ -194,7 +186,7 @@ def cols_name(dbname, table, sanitizeSpecialWords=True, api='psql', dbset='defau
     
             for i in range(len(colnames)):
                 if colnames[i] in PG_SPECIAL_WORDS:
-                    colnames[i] = '"{}"'.format(colnames[i])
+                    colnames[i] = f'"{colnames[i]}"'
     
     elif api == 'sqlite':
         import sqlite3

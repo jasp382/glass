@@ -22,13 +22,13 @@ if __name__ == '__main__':
     from glass.pys.oss import lst_ff, fprop
     from glass.sql.q import exec_write_q
     from glass.sql.bkup import dump_db
-    from glass.sql.db import create_db, drop_db
+    from glass.sql.db import create_pgdb, drop_db
 
     sqls = lst_ff(sql_fld)
 
     for sql in sqls:
         # Restore database
-        new_db = create_db(fprop(sql, 'fn'))
+        new_db = create_pgdb(fprop(sql, 'fn'))
         psql_cmd(new_db, sql)
 
         # Execute queries

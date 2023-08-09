@@ -28,8 +28,8 @@ def prj_ogrgeom(geom, in_epsg, out_epsg, api='ogr'):
 
         shpgeom = loads(geom.ExportToWkt())
 
-        srs_in = pyproj.Proj('epsg:' + str(in_epsg))
-        srs_ou = pyproj.Proj('epsg:' + str(out_epsg))
+        srs_in = pyproj.Proj(f'epsg:{str(in_epsg)}')
+        srs_ou = pyproj.Proj(f'epsg:{str(out_epsg)}')
 
         proj = pyproj.Transformer.from_proj(
             srs_in, srs_ou, always_xy=True

@@ -131,7 +131,7 @@ def v_break_at_points(workspace, loc, lineShp, pntShp, db, srs, out_correct,
     from glass.it.shp   import dbtbl_to_shp
     from glass.wenv.grs import run_grass
     from glass.pys.oss  import fprop
-    from glass.sql.db   import create_db
+    from glass.sql.db   import create_pgdb
     from glass.sql.q    import q_to_ntbl
     
     tmpFiles = os.path.join(workspace, loc)
@@ -154,7 +154,7 @@ def v_break_at_points(workspace, loc, lineShp, pntShp, db, srs, out_correct,
         tmpFiles, grsLine + '_v1.shp'), 'line')
     
     # Sanitize output of v.edit.break using PostGIS
-    create_db(db, overwrite=True, api='psql')
+    create_pgdb(db, overwrite=True)
     
     lt = shp_to_psql(
         db, LINES, srsEpsgCode=srs,
@@ -215,14 +215,14 @@ def break_lines_on_points(lineShp, pntShp, outShp, lnhidonpnt,
     
     elif api == 'psql':
         from glass.pys.oss    import fprop
-        from glass.sql.db     import create_db
+        from glass.sql.db     import create_pgdb
         from glass.it.db      import shp_to_psql
         from glass.it.shp     import dbtbl_to_shp
         from glass.gp.brk.sql import split_lines_on_pnt
         
         # Create DB
         if not db:
-            db = create_db(fprop(lineShp, 'fn', forceLower=True), api='psql')
+            db = create_pgdb(fprop(lineShp, 'fn', forceLower=True))
         
         else:
             from glass.prop.sql import db_exists
@@ -230,7 +230,7 @@ def break_lines_on_points(lineShp, pntShp, outShp, lnhidonpnt,
             isDb = db_exists(db)
             
             if not isDb:
-                db = create_db(db, api='psql')
+                db = create_pgdb(db)
         
         # Send Data to BD
         lnhTbl = shp_to_psql(db, lineShp, api="shp2pgsql")

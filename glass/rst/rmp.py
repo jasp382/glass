@@ -98,9 +98,9 @@ def resample_by_majority(refrst, valrst, out_rst):
     TODO: Valrst must be of int type
     """
 
-    import numpy          as np
-    from osgeo            import gdal
-    from glass.prop.img import get_cell_size, get_nd
+    import numpy        as np
+    from osgeo          import gdal
+    from glass.prop.img import get_cell_size, get_nd, rst_epsg
     from glass.wt.rst   import obj_to_rst
 
     # Data to Array
@@ -138,5 +138,9 @@ def resample_by_majority(refrst, valrst, out_rst):
             ).argmax()
     
     # Export out raster
-    return obj_to_rst(resnum, out_rst, refsrc, noData=get_nd(valsrc))
+    return obj_to_rst(
+        resnum, out_rst,
+        refsrc.GetGeoTransform(), rst_epsg(refsrc),
+        noData=get_nd(valsrc)
+    )
 

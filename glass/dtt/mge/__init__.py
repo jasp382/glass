@@ -117,9 +117,9 @@ def shps_to_shp(shps, outShp, api="ogr2ogr", fformat='.shp',
         from glass.it.db   import shp_to_psql
 
         if not dbname:
-            from glass.sql.db import create_db
+            from glass.sql.db import create_pgdb
 
-            create_db(dbname, api='psql')
+            create_pgdb(dbname)
 
         pg_tbls = shp_to_psql(
             dbname, shps, api="shp2pgsql"

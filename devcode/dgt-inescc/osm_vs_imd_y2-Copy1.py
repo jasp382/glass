@@ -51,18 +51,17 @@ def osm_vs_imd(osmxlsx, osmxml, imd, outfishnet, outshp):
     import numpy as np
     import glob
 
-    from dgt.it.osm import osm_to_psql
-    from dgt.it.shp import dbtbl_to_shp
-    from dgt.wenv.grs import run_grass
-    from dgt.dp.torst import shp_to_rst
-    from dgt.rd.shp import shp_to_obj
-    from dgt.wt.shp import df_to_shp
+    from glass.it.osm import osm_to_psql
+    from glass.it.shp import dbtbl_to_shp
+    from glass.wenv.grs import run_grass
+    from glass.rd.shp import shp_to_obj
+    from glass.wt.shp import df_to_shp
 
-    from dgt.prop.sql import cols_name
-    from dgt.rd import tbl_to_obj
-    from dgt.sql.q import exec_write_q
-    from dgt.sql.db import create_db
-    from dgt.pys.oss import mkdir, fprop
+    from glass.prop.sql import cols_name
+    from glass.rd import tbl_to_obj
+    from glass.sql.q import exec_write_q
+    from glass.sql.db import create_pgdb
+    from glass.pys.oss import mkdir, fprop
 
     # Prepare workspace
     ws = mkdir(os.path.join(
@@ -74,7 +73,7 @@ def osm_vs_imd(osmxlsx, osmxml, imd, outfishnet, outshp):
     #ws = os.path.join(os.path.dirname(outshp), 'grswork')
 
     # Import data into a database
-    create_db(osmdata["DB"], api='psql', overwrite=True, dbset=osmdata["DBSET"])
+    create_pgdb(osmdata["DB"], api='psql', overwrite=True, dbset=osmdata["DBSET"])
 
     osm_to_psql(osmdata["FILE"], osmdata["DB"])
 

@@ -12,7 +12,7 @@ def conditional_dependence(movs, indp):
     
     import math; from decimal import Decimal
     from glass.prop.feat   import feat_count
-    from glass.prop.rst    import get_cellsize, count_cells
+    from glass.prop.rst    import rst_cellsize, count_cells
     from glass.prop.rst    import frequencies
     
     def foundPredT(dic):
@@ -55,7 +55,7 @@ def conditional_dependence(movs, indp):
     # Count the number of cell raster
     NrCell = count_cells(indp[0])
     # Get Cellsize of the raster's
-    cellsize = Decimal(get_cellsize(indp[0], gisApi='gdal'))
+    cellsize = Decimal(rst_cellsize(indp[0], gisApi='gdal'))
     # Calculate UnitArea
     area_km = Decimal(((cellsize * cellsize) * NrCell) / 1000000.0)
     UnitArea = Decimal((area_km / ExpNumTP) / 40.0)

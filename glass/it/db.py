@@ -116,13 +116,13 @@ def db_to_db(db_a, db_b, typeDBA, typeDBB):
     
     from glass.sql.q    import q_to_obj
     from glass.prop.sql import lst_tbl
-    from glass.sql.db   import create_db
+    from glass.sql.db   import create_pgdb
     
     # List Tables in DB A
     tbls = lst_tbl(db_a, excludeViews=True, api=typeDBA)
     
     # Create database B
-    db_b = create_db(db_b, overwrite=False, api=typeDBB)
+    db_b = create_pgdb(db_b, overwrite=False, api=typeDBB)
     
     # Table to Database B
     for tbl in tbls:
@@ -236,17 +236,20 @@ def txts_to_db(folder, db, delimiter, __encoding='utf-8', apidb='psql',
     
     from glass.pys.oss  import lst_ff, fprop
     from glass.prop.sql import db_exists
+
+    if apidb == 'psql':
+        from glass.sql.db import create_pgdb as create_db
+    
+    else:
+        from glass.sql.db import create_sqlitedb as create_db
     
     if not db_exists(db):
         # Create database
-        from glass.sql.db import create_db
-        
-        create_db(db, api=apidb, overwrite=None)
+        create_db(db, overwrite=None)
     
     else:
         if rewrite:
-            from glass.sql.db import create_db
-            create_db(db, api=db, overwrite=True)
+            create_db(db, overwrite=True)
     
     __files = lst_ff(folder, file_format=['.txt', '.csv', '.tsv'])
     
@@ -428,9 +431,9 @@ def osm_to_psql(osmXml, osmdb, dbsetup='default'):
     is_db = db_exists(osmdb, dbset=dbsetup)
 
     if not is_db:
-        from glass.sql.db import create_db
+        from glass.sql.db import create_pgdb
 
-        create_db(osmdb, api='psql', dbset=dbsetup)
+        create_pgdb(osmdb, dbset=dbsetup)
 
     con = con_psql(db_set=dbsetup)
     

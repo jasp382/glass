@@ -64,7 +64,8 @@ def rst_to_polyg(inRst, outShp, rstColumn=None, gisApi='gdal', epsg=None):
         
         rcmd = execmd((
             f"r.to.vect input={inRst} output={outShp} "
-            f"type=area column={rstField} --overwrite --quiet"
+            f"type=area column={rstField} "
+            "--overwrite --quiet"
         ))
     
     else:
@@ -106,7 +107,8 @@ def rst_to_pnt(in_rst, out_pnt, outcol="gridcode", api='pandas'):
         
         rcmd = execmd((
             f"r.to.vect input={in_rst} output={out_pnt} type=point "
-            f"column={rstcol} --overwrite --quiet"
+            f"column={rstcol} "
+            "--overwrite --quiet"
         ))
     
     else:
@@ -145,12 +147,12 @@ def rsts_to_shps(rstfolder, outfolder, rsttemplate):
 
         # to polygon
         grs_shp = rst_to_polyg(
-            grs_rst, grs_rst + "_shp",
+            grs_rst, f"{grs_rst}_shp",
             rstColumn="value", gisApi='grasscmd'
         )
 
         grs_to_shp(grs_shp, os.path.join(
-            outfolder, grs_rst + '.shp'
+            outfolder, f'{grs_rst}.shp'
         ), 'area')
     
     return outfolder

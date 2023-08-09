@@ -11,9 +11,9 @@ def tar_compress_folder(tar_fld, tar_file):
     import os
     from glass.pys  import execmd
     
-    cmd = 'cd {p} && tar -czvf {tar_f} {fld}'.format(
-        tar_f=tar_file, fld=str(os.path.basename(tar_fld)),
-        p=str(os.path.dirname(tar_fld))
+    cmd = (
+        f'cd {str(os.path.dirname(tar_fld))} && tar -czvf '
+        f'{tar_file} {str(os.path.basename(tar_fld))}'
     )
     
     code, out, err = execmd(cmd)
@@ -56,7 +56,7 @@ def unzip(zipf, destination):
 
     from glass.pys import execmd
 
-    execmd("unzip {} -d {}".format(zipf, destination))
+    execmd(f"unzip {zipf} -d {destination}")
 
     return destination
 

@@ -122,19 +122,27 @@ def gdal_slope(dem, srs, slope, unit='DEGREES'):
     TODO: Test and see if is running correctly
     """
     
-    import numpy;         import math
-    from osgeo            import gdal
-    from scipy.ndimage    import convolve
+    import numpy    
+    import math
+    from scipy.ndimage  import convolve
     from glass.rd.rst   import rst_to_array
     from glass.wt.rst   import obj_to_rst
-    from glass.prop.rst import get_cellsize, get_nodata
+    from glass.prop.rst import rst_cellsize, get_nodata, rst_geoprop
+    from glass.prop.prj import rst_epsg
     
     # ################ #
     # Global Variables #
     # ################ #
-    cellsize = get_cellsize(dem, gisApi='gdal')
+    cellsize = rst_cellsize(dem, gisApi='gdal')
     # Get Nodata Value
     NoData = get_nodata(dem)
+
+    # EPSG
+    epsg = rst_epsg(dem)
+
+    # Geo Parameters
+    left, cellx, top, celly = rst_geoprop(dem)
+    gtrans = (left, cellx, 0, top, 0, celly)
     
     # #################### #
     # Produce Slope Raster #
@@ -238,7 +246,7 @@ def gdal_slope(dem, srs, slope, unit='DEGREES'):
     # Del value originally nodata
     numpy.place(arr_slope, aux_dem==NoData, numpy.nan)
     #arr_slope[lnh][col] = slope_degres
-    obj_to_rst(arr_slope, slope, dem)
+    obj_to_rst(arr_slope, slope, gtrans, epsg, noData=NoData)
 
 
 def viewshed(demrst, obsShp, output):
@@ -248,20 +256,18 @@ def viewshed(demrst, obsShp, output):
     """
     
     import os
-    from glass.pys      import execmd
-    from glass.pys.oss  import fprop
-    from glass.it.rst import saga_to_tif
+    from glass.pys     import execmd
+    from glass.pys.oss import fprop
+    from glass.it.rst  import saga_to_tif
     
     SAGA_RASTER = os.path.join(
         os.path.dirname(output),
-        "sg_{}.sgrd".format(fprop(output, 'fn'))
+        f"sg_{fprop(output, 'fn')}.sgrd"
     )
     
     cmd = (
-       "saga_cmd ta_lighting 6 -ELEVATION {elv} -POINTS {pnt} "
-       "-VISIBILITY {out} -METHOD 0"
-    ).format(
-        elv=demrst, pnt=obsShp, out=SAGA_RASTER
+       f"saga_cmd ta_lighting 6 -ELEVATION {demrst} -POINTS {obsShp} "
+       f"-VISIBILITY {SAGA_RASTER} -METHOD 0"
     )
     
     outcmd = execmd(cmd)
@@ -299,10 +305,11 @@ def thrd_viewshed(dem, pnt_obs, obs_id, out_folder):
 
     import os
     import multiprocessing as mp
-    from glass.rd.shp    import shp_to_obj
-    from glass.pys.oss     import cpu_cores
+
+    from glass.rd.shp   import shp_to_obj
+    from glass.pys.oss  import cpu_cores
     from glass.pd.split import df_split
-    from glass.wenv.grs  import run_grass
+    from glass.wenv.grs import run_grass
     
     # Points to DataFrame
     obs_df = shp_to_obj(pnt_obs)
@@ -319,7 +326,6 @@ def thrd_viewshed(dem, pnt_obs, obs_id, out_folder):
         gbase = run_grass(output, location=loc_name, srs=dem)
 
         # Start GRASS GIS Session
-        import grass.script as grass
         import grass.script.setup as gsetup
         gsetup.init(gbase, output, loc_name, 'PERMANENT')
 
@@ -333,7 +339,7 @@ def thrd_viewshed(dem, pnt_obs, obs_id, out_folder):
         for idx, row in obs.iterrows():
             vrst = grs_viewshed(
                 grs_dem, (row.geometry.x, row.geometry.y),
-                '{}_{}'.format(vis_basename, str(row[obs_id])),
+                f'{vis_basename}_{str(row[obs_id])}',
                 max_dist=maxdst, obs_elv=obselevation
             )
         
@@ -373,7 +379,7 @@ def thrd_viewshed_v2(dbname, dem, pnt_obs, obs_id):
     from glass.prop.prj import shp_epsg
     from glass.wt.sql   import df_to_db
     from glass.pys.oss  import del_file
-    from glass.sql.db   import create_db
+    from glass.sql.db   import create_pgdb
     from glass.pys.num  import get_minmax_fm_seq_values
     
     # Get Work EPSG
@@ -389,7 +395,7 @@ def thrd_viewshed_v2(dbname, dem, pnt_obs, obs_id):
     def run_viewshed_by_cpu(tid, db, obs, dem, srs,
         vis_basename='vis', maxdst=None, obselevation=None):
         # Create Database
-        new_db = create_db(f"{db}_{str(tid)}", api='psql')
+        new_db = create_pgdb(f"{db}_{str(tid)}")
         
         # Points to Database
         pnt_tbl = df_to_db(

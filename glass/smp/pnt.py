@@ -1,6 +1,7 @@
 """
 Tools for sampling
 """
+import random
 
 from glass.pys import execmd
 
@@ -98,7 +99,6 @@ def get_random_point(minX, maxX, minY, maxY):
     Create a Single Random Point
     """
     
-    import random
     from glass.gobj import new_pnt
     
     x = minX + (random.random() * (maxX - minX))
@@ -107,6 +107,34 @@ def get_random_point(minX, maxX, minY, maxY):
     pnt = new_pnt(x, y)
     
     return pnt
+
+
+def gen_near_random_points(row):
+    """
+    Generate 20 points near x and y
+
+    Return result as MultiPoint
+    """
+
+    from shapely.geometry import MultiPoint
+
+    mp = [(row.x, row.y)]
+    
+    for i in range(20):
+        plx = random.randint(0, 1)
+        ply = random.randint(0, 1)
+        
+        dx = random.randint(1, 20)
+        dy = random.randint(1, 20)
+        
+        cx = row.x + dx if plx else row.x - dx
+        cy = row.y + dy if ply else row.y - dy
+        
+        mp.append((cx, cy))
+    
+    row["geometry"] = MultiPoint(mp)
+    
+    return row
 
 
 def grs_random_points(inShp, nPoints, outShp, npoints_in_all_poly=None, cmd=None):
@@ -167,7 +195,7 @@ def rst_random_pnt(rst, npnt, outvec):
         overwrite=True, run_=False, quiet=True
     ); m()
     
-    return outVect
+    return outvec
 
 
 def pg_random_points(constrain, npoints, out_random):
@@ -175,14 +203,14 @@ def pg_random_points(constrain, npoints, out_random):
     Generate Random Points using PostgreSQL
     """
 
-    from glass.sql.db  import create_db
+    from glass.sql.db  import create_pgdb
     from glass.rd.shp  import shp_to_obj
     from glass.pys.oss import fprop
     from glass.sql.q   import q_to_ntbl
     from glass.it.shp  import dbtbl_to_shp
 
     # Create database
-    work_db = create_db(fprop(out_random, 'fn'))
+    work_db = create_pgdb(fprop(out_random, 'fn'))
 
     # Get constrains data
     consdf = shp_to_obj(constrain)

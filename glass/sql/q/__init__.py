@@ -18,6 +18,13 @@ def q_to_obj(dbname, query, db_api='psql', geomCol=None, epsg=None, of='df',
     * dict (Python Dict);
     """
 
+    import pandas as pd
+    import geopandas as gp
+
+    from glass.sql.c import alchemy_engine
+
+    pgengine = alchemy_engine(dbname, dbset=dbset)
+
     if not query.startswith('SELECT '):
         # Assuming query is a table name
         from glass.pys      import obj_to_lst
@@ -30,24 +37,19 @@ def q_to_obj(dbname, query, db_api='psql', geomCol=None, epsg=None, of='df',
 
         query = f"SELECT {qcols} FROM {query}"
     
-    if geomCol and db_api == 'psql':
-        from geopandas   import GeoDataFrame
-        from glass.sql.c import sqlcon
-        
-        con = sqlcon(dbname, sqlAPI='psql', dbset=dbset)
-        
-        df = GeoDataFrame.from_postgis(
-            query, con, geom_col=geomCol,
-            crs=f"EPSG:{str(epsg)}" if epsg else None
-        )
+    if not geomCol:
+        df = pd.read_sql(query, pgengine, columns=None)
     
     else:
-        import pandas
-        from glass.sql.c import alchemy_engine
-    
-        pgengine = alchemy_engine(dbname, api=db_api, dbset=dbset)
-    
-        df = pandas.read_sql(query, pgengine, columns=None)
+        if db_api == 'psql':
+        
+            df = gp.GeoDataFrame.from_postgis(
+                query, pgengine, geom_col=geomCol,
+                crs=f"EPSG:{str(epsg)}" if epsg else None
+            )
+        
+        else:
+            raise ValueError('Exporting geometries only works for psql API')
     
     if of == 'dict':
         df = df.to_dict(orient="records")

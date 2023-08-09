@@ -1,3 +1,8 @@
+"""
+Support operations with Pandas objects
+"""
+
+
 import pandas as pd
 
 

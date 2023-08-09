@@ -2,6 +2,9 @@
 Web Tools
 """
 
+import requests
+import json
+
 """
 From Web to Python Objects
 """
@@ -11,9 +14,6 @@ def data_from_get(url, getParams=None, auth=None):
     """
     Return json from URL - GEST Request
     """
-    
-    import json
-    import requests
     
     response = requests.get(
         url=url, params=getParams,
@@ -28,8 +28,6 @@ def http_to_json(url, ojson=None):
     """
     Data from API Endpoint to JSON File
     """
-
-    import json
 
     data = data_from_get(url)
 
@@ -48,9 +46,6 @@ def data_from_post(url, postdata, head='application/json',
     """
     Return data retrieve by a POST Request
     """
-    
-    import json
-    import requests
     
     r = requests.post(
         url, data=json.dumps(postdata),
@@ -73,8 +68,6 @@ def get_file(url, output, useWget=None):
     """
     
     if not useWget:
-        import requests
-    
         r = requests.get(url, allow_redirects=True)
     
         with open(output, 'wb') as f:
@@ -83,7 +76,7 @@ def get_file(url, output, useWget=None):
     else:
         """ On Linux Use WGET """
         
-        from glass.pys  import execmd
+        from glass.pys import execmd
         
         outcmd = execmd(f"wget -O {output} {url}")
     
@@ -94,9 +87,6 @@ def get_file_post(url, output, params, credentials=None):
     """
     Save content of url using POST method
     """
-
-    import requests
-    import json
 
     r  = requests.post(
         url, data=json.dumps(params),
@@ -119,11 +109,10 @@ def get_file_via_scp(host, username, hostpath, outpath, privateKey=None):
     Get file from remote sensing via SCP
     """
     
-    from glass.pys  import execmd
+    from glass.pys import execmd
     
-    outcmd = execmd("scp {}{}@{}:{} {}".format(
-        "-i {} ".format(privateKey) if privateKey else "",
-        username, host, hostpath, outpath
+    outcmd = execmd((
+        f"scp {f'-i {privateKey} ' if privateKey else ''}"
+        f"{username}@{host}:{hostpath} {outpath}"
     ))
-
 

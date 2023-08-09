@@ -12,14 +12,14 @@ def get_stop_words(inTbl, fidCol, txtCol, outFile,
     
     from glass.pys.oss  import fprop
     from glass.prop.sql import cols_name
-    from glass.sql.db   import create_db
+    from glass.sql.db   import create_pgdb
     from glass.it.db    import tbl_to_db
     from glass.it       import db_to_tbl
     
     FILENAME = fprop(inTbl, 'fn')
     
     # Create Temp database
-    db = create_db("db_" + FILENAME if not db else db)
+    db = create_pgdb(f"db_{FILENAME}" if not db else db)
     
     # Send table to PostgreSQL
     tbl = tbl_to_db(inTbl, db, FILENAME, sheet=inSheet, api_db='psql')

@@ -2,21 +2,23 @@
 Dump Databases and their tables
 """
 
+from glass.pys import execmd
+from glass.cons.psql import con_psql
+
+
 def dump_db(db, outSQL, api='psql'):
     """
     DB to SQL Script
     """
     
-    from glass.pys  import execmd
-    
     if api == 'psql':
-        from glass.cons.psql import con_psql
+        
 
         condb = con_psql()
 
-        cmd = "pg_dump -U {} -h {} -p {} -w {} > {}".format(
-            condb["USER"], condb["HOST"], condb["PORT"],
-            db, outSQL
+        cmd = (
+            f"pg_dump -U {condb['USER']} -h {condb['HOST']} "
+            f"-p {condb['PORT']} -w {db} > {outSQL}"
         )
     
     elif api == 'mysql':
@@ -25,11 +27,9 @@ def dump_db(db, outSQL, api='psql'):
         condb = con_mysql()
 
         cmd = (
-            "mysqldump -u {} --port {} -p{} --host {} "
-            "{} > {}"
-        ).format(
-            condb["USER"], condb["PORT"], condb["PASSWORD"],
-            condb["HOST"], db, outSQL
+            f"mysqldump -u {condb['USER']} --port {condb['PORT']} "
+            f"-p{condb['PASSWORD']} --host {condb['HOST']} "
+            f"{db} > {outSQL}"
         )
     
     else:
@@ -45,8 +45,7 @@ def dump_tbls(db, tables, outsql, startWith=None):
     Dump one table into a SQL File
     """
     
-    from glass.pys       import execmd, obj_to_lst
-    from glass.cons.psql import con_psql
+    from glass.pys import obj_to_lst
     
     tbls = obj_to_lst(tables)
     

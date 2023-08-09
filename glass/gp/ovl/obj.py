@@ -39,7 +39,8 @@ def count_pnt_inside_poly(pnt, cpnt, polys, pntattr=None):
     return polys
 
 
-def pnt_inside_poly(pnt, poly, pntgeom, polygeom, poly_cols_mantain=None):
+def pnt_inside_poly(pnt, poly, pntgeom, polygeom, poly_cols_mantain=None,
+    only_points_inside=True):
     """
     Two tables: one with points, other with polygons
 
@@ -65,13 +66,17 @@ def pnt_inside_poly(pnt, poly, pntgeom, polygeom, poly_cols_mantain=None):
     # Check which polygons contain each point
     pnt['iscontain'] = pnt[polygeom].contains(pnt[pntgeom])
 
-    # Get final dataframe
-    pnt = pnt[pnt.iscontain == True]
-
-    pnt.reset_index(drop=True, inplace=True)
-
     dcols = [c for c in poly.columns.values \
-        if c not in poly_cols_mantain] + ['iscontain', 'aid']
+        if c not in poly_cols_mantain] + ['aid']
+    
+    if only_points_inside:
+        # Get final dataframe
+        pnt = pnt[pnt.iscontain == True]
+
+        pnt.reset_index(drop=True, inplace=True)
+
+        dcols.append("iscontain")
+    
     pnt.drop(dcols, axis=1, inplace=True)
 
     return pnt

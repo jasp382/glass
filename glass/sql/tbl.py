@@ -2,50 +2,54 @@
 Manage DBMS Tables
 """
 
-def create_tbl(db, table, fields, orderFields=None, api='psql'):
+def create_tbl(db, tbl, colsorder=None, api='psql'):
     """
     Create Table in Database
     
     API's Available:
     * psql;
     * sqlite;
+
+    tbl = {
+        table_name : {col1_name : col_type, col2_name : col_type ...}
+    }
+
+    colsorder = {
+        table_name : [col1, col2],
+        other_table : [col1, col2]
+    }
     """
+
+    qs = []
+    for t in tbl:
+        ocols = list(tbl[t].keys()) if not colsorder or \
+            t not in colsorder else colsorder[t]
+        
+        cols_str = ", ".join([f'{c} {tbl[t][c]}' for c in ocols])
+
+        qs.append(f"CREATE TABLE {t} ({cols_str})")
     
     if api == 'psql':
         from glass.sql.c import sqlcon
     
-        ordenedFields = orderFields if orderFields else fields.keys()
-    
         con = sqlcon(db)
-    
-        cursor = con.cursor()
-    
-        cursor.execute("CREATE TABLE {} ({})".format(
-            table, ', '.join(['{} {}'.format(
-                ordenedFields[x], fields[ordenedFields[x]]
-            ) for x in range(len(ordenedFields))])
-        ))
-    
-        con.commit()
-    
-        cursor.close()
-        con.close()
     
     elif api == 'sqlite':
         import sqlite3
         
-        conn = sqlite3.connect(db)
-        cursor = conn.cursor()
-
-        ft = ', '.join([f"{k} {fields[k]}" for k in fields])
-        
-        cursor.execute(f"CREATE TABLE {table} ({ft})")
-        
-        conn.commit()
-        cursor.close()
-        conn.close()
+        con = sqlite3.connect(db)
     
-    return table
+    cursor = con.cursor()
+
+    for q in qs:
+        cursor.execute(q)
+
+    con.commit()
+
+    cursor.close()
+    con.close()
+    
+    return tbl
 
 
 def new_view(sqliteDb, newView, q):

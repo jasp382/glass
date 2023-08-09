@@ -39,7 +39,7 @@ def mk_costsuf(dem, lulc, lucol, rdv, kph, barr, out):
 
     from glass.pys.oss  import mkdir, fprop
     from glass.wenv.grs import run_grass
-    from glass.prop.rst import get_cellsize
+    from glass.prop.rst import rst_cellsize
 
     _slope_rules = {
         (0, 10)      : 1,
@@ -72,7 +72,7 @@ def mk_costsuf(dem, lulc, lucol, rdv, kph, barr, out):
     }
 
     # Get cellsize
-    csize = get_cellsize(dem)
+    csize = rst_cellsize(dem)
 
     # Setup GRASS GIS env
     ws, loc = mkdir(os.path.join(

@@ -508,7 +508,7 @@ def lnh_to_polygons(inShp, outShp, api='saga', db=None):
     elif api == 'psql':
         """ Do it using PostGIS """
         from glass.pys.oss    import fprop
-        from glass.sql.db     import create_db
+        from glass.sql.db     import create_pgdb
         from glass.it.db      import shp_to_psql
         from glass.it.shp     import dbtbl_to_shp
         from glass.dtt.cg.sql import lnh_to_polg
@@ -517,14 +517,14 @@ def lnh_to_polygons(inShp, outShp, api='saga', db=None):
         
         # Create DB
         if not db:
-            db = create_db(fprop(inShp, 'fn', forceLower=True), api='psql')
+            db = create_pgdb(fprop(inShp, 'fn', forceLower=True))
         
         else:
             from glass.prop.sql import db_exists
             isDB = db_exists(db)
             
             if not isDB:
-                create_db(db, api='psql')
+                create_pgdb(db, api='psql')
         
         # Send data to DB
         in_tbl = shp_to_psql(db, inShp, api="shp2pgsql")

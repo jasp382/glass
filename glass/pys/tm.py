@@ -175,12 +175,14 @@ def daysrange(firstday, lastday):
         days=i+1) for i in range(ndays.days)]
     
     # Convert days to string
-    all_days = ["{}-{}-{}".format(str(d.year),
+    all_days = ["{}-{}-{}".format(
+        str(d.year),
         str(d.month) if len(str(d.month)) == 2 else "0" + str(d.month),
         str(d.day) if len(str(d.day)) == 2 else "0" + str(d.day)
     ) for d in all_days]
 
     return all_days
+
 
 def intervals_in_timerange(min_hour, max_hour, interval_duration):
     """

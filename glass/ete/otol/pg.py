@@ -25,7 +25,7 @@ def osm_to_lulc(osm, nomenclature, epsg, outfile, savedb=None, tmpfld=None):
     from glass.pys.oss import fprop
     from glass.pys.tm import now_as_str
     from glass.rd.shp import shp_to_obj
-    from glass.sql.db           import create_db, drop_db
+    from glass.sql.db           import create_pgdb, drop_db
     from glass.wt.shp import df_to_shp
 
     # ************************************************************************ #
@@ -71,7 +71,7 @@ def osm_to_lulc(osm, nomenclature, epsg, outfile, savedb=None, tmpfld=None):
     # ******************************************************************** #
     # Convert OSM file to PSQL DB #
     # ******************************************************************** #
-    osm_db = create_db(fprop(osm, 'fn', forceLower=True), overwrite=True)
+    osm_db = create_pgdb(fprop(osm, 'fn', forceLower=True), overwrite=True)
     osm_db = osm_to_psql(osm, osm_db)
 
     time_c = dt.datetime.now().replace(microsecond=0)

@@ -2,6 +2,8 @@
 Columns Operations inside Pandas Dataframes
 """
 
+import pandas as pd
+
 def fld_types(df):
     """
     Return Columns Types
@@ -56,6 +58,7 @@ def del_cols_notin_ref(df, flds, geomCol=None):
     
     return df
 
+
 def distinct_of_distinct(df, colMain, colTwo):
     """
     List a distinct values in one column and for each value
@@ -102,4 +105,25 @@ def splitcol_to_newcols(df, col, sep, newCols):
     newDf.rename(columns=newCols, inplace=True)
     
     return newDf
+
+
+def dictval_to_cols(df, dictcol):
+    """
+    DataFrame like:
+
+       A                 B
+    0  {'a': 3}          6
+    1  {'b': 4, 'c': 5}  7
+
+    Will became like this:
+       A                 B   a    b    c
+    0  {'a': 3}          6   3.0  NaN  NaN
+    1  {'b': 4, 'c': 5}  7   NaN  4.0  5.0
+    """
+
+    ndf = pd.concat([
+        df, df[dictcol].apply(pd.Series)
+    ], axis=1)
+
+    return ndf
 

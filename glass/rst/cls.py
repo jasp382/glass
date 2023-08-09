@@ -11,72 +11,68 @@ from osgeo import gdal, gdal_array
 from glass.wt.rst import obj_to_rst
 
 
-def k_means(imgFiles, out, n_cls=8):
+def k_means(imgs, out, n_cls=8):
     """
     K-Means implementation
     """
     
     from sklearn import cluster
+
+    from glass.prop.img import rst_epsg
+    from glass.pys import obj_to_lst
     
     gdal.UseExceptions()
     gdal.AllRegister()
-    
-    singleBand = None
-    if type(imgFiles) != list:
-        # Check if img is a valid file
-        if not os.path.exists(imgFiles):
-            raise ValueError("{} is not a valid file".format(imgFiles))
+
+    imgs = obj_to_lst(imgs)
+
+    arrays, nds = [], []
+
+    ysize, xsize = None, None
+    dtype = None
+
+    gtrans, epsg = None, None
+
+    for img in imgs:
+        isrc = gdal.Open(img, gdal.GA_ReadOnly)
+
+        if not epsg:
+            epsg = rst_epsg(isrc)
         
-        img_src = gdal.Open(imgFiles, gdal.GA_ReadOnly)
+        if not gtrans:
+            gtrans = isrc.GetGeoTransform()
+
+        if not ysize:
+            ysize = isrc.RasterYSize
         
-        n_bnd = img_src.RasterCount
+        if not xsize:
+            xsize = isrc.RasterXSize
         
-        ndVal = img_src.GetRasterBand(1).GetNoDataValue()
-        
-        if n_bnd == 1:
-            band = img_src.GetRasterBand(1)
-            
-            img = band.ReadAsArray()
-            
-            singleBand = 1
-            #X = img.reshape((-1, 1))
-        
-        else:
-            img = np.zeros(
-                (img_src.RasterYSize, img_src.RasterXSize, n_bnd),
-                gdal_array.GDALTypeCodeToNumericTypeCode(
-                    img_src.GetRasterBand(1).DataType
-                )
+        if not dtype:
+            dtype = gdal_array.GDALTypeCodeToNumericTypeCode(
+                isrc.GetRasterBand(1).DataType
             )
-            
-            for b in range(img.shape[2]):
-                img[:, :, b] = img_src.GetRasterBand(b + 1).ReadAsArray()
+
+        nbnd = isrc.RasterCount
+
+        for b in range(nbnd):
+            nds.append(isrc.GetRasterBand(b+1).GetNoDataValue())
+            arrays.append(isrc.GetRasterBand(b+1).ReadAsArray())
     
-    else:
-        img_src = [gdal.Open(i, gdal.GA_ReadOnly) for i in imgFiles]
-        
-        ndVal = img_src[0].GetRasterBand(1).GetNoDataValue()
-        
-        n_bnd = len(img_src)
-        
-        img = np.zeros((
-            img_src[0].RasterYSize, img_src[0].RasterXSize, len(img_src)),
-            gdal_array.GDALTypeCodeToNumericTypeCode(
-                img_src[0].GetRasterBand(1).DataType
-            )
-        )
-        
-        for b in range(img.shape[2]):
-            img[:, :, b] = img_src[b].GetRasterBand(1).ReadAsArray()
+    # Join Arrays
+    jarray = np.zeros((ysize, xsize, len(arrays)), dtype)
+
+    for b in range(jarray.shape[2]):
+        jarray[:, :, b] = arrays[b]
     
     # Reshape arrays for classification
-    if not singleBand:
-        new_shape = (img.shape[0] * img.shape[1], img.shape[2])
+    if len(arrays) > 1:
+        new_shape = (jarray.shape[0] * jarray.shape[1], jarray.shape[2])
         
-        X = img[:, :, :n_bnd].reshape(new_shape)
+        X = jarray[:, :, :len(arrays)].reshape(new_shape)
     
     else:
-        X = img.reshape((-1, 1))
+        X = jarray.reshape((-1, 1))
             
     kmeans = cluster.KMeans(n_clusters=n_cls)
             
@@ -84,24 +80,16 @@ def k_means(imgFiles, out, n_cls=8):
     
     X_cluster = kmeans.labels_
     
-    if not singleBand:
-        X_cluster = X_cluster.reshape(img[:, :, 0].shape)
+    if len(arrays) > 1:
+        X_cluster = X_cluster.reshape(jarray[:, :, 0].shape)
     else:
-        X_cluster = X_cluster.reshape(img.shape)
+        X_cluster = X_cluster.reshape(jarray.shape)
     
     # Place nodata values
-    if type(imgFiles) != list:
-        tmp = img_src.GetRasterBand(1).ReadAsArray()
-    else:
-        tmp = img_src[0].GetRasterBand(1).ReadAsArray()
+    for r in range(len(arrays)):
+        np.place(X_cluster, arrays[r] == nds[r], 255)
     
-    np.place(X_cluster, tmp==ndVal, 255)
-    
-    return obj_to_rst(
-        X_cluster, out,
-        imgFiles if type(imgFiles) != list else imgFiles[0],
-        noData=255
-    )
+    return obj_to_rst(X_cluster, out, gtrans, epsg, noData=255)
 
 
 def train_to_mdl(train_rst, imgs, outmdl, ntrees=1000, fileformat='.tif',
@@ -331,6 +319,8 @@ def imgcls_from_mdl(mdl, imgvar, outrst, fileformat='.tif'):
 
     from joblib import load
 
+    from glass.prop.img import rst_epsg
+
     if type(imgvar) != list:
         # Check if it is a folder
         if os.path.isdir(imgvar):
@@ -365,6 +355,12 @@ def imgcls_from_mdl(mdl, imgvar, outrst, fileformat='.tif'):
                 raise ValueError(
                     'There are at least two raster files with different shape'
                 )
+    
+    # Get transform
+    gtrans = img_var[0].GetGeoTransform()
+
+    # Get SRS
+    srs = rst_epsg(img_var[0])
 
     # Get features number
     nvar = sum(img_bnd)
@@ -399,7 +395,7 @@ def imgcls_from_mdl(mdl, imgvar, outrst, fileformat='.tif'):
     np.place(res, tmp==nd_val, 255)
 
     # Export result
-    obj_to_rst(res, outrst, imgvar[0], noData=255)
+    obj_to_rst(res, outrst, gtrans, srs, noData=255)
 
     return outrst
 

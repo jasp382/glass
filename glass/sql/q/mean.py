@@ -354,38 +354,33 @@ def matrix_od_mean_dist_by_group(MATRIX_OD, ORIGIN_COL, GROUP_ORIGIN_ID,
     
     from glass.pys.oss   import fprop
     from glass.it.db  import shp_to_psql
-    from glass.sql.db import create_db
+    from glass.sql.db import create_pgdb
     from glass.sql.q  import q_to_ntbl
     from glass.it     import db_to_tbl
     
-    db = create_db(fprop(MATRIX_OD, 'fn'), overwrite=True, api='psql')
+    db = create_pgdb(fprop(MATRIX_OD, 'fn'), overwrite=True)
     
     TABLE = shp_to_psql(
-        db, MATRIX_OD, pgTable="tbl_{}".format(db),
+        db, MATRIX_OD, pgTable=f"tbl_{db}",
         api="pandas", srsEpsgCode=epsg
     )
     
     OUT_TABLE = q_to_ntbl(db, fprop(RESULT_MATRIX, 'fn'), (
-        "SELECT {groupOriginCod}, {groupOriginName}, {groupDestCod}, "
-        "{groupDestName}, AVG(mean_time) AS mean_time FROM ("
-            "SELECT {origin}, {groupOriginCod}, {groupOriginName}, "
-            "{groupDestCod}, {groupDestName}, "
-            "AVG({timeCol}) AS mean_time FROM {t} "
-            "GROUP BY {origin}, {groupOriginCod}, {groupOriginName}, "
-            "{groupDestCod}, {groupDestName}"
+        f"SELECT {GROUP_ORIGIN_ID}, {GROUP_ORIGIN_NAME}, {GROUP_DESTINA_ID}, "
+        f"{GROUP_DESTINA_NAME}, AVG(mean_time) AS mean_time FROM ("
+            f"SELECT {ORIGIN_COL}, {GROUP_ORIGIN_ID}, {GROUP_ORIGIN_NAME}, "
+            f"{GROUP_DESTINA_ID}, {GROUP_DESTINA_NAME}, "
+            f"AVG({TIME_COL}) AS mean_time FROM {TABLE} "
+            f"GROUP BY {ORIGIN_COL}, {GROUP_ORIGIN_ID}, {GROUP_ORIGIN_NAME}, "
+            f"{GROUP_DESTINA_ID}, {GROUP_DESTINA_NAME}"
         ") AS foo "
-        "GROUP BY {groupOriginCod}, {groupOriginName}, "
-        "{groupDestCod}, {groupDestName} "
-        "ORDER BY {groupOriginCod}, {groupDestCod}"
-    ).format(
-        groupOriginCod = GROUP_ORIGIN_ID , groupOriginName = GROUP_ORIGIN_NAME,
-        groupDestCod   = GROUP_DESTINA_ID, groupDestName   = GROUP_DESTINA_NAME,
-        origin         = ORIGIN_COL       , timeCol         = TIME_COL,
-        t              = TABLE
+        f"GROUP BY {GROUP_ORIGIN_ID}, {GROUP_ORIGIN_NAME}, "
+        f"{GROUP_DESTINA_ID}, {GROUP_DESTINA_NAME} "
+        f"ORDER BY {GROUP_ORIGIN_ID}, {GROUP_DESTINA_ID}"
     ), api='psql')
     
     return db_to_tbl(
-        db, "SELECT * FROM {}".format(OUT_TABLE), RESULT_MATRIX,
+        db, f"SELECT * FROM {OUT_TABLE}", RESULT_MATRIX,
         sheetsNames="matrix", dbAPI='psql'
     )
 

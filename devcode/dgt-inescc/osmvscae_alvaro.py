@@ -53,7 +53,7 @@ from dgt.wt.shp import df_to_shp
 from dgt.prop.sql import cols_name
 from dgt.rd import tbl_to_obj
 from dgt.sql.q import exec_write_q
-from dgt.sql.db import create_db
+from glass.sql.db import create_pgdb
 from dgt.pys.oss import mkdir, fprop
 
 
@@ -62,7 +62,7 @@ ws = mkdir(os.path.join(
     os.path.dirname(lulcshp), 'grswork'
 ), overwrite=True)
 
-create_db(osmdata["DB"], api='psql', overwrite=True)
+create_pgdb(osmdata["DB"], overwrite=True)
 
 osm_to_psql(osmdata["FILE"], osmdata["DB"])
 'dgt_osmcbr'

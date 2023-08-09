@@ -19,13 +19,13 @@ def line_intersect_to_pnt(inShp, outShp, db=None):
     """
     
     from glass.it.shp     import dbtbl_to_shp
-    from glass.sql.db     import create_db
+    from glass.sql.db     import create_pgdb
     from glass.it.db      import shp_to_psql
     from glass.gp.ovl.sql import line_intersection_pnt
     
     # Create DB if necessary
     if not db:
-        db = create_db(fprop(inShp, 'fn', forceLower=True), api='psql')
+        db = create_pgdb(fprop(inShp, 'fn', forceLower=True))
     
     else:
         from glass.prop.sql import db_exists
@@ -33,7 +33,7 @@ def line_intersect_to_pnt(inShp, outShp, db=None):
         isDb = db_exists(db)
         
         if not isDb:
-            create_db(db, api='psql')
+            create_pgdb(db)
     
     # Send data to DB
     inTbl = shp_to_psql(db, inShp, api="shp2pgsql")
@@ -223,14 +223,15 @@ def optimized_union_anls(lyr_a, lyr_b, outShp, ref_boundary,
     Goal: optimize v.overlay performance for Union operations
     """
     
-    import multiprocessing   as mp
-    from glass.pys.oss       import mkdir, fprop, lst_ff, cpu_cores
-    from glass.smp.fish      import create_fishnet
-    from glass.wenv.grs      import run_grass
-    from glass.dtt.split     import eachfeat_to_newshp
-    from glass.dtt.mge       import shps_to_shp
-    from glass.dtt.ext.torst import shpext_to_rst
-    from glass.prop.ext      import get_ext
+    import multiprocessing as mp
+
+    from glass.pys.oss   import mkdir, fprop, lst_ff, cpu_cores
+    from glass.smp.fish  import create_fishnet
+    from glass.wenv.grs  import run_grass
+    from glass.dtt.split import eachfeat_to_newshp
+    from glass.dtt.mge   import shps_to_shp
+    from glass.wt.rst    import shpext_to_rst
+    from glass.prop.ext  import get_ext
     
     if workspace:
         if not os.path.exists(workspace):
@@ -285,10 +286,10 @@ def optimized_union_anls(lyr_a, lyr_b, outShp, ref_boundary,
         
         # Clip Layers A and B for each CELL in fishnet
         LYRS_A = [grsclip(
-            LYR_A, cellsShp[x], LYR_A + "_" + str(x), cmd=True
+            LYR_A, cellsShp[x], f'{LYR_A}_{str(x)}', cmd=True
         ) for x in range(len(cellsShp))];
         LYRS_B = [grsclip(
-            LYR_B, cellsShp[x], LYR_B + "_" + str(x), cmd=True
+            LYR_B, cellsShp[x], f'{LYR_B}_{str(x)}', cmd=True
         ) for x in range(len(cellsShp))]
         
         # Union SHPS
@@ -300,7 +301,7 @@ def optimized_union_anls(lyr_a, lyr_b, outShp, ref_boundary,
         from glass.it.shp import grs_to_shp
         
         _UNION_SHP = [grs_to_shp(
-            shp, os.path.join(workspace, shp + ".shp"), "area"
+            shp, os.path.join(workspace, f"{shp}.shp"), "area"
         ) for shp in UNION_SHP]
     
     else:
@@ -348,10 +349,10 @@ def optimized_union_anls(lyr_a, lyr_b, outShp, ref_boundary,
             o = grs_to_shp(u_shp, output, "area")
         
         thrds = [mp.Process(
-            target=clip_and_union, name="th-{}".format(i), args=(
+            target=clip_and_union, name=f"th-{i}", args=(
                 lyr_a, lyr_b, cellsShp[i],
-                os.path.join(workspace, "th_{}".format(i)), i,
-                os.path.join(workspace, "uniao_{}.shp".format(i))
+                os.path.join(workspace, f"th_{i}"), i,
+                os.path.join(workspace, f"uniao_{i}.shp")
             )
         ) for i in range(len(cellsShp))]
         
@@ -365,7 +366,7 @@ def optimized_union_anls(lyr_a, lyr_b, outShp, ref_boundary,
         _UNION_SHP = []
         for i in range(len(cellsShp)):
             p = os.path.join(
-                workspace, "uniao_{}.shp".format(i)
+                workspace, f"uniao_{i}.shp"
             )
 
             if p in ff_shp:
@@ -597,7 +598,7 @@ def check_shape_diff(SHAPES_TO_COMPARE, OUT_FOLDER, REPORT, DB,
     from glass.it.db         import shp_to_psql
     from glass.dtt.tomtx.sql import tbl_to_area_mtx
     from glass.prop.df       import is_rst
-    from glass.sql.db        import create_db
+    from glass.sql.db        import create_pgdb
     from glass.sql.tbl       import tbls_to_tbl
     from glass.sql.q         import q_to_ntbl
     
@@ -666,7 +667,7 @@ def check_shape_diff(SHAPES_TO_COMPARE, OUT_FOLDER, REPORT, DB,
     __SHAPES_TO_COMPARE = SHAPES_TO_COMPARE
     
     # Create database
-    create_db(DB, api='psql')
+    create_pgdb(DB)
     
     """ Union SHAPEs """
     

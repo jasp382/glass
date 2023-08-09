@@ -39,9 +39,10 @@ def tbl_to_obj(tblFile, sheet=None, useFirstColAsIndex=None,
         
         if not sheet:
             raise ValueError("You must specify sheet name when converting ods files")
+        
         data = get_data(tblFile)[sheet]
         
-        tableDf = pandas.DataFrame(data[1:], columns=data[0])
+        tableDf = pd.DataFrame(data[1:], columns=data[0])
     
     elif fFormat == '.xls' or fFormat == '.xlsx':
         """

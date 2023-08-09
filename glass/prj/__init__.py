@@ -205,7 +205,7 @@ def proj(inShp, outShp, outEPSG, inEPSG=None,
         return df_to_shp(df, outShp)
     
     elif api == 'psql':
-        from glass.sql.db  import create_db
+        from glass.sql.db  import create_pgdb
         from glass.pys.oss import fprop
         from glass.it.db   import shp_to_psql
         from glass.it.shp  import dbtbl_to_shp
@@ -213,8 +213,8 @@ def proj(inShp, outShp, outEPSG, inEPSG=None,
 
         # Create Database
         if not db_name:
-            db_name = create_db(fprop(
-                outShp, 'fn', forceLower=True), api='psql'
+            db_name = create_pgdb(fprop(
+                outShp, 'fn', forceLower=True)
             )
         
         else:
@@ -223,7 +223,7 @@ def proj(inShp, outShp, outEPSG, inEPSG=None,
             isDb = db_exists(db_name)
 
             if not isDb:
-                create_db(db_name, api='psql')
+                create_pgdb(db_name)
 
         # Import Data
         inTbl = shp_to_psql(db_name, inShp, api='shp2pgsql', encoding="LATIN1")

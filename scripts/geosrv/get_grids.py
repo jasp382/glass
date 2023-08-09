@@ -12,7 +12,7 @@ from glass.wt.shp   import obj_to_shp
 from glass.dtt.torst import shp_to_rst
 from glass.wenv.grs import run_grass
 from glass.pys.oss    import mkdir
-from glass.pd.fld  import del_cols_notin_ref
+from glass.pd.cols  import del_cols_notin_ref
 from glass.wt.sql   import df_to_db
 from glass.sql.tbl import drop_tbldata
 from glass.prop.ext import featext_to_dfcols
