@@ -121,9 +121,7 @@ def shps_to_shp(shps, outShp, api="ogr2ogr", fformat='.shp',
 
             create_pgdb(dbname)
 
-        pg_tbls = shp_to_psql(
-            dbname, shps, api="shp2pgsql"
-        )
+        pg_tbls = shp_to_psql(dbname, shps, api="shp2pgsql")
 
         if os.path.isfile(outShp):
             from glass.pys.oss import fprop

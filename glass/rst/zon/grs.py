@@ -1,3 +1,43 @@
+"""
+Zonal GRASS GIS tools
+"""
+
+from glass.pys import execmd
+
+
+def region_group(in_rst, out_rst, diagonal=True):
+    """
+    Equivalent to ArcGIS Region Group Tool
+    
+    r.clump finds all areas of contiguous cell category values in the input
+    raster map. NULL values in the input are ignored. It assigns a unique
+    category value to each such area ("clump") in the resulting output raster
+    map.
+    
+    Category distinctions in the input raster map are preserved. This means
+    that if distinct category values are adjacent, they will NOT be clumped
+    together. The user can run r.reclass prior to r.clump to recategorize cells
+    and reassign cell category values.
+    """
+    
+    from grass.pygrass.modules import Module
+    
+    if diagonal:
+        m = Module(
+            'r.clump', input=in_rst, output=out_rst, flags='d',
+            overwrite=True, quiet=True, run_=False
+        )
+    else:
+        m = Module(
+            'r.clump', input=in_rst, output=out_rst,
+            overwrite=True, quiet=True, run_=False
+        )
+    
+    m()
+    
+    return out_rst
+
+
 def grs_rst_stats_by_feat(vec, rst, ncol, method, as_cmd=True):
     """
     DESCRIPTION
@@ -24,8 +64,6 @@ def grs_rst_stats_by_feat(vec, rst, ncol, method, as_cmd=True):
     method = obj_to_lst(method)
 
     if as_cmd:
-        from glass.pys import execmd
-
         rcmd = execmd((
             f"v.rast.stats map={vec} raster={rst} "
             f"column_prefix={','.join(ncol)} "
@@ -45,7 +83,7 @@ def grs_rst_stats_by_feat(vec, rst, ncol, method, as_cmd=True):
     return vec
 
 
-def rstatszonal(base, cover, method, output, api='grass', grids=None):
+def rstatszonal(base, cover, method, output, api='grass'):
     """
     Zonal Raster Statistics (overlay input as Raster)
 
@@ -56,15 +94,66 @@ def rstatszonal(base, cover, method, output, api='grass', grids=None):
     """
 
     if api == 'grass':
-        from glass.pys import execmd
-
         rcmd = execmd((
-            f"r.stats.zonal base={base} cover={cover} method={method} "
-            "output={output} --overwrite --quiet"
+            f"r.stats.zonal base={base} cover={cover} "
+            f"method={method} output={output} "
+            "--overwrite --quiet"
         ))
 
     else:
         raise ValueError(f"{api} is not available!")
 
     return output
+
+
+def reclsbyarea(irst, orst, val, mode='greater',
+                method='reclass', i_clump=None, ascmd=True):
+    """
+    r.reclass.area - Reclasses a raster map greater 
+    or less than user specified area size (in hectares).
+
+    If the -c flag is used, r.reclass.area will skip the
+    creation of a clumped raster and assume that the input
+    raster is already clumped.
+
+    
+    input=name [required]
+        Name of input raster map
+    output=name [required]
+        Name for output raster map
+    value=float [required]
+        Value option that sets the area size limit (in hectares)
+    mode=string [required]
+        Lesser or greater than specified value
+        Options: lesser, greater
+    method=string
+        Method used for reclassification
+        Options: reclass, rmarea
+        Default: reclass 
+    """
+
+    mode = 'greater' if mode == 'greater' else 'lesser'
+
+    if ascmd:
+        flags = '-c' if i_clump else ''
+        rcmd = execmd((
+            f'r.reclass.area input={irst} '
+            f'output={orst} mode={mode} value={str(val)} '
+            f'method={method}{flags} --overwrite --quiet'
+        ))
+    
+    else:
+        from grass.pygrass.modules import Module
+
+        m = Module(
+            'r.reclass.area', input=irst,
+            output=orst, mode=mode, value=val,
+            method=method, overwrite=True, quiet=True,
+            run_=False,
+            flags='c' if i_clump else None
+        )
+
+        m()
+    
+    return orst
 

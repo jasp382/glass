@@ -152,7 +152,10 @@ def tblpnt_to_shp(tbl, shp, xcol, ycol, epsg, outepsg=None,
 GRASS GIS conversions
 """
 
-def shp_to_grs(ilyr, olyr=None, filterByReg=None, lyrname=None, asCMD=None):
+def shp_to_grs(ilyr: str, olyr:str|None=None,
+               filterByReg: bool|None=None,
+               lyrname: str|None=None,
+               asCMD: bool|None=None):
     """
     Add Shape to GRASS GIS
     """

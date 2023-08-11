@@ -267,133 +267,177 @@ def txts_to_db(folder, db, delimiter, __encoding='utf-8', apidb='psql',
 GeoSpatial Data to GeoSpatial Database
 """
 
-def shp_to_psql(dbname, shpData, pgTable=None, api="pandas",
-                mapCols=None, srs=None, encoding="UTF-8",
-                dbset='default', to_srs=None):
+def shp_to_psql(dbname, shps, api="pandas", tnames=None,
+                map_cols=None, srs=None, encoding="UTF-8",
+                dbset='default', to_srs=None, fformat=None, lyrname=None):
     """
     Send Shapefile to PostgreSQL
     
-    if api is equal to "pandas" - GeoPandas API will be used;
-    if api is equal to "shp2pgsql" - shp2pgsql tool will be used.
+    if api == "pandas" - GeoPandas API will be used;
+    if api == "shp2pgsql" - shp2pgsql tool will be used.
+    if api == ogr2ogr - ogr2ogr from GDAL will be used
+
+    shp could be a folder with geofiles
+    shp could be a list of geofiles
+    shp could be a single geofile
+
+    if shp if a gpkg, layer names will be read from lyrname
+
+    lyrname if a dict like:
+    lyrname = {path_to_source: [layer1, layer2], path_to_source: layer_tal}
     """
     
-    from glass.pys.oss  import fprop
-    from glass.prop.prj import shp_epsg
+    from glass.cons.psql import con_psql
+    from glass.pd.geom   import force_multipart
+    from glass.prj.obj   import df_prj
+    from glass.prop.feat import get_gtype
+    from glass.prop.prj  import shp_epsg
+    from glass.prop.sql  import lst_db
+    from glass.pys       import obj_to_lst
+    from glass.pys.oss   import lst_ff, fprop, del_file
+    from glass.rd.shp    import shp_to_obj
+    from glass.sql       import psql_cmd
+    from glass.sql.db    import create_pgdb
+    from glass.wt.sql    import df_to_db
     
+    apis = ["pandas", "shp2pgsql", "ogr2ogr"]
+
     # If defined, srsEpsgCode must be a integer value
     if srs and type(srs) != int:
         raise ValueError('srs should be a integer value')
     
-    if api == "pandas":
-        from glass.rd.shp    import shp_to_obj
-        from glass.wt.sql    import df_to_db
-        from glass.prop.feat import get_gtype
-        from glass.prj.obj   import df_prj
-        from glass.pd.geom   import force_multipart
-    
-    elif api == "shp2pgsql":
-        from glass.sql     import psql_cmd
-        from glass.pys.oss import del_file
-    
-    else:
+    if api not in apis:
         raise ValueError(
-            'api value is not valid. options are: pandas and shp2pgsql'
+            f'api value is not valid. options are: {", ".join(apis)}'
         )
     
+    # Check if we need to create db or not
+    dbs = lst_db()
+
+    if dbname not in dbs:
+        create_pgdb(dbname, overwrite=None, use_template=True)
+    
     # Check if shp is folder
-    if os.path.isdir(shpData):
-        from glass.pys.oss import lst_ff
-        
-        shapes = lst_ff(shpData, file_format='.shp')
+    if os.path.isdir(shps):
+        shps = lst_ff(shps, file_format=fformat)
     
     else:
-        from glass.pys import obj_to_lst
+        shps = obj_to_lst(shps)
+    
+    # Relate each file with a layer and epsg
+    d = []
+    for shp in shps:
+        lyrs = [] if not lyrname or shp not in lyrname \
+            else obj_to_lst(lyrname[shp])
         
-        shapes = obj_to_lst(shpData)
+        if not len(lyrs):
+            tn = tnames[shp] if tnames and shp in tnames \
+                else fprop(shp, 'fn')
+            
+            d.append({
+                'src'  : shp,
+                'lyr'  : None,
+                'epsg' : shp_epsg(shp) if not srs else srs,
+                'tbl'  : tn
+            })
+        
+        else:
+            for l in lyrs:
+                tn = tnames[(shp, l)] if tnames and (shp, l) \
+                    in tnames else l
+                
+                d.append({
+                    'src'  : shp,
+                    'lyr'  : l,
+                    'epsg' : shp_epsg(shp, lyrname=l) if not srs else srs,
+                    'tbl'  : tn
+                })
     
-    epsgs = [
-        shp_epsg(i) if not srs else srs for i in shapes
-    ]
-    
-    if None in epsgs:
-        raise ValueError((
-            "Cannot obtain EPSG code. Use the srs parameter "
-            "to specify the EPSG code of your data."
-        ))
-    
+    # Import data
     tables = []
-    for _i in range(len(shapes)):
-        # Get Table name
-        tname = fprop(shapes[_i], 'fn', forceLower=True) if not pgTable else \
-            pgTable[_i] if type(pgTable) == list else pgTable if len(shapes) == 1 \
-            else pgTable + f'_{str(_i+1)}'
-        
-        # Import data
+    for s in d:
         if api == "pandas":
             # SHP to DataFrame
-            df = shp_to_obj(shapes[_i])
+            df = shp_to_obj(s['src'], lyr=s['lyr'])
 
             # Sanitize columns name
-            
-            if not mapCols:
+            if not map_cols:
                 rname = {x : x.lower() for x in df.columns.values}
                 
             else:
                 rname = {
-                    x : mapCols[x].lower() if x in mapCols else \
+                    x : map_cols[x].lower() if x in map_cols else \
                     x.lower() for x in df.columns.values
                 }
 
             df.rename(columns=rname, inplace=True)
             
             if "geometry" in df.columns.values:
-                geomCol = "geometry"
+                gcol = "geometry"
             
             elif "geom" in df.columns.values:
-                geomCol = "geom"
+                gcol = "geom"
             
             else:
                 raise ValueError("No Geometry found in shp")
             
             # Project if necessary
-            if to_srs and epsgs[_i] != to_srs:
+            if to_srs and s['epsg'] != to_srs:
                 df = df_prj(df, to_srs)
+                tepsg = to_srs
+            
+            else:
+                tepsg = s['epsg']
             
             # Force multi-geometry if necessary
             gtype = get_gtype(
                 df, name=True,
                 py_cls=False, gisApi='pandas'
             )
-            df = force_multipart(
-                df, geomCol,
-                epsgs[_i] if not to_srs else to_srs,
-                gtype=gtype   
-            )
+            df = force_multipart(df, gcol, tepsg, gtype=gtype)
             
             # GeoDataFrame to PSQL
             df_to_db(
-                dbname, df, tname, append=True, api='psql',
-                epsg=epsgs[_i] if not to_srs else to_srs,
-                colGeom=geomCol, geomType=gtype.upper()
+                dbname, df, s['tbl'], append=True, api='psql',
+                epsg=tepsg, colGeom=gcol, geomType=gtype.upper()
             )
         
+        elif api == 'ogr2ogr':
+            con = con_psql()
+
+            lstr = "" if not s["lyr"] else f' {s["lyr"]}'
+
+            ssrs = "" if not to_srs or to_srs == s["epsg"] \
+                else f" -s_srs EPSG:{str(s['epsg'])} -t_srs EPSG:{str(to_srs)}"
+
+            cmd = (
+                'ogr2ogr -f PostgreSQL "PG:dbname='
+                f'\'{dbname}\' host=\'{con["HOST"]}\' port=\'{con["PORT"]}\' '
+                f'user=\'{con["USER"]}\' password=\'{con["PASSWORD"]}\'" '
+                f'-nln {s["tbl"]} {shp}{lstr}{ssrs} -unsetFid '
+                f'-lco GEOMETRY_NAME=geom'
+            )
+
+            ocmd = execmd(cmd)
+        
         else:
-            sql_script = os.path.join(
-                os.path.dirname(shapes[_i]), f'{tname}.sql'
+            ss = os.path.join(
+                os.path.dirname(s['src']),
+                f'{s["tbl"]}.sql'
             )
             
             cmd = (
-                f'shp2pgsql -I -s {epsgs[_i]} -W {encoding} '
-                f'{shapes[_i]} public.{tname} > {sql_script}'
+                f'shp2pgsql -I -s {s["epsg"]} -W {encoding} '
+                f'{s["src"]} public.{s["tbl"]} > {ss}'
             )
             
             outcmd = execmd(cmd)
             
-            psql_cmd(dbname, sql_script, dbcon=dbset)
+            psql_cmd(dbname, ss, dbcon=dbset)
             
-            del_file(sql_script)
+            del_file(ss)
         
-        tables.append(tname)
+        tables.append(s['tbl'])
     
     return tables[0] if len(tables) == 1 else tables
 

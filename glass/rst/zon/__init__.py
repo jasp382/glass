@@ -4,37 +4,7 @@ Grouping and Zonal geometries
 
 import os
 
-def region_group(in_rst, out_rst, diagonal=True):
-    """
-    Equivalent to ArcGIS Region Group Tool
-    
-    r.clump finds all areas of contiguous cell category values in the input
-    raster map. NULL values in the input are ignored. It assigns a unique
-    category value to each such area ("clump") in the resulting output raster
-    map.
-    
-    Category distinctions in the input raster map are preserved. This means
-    that if distinct category values are adjacent, they will NOT be clumped
-    together. The user can run r.reclass prior to r.clump to recategorize cells
-    and reassign cell category values.
-    """
-    
-    from grass.pygrass.modules import Module
-    
-    if diagonal:
-        m = Module(
-            'r.clump', input=in_rst, output=out_rst, flags='d',
-            overwrite=True, quiet=True, run_=False
-        )
-    else:
-        m = Module(
-            'r.clump', input=in_rst, output=out_rst,
-            overwrite=True, quiet=True, run_=False
-        )
-    
-    m()
-    
-    return out_rst
+
 
 
 def zonal_geometry(in_rst, out_rst, work):

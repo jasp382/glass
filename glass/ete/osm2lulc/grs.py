@@ -364,7 +364,7 @@ def osm_to_lulc(osm, nomenclature, ref, lulc, overwrite=None, savedb=None, tmpfl
     # glass dependencies #
     # ************************************************************************ #
     from glass.cons.osmtolulc import PRIORITY
-    from glass.dtt.ext        import fext_to_geof
+    from glass.wt        import fext_to_geof
     from glass.dtt.mge        import same_attr_to_shp, shps_to_shp
     from glass.sql.db           import create_pgdb, drop_db
     from glass.it.db             import osm_to_psql

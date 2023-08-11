@@ -1,4 +1,4 @@
-def osm_vs_ndwi(shp, imd):
+def osm_vs_ndwi(water, green, nir_swir):
     import os
     import pandas as pd
     import numpy as np

@@ -94,13 +94,13 @@ def joinLines_by_spatial_rel_raster(mainLines, mainId, joinLines,
     An raster based approach
     """
     
-    from glass.dtt.ext.toshp import shpext_to_boundshp
-    from glass.dtt.torst     import shp_to_rst
-    from glass.it.pd         import df_to_geodf
-    from glass.wenv.grs      import run_grass
-    from glass.pd.joins      import join_dfs
-    from glass.pd.agg        import df_groupBy
-    from glass.pys.oss       import fprop, mkdir
+    from glass.wt.shp    import shpext_to_boundshp
+    from glass.dtt.torst import shp_to_rst
+    from glass.it.pd     import df_to_geodf
+    from glass.wenv.grs  import run_grass
+    from glass.pd.joins  import join_dfs
+    from glass.pd.agg    import df_groupBy
+    from glass.pys.oss   import fprop, mkdir
     
     workspace = mkdir(os.path.join(
         os.path.dirname(mainLines, 'tmp_dt')

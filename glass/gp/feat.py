@@ -24,20 +24,17 @@ def multipart_to_shp(shp, oshp):
 
 
 
-def id_isolated_lines(shp, oshp):
+def id_isolated_lines(shp, oshp, lyrname=None, outlyr=None):
     """
     ID Isolated lines
 
     Lines not touching with others
     """
 
-    from glass.pys.oss  import fprop
-    from glass.sql.db   import create_pgdb
-    from glass.prop.prj import shp_epsg
-    from glass.it.db    import shp_to_psql
-    from glass.it.shp   import dbtbl_to_shp
-
-    epsg = shp_epsg(shp)
+    from glass.pys.oss import fprop
+    from glass.sql.db  import create_pgdb
+    from glass.it.db   import shp_to_psql
+    from glass.it.shp  import dbtbl_to_shp
 
     # Create DB
     db = create_pgdb(
@@ -47,23 +44,23 @@ def id_isolated_lines(shp, oshp):
 
     # Send data to db
     intbl = shp_to_psql(
-        db, shp, api="shp2pgsql",
-        srsEpsgCode=epsg, encoding="LATIN1"
+        db, shp, api="ogr2ogr",
+        lyrname={shp: lyrname} if lyrname else None
     )
 
     # Run Query
     id_endpnt = (
-        "SELECT gid, geom, "
+        "SELECT ogc_fid, geom, "
         "ST_AsText(ST_StartPoint(geom)) AS pstart, "
         "ST_AsText(ST_EndPoint(geom)) AS pend "
         "FROM ("
-            "SELECT gid, (ST_Dump(geom)).geom AS geom "
+            "SELECT ogc_fid, (ST_Dump(geom)).geom AS geom "
             f"FROM {intbl}"
         ") AS foo"
     )
 
     count_endpnt = (
-        "ROW_NUMBER() OVER (ORDER BY txtgeom) AS idpnt, "
+        "SELECT ROW_NUMBER() OVER (ORDER BY txtgeom) AS idpnt, "
         "txtgeom, npnt FROM ("
             "SELECT txtgeom, COUNT(txtgeom) AS npnt "
             "FROM ("
@@ -86,12 +83,13 @@ def id_isolated_lines(shp, oshp):
         f"LEFT JOIN ({count_endpnt}) AS en_tbl "
         "ON mtbl.pend = en_tbl.txtgeom "
         "WHERE st_tbl.npnt = 1 AND en_tbl.npnt = 1 "
-        "ORDER BY mtbl.gid"
+        "ORDER BY mtbl.ogc_fid"
     )
 
     dbtbl_to_shp(
         db, q, "geom", oshp, inDB='psql',
-        tableIsQuery=True
+        tableIsQuery=True, api='ogr2ogr',
+        olyr=outlyr
     )
 
     return oshp

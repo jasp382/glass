@@ -38,7 +38,8 @@ def dsn_data_collection_by_multibuffer(inBuffers, workspace, db, datasource,
     TODO: Only works for Flickr and Facebook
     """
     
-    import os; from osgeo      import ogr
+    import os
+    from osgeo      import ogr
     from glass.pys             import obj_to_lst
     from glass.sql.db       import create_pgdb
     from glass.sql.q        import q_to_ntbl
@@ -152,66 +153,64 @@ def dsn_data_collection_by_multibuffer(inBuffers, workspace, db, datasource,
         
         # Send Buffers data to PostgreSQL
         inBuffers[city]["pg_buffer"] = shp_to_psql(
-            db, multiBuffer, pgTable='buffers_{}'.format(city),
-            api="shp2pgsql", srsEpsgCode=inBuffers[city]["epsg"]
+            db, multiBuffer, api="shp2pgsql"
+            tnames={multiBuffer : f'buffers_{city}'},
+            srs=inBuffers[city]["epsg"]
         )
         
+        cols = ', '.join(dataColumns)
+        q = (
+            "SELECT srcdata.*, "
+            "array_agg(buffersg.cardeal ORDER BY buffersg.cardeal) "
+            "AS intersect_buffer FROM ("
+                f"SELECT {cols}, keyword, geom, "
+                "array_agg(buffer_or ORDER BY buffer_or) AS extracted_buffer "
+                f"FROM {inBuffers[city]['table']} "
+                f"GROUP BY {cols}, keyword, geom"
+            ") AS srcdata, ("
+                "SELECT cardeal, geom AS bfg "
+                f"FROM {inBuffers[city]['pg_buffer']}"
+            ") AS buffersg "
+            "WHERE ST_Intersects(srcdata.geom, buffersg.bfg) IS TRUE "
+            f"GROUP BY {cols}, keyword, geom, extracted_buffer"
+        )
         inBuffers[city]["filter_table"] = q_to_ntbl(
-            db, "filter_{}".format(inBuffers[city]["table"]), (
-                "SELECT srcdata.*, "
-                "array_agg(buffersg.cardeal ORDER BY buffersg.cardeal) "
-                "AS intersect_buffer FROM ("
-                    "SELECT {cols}, keyword, geom, "
-                    "array_agg(buffer_or ORDER BY buffer_or) AS extracted_buffer "
-                    "FROM {pgtable} "
-                    "GROUP BY {cols}, keyword, geom"
-                ") AS srcdata, ("
-                    "SELECT cardeal, geom AS bfg FROM {bftable}"
-                ") AS buffersg "
-                "WHERE ST_Intersects(srcdata.geom, buffersg.bfg) IS TRUE "
-                "GROUP BY {cols}, keyword, geom, extracted_buffer"
-            ).format(
-                cols    = ", ".join(dataColumns),
-                pgtable = inBuffers[city]["table"],
-                bftable = inBuffers[city]["pg_buffer"]
-            ), api='psql'
+            db, f"filter_{inBuffers[city]['table']}", q,
+            api='psql'
         )
         
-        inBuffers[city]["outside_table"] = q_to_ntbl(
-            db, "outside_{}".format(inBuffers[city]["table"]), (
-                "SELECT * FROM ("
+        q = (
+            "SELECT * FROM ("
                 "SELECT srcdata.*, "
                 "array_agg(buffersg.cardeal ORDER BY buffersg.cardeal) "
                 "AS not_intersect_buffer FROM ("
-                    "SELECT {cols}, keyword, geom, "
+                    f"SELECT {cols}, keyword, geom, "
                     "array_agg(buffer_or ORDER BY buffer_or) AS extracted_buffer "
-                    "FROM {pgtable} "
-                    "GROUP BY {cols}, keyword, geom"
+                    f"FROM {inBuffers[city]['table']} "
+                    f"GROUP BY {cols}, keyword, geom"
                 ") AS srcdata, ("
-                    "SELECT cardeal, geom AS bfg FROM {bftable}"
+                    "SELECT cardeal, geom AS bfg "
+                    f"FROM {inBuffers[city]['pg_buffer']}"
                 ") AS buffersg "
                 "WHERE ST_Intersects(srcdata.geom, buffersg.bfg) IS NOT TRUE "
-                "GROUP BY {cols}, keyword, geom, extracted_buffer"
-                ") AS foo WHERE array_length(not_intersect_buffer, 1) = 9"
-            ).format(
-                cols    = ", ".join(dataColumns),
-                pgtable = inBuffers[city]["table"],
-                bftable = inBuffers[city]["pg_buffer"]
-            ), api='psql'
+                f"GROUP BY {cols}, keyword, geom, extracted_buffer"
+            ") AS foo "
+            "WHERE array_length(not_intersect_buffer, 1) = 9"
+        )
+        inBuffers[city]["outside_table"] = q_to_ntbl(
+            db, f"outside_{inBuffers[city]['table']}",
+            q, api='psql'
         )
         
         # Union these two tables
-        inBuffers[city]["table"] = q_to_ntbl(db, "data_{}".format(city), (
-            "SELECT * FROM {intbl} UNION ALL "
-            "SELECT {cols}, keyword, geom, extracted_buffer, "
+        inBuffers[city]["table"] = q_to_ntbl(db, f"data_{city}", (
+            "SELECT * "
+            f"FROM {inBuffers[city]['filter_table']} "
+            "UNION ALL "
+            f"SELECT {cols}, keyword, geom, extracted_buffer, "
             "CASE WHEN array_length(not_intersect_buffer, 1) = 9 "
-            "THEN '{array_symbol}' ELSE not_intersect_buffer END AS "
-            "intersect_buffer FROM {outbl}"
-        ).format(
-            intbl        = inBuffers[city]["filter_table"],
-            outbl        = inBuffers[city]["outside_table"],
-            cols         = ", ".join(dataColumns),
-            array_symbol = '{' + '}'
+            f"THEN '{'{' + '}'}' ELSE not_intersect_buffer END AS "
+            f"intersect_buffer FROM {inBuffers[city]['outside_table']}"
         ), api='psql')
         
         """
@@ -328,7 +327,7 @@ def dsnsearch_by_cell(GRID_PNT, EPSG, RADIUS, DATA_SOURCE, db, OUTPUT_TABLE):
     
     import time;
     from glass.rd.shp            import shp_to_obj
-    from glass.sql.db            import create_db
+    from glass.sql.db            import create_pgdb
     from glass.acq.dsn.fb.places import places_by_query
     from glass.prj.obj           import df_prj
     from glass.dtt.mge.pd        import merge_df
@@ -371,11 +370,11 @@ def dsnsearch_by_cell(GRID_PNT, EPSG, RADIUS, DATA_SOURCE, db, OUTPUT_TABLE):
     RT = merge_df(RESULTS)
     
     # Create DB
-    create_db(db, overwrite=True, api='psql')
+    create_pgdb(db, overwrite=True, api='psql')
     
     # Send Data to PostgreSQL
     df_to_db(
-        db, RT, "{}_data".format(DATA_SOURCE),
+        db, RT, f"{DATA_SOURCE}_data",
         EPSG, "POINT",
         colGeom='geometry' if 'geometry' in RT.columns.values else 'geom'
     )
@@ -385,7 +384,7 @@ def dsnsearch_by_cell(GRID_PNT, EPSG, RADIUS, DATA_SOURCE, db, OUTPUT_TABLE):
         x != 'geom' and x != "grid_id"
     ] + ["geom"]
     
-    GRP_BY_TBL = q_to_ntbl(db, "{}_grpby".format(DATA_SOURCE), (
+    GRP_BY_TBL = q_to_ntbl(db, f"{DATA_SOURCE}_grpby", (
         "SELECT {cols}, CAST(array_agg(grid_id) AS text) AS grid_id "
         "FROM {dtsrc}_data GROUP BY {cols}"
     ).format(cols=", ".join(COLS), dtsrc=DATA_SOURCE), api='psql')

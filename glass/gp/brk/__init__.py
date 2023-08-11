@@ -156,10 +156,7 @@ def v_break_at_points(workspace, loc, lineShp, pntShp, db, srs, out_correct,
     # Sanitize output of v.edit.break using PostGIS
     create_pgdb(db, overwrite=True)
     
-    lt = shp_to_psql(
-        db, LINES, srsEpsgCode=srs,
-        pgTable=fprop(LINES, 'fn', forceLower=True), api="shp2pgsql"
-    )
+    lt = shp_to_psql(db, LINES, srs=srs, api="shp2pgsql")
     
     # Delete old/original lines and stay only with the breaked one
     Q = (

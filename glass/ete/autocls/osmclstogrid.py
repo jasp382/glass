@@ -139,8 +139,7 @@ def osmlulc_to_s2grid(ref_raster, osmtolulc, lucol, tmp_folder, results):
     from glass.wt       import obj_to_tbl
     from glass.pd.split import df_split
     from glass.rd.shp   import shp_to_obj
-    from glass.wt.shp   import df_to_shp
-    from glass.dtt.ext.toshp import shpext_to_boundshp
+    from glass.wt.shp   import df_to_shp, shpext_to_boundshp
 
     # Create Fishnets
     fishnets = mkdir(os.path.join(tmp_folder, 'fishnets_shp'))

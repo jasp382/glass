@@ -237,7 +237,7 @@ def del_topoerror_shps(db, shps, epsg, outfolder):
     
     shps = obj_to_lst(shps)
     
-    TABLES = shp_to_psql(db, shps, srsEpsgCode=epsg, api="shp2pgsql")
+    TABLES = shp_to_psql(db, shps, srs=epsg, api="shp2pgsql")
     
     NTABLE = [q_to_ntbl(
         db, "nt_{}".format(t),
@@ -356,7 +356,7 @@ def check_autofc_overlap(checkShp, epsg, dbname, outOverlaps):
     create_pgdb(dbname)
     
     # Send data to postgresql
-    table = shp_to_psql(dbname, checkShp, srsEpsgCode=epsg, api="pandas")
+    table = shp_to_psql(dbname, checkShp, srs=epsg, api="pandas")
     
     # Produce result
     q = (
