@@ -12,8 +12,8 @@ def multi_run(ti, df, ofolder):
 
     gsetup.init(grsbase, ofolder, loc_name, 'PERMANENT')
     
-    from glass.it.shp import shp_to_grs, grs_to_shp
-    from glass.gp.ovl import grsunion
+    from glass.it.shp     import shp_to_grs, grs_to_shp
+    from glass.gp.ovl.grs import grsunion
     
     for idx, row in df.iterrows():
         # Import data into GRASS GIS

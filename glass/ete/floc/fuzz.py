@@ -586,7 +586,7 @@ def fx_to_geom(rst, reduce_raster=None):
     fx_rcls = rcls_rst(fx, rules, f'rlcs_{fx}', api="grass")
 
     # Raster to Vector
-    fx_shp = rst_to_polyg(fx_rcls, f'shp_{fx}', gisApi='grass')
+    fx_shp = rst_to_polyg(fx_rcls, f'shp_{fx}', api='grass')
 
     # Export vetor to ESRI Shapefile
     shp = grs_to_shp(fx_shp, os.path.join(

@@ -144,12 +144,12 @@ def osm_vs_imd(osmxlsx, osmxml, imd, outfishnet, outshp):
     gsetup.init(gb, ws, loc, 'PERMANENT')
 
     # GRASS GIS Modules
-    from dgt.it.shp import shp_to_grs, grs_to_shp
-    from dgt.it.rst import rst_to_grs
-    from dgt.gp.gen import dissolve
-    from dgt.tbl.cols import add_fields, cols_calc
-    from dgt.gp.ovl import grsintersection
-    from dgt.smp import sample_to_points
+    from glass.it.shp import shp_to_grs, grs_to_shp
+    from glass.it.rst import rst_to_grs
+    from glass.gp.gen import dissolve
+    from glass.tbl.col import add_fields, cols_calc
+    from glass.gp.ovl.grs import grsintersection
+    from glass.smp.pnt import sample_to_points
 
     # Import data
 
@@ -271,7 +271,7 @@ def osm_vs_imd(osmxlsx, osmxml, imd, outfishnet, outshp):
 
     #All vector to raster
 
-    from dgt.it.rst import grs_to_rst
+    from glass.it.rst import grs_to_rst
     from grass.pygrass.modules import Module
     shpfile = glob.glob(os.path.join(ws, 'omsvs*.shp'))
     a = 1

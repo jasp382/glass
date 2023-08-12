@@ -52,7 +52,7 @@ def cae_vs_polygon(caeshp, polyshp, lulccls_col, refshp, oshp, source, polycae=N
     from glass.it.shp  import shp_to_grs, grs_to_shp
     from glass.tbl.grs import add_table
     from glass.gp.gen  import dissolve
-    from glass.gp.ovl  import grsunion
+    from glass.gp.ovl.grs  import grsunion
 
     # Import data
     pbname = fprop(polyshp, 'fn')

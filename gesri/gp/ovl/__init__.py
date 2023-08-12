@@ -28,9 +28,8 @@ def clip_by_featcls(inShp, clipFolder, folderOutputs, fFormat='.shp'):
     
     for fc in clip_fc:
         clip(inShp, fc, os.path.join(
-            folderOutputs, '{}_{}'.format(
-                fprop(inShp, 'fn'), os.path.basename(fc)
-            )
+            folderOutputs,
+            f'{fprop(inShp, "fn")}_{os.path.basename(fc)}'
         ))
 
 
@@ -118,7 +117,7 @@ def folderShp_Intersection(inFolder, intFeatures, outFolder):
     listed in the argument intFeatures (path to the file).
     """
     
-    from glass.pys.oss import create_folder
+    from glass.pys.oss import mkdir
     from gesri.rd.shp  import shp_to_lyr
     
     # Environment
@@ -130,7 +129,7 @@ def folderShp_Intersection(inFolder, intFeatures, outFolder):
         intFeatures = [intFeatures]
     
     if not os.path.exists(outFolder):
-        create_folder(outFolder)
+        mkdir(outFolder)
     
     # List feature classes in inFolder
     fc_infld = arcpy.ListFeatureClasses()
@@ -141,7 +140,7 @@ def folderShp_Intersection(inFolder, intFeatures, outFolder):
     
     # Intersect things
     for i in range(len(lyr_infld)):
-        intersect(
+        intersection(
             [lyr_infld[i]] + lyr_intFeat,
             os.path.join(outFolder, os.path.basename(str(fc_infld[i])))
         )

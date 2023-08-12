@@ -43,18 +43,18 @@ import os
 import pandas as pd
 import numpy as np
 
-from dgt.it.osm import osm_to_psql
-from dgt.it.shp import dbtbl_to_shp
-from dgt.wenv.grs import run_grass
-from dgt.dp.torst import shp_to_rst
-from dgt.rd.shp import shp_to_obj
-from dgt.wt.shp import df_to_shp
+from glass.it.osm import osm_to_psql
+from glass.it.shp import dbtbl_to_shp
+from glass.wenv.grs import run_grass
+from glass.dp.torst import shp_to_rst
+from glass.rd.shp import shp_to_obj
+from glass.wt.shp import df_to_shp
 
-from dgt.prop.sql import cols_name
-from dgt.rd import tbl_to_obj
-from dgt.sql.q import exec_write_q
+from glass.prop.sql import cols_name
+from glass.rd import tbl_to_obj
+from glass.sql.q import exec_write_q
 from glass.sql.db import create_pgdb
-from dgt.pys.oss import mkdir, fprop
+from glass.pys.oss import mkdir, fprop
 
 
 # Prepare workspace
@@ -143,12 +143,11 @@ import grass.script.setup as gsetup
 gsetup.init(gb, ws, loc, 'PERMANENT')
 
 # GRASS GIS Modules
-from dgt.it.shp import shp_to_grs, grs_to_shp
-from dgt.defs_alvaro.col import add_fields  # , cols_calc
-from dgt.it.shp import add_table
-from dgt.it.shp import dissolve
-from dgt.gp.ovl import grsunion
-from dgt.it.shp import overlay_grs, add_column_grs, distance_grs
+from glass.it.shp import shp_to_grs, grs_to_shp
+from glass.tbl.grs import add_table
+from glass.gp.gen import dissolve
+from glass.gp.ovl.grs import grsunion
+from glass.it.shp import add_column_grs, distance_grs
 
 
 # Import data

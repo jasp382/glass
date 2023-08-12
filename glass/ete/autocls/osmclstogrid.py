@@ -29,10 +29,10 @@ def lulc_by_cell(tid, boundary, lulc_shps, fishnet, result, workspace):
     gsetup.init(gbase, workspace, loc_name, 'PERMANENT')
     
     # GRASS GIS Modules
-    from glass.it.shp    import shp_to_grs, grs_to_shp
-    from glass.gp.ovl    import grsintersection
-    from glass.tbl.attr  import geomattr_to_db
-    from glass.prop.feat import feat_count
+    from glass.it.shp     import shp_to_grs, grs_to_shp
+    from glass.gp.ovl.grs import grsintersection
+    from glass.tbl.attr   import geomattr_to_db
+    from glass.prop.feat  import feat_count
     
     # Send Fishnet to GRASS GIS
     fnet = shp_to_grs(fishnet, fprop(fishnet, 'fn'), asCMD=True)

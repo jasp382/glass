@@ -54,31 +54,6 @@ def line_intersect_to_pnt(inShp, outShp, db=None):
 Union Operations
 """
 
-def grsunion(lyra, lyrb, oshp, cmd=None):
-    """
-    GRASS Union
-    """
-
-    if cmd:
-        outcmd = execmd((
-            f"v.overlay ainput={lyra} atype=area "
-            f"binput={lyrb} btype=area "
-            f"operator=or output={oshp} --overwrite --quiet"
-        ))
-    
-    else:
-        from grass.pygrass.modules import Module
-        
-        un = Module(
-            "v.overlay", ainput=lyra, atype="area",
-            binput=lyrb, btype="area", operator="or",
-            output=oshp, overwrite=True, run_=False, quiet=True
-        )
-        
-        un()
-
-    return oshp
-
 
 def union(lyrA, lyrB, outShp, api_gis="grass"):
     """
@@ -99,6 +74,7 @@ def union(lyrA, lyrB, outShp, api_gis="grass"):
     
     elif api_gis == "pygrass" or api_gis == "grass":
         from glass.prop.prj import get_epsg
+        from glass.gp.ovl.grs import grsunion
 
         ws = os.path.dirname(outShp)
         refname = fprop(outShp)
@@ -276,6 +252,7 @@ def optimized_union_anls(lyr_a, lyr_b, outShp, ref_boundary,
         # Add data to GRASS GIS
         from glass.it.shp import shp_to_grs
         from glass.gp.ovl.clipp import grsclip
+        from glass.gp.ovl.grs import grsunion
         
         cellsShp   = [shp_to_grs(
             shp, fprop(shp, 'fn'), asCMD=True
@@ -319,6 +296,7 @@ def optimized_union_anls(lyr_a, lyr_b, outShp, ref_boundary,
             # Import GRASS GIS modules
             from glass.it.shp import shp_to_grs, grs_to_shp
             from glass.prop.feat import feat_count
+            from glass.gp.ovl.grs import grsunion
             
             # Add data to GRASS
             a = shp_to_grs(la, fprop(la, 'fn'), filterByReg=True, asCMD=True)
@@ -380,32 +358,6 @@ def optimized_union_anls(lyr_a, lyr_b, outShp, ref_boundary,
     return MERGED_SHP
 
 
-def grsintersection(inshp, intshp, outshp, cmd=None):
-    """
-    GRASS GIS intersection
-    """
-
-    if cmd:
-        rcmd = execmd((
-            f"v.overlay ainput={inshp} atype=area, "
-            f"binput={intshp} btype=area "
-            f"operator=and output={outshp} --overwrite --quiet"
-        ))
-    
-    else:
-        from grass.pygrass.modules import Module
-        
-        tool = Module(
-            "v.overlay", ainput=inshp, atype="area",
-            binput=intshp, btype="area", operator="and",
-            output=outshp,  overwrite=True, run_=False, quiet=True
-        )
-        
-        tool()
-    
-    return outshp
-
-
 def intersection(inShp, intersectShp, outShp, api='geopandas'):
     """
     Intersection between ESRI Shapefile
@@ -439,6 +391,7 @@ def intersection(inShp, intersectShp, outShp, api='geopandas'):
     
     elif api == 'pygrass' or api == 'grass':
         from glass.prop.prj import get_epsg
+        from glass.gp.ovl.grs import grsintersection
 
         epsg = get_epsg(inShp)
 
@@ -639,7 +592,7 @@ def check_shape_diff(SHAPES_TO_COMPARE, OUT_FOLDER, REPORT, DB,
             # To Vector
             d = rst_to_polyg(
                 inRst, rstName,
-                rstColumn=ncol, gisApi="grass"
+                rstColumn=ncol, api="grass"
             )
                 
             # Export Shapefile
@@ -883,7 +836,7 @@ def shp_diff_fm_ref(refshp, refcol, shps, out_folder,
             # To vector
             d = rst_to_polyg(
                 inrst, rname,
-                rstColumn=f"lulc_{str(i)}", gisApi="grass"
+                rstColumn=f"lulc_{str(i)}", api="grass"
             )
         
         else:

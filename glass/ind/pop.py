@@ -18,13 +18,13 @@ def pop_within_area(mapunits, mapunits_id, outcol, subunits,
     """
 
     import os
-    from glass.rd.shp   import shp_to_obj
-    from glass.wt.rst   import shpext_to_rst
-    from glass.wt.shp   import obj_to_shp
-    from glass.pys.oss  import mkdir, fprop
-    from glass.gp.ovl   import grsintersection
-    from glass.prop.prj import get_epsg
-    from glass.wenv.grs import run_grass
+    from glass.rd.shp     import shp_to_obj
+    from glass.wt.rst     import shpext_to_rst
+    from glass.wt.shp     import obj_to_shp
+    from glass.pys.oss    import mkdir, fprop
+    from glass.gp.ovl.grs import grsintersection
+    from glass.prop.prj   import get_epsg
+    from glass.wenv.grs   import run_grass
 
     # Prepare GRASS GIS Workspace configuration
     oname = fprop(output, 'fn')
@@ -275,13 +275,13 @@ def shparea_by_mapunitpopulation(polygons, mapunits, units_id, outcol, output,
     import os
     import geopandas as gp
 
-    from glass.wt.rst   import shpext_to_rst
-    from glass.pys.oss  import mkdir, fprop
-    from glass.gp.ovl   import grsintersection
-    from glass.prop.prj import get_epsg
-    from glass.wenv.grs import run_grass
-    from glass.rd.shp   import shp_to_obj
-    from glass.wt.shp   import obj_to_shp
+    from glass.wt.rst     import shpext_to_rst
+    from glass.pys.oss    import mkdir, fprop
+    from glass.gp.ovl.grs import grsintersection
+    from glass.prop.prj   import get_epsg
+    from glass.wenv.grs   import run_grass
+    from glass.rd.shp     import shp_to_obj
+    from glass.wt.shp     import obj_to_shp
 
     delareacol = 1 if not areacol else 0
     areacol = outcol if not units_pop else areacol if areacol else 'areav'

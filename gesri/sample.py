@@ -3,6 +3,7 @@ Sampling ArcGIS tools
 """
 
 import arcpy
+import os
 
 def rnd_points(rndPntShp, NPoints, whereShp, distTolerance=None):
     """
@@ -11,13 +12,13 @@ def rnd_points(rndPntShp, NPoints, whereShp, distTolerance=None):
     """
     
     import os
-    from glass.oss import get_filename
+    from glass.pys.oss import fprop
     
-    distT = "" if not distTolerance else "{} Meters".format(distTolerance)
+    distT = "" if not distTolerance else f"{distTolerance} Meters"
     
     arcpy.CreateRandomPoints_management(
         os.path.dirname(rndPntShp),
-        get_filename(rndPntShp), whereShp,
+        fprop(rndPntShp, 'fn'), whereShp,
         "", NPoints, distT, "POINT", "0"
     )
     
@@ -31,25 +32,28 @@ def rnd_points_with_dist_from_points(otherPnt, rndPnt, NPnt,
     Create NRandom Points with a distance of X from other Points
     """
     
-    import os
-    from glass.oss                 import get_filename
-    from glass.cpu.arcg.anls.ovlay import erase
-    from glass.anls.prox.bf        import _buffer
+    from glass.pys.oss import fprop
+    from gesri.gp.ovl  import erase
+    from gesri.gp.prox import _buffer
     
     WORKSPACE = os.path.dirname(rndPnt)
     
     # Create Buffer
     bfShp = _buffer(
         otherPnt, distFromOtherPnt, os.path.join(
-            WORKSPACE, "{}_buffer.shp".format(get_filename(otherPnt))
+            WORKSPACE,
+            f"{fprop(otherPnt, 'fn')}_buffer.shp"
         ),
         dissolve="ALL", api='arcpy'
     )
     
     # Erase Boundary deleting areas where we want no points
-    erased = erase(boundary, bfShp, 
-        os.path.join(WORKSPACE,"{}_erase.shp".format(
-            get_filename(boundary)))
+    erased = erase(
+        boundary, bfShp, 
+        os.path.join(
+            WORKSPACE,
+            f"{fprop(boundary, 'fn')}_erase.shp"
+        )
     )
     
     # Create Random Points

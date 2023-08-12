@@ -2,7 +2,7 @@
 Raster to Feature Class
 """
 
-def rst_to_polyg(inRst, outShp, rstColumn=None, gisApi='gdal', epsg=None):
+def rst_to_polyg(inRst, outShp, rstColumn=None, api='gdal', epsg=None):
     """
     Raster to Polygon Shapefile
     
@@ -13,7 +13,7 @@ def rst_to_polyg(inRst, outShp, rstColumn=None, gisApi='gdal', epsg=None):
     * grass;
     """
     
-    if gisApi == 'gdal':
+    if api == 'gdal':
         if not epsg:
             raise ValueError((
                 'Using GDAL, you must specify the EPSG CODE of the '
@@ -39,14 +39,14 @@ def rst_to_polyg(inRst, outShp, rstColumn=None, gisApi='gdal', epsg=None):
         
         output.Destroy()
     
-    elif gisApi == 'qgis':
+    elif api == 'qgis':
         import processing
         
         processing.runalg(
             "gdalogr:polygonize", inRst, "value", outShp
         )
     
-    elif gisApi == 'pygrass':
+    elif api == 'pygrass':
         from grass.pygrass.modules import Module
         
         rstField = "value" if not rstColumn else rstColumn
@@ -57,7 +57,7 @@ def rst_to_polyg(inRst, outShp, rstColumn=None, gisApi='gdal', epsg=None):
         )
         rtop()
     
-    elif gisApi == 'grass':
+    elif api == 'grass':
         from glass.pys import execmd
         
         rstField = "value" if not rstColumn else rstColumn
@@ -69,7 +69,7 @@ def rst_to_polyg(inRst, outShp, rstColumn=None, gisApi='gdal', epsg=None):
         ))
     
     else:
-        raise ValueError(f'Sorry, API {gisApi} is not available')
+        raise ValueError(f'Sorry, API {api} is not available')
     
     return outShp
 
@@ -148,7 +148,7 @@ def rsts_to_shps(rstfolder, outfolder, rsttemplate):
         # to polygon
         grs_shp = rst_to_polyg(
             grs_rst, f"{grs_rst}_shp",
-            rstColumn="value", gisApi='grasscmd'
+            rstColumn="value", api='grass'
         )
 
         grs_to_shp(grs_shp, os.path.join(

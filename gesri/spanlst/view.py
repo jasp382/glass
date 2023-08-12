@@ -15,49 +15,49 @@ def generalize_obs_points(rst, ref_cellsize, output, workspace=None):
     """
     
     import os
-    from glass.oss                 import get_filename
-    from glass.oss.ops             import create_folder
-    from glass.cpu.arcg.anls.ovlay import erase
-    from glass.prop.rst            import get_cellsize
-    from glass.cpu.arcg.mng.feat   import feat_to_pnt
-    from glass.cpu.arcg.mng.sample import fishnet
-    from glass.to.shp              import rst_to_polyg
+    from gesri.dp.cg         import feat_to_pnt
+    from gesri.gp.ovl        import erase
+    from gesri.sample        import fishnet
+    from glass.pys.oss       import fprop, mkdir
+    from glass.prop.rst      import get_cellsize
+    from glass.dtt.rst.toshp import rst_to_polyg
     
     # 0 - Check cellsize, raster cellsize should be lower than refCellsize
     CELLSIZE = get_cellsize(rst, xy=True, bnd=None, gisApi='arcpy')
     
     if CELLSIZE >= ref_cellsize:
         raise ValueError((
-            "{} cellsize is not lower than ref_cellsize"
-        ).format(rst))
+            f"{rst} cellsize is not lower than ref_cellsize"
+        ))
     
-    wTmp = workspace if workspace else create_folder(
-        os.path.join(os.path.dirname(output), 'tmp'), overwrite=True
+    wTmp = workspace if workspace else mkdir(
+        os.path.join(os.path.dirname(output), 'tmp'),
+        overwrite=True
     )
     
-    BASENAME = get_filename(rst)
+    BASENAME = fprop(rst, 'fn')
     
     # Change cellsize to REF_CELLSIZE
     # 1) Create fishnet with REF_CELLSIZE
     fishNet = fishnet(
-        os.path.join(wTmp, "fish_{}.shp".format(BASENAME)),
+        os.path.join(wTmp, f"fish_{BASENAME}.shp"),
         rst, cellWidth=ref_cellsize, cellHeight=ref_cellsize   
     )
     
     # 2) Erase areas with NoData values
     # - Raster to shp
     cls_intPolygon = rst_to_polyg(
-        rst, os.path.join(wTmp, 'clsint_{}.shp'.format(BASENAME)),
-        gisApi='arcpy'
+        rst, os.path.join(wTmp, f'clsint_{BASENAME}.shp'),
+        api='arcpy'
     )
     
     # - Erase areas of the fishnet that agrees with nodata values in the raster
     tmpErase = erase(
         fishNet, cls_intPolygon,
-        os.path.join(wTmp, 'nozones_{}.shp'.format(BASENAME))
+        os.path.join(wTmp, f'nozones_{BASENAME}.shp')
     ); trueErase = erase(
         fishNet, tmpErase,
-        os.path.join(wTmp, 'fishint_{}.shp'.format(BASENAME))
+        os.path.join(wTmp, f'fishint_{BASENAME}.shp')
     )
     
     # 3) Convert erased fishnet to points
@@ -439,36 +439,33 @@ def viewshed_by_feat_class(inRaster, observerDataset, feat_class_folder,
                 # - Raster to shp
                 cls_intPolygon = rst_to_polyg(
                     clipTmp, os.path.join(
-                        wTmp, 'cls_int_{}'.format(os.path.basename(fc))
-                    ), gisApi='arcpy'
+                        wTmp, f'cls_int_{os.path.basename(fc)}'
+                    ), api='arcpy'
                 )
                 
                 # - Erase areas of the fishnet that agrees with nodata values in the raster
                 tmpErase = erase(
                     fishNet, cls_intPolygon,
-                    os.path.join(wTmp, 'nozones_{}'.format(os.path.basename(fc)))
+                    os.path.join(wTmp, f'nozones_{os.path.basename(fc)}')
                 )
                 trueErase = erase(
                     fishNet, tmpErase,
-                    os.path.join(wTmp, 'fishint_{}'.format(os.path.basename(fc)))
+                    os.path.join(wTmp, f'fishint_{os.path.basename(fc)}')
                 )
                 
                 # 3) Convert erased fishnet to points
                 clipObs = feat_to_pnt(
                     trueErase,
-                    os.path.join(wTmp, 'obs_{}'.format(
-                        os.path.basename(fc)
-                    )),
+                    os.path.join(wTmp, f'obs_{os.path.basename(fc)}'),
                     pnt_position="INSIDE"
                 )
             
             # Else - simple conversion to points
             else:
-                clipObs = rst_to_pnt(
-                    clipTmp, os.path.join(wTmp, 'obs_{}'.format(
-                        os.path.basename(fc)
-                    ))
-                )
+                clipObs = rst_to_pnt(clipTmp, os.path.join(
+                    wTmp,
+                    f'obs_{os.path.basename(fc)}'
+                ))
         
         # Run viewshed
         viewshed(
@@ -505,7 +502,7 @@ def viewshed_by_feat_class2(inRaster, observerDataset, feat_class_folder,
     from glass.prop.rst              import get_cell_coord
     from glass.prop.ext              import rst_ext
     from glass.prop.rst              import rst_shape, rst_distinct, get_nodata, get_cellsize
-    from glass.anls.prox.bf          import _buffer
+    from gesri.gp.prox import _buffer
     from glass.cpu.arcg.mng.rst.proc import clip_raster
     from glass.cpu.arcg.spanlst.rcls import reclassify
     from glass.cpu.arcg._3D.view     import line_of_sight
@@ -641,7 +638,7 @@ def viewshed_by_feat_class2(inRaster, observerDataset, feat_class_folder,
                 cls_intPolygon = rst_to_polyg(
                     clipTmp, os.path.join(
                         wTmp, 'cls_int_{}'.format(os.path.basename(fc))
-                    ), gisApi='arcpy'
+                    ), api='arcpy'
                 )
                 
                 # - Erase areas of the fishnet that have nodata values

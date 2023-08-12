@@ -87,8 +87,8 @@ if __name__ == '__main__':
 
         gsetup.init(gbase, workspace, loc_name, 'PERMANENT')
 
-        from glass.it.shp import grs_to_shp, shp_to_grs
-        from glass.gp.ovl import grsintersection
+        from glass.it.shp     import grs_to_shp, shp_to_grs
+        from glass.gp.ovl.grs import grsintersection
 
         grsnut = shp_to_grs(nutshp, 'frefshp', asCMD=True)
 
@@ -108,11 +108,11 @@ if __name__ == '__main__':
 
             # Export GRID to File
             ffnet = obj_to_shp(fnet, 'geom', epsg, os.path.join(
-                workspace, 'fnet_{}_{}.shp'.format(row[idcol], str(i + 1))
+                workspace, f'fnet_{row[idcol]}_{str(i + 1)}.shp'
             ))
 
             # Import to GRASS
-            grs_ffnet = shp_to_grs(ffnet, 'fnet_{}'.format(row[idcol]))
+            grs_ffnet = shp_to_grs(ffnet, f'fnet_{row[idcol]}')
 
             # Intersection
             i_ffnet = grsintersection(
@@ -121,7 +121,7 @@ if __name__ == '__main__':
 
             # Export
             clp_ffnet = grs_to_shp(i_ffnet, os.path.join(
-                workspace, 'fgrid_{}_{}.shp'.format(row[idcol], str(i + 1))
+                workspace, f'fgrid_{row[idcol]}_{str(i + 1)}.shp'
             ), 'area')
 
             clpfnet = shp_to_obj(clp_ffnet, outgeom='geom')

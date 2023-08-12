@@ -4,12 +4,12 @@ def roads_fmdb(osmdb, lnhTbl, plTbl, apidb='SQLITE', asRst=None):
     """
     
     import datetime as dt
-    from dgt.prop.sql import row_num as cnt_rows
-    from dgt.it.shp   import dbtbl_to_shp as db_to_shp
+    from glass.prop.sql import row_num as cnt_rows
+    from glass.it.shp   import dbtbl_to_shp as db_to_shp
     if apidb=='SQLITE':
-        from dgt.gp.prox.bfingsql import splite_buffer as st_buffer
+        from glass.gp.prox.bfingsql import splite_buffer as st_buffer
     else:
-        from dgt.gp.prox.bfingsql import st_buffer
+        from glass.gp.prox.bfingsql import st_buffer
     
     time_a = dt.datetime.now().replace(microsecond=0)
     NR = cnt_rows(osmdb, lnhTbl, where="roads IS NOT NULL",
@@ -25,8 +25,8 @@ def roads_fmdb(osmdb, lnhTbl, plTbl, apidb='SQLITE', asRst=None):
     time_c = dt.datetime.now().replace(microsecond=0)
     
     if NB:
-        from dgt.sql.q       import exec_write_q
-        from dgt.gp.prox.sql import st_near
+        from glass.sql.q       import exec_write_q
+        from glass.gp.prox.sql import st_near
         
         ROADS_Q = (
             f"(SELECT{'' if apidb == 'SQLITE' else ' gid,'}"
@@ -98,7 +98,7 @@ def roads_fmdb(osmdb, lnhTbl, plTbl, apidb='SQLITE', asRst=None):
     time_g = dt.datetime.now().replace(microsecond=0)
     
     if asRst:
-        from dgt.dp.torst import grsshp_to_grsrst as shp_to_rst
+        from glass.dp.torst import grsshp_to_grsrst as shp_to_rst
         
         roadsGrs = shp_to_rst(
             roadsGrs, int(asRst), "rst_roads", cmd=True

@@ -30,6 +30,8 @@ def water_fm_s2_osm(waterlines: str, green:str, nir_swir:str, waterpoly:str):
     from glass.it.rst import rst_to_grs
     from glass.rst.alg import grsrstcalc
     from glass.rst.zon.grs import region_group, reclsbyarea
+    from glass.dtt.rst.toshp import rst_to_polyg
+    from glass.gp.ovl.grs import grs_select
 
     # Data to GRASS GIS
     lines = shp_to_grs(waterlines)
@@ -53,6 +55,40 @@ def water_fm_s2_osm(waterlines: str, green:str, nir_swir:str, waterpoly:str):
         mode='greater', method="reclass",
         i_clump=True, ascmd=True
     )
+
+    # Water regions to vetorial
+    wshp = rst_to_polyg(
+        wbodiesreg, fprop(waterpoly, 'fn'),
+        api='grass'
+    )
+
+    ires = grs_select(
+        wshp, lines, 'wbodies_intersect',
+        'overlap'
+    )
+
+    crosses = grs_select(
+        wshp, lines, 'wbodies_crosses',
+        'crosses'
+    )
+
+    contain = grs_select(
+        wshp, lines, 'wbodies_contains',
+        'contains'
+    )
+
+    # Export result
+    grs_to_shp(ires, waterpoly, 'area')
+
+    grs_to_shp(crosses, os.path.join(
+        os.path.dirname(waterpoly),
+        crosses + '.shp'
+    ), 'area')
+
+    grs_to_shp(contain, os.path.join(
+        os.path.dirname(waterpoly),
+        contain + '.shp'
+    ), 'area')
 
     return waterpoly
 

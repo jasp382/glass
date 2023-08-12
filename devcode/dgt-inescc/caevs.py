@@ -3,7 +3,7 @@ Compare CAE with data sources
 """
 
 if __name__ == "__main__":
-    from dgt.ete.cae import caevs_multiproc
+    from glass.ete.cae import caevs_multiproc
 
     caefolder = '/home/jasp/mystuff/dgt/caeparts/'
     polyfolder = '/home/jasp/mystuff/dgt/builtup/'
