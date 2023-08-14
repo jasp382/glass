@@ -26,12 +26,12 @@ def water_fm_s2_osm(waterlines: str, green:str, nir_swir:str, waterpoly:str):
 
     gsetup.init(gb, ws, loc, 'PERMANENT')
 
-    from glass.it.shp import shp_to_grs, grs_to_shp
-    from glass.it.rst import rst_to_grs
-    from glass.rst.alg import grsrstcalc
-    from glass.rst.zon.grs import region_group, reclsbyarea
+    from glass.it.shp        import shp_to_grs, grs_to_shp
+    from glass.it.rst        import rst_to_grs
+    from glass.rst.alg       import grsrstcalc
+    from glass.rst.zon.grs   import region_group, reclsbyarea
     from glass.dtt.rst.toshp import rst_to_polyg
-    from glass.gp.ovl.grs import grs_select
+    from glass.gp.ovl.grs    import grs_select
 
     # Data to GRASS GIS
     lines = shp_to_grs(waterlines)
