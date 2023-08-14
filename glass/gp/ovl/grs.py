@@ -96,5 +96,5 @@ def grs_select(ashp, bshp, oshp, operator, cmd=True):
 
         tool()
     
-    return output
+    return oshp
 

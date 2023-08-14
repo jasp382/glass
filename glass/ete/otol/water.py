@@ -39,12 +39,15 @@ def water_fm_s2_osm(waterlines: str, green:str, nir_swir:str, waterpoly:str):
 
     # Calculate NDWI
     ndwi = grsrstcalc(
-        f"({g}) - ({ns}) / ({g}) + (double({ns}))",
+        f"({g} - {ns}) / ({g} + float({ns}))",
         'ndwi'
     )
 
     # Get Water Bodies
-    wbodies = grsrstcalc(f"{ndwi} > 0.5", 'wbodies')
+    wbodies = grsrstcalc(
+        f"if({ndwi} > 0.5, 1, null())",
+        'wbodies'
+    )
 
     # Group cells in regions
     wbodiesgrp = region_group(wbodies, 'wgroups')

@@ -135,7 +135,7 @@ def reclsbyarea(irst, orst, val, mode='greater',
     mode = 'greater' if mode == 'greater' else 'lesser'
 
     if ascmd:
-        flags = '-c' if i_clump else ''
+        flags = ' -c' if i_clump else ''
         rcmd = execmd((
             f'r.reclass.area input={irst} '
             f'output={orst} mode={mode} value={str(val)} '
