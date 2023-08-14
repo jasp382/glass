@@ -455,8 +455,18 @@ def st_erase_opt(db, itbl, ipk, erase_tbl, igeom, erase_geom, otbl=None):
         db, itbl, api='psql'
     ) if x != igeom and x != ipk])
 
+    valopk, opk, nk = None, '', 0
+    while not valopk:
+        opk = f"prev_{ipk}" if not nk else f"prev_{ipk}_{str(nk)}"
+
+        if opk not in cols:
+            valopk = True
+
+        nk += 1
+
     q = (
-        f"SELECT fid, {cols}, "
+        f"SELECT ROW_NUMBER() OVER(ORDER BY {ipk}) AS {ipk}, "
+        f"tbla.{ipk} AS {opk}, {cols}, "
         f"(ST_Dump(ST_UnaryUnion(ST_Collect({igeom})))).geom AS {igeom} "
         "FROM ("
             f"SELECT tbla.{ipk}, {cols}, "

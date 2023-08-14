@@ -592,7 +592,7 @@ def priority_rule(gpkg, lyr, rst, col, osm_db):
     import datetime as dt
     import copy
 
-    from glass.cons.otol  import OTOL_GEOM, OTOL_LULC, classes_priority
+    from glass.cons.otol  import OTOL_GEOM, classes_priority
     from glass.gp.ovl.sql import st_erase_opt
     from glass.gp.seg.sql import geomseg_to_newtbl
     from glass.it.db      import gpkg_lyr_attr_to_psql
@@ -611,7 +611,8 @@ def priority_rule(gpkg, lyr, rst, col, osm_db):
 
     # Create segments table if necessary
     for cls in order_cls:
-        if not cls['bigbox']: continue
+        cls['pk'] = 'fid'
+        if not cls['bigbbox']: continue
 
         if cls['fid'] not in table_cls: continue
     
@@ -622,6 +623,8 @@ def priority_rule(gpkg, lyr, rst, col, osm_db):
             cols={'lulc' : 'integer', 'leg': 'text'},
             subdivide_factor=10
         )
+
+        cls['pk'] = 'sid'
     
     # Go for erasing
     refname = copy.deepcopy(table_cls)
@@ -661,11 +664,12 @@ def priority_rule(gpkg, lyr, rst, col, osm_db):
             # Create Geometry index for the new table
             qs = [(
                 f"ALTER TABLE {table_cls[order_cls[i]['fid']]} ADD CONSTRAINT "
-                f"{table_cls[order_cls[i]['fid']]}_pk PRIMARY KEY (fid)"
+                f"{table_cls[order_cls[i]['fid']]}_pk PRIMARY KEY "
+                f"({order_cls[i]['pk']})"
             ), (
                 f"CREATE INDEX {table_cls[order_cls[i]['fid']]}_geom_idx ON "
                 f"{table_cls[order_cls[i]['fid']]} "
-                f"USING gist ({OTOL_GEOM})"
+                f"USING gist (geom)"
             )]
 
             exec_write_q(osm_db, qs, api='psql')

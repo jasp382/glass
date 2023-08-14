@@ -19,9 +19,9 @@ def geomseg_to_newtbl(db, tbl, pk, geom, geomtype, epsg, otbl,
         ", ".join(list(cols.keys())) + ", "
 
     qs = [(
-        f"CREATE_TABLE {otbl} ("
+        f"CREATE TABLE {otbl} ("
             "sid uuid PRIMARY KEY, "
-            f"{pk} REFERENCES {tbl}({pk}), "
+            f"{pk} integer REFERENCES {tbl}({pk}), "
             f"{ctcols}"
             f"geom geometry({geomtype}, {epsg})"
         ")"
@@ -29,7 +29,7 @@ def geomseg_to_newtbl(db, tbl, pk, geom, geomtype, epsg, otbl,
         f"CREATE INDEX {otbl}_geom_idx "
         f"ON {otbl} USING gist(geom)"
     ), (
-        "CREATE EXTENSION IS NOT EXISTS "
+        "CREATE EXTENSION IF NOT EXISTS "
         "\"uuid-ossp\""
     ), (
         f"INSERT INTO {otbl} "
