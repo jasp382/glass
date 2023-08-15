@@ -1,0 +1,99 @@
+{
+    "HOME": {
+        "WhereFire": "Onde está o fogo?",
+        "SeeMap": "Ver Mapa",
+        "Login": "LOG IN",
+        "Register": "REGISTAR"
+    },
+    "LOGIN": {
+        "KeepSession": "Manter sessão iniciada",
+        "ForgotPass": "Esqueceu-se da Password?"
+    },
+    "ACCOUNT": {
+        "RecoverPassword": "RECUPERAR PASSWORD",
+        "Send": "Enviar"
+    },
+    "MENUS": {
+        "Content": "CONTEÚDOS",
+        "Legend": "LEGENDA",
+        "MapLayers" : "TEMAS NO MAPA",
+        "FiresSeen": "LOCAIS OBSERVADOS",
+        "Contributions": "CONTRIBUIÇÕES",
+        "Events": "EVENTOS",
+        "Data": "DADOS"
+    },
+    "FILTERS": {
+        "Location": "Localização",
+        "Event": "Fogo Associado",
+        "Clear": "Limpar Filtro",
+        "Filter": "Filtrar",
+        "All": "TODAS",
+        "Mine": "MINHAS"
+    },
+    "EMPTY": {
+        "NoEvents": "Não existem locais observados neste momento.",
+        "NoRealEvents": "Não existem eventos neste momento.",
+        "NoContribs": "Não existem contribuições neste momento.",
+        "AddYours": "Use a aplicação móvel para contribuir para o sistema FireLoc.",
+        "MandatoryField": "Este campo é obrigatório.",
+        "ValidEmail": "Insira um email válido."
+    },
+    "EVENTS": {
+        "Info": "Info",
+        "Services": "Serviços",
+        "Photos": "Fotos",
+        "Duration": "Primeira e última contribuição",
+        "OnGoing": "a decorrer",
+        "Auth": "Para aceder a esta informação, registe uma conta ou faça login.",
+        "Name": "Nome",
+        "Cause": "Causa",
+        "Unavailable": "Informação atualmente indisponível.",
+        "NContrib" : "Número de contribuições",
+        "Freguesia" : "Freguesia",
+        "Municipio" : "Município"
+    },
+    "CONTRIBS": {
+        "Direction": "Direção",
+        "SunDirection": "Direção ao Sol",
+        "Register": "Para aceder a mais informação faça o seu Registo",
+        "Login": "Já está registado? Faça Login na sua conta para aceder a mais informação"
+    },
+    "PROFILE": {
+        "Edit": "Editar Perfil",
+        "Contribs": "Minhas Contribuições",
+        "NoContribs": "Sem Contribuições",
+        "ChangePass": "Alterar Password",
+        "Leave": "Sair",
+        "Profile": "Perfil",
+        "Save": "Guardar Alterações",
+        "Delete": "Apagar Conta",
+        "Error": "Ocorreu um erro. Tente novamente mais tarde.",
+
+        "FirstName": "Primeiro Nome",
+        "LastName": "Apelidos",
+        "NewPassword": "Nova Password",
+        "ConfPassword": "Confirmação de Password", 
+
+        "FirstNameMandatory": "Primeiro nome é obrigatório.",
+        "LastNameMandatory": "Apelidos são obrigatórios.",
+        "PasswordsMatch": "Nova password e confirmação devem ser iguais.",
+        "NewPassMandatory": "Nova password é obrigatória.",
+        "ConfPassMandatory": "Confirmação de password é obrigatória.",
+
+        "Cancel": "Cancelar",
+        "DeleteTitle": "Tem a certeza que deseja apagar a sua conta?",
+        "DeleteContent": "Tenho conhecimento que esta ação é irreversível e apaga a conta permanentemente."
+    },
+    "NOTFOUND": {
+        "Title": "PÁGINA NÃO ENCONTRADA",
+        "Subtitle": "Parece que está perdido.",
+        "Text": "Não se preocupe, enviámos uma equipa especializada para o encontrar!",
+        "Action": "Voltar para Casa"
+    },
+    "UNAUTHORIZED": {
+        "Title": "ACESSO NEGADO",
+        "Explanation": "Não tem permissão para visualizar este conteúdo.",
+        "Redirect": "Faça login ou volte para segurança.",
+        "Action": "Voltar para Casa"
+    }
+}

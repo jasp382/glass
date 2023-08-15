@@ -1,0 +1,7 @@
+<router-outlet></router-outlet>
+
+<div class="alert-container">
+    <ngb-alert [type]="alertType" #selfClosingAlert *ngIf="hasAlert" class="app-alert">
+        <div [innerHTML]="alertMessage"></div>
+    </ngb-alert>
+</div>

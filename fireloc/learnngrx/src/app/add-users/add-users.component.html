@@ -1,0 +1,32 @@
+<p>add-users works!</p>
+
+
+<form id="addUserForm" #f="ngForm" (ngSubmit)="addUser()">
+    <div class="col-6">
+        <label>Id</label>
+        <input id="id" name="id" [(ngModel)]="model.id" 
+            class="form-control" type="text">
+    </div>
+
+    <div class="col-6">
+        <label>Name</label>
+        <input id="name" name="name" [(ngModel)]="model.name" 
+            class="form-control" type="text">
+    </div>
+
+    <div class="col-6">
+        <label>Age</label>
+        <input id="age" name="age" [(ngModel)]="model.age" 
+            class="form-control" type="text">
+    </div>
+
+    <div class="col-6">
+        <label>Profile</label>
+        <input id="profile" name="profile" [(ngModel)]="model.profile" 
+            class="form-control" type="text">
+    </div>
+
+    <div class="col-6">
+        <button type="submit" class="btn btn-primary">Add user</button>
+    </div>
+</form>

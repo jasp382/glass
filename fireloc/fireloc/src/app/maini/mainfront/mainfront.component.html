@@ -1,0 +1,55 @@
+<div class="d-flex flex-column min-vh-100">
+    <!-- Navbar -->
+    <app-headmenu></app-headmenu>
+
+    <!-- Main Container -->
+    <div class="d-flex bd-highlight flex-grow-1">
+        <!-- Left Panel Open -->
+        <div *ngIf="isLeftOpen"
+            class="left-panel-open bd-highlight left-panel d-flex flex-column justify-content-between">
+            <!-- Left Side Tabs -->
+            <app-leftcontrol></app-leftcontrol>
+
+            <!-- Map Styles Container -->
+            <div class="map-styles-container d-flex justify-content-center">
+                <div class="images-container d-flex justify-content-around">
+                    <img src="assets/images/mapStyles/style1.png" alt="Map Style 1" (click)="mapStyle1()">
+                    <img src="assets/images/mapStyles/style2.png" alt="Map Style 2" (click)="mapStyle2()">
+                    <img src="assets/images/mapStyles/style3.png" alt="Map Style 3" (click)="mapStyle3()">
+                    <img src="assets/images/mapStyles/style4.png" alt="Map Style 4" (click)="mapStyle4()">
+                </div>
+            </div>
+
+            <!-- Arrow Icon -->
+            <div class="d-flex justify-content-center p-2 panel-arrow" (click)="toggleLeftPanel()">
+                <fa-icon *ngIf="isLeftOpen" [icon]="arrowLeft" size="lg" class="input-symbol"></fa-icon>
+            </div>
+        </div>
+
+        <!-- Left Panel Closed -->
+        <div *ngIf="!isLeftOpen" class="left-panel d-flex justify-content-center align-items-center p-3">
+            <!-- Arrow Icon -->
+            <div class="panel-arrow" (click)="toggleLeftPanel()">
+                <fa-icon *ngIf="!isLeftOpen" [icon]="arrowRight" size="lg" class="input-symbol"></fa-icon>
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="flex-grow-1 bd-highlight right-container">
+            <div class="container-map">
+                <app-leafmap [map-settings]="mapsettings" (map)="receiveMap($event)">
+                </app-leafmap>
+                <!-- Events, contributions, and charts tabs -->
+                <div class="right-tabs">
+                    <app-rightcontrol (activeTab)="receiveActiveRightTab($event)"
+                        (allContribsSelected)="receiveContribOption($event)"></app-rightcontrol>
+                </div>
+
+                <!-- Timeline over map -->
+                <div class="footer">
+                    <app-map-footer></app-map-footer>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

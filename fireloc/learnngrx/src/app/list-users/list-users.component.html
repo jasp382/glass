@@ -1,0 +1,79 @@
+<p>list-users works!</p>
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <td>Id</td>
+            <td>Name</td>
+            <td>Age</td>
+            <td>Profile</td>
+            <td>Action</td>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let row of listUsers$ | async">
+            <td>{{ row.id }}</td>
+            <td>{{ row.name }}</td>
+            <td>{{ row.age }}</td>
+            <td>{{ row.profile }}</td>
+            <td>
+                <button class="btn btn-primary" type="button"
+                        data-bs-toggle="modal"
+                        data-bs-target="#exampleModal"
+                        (click)="editUser(row.id)">
+                        Editar
+                </button>
+
+                <button class="btn btn-secondary"
+                        type="button"
+                        (click)="delUser(row.id)">
+                        Remover
+                </button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" *ngIf="(user$ | async) as user">
+                <form id="MyForm" #f="ngForm">
+                    <div class="col-6">
+                        <label>Id</label>
+                        <input id="id" name="id" [(ngModel)]="user.id" 
+                            class="form-control" type="text">
+                    </div>
+                
+                    <div class="col-6">
+                        <label>Name</label>
+                        <input id="name" name="name" [(ngModel)]="user.name" 
+                            class="form-control" type="text">
+                    </div>
+                
+                    <div class="col-6">
+                        <label>Age</label>
+                        <input id="age" name="age" [(ngModel)]="user.age" 
+                            class="form-control" type="text">
+                    </div>
+                
+                    <div class="col-6">
+                        <label>Profile</label>
+                        <input id="profile" name="profile" [(ngModel)]="user.profile" 
+                            class="form-control" type="text">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

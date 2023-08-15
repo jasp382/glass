@@ -1,0 +1,40 @@
+.modal-body{
+    padding: 40px;
+}
+
+h1 {
+    text-align: center;
+    color: #EE7927;
+    margin-bottom: 30px;
+    font-weight: 500;
+    font-size: 25px;
+}
+
+.checkbox-group {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 200;
+}
+
+input[type=checkbox] {
+    accent-color: white;
+    vertical-align: middle;
+    transform: scale(1.2);
+}
+
+.checkbox-group label:hover,
+.checkbox-group input:hover {
+    cursor: pointer;
+}
+
+.button-submit {
+    text-align: center;
+    padding: 30px 0 0 0;
+}
+
+.button-submit button {
+    padding: 10px 5px 10px 5px;
+    border-radius: 20px;
+    border: none;
+    width: 100%;
+}

@@ -1,0 +1,7 @@
+<form>
+    <input type="search" [placeholder]="placeholder" [style.--search-width]="searchWidth" [ngModel]="searchTerms"
+        (ngModelChange)="searchTyping($event)" name="search">
+    <button type="submit">
+        <fa-icon [icon]="searchIcon"></fa-icon>
+    </button>
+</form>

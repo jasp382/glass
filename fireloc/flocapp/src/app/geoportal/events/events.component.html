@@ -1,0 +1,36 @@
+<!-- Events Content Container -->
+<div class="event-content-container">
+
+    <!-- Loading Animation -->
+    <div class="loading d-flex flex-column justify-content-center align-items-center" *ngIf="loadingEvents">
+        <div class="dot-pulse"></div>
+    </div>
+
+    <!-- No Content Container -->
+    <div class="no-events-container d-flex flex-column justify-content-center align-items-center"
+        *ngIf="noEvents && !loadingEvents">
+        <p>{{ 'EMPTY.NoRealEvents' | translate }}</p>
+    </div>
+
+    <!-- Flex Container for Event List and Event Information -->
+    <div class="event-list-info-container d-flex flex-column justify-content-between"
+        *ngIf="fireEvents.length > 0 && !loadingEvents">
+        <!-- Event List Container -->
+        <div class="event-list-container">
+            <!-- Event Element Container -->
+            <div class="event-element-container d-flex justify-content-between"
+                *ngFor="let event of fireEvents; let index=index" (click)="openEvent(event, index)"
+                [ngClass]="eventIndex === index ? 'active' : '' ">
+
+                <div class="event-element d-flex align-items-center justify-content-center">
+                    <!-- Fire Icon -->
+                    <fa-icon [icon]="fireIcon" size="lg" id="icon-fire"></fa-icon>
+                    <div class="event-location">
+                        <!--<h3>{{event.place}}</h3>-->
+                        <h3>Fogo</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

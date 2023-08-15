@@ -1,0 +1,374 @@
+* {
+    font-family: 'Montserrat', sans-serif !important;
+}
+
+/* Header */
+.layers-container {
+    height: 100vh;
+}
+
+.header-container {
+    background-color: #EE6112;
+    height: 111px;
+}
+
+.greeting {
+    color: white;
+    margin-left: 24px;
+}
+
+.greeting h1 {
+    font-size: 34px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.greeting h3 {
+    font-size: 16px;
+}
+
+.search {
+    margin-right: 42px;
+}
+
+/* Content */
+.content-container {
+    flex: 1;
+    padding: 20px;
+}
+
+.actions-container {
+    margin: 0 22px 20px 22px;
+}
+
+.actions-container button {
+    height: 40px;
+    width: max-content;
+    padding: 5px 15px;
+    background: #F5A32A;
+    border-radius: 10px;
+    border: none;
+    color: white;
+}
+
+.actions-container button:first-of-type {
+    margin-right: 20px;
+}
+
+.actions-container p {
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 20px;
+    margin: 0 10px;
+}
+
+
+/* Table */
+.tables-container {
+    flex: 1;
+    min-height: 440px;
+}
+
+.table-container {
+    margin: 0 22px 0 22px;
+    background-color: white;
+    border-radius: 10px;
+    width: 100%;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.table-container thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+thead {
+    background: #EE6112;
+    height: 40px;
+}
+
+table th {
+    padding: 0 40px;
+    color: white;
+    text-align: center;
+}
+
+table th:first-child {
+    border-radius: 10px 0 0 0;
+    max-width: 30px;
+    padding: 0;
+}
+
+table th:nth-child(2) {
+    max-width: 30px;
+    padding: 0;
+}
+
+table th:last-child {
+    border-radius: 0 10px 0 0;
+}
+
+table td {
+    padding: 0 40px;
+    height: 40px;
+    text-align: center;
+}
+
+table tbody tr td:first-child {
+    /* icon */
+    width: 40px;
+    text-align: center;
+    padding: 0 20px;
+}
+
+table tbody tr td:nth-child(2) {
+    /* id */
+    width: 40px;
+    text-align: center;
+    padding: 0 20px;
+}
+
+table tbody tr td:nth-child(3) {
+    /* designation */
+    min-width: 50%;
+    padding: 0 20px;
+}
+
+table tbody tr td:last-child {
+    /* actions */
+    min-width: 80px;
+    padding: 0 10px;
+}
+
+table tbody tr:last-child {
+    border-radius: 0 0 10px 10px;
+}
+
+table tbody tr:hover {
+    background: rgba(255, 214, 0, 0.2);
+    cursor: pointer;
+}
+
+table tbody tr.is-open {
+    border: 1px solid #D7D7D7;
+}
+
+table tbody tr.can-open {
+    font-weight: 600;
+}
+
+.not-clickable {
+    pointer-events: none;
+}
+
+#editIcon {
+    pointer-events: auto;
+    color: #F5A32A;
+    margin-right: 20px;
+}
+
+#deleteIcon {
+    pointer-events: auto;
+    color: #B00600;
+}
+
+/* Modals */
+.modal-title {
+    font-weight: 400;
+    font-size: 24px;
+    line-height: 29px;
+}
+
+.modal-header .ng-fa-icon:hover {
+    cursor: pointer;
+}
+
+.modal-body form {
+    padding: 5px 10px;
+}
+
+.new-layer-button {
+    height: 32px;
+    width: 100%;
+    background: #FFFFFF;
+    border: 1px solid rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    margin-bottom: 20px;
+    padding: 9px;
+}
+
+.new-parent-category {
+    flex-grow: 1;
+    min-width: max-content;
+}
+
+.new-layer-button p {
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    line-height: 30px !important;
+    margin-top: 4px !important;
+}
+
+.edit-layer-form div {
+    width: 100%;
+}
+
+.edit-layer-form p,
+.new-category-form p {
+    margin: 0;
+    margin-bottom: 4px;
+    padding: 0;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 17px;
+}
+
+.new-category-form div {
+    width: 100%;
+}
+
+.new-layer-dropdown {
+    min-width: max-content;
+    max-width: 100%;
+}
+
+.category-section {
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-rows: auto auto auto auto;
+    column-gap: 10%;
+    row-gap: 3%;
+    justify-items: stretch;
+    align-items: stretch;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+.layer-section {
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-rows: auto auto auto auto;
+    column-gap: 10%;
+    row-gap: 3%;
+    justify-items: stretch;
+    align-items: stretch;
+    margin-bottom: 20px;
+}
+
+.category-section h2,
+.layer-section h2 {
+    grid-column: span 2;
+}
+
+.edit-layer-input {
+    width: 100%;
+    height: 30px;
+    border: 1px solid rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    padding: 10px;
+    font-weight: 300;
+    font-size: 14px;
+    line-height: 17px;
+    color: black;
+    margin-bottom: 20px;
+}
+
+.small-width {
+    width: 90%;
+}
+
+.ng-invalid:not(form) {
+    border-left: 5px solid #B00600;
+}
+
+.ng-dirty.ng-invalid:not(form) {
+    border-left: 5px solid #EE6112 !important;
+}
+
+.conf-intro {
+    margin-top: 20px;
+    margin-bottom: 25px;
+    font-weight: 300;
+    font-size: 16px;
+}
+
+.conf-intro b {
+    margin-top: 20px;
+    margin-bottom: 25px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.warn {
+    font-weight: 600 !important;
+    color: #B00600 !important;
+}
+
+.check-container {
+    display: block;
+    position: relative;
+    padding-left: 25px;
+    margin-bottom: 12px;
+    font-weight: 400;
+    font-size: 12px;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    padding-top: 2px;
+    height: 20px;
+    line-height: 15px;
+}
+
+.check-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 20px;
+    width: 20px;
+    background-color: white;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+}
+
+.check-container:hover input~.checkmark {
+    background-color: rgb(240, 240, 240);
+}
+
+.check-container input:checked~.checkmark {
+    background-color: #EE6112;
+    border: 1px solid #FFFFFF;
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.check-container input:checked~.checkmark:after {
+    display: block;
+}
+
+.check-container .checkmark:after {
+    left: 7px;
+    top: 3px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+}

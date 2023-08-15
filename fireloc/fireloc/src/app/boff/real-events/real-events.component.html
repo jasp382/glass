@@ -1,0 +1,397 @@
+<div class="events-container d-flex flex-column">
+    <!-- Real Events Header -->
+    <header class="header-container d-flex align-items-center justify-content-between">
+        <!-- Greeting -->
+        <div class="greeting">
+            <h1>Eventos Reais</h1>
+            <h3>Todos os eventos de fogos florestais existentes no sistema FireLoc</h3>
+        </div>
+
+        <!-- Search  -->
+        <nav class="search d-flex align-items-center justify-content-end">
+            <feat-search [placeholder]="'Procurar Eventos...'" (search)="searchRealEvents($event)"></feat-search>
+        </nav>
+    </header>
+
+    <!-- Vectorial Content -->
+    <div class="content-container d-flex flex-column">
+
+        <!-- Actions -->
+        <div class="actions-container d-flex align-items-center justify-content-between">
+            <div>
+                <!-- Location Filter -->
+                <div ngbDropdown class="action-dropdown d-inline-block" #locationDrop>
+                    <!-- Open/Close Dropdown -->
+                    <button type="button" class="d-flex align-items-center justify-content-center" ngbDropdownToggle
+                        id="locDropdown" (click)="toggleFilterMap(locationDrop)">
+                        <fa-icon [icon]="locIcon"></fa-icon>
+                        <p>Localização</p>
+                        <fa-icon [icon]="dropIcon" size="xs"></fa-icon>
+                    </button>
+                    <!-- Dropdown Menu -->
+                    <div ngbDropdownMenu class="loc-filter action-dropdown-container dropdown-menu dropdown-menu-lg-end"
+                        aria-labelledby="locDropdown">
+                        <div class="loc-filter-actions d-flex align-items-center justify-content-between">
+                            <button (click)="clearLocFilter()">Limpar Filtro</button>
+                            <button (click)="filterLoc()" [disabled]="pointCounter < 4">Filtrar</button>
+                        </div>
+                        <div *ngIf="showFilterMap" class="map-container">
+                            <app-leafmap [map-settings]="filterMapsettings" (map)="receiveFilterMap($event)"
+                                class="filterMapReal">
+                            </app-leafmap>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Date Range Filter -->
+                <div ngbDropdown class="action-dropdown d-inline-block">
+                    <!-- Open/Close Dropdown -->
+                    <button class="d-flex align-items-center justify-content-center" ngbDropdownToggle>
+                        <fa-icon [icon]="dateIcon"></fa-icon>
+                        <div class="dates d-flex align-items-center justify-content-center">
+                            <p *ngIf="fromDate !== null">{{fromDate.day}}</p>
+                            <p *ngIf="fromDate === null">Data</p>
+                            <p *ngIf="fromDate !== null">/{{fromDate.month}}</p>
+                            <p *ngIf="fromDate !== null">/{{fromDate.year}}</p>
+                            <p>&nbsp;-&nbsp;</p>
+                            <p *ngIf="toDate !== null">{{toDate.day}} </p>
+                            <p *ngIf="toDate === null">Data</p>
+                            <p *ngIf="toDate !== null">/{{toDate.month}} </p>
+                            <p *ngIf="toDate !== null">/{{toDate.year}} </p>
+                        </div>
+                        <fa-icon [icon]="dropIcon" size="xs"></fa-icon>
+                    </button>
+                    <!-- Dropdown Menu -->
+                    <div ngbDropdownMenu class="action-dropdown-container dropdown-menu dropdown-menu-lg-end">
+                        <ngb-datepicker #dp (dateSelect)="onDateSelection($event)" [displayMonths]="2" [dayTemplate]="t"
+                            outsideDays="hidden">
+                        </ngb-datepicker>
+
+                        <ng-template #t let-date let-focused="focused">
+                            <span class="custom-day" [class.focused]="focused" [class.range]="isRange(date)"
+                                [class.faded]="isHovered(date) || isInside(date)" (mouseenter)="hoveredDate = date"
+                                (mouseleave)="hoveredDate = null">
+                                {{ date.day }}
+                            </span>
+                        </ng-template>
+                    </div>
+                </div>
+            </div>
+            <!-- Add Real Event -->
+            <button class="add d-flex align-items-center justify-content-center" (click)="open(createModal, 'new')">
+                <p>Adicionar Evento Real</p>
+                <fa-icon [icon]="plusIcon" size="xs"></fa-icon>
+            </button>
+        </div>
+
+        <!-- Tables Container -->
+        <div class="tables-container d-flex align-items-start justify-items-between">
+            <!-- Data Table -->
+            <div class="table-container" [ngClass]="isEventOpen ? 'event-open' : ''">
+                <feat-table [component]="'real-events'" [data]="events" [headers]="displayedHeaders"
+                    [page]="currentPage" [searchFilter]="searchTerms" (rowCount)="updateRowCount($event)"
+                    (selectedID)="toggleEventView($event)">
+                </feat-table>
+            </div>
+
+            <!-- Event Details -->
+            <div *ngIf="isEventOpen" class="data-details-container d-flex flex-column">
+                <!-- Event Header -->
+                <div class="data-header d-flex align-items-start justify-content-between">
+                    <div>
+                        <!-- Edit Event Details -->
+                        <fa-icon [icon]="editIcon" size="2x" class="details-edit" ngbTooltip="Editar Evento"
+                            placement="bottom" (click)="open(editModal, 'edit')"></fa-icon>
+                        <!-- See Event Area in Map -->
+                        <fa-icon [icon]="mapIcon" size="2x" class="details-info" ngbTooltip="Ver no Mapa"
+                            placement="bottom" (click)="toggleMapInfo()" *ngIf="!isMapVisible"></fa-icon>
+                        <!-- See Event Information -->
+                        <fa-icon [icon]="infoIcon" size="2x" class="details-info" ngbTooltip="Ver Detalhes"
+                            placement="bottom" (click)="toggleMapInfo()" *ngIf="isMapVisible"></fa-icon>
+                    </div>
+                    <div class="title d-flex flex-column align-items-center justify-content-start">
+                        <h1 *ngIf="openEvent.name !== null">{{openEvent.name}}</h1>
+                        <h1 *ngIf="openEvent.name === null">Sem Nome Disponível</h1>
+                    </div>
+                    <!-- Delete Event -->
+                    <fa-icon [icon]="deleteIcon" size="2x" class="details-delete" ngbTooltip="Remover Evento"
+                        placement="bottom" (click)="open(deleteModal, 'delete')"></fa-icon>
+                </div>
+
+                <!-- Event Details -->
+                <div class="info-container d-flex flex-column align-content-center" *ngIf="!isMapVisible">
+                    <div class="event-info d-flex flex-column">
+                        <h1>Dados</h1>
+                        <div class="info-grid">
+                            <!-- Cause -->
+                            <h2>Causa</h2>
+                            <p *ngIf="openEvent.cause !== null">{{openEvent.cause}}</p>
+                            <p *ngIf="openEvent.cause === null">Sem Causa Disponível</p>
+                            <!-- Type -->
+                            <h2>Tipo</h2>
+                            <p *ngIf="openEvent.type !== null">{{openEvent.type}}</p>
+                            <p *ngIf="openEvent.type === null">Sem Tipo Disponível</p>
+                            <!-- Start Date -->
+                            <h2>Data Início</h2>
+                            <p>{{openEvent.startTime}}</p>
+                            <!-- End Date -->
+                            <h2>Data Fim</h2>
+                            <p>{{openEvent.endTime}}</p>
+                            <!-- Burned Area -->
+                            <h2>Área Queimada</h2>
+                            <p>{{openEvent.burnedArea}} Hectares</p>
+                        </div>
+                        <h1>Freguesia</h1>
+                        <div class="info-grid freg">
+                            <!-- ID -->
+                            <h2>ID</h2>
+                            <p *ngIf="openEvent.freg !== null">{{openEvent.freg.id}}</p>
+                            <p *ngIf="openEvent.freg === null">Sem Informação</p>
+                            <!-- Code -->
+                            <h2>Código</h2>
+                            <p *ngIf="openEvent.freg !== null">{{openEvent.freg.code}}</p>
+                            <p *ngIf="openEvent.freg === null">Sem Informação</p>
+                            <!-- Name -->
+                            <h2>Nome</h2>
+                            <p *ngIf="openEvent.freg !== null">{{openEvent.freg.name}}</p>
+                            <p *ngIf="openEvent.freg === null">Sem Informação</p>
+                        </div>
+                        <h1>Município</h1>
+                        <div class="info-grid mun">
+                            <!-- ID -->
+                            <h2>ID</h2>
+                            <p *ngIf="openEvent.mun !== null">{{openEvent.mun.id}}</p>
+                            <p *ngIf="openEvent.mun === null">Sem Informação</p>
+                            <!-- Code -->
+                            <h2>Código</h2>
+                            <p *ngIf="openEvent.mun !== null">{{openEvent.mun.code}}</p>
+                            <p *ngIf="openEvent.mun === null">Sem Informação</p>
+                            <!-- Name -->
+                            <h2>Nome</h2>
+                            <p *ngIf="openEvent.mun !== null">{{openEvent.mun.name}}</p>
+                            <p *ngIf="openEvent.mun === null">Sem Informação</p>
+                            <!-- NUT III Model -->
+                            <h2>Modelo NUT III</h2>
+                            <p *ngIf="openEvent.mun !== null">{{openEvent.mun.NUTiii}}</p>
+                            <p *ngIf="openEvent.mun === null">Sem Informação</p>
+                        </div>
+                        <h1>Códigos</h1>
+                        <div class="info-grid codes">
+                            <!-- Code NCCO -->
+                            <h2>Código NCCO</h2>
+                            <p *ngIf="openEvent.codNCCO !== null">{{openEvent.codNCCO}}</p>
+                            <p *ngIf="openEvent.codNCCO === null">Sem Código Disponível</p>
+                            <!-- Code SGIF -->
+                            <h2>Código SGIF</h2>
+                            <p *ngIf="openEvent.codSGIF !== null">{{openEvent.codSGIF}}</p>
+                            <p *ngIf="openEvent.codSGIF === null">Sem Código Disponível</p>
+                        </div>
+                        <!-- Layers -->
+                        <h1>Camadas De Fogo</h1>
+                        <div class="info-grid fire">
+                            <ng-container *ngIf="openEvent.fireLayers !== null">
+                                <ng-container *ngFor="let layer of openEvent.fireLayers; let index = index">
+                                    <h2>Slug</h2>
+                                    <p>{{layer.slug}}</p>
+                                    <h2>Título</h2>
+                                    <p>{{layer.designation}}</p>
+                                    <h2>Servidor</h2>
+                                    <p>{{layer.serverLayer}}</p>
+                                    <h2>Store</h2>
+                                    <p>{{layer.store}}</p>
+                                    <h2>Style</h2>
+                                    <p>{{layer.style}}</p>
+                                    <h2>Workspace</h2>
+                                    <p>{{layer.workspace}}</p>
+                                    <!-- Add separator to divide levels -->
+                                    <ng-container *ngIf="index !== openEvent.fireLayers.length - 1">
+                                        <div class="row-border"></div>
+                                    </ng-container>
+                                </ng-container>
+                                <h2 *ngIf="openEvent.fireLayers.length === 0">Sem Informação</h2>
+                            </ng-container>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Event Map -->
+                <div class="event-map d-flex flex-column align-items-center justify-content-center"
+                    *ngIf="isMapVisible">
+                    <app-leafmap [map-settings]="mapsettings" (map)="receiveMap($event)" class="realEventMap">
+                    </app-leafmap>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Pagination -->
+        <div class="pagination-container d-flex align-items-center justify-content-end">
+            <feat-pagination [rowCount]="rowCount" (page)="getPage($event)"></feat-pagination>
+        </div>
+    </div>
+</div>
+
+<!-- Create New Real Event Modal -->
+<ng-template #createModal let-modal>
+    <div class="modal-header d-flex align-items-center justify-content-between">
+        <h4 class="modal-title" id="modal-basic-title">Adicionar Evento Real</h4>
+        <fa-icon [icon]="closeIcon" size="1x" (click)="modal.dismiss()"></fa-icon>
+    </div>
+    <div class="modal-body">
+        <form class="new-data-form" [formGroup]="newEventForm">
+            <!-- Name -->
+            <div class="name-input">
+                <p>Nome</p>
+                <input type="text" class="new-data-input long-input" formControlName="name">
+            </div>
+
+            <!-- Cause -->
+            <div>
+                <p>Causa</p>
+                <input type="text" class="new-data-input" formControlName="cause">
+            </div>
+
+            <!-- Type -->
+            <div>
+                <p>Tipo</p>
+                <input type="text" class="new-data-input" formControlName="type">
+            </div>
+
+            <!-- codSGIF -->
+            <div>
+                <p>Código SGIF</p>
+                <input type="text" class="new-data-input" formControlName="codSGIF">
+            </div>
+
+            <!-- codNCCO -->
+            <div>
+                <p>Código NCCO</p>
+                <input type="text" class="new-data-input" formControlName="codNCCO">
+            </div>
+
+            <div class="bundle">
+                <!-- Start Datetime -->
+                <div>
+                    <p>Data de Início</p>
+                    <input type="datetime-local" class="new-data-input" required formControlName="start">
+                </div>
+                <!-- End Datetime -->
+                <div>
+                    <p>Data de Fim</p>
+                    <input type="datetime-local" class="new-data-input" required formControlName="end">
+                </div>
+                <!-- EPSG -->
+                <div>
+                    <p>EPSG</p>
+                    <input type="number" class="new-data-input" required formControlName="epsg">
+                </div>
+                <!-- Timezone -->
+                <div>
+                    <p>Fuso Horário</p>
+                    <input type="text" class="new-data-input" formControlName="timezone">
+                </div>
+            </div>
+
+            <!-- Geometry -->
+            <div>
+                <p>Geometria WKTF</p>
+                <textarea type="text" class="new-data-input big-input" required rows="4" cols="50"
+                    formControlName="geom"></textarea>
+            </div>
+
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-dark" (click)="modal.close()">Cancelar</button>
+        <button type="button" class="btn btn-primary" (click)="createNewEvent()"
+            [disabled]="!newEventForm.valid">Adicionar Evento Real
+        </button>
+    </div>
+</ng-template>
+
+<!-- Update Real Event Modal -->
+<ng-template #editModal let-modal>
+    <div class="modal-header d-flex align-items-center justify-content-between">
+        <h4 class="modal-title" id="modal-basic-title">Editar Evento Real</h4>
+        <fa-icon [icon]="closeIcon" size="1x" (click)="modal.dismiss()"></fa-icon>
+    </div>
+    <div class="modal-body d-flex align-content-center justify-content-center">
+        <form class="new-data-form" [formGroup]="editEventForm">
+            <!-- Name -->
+            <div class="name-input">
+                <p>Nome</p>
+                <input type="text" class="new-data-input long-input" formControlName="name">
+            </div>
+
+            <!-- Cause -->
+            <div>
+                <p>Causa</p>
+                <input type="text" class="new-data-input" formControlName="cause">
+            </div>
+
+            <!-- Type -->
+            <div>
+                <p>Tipo</p>
+                <input type="text" class="new-data-input" formControlName="type">
+            </div>
+
+            <!-- codSGIF -->
+            <div>
+                <p>Código SGIF</p>
+                <input type="text" class="new-data-input" formControlName="codSGIF">
+            </div>
+
+            <!-- codNCCO -->
+            <div>
+                <p>Código NCCO</p>
+                <input type="text" class="new-data-input" formControlName="codNCCO">
+            </div>
+
+            <!-- Start Datetime -->
+            <div>
+                <p>Data de Início</p>
+                <input type="datetime-local" class="new-data-input" required formControlName="start">
+            </div>
+            <!-- End Datetime -->
+            <div>
+                <p>Data de Fim</p>
+                <input type="datetime-local" class="new-data-input" required formControlName="end">
+            </div>
+
+            <!-- Timezone -->
+            <div>
+                <p>Fuso Horário</p>
+                <input type="text" class="new-data-input medium-input" formControlName="timezone">
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-dark" (click)="modal.close()">Cancelar</button>
+        <button type="button" class="btn btn-primary" (click)="updateEvent()" [disabled]="!editEventForm.valid">Guardar
+            Alterações
+        </button>
+    </div>
+</ng-template>
+
+<!-- Delete Raster Dataset Confirmation Modal -->
+<ng-template #deleteModal let-modal>
+    <div class="modal-header d-flex align-items-center justify-content-between">
+        <h4 class="modal-title" id="modal-basic-title">Apagar Evento Real</h4>
+        <fa-icon [icon]="closeIcon" size="1x" (click)="modal.dismiss()"></fa-icon>
+    </div>
+    <div class="modal-body">
+        <form>
+            <p class="conf-intro">Tem a certeza que deseja apagar este evento real?</p>
+            <label class="check-container">
+                <p [ngClass]="hasClickedRemove ? 'warn' : ''">
+                    Tenho conhecimento que esta ação é irreversível e apaga este evento real permanentemente.</p>
+                <input type="checkbox" [(ngModel)]="isConfChecked" name="delete-confirmation">
+                <span class="checkmark"></span>
+            </label>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-dark" (click)="modal.close()">Cancelar</button>
+        <button type="button" class="btn btn-danger" (click)="removeEvent()">Apagar Evento Real</button>
+    </div>
+</ng-template>

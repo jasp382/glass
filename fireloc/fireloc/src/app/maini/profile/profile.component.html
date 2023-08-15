@@ -1,0 +1,273 @@
+<div class="d-flex flex-column min-vh-100">
+
+    <!-- Navbar -->
+    <app-headmenu></app-headmenu>
+
+    <!-- Main Container -->
+    <div class="main-container d-flex flex-column align-items-center">
+
+        <!-- Main Tabs Container -->
+        <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="tabs d-flex justify-content-center">
+
+            <!-- Contributions Container -->
+            <li [ngbNavItem]="1" class="p-2 left-tab" [class.active]="activeTab===1"
+                (click)="navigate('/profile/contributions')">
+                <!-- Tab link -->
+                <a ngbNavLink>
+                    <span>
+                        <fa-icon [icon]="listIcon"></fa-icon>
+                    </span>
+                    {{ 'PROFILE.Contribs' | translate }}
+                </a>
+                <ng-template ngbNavContent>
+
+                    <div class="loading d-flex flex-column justify-content-center align-items-center"
+                        *ngIf="loadingContribs">
+                        <div class="dot-pulse"></div>
+                    </div>
+
+                    <div class="contrib-error d-flex flex-column justify-content-center align-items-center"
+                        *ngIf="contribError">
+                        <p>{{ 'PROFILE.Error' | translate }}</p>
+                    </div>
+
+                    <!-- Contributions Content -->
+                    <div class="d-flex" *ngIf="userContributions.length > 0 && !loadingContribs">
+
+                        <!-- Left Contributions List -->
+                        <div class="left-contrib-container m-1" [ngClass]="isEventOpen ? 'left-event-open' : '' ">
+
+                            <!-- List Container -->
+                            <div class="contrib-list-container" *ngFor="let contrib of userContributions">
+
+                                <!-- Contribution Container -->
+                                <div class="contrib-container d-flex justify-content-around align-items-center"
+                                    (click)="openEvent()">
+
+                                    <!-- Contribution Photo -->
+                                    <div class="contrib-photo d-flex flex-column justify-content-center">
+                                        <img [src]="contrib.pic" alt="Contribution Image" loading="lazy"
+                                            (click)="openContribPhoto(content, contrib)" />
+                                    </div>
+
+                                    <!-- Contribution Date -->
+                                    <div class="contrib-date d-flex flex-column justify-content-center">
+                                        <p id="date-title">{{contrib.date.day}} {{contrib.date.month}}
+                                            {{contrib.date.year}}</p>
+                                    </div>
+
+                                    <!-- Contribution Location -->
+                                    <div class="contrib-location d-flex flex-column justify-content-center">
+                                        <p>{{contrib.location}}</p>
+                                    </div>
+
+                                    <!-- Contribution Coordinates -->
+                                    <div class="info-coord d-flex flex-column justify-content-center"
+                                        *ngIf="!isEventOpen">
+                                        <p><span>Latitude:</span> {{contrib.avgLat}}</p>
+                                        <p><span>Longitude:</span> {{contrib.avgLong}}</p>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Event Information -->
+                        <div class="right-event-container m-1 d-flex flex-column" *ngIf="isEventOpen">
+                            <div class="right-header d-flex justify-content-end">
+                                <div (click)="closeEvent()" class="close-icon-container">
+                                    <fa-icon [icon]="closeIcon" size="lg" id="icon"></fa-icon>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- No Contributions Container -->
+                    <div class="d-flex" *ngIf="userContributions.length === 0 && !loadingContribs && !contribError">
+                        {{ 'PROFILE.NoContribs' | translate }}
+                    </div>
+
+                </ng-template>
+            </li>
+
+            <!-- Profile Container -->
+            <li [ngbNavItem]="2" class="p-2 left-tab" [class.active]="activeTab===2" (click)="navigate('/profile')">
+                <!-- Tab link -->
+                <a ngbNavLink>
+                    <span>
+                        <fa-icon [icon]="userIcon"></fa-icon>
+                    </span>
+                    {{ 'PROFILE.Profile' | translate }}
+                </a>
+                <ng-template ngbNavContent>
+                    <!-- Profile Content -->
+                    <div class="d-flex flex-column align-items-center mt-5">
+                        <form [formGroup]="profileForm" (ngSubmit)="changeUserInfo()">
+
+                            <!-- First Name Errors -->
+                            <div *ngIf="firstName?.invalid && (firstName?.dirty || firstName?.touched)"
+                                class="error-container alert alert-danger">
+
+                                <div *ngIf="firstName?.errors?.required">
+                                    {{ 'PROFILE.FirstNameMandatory' | translate }}
+                                </div>
+                            </div>
+
+                            <!-- First Name Input Field -->
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="firstName" placeholder="{{ 'PROFILE.FirstName' | translate }}"
+                                    value="{{userInfo.firstName}}" formControlName="firstName" required>
+                                <label for="firstName">{{ 'PROFILE.FirstName' | translate }}</label>
+                            </div>
+
+                            <!-- Last Name Errors -->
+                            <div *ngIf="lastName?.invalid && (lastName?.dirty || lastName?.touched)"
+                                class="error-container alert alert-danger">
+
+                                <div *ngIf="lastName?.errors?.required">
+                                    {{ 'PROFILE.LastNameMandatory' | translate }}
+                                </div>
+                            </div>
+
+                            <!-- Last Name Input Field -->
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="lastName" placeholder="{{ 'PROFILE.LastName' | translate }}"
+                                    value="{{userInfo.lastName}}" formControlName="lastName" required>
+                                <label for="lastName">{{ 'PROFILE.LastName' | translate }}</label>
+                            </div>
+
+
+                            <!-- Email Input Field -->
+                            <div class="input-group">
+                                <input disabled type="email" class="form-control" id="email" placeholder="Email"
+                                    value="{{userInfo.email}}">
+                                <label for="email">Email</label>
+                            </div>
+
+                            <!-- Change user information button -->
+                            <button type="submit" class="edit-button btn btn-secondary" [disabled]="!profileForm.valid">
+                                {{ 'PROFILE.Save' | translate }}
+                            </button>
+                        </form>
+
+                        <!-- Change user information button -->
+                        <button type="submit" class="delete-button btn btn-secondary"
+                            (click)="openDeleteModal(deleteModal)">
+                            {{ 'PROFILE.Delete' | translate }}
+                        </button>
+                    </div>
+                </ng-template>
+            </li>
+
+            <!-- Password Container -->
+            <li [ngbNavItem]="3" class="p-2 right-tab" [class.active]="activeTab===3"
+                (click)="navigate('/profile/password')">
+                <!-- Tab link -->
+                <a ngbNavLink>
+                    <span>
+                        <fa-icon [icon]="passwordIcon"></fa-icon>
+                    </span>
+                    {{ 'PROFILE.ChangePass' | translate }}
+                </a>
+
+                <ng-template ngbNavContent>
+                    <!-- Password Content -->
+                    <div class="password-content d-flex flex-column align-items-center mt-5">
+                        <form [formGroup]="passwordForm" (ngSubmit)="changeUserPassword()"
+                            class="d-flex flex-column align-items-center">
+                            <!-- Both Passwords Match Error -->
+                            <div *ngIf="passwordForm.hasError('notSame') 
+                                && (newPasswordValue?.dirty || newPasswordValue?.touched) 
+                                && (passwordConfirmationValue?.dirty || passwordConfirmationValue?.touched)"
+                                class="error-container alert alert-danger">
+
+                                <div>
+                                    {{ 'PROFILE.PasswordsMatch' | translate }}
+                                </div>
+                            </div>
+                            <!-- New Password Errors -->
+                            <div *ngIf="newPasswordValue?.invalid && (newPasswordValue?.dirty || newPasswordValue?.touched)"
+                                class="error-container alert alert-danger">
+
+                                <div *ngIf="newPasswordValue?.errors?.required">
+                                    {{ 'PROFILE.NewPassMandatory' | translate }}
+                                </div>
+                            </div>
+
+                            <!-- New Password Input Field -->
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="newPassword" placeholder="{{ 'PROFILE.NewPassword' | translate }}"
+                                    value="{{newPassword}}" formControlName="newPassword" required>
+                                <label for="newPassword">{{ 'PROFILE.NewPassword' | translate }}</label>
+                            </div>
+
+                            <!-- Confirmation Password Errors -->
+                            <div *ngIf="passwordConfirmationValue?.invalid && (passwordConfirmationValue?.dirty || passwordConfirmationValue?.touched)"
+                                class="error-container alert alert-danger">
+
+                                <div *ngIf="passwordConfirmationValue?.errors?.required">
+                                    {{ 'PROFILE.ConfPassMandatory' | translate }}
+                                </div>
+                            </div>
+
+                            <!-- Confirmation Password Input Field -->
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="passwordConfirmation"
+                                    placeholder="{{ 'PROFILE.ConfPassword' | translate }}" value="{{passwordConfirmation}}"
+                                    formControlName="passwordConfirmation" required>
+                                <label for="passwordConfirmation">{{ 'PROFILE.ConfPassword' | translate }}</label>
+                            </div>
+
+                            <!-- Change user information button -->
+                            <button type="submit" class="edit-button btn btn-secondary"
+                                [disabled]="!passwordForm.valid">
+                                {{ 'PROFILE.ChangePass' | translate }}
+                            </button>
+                        </form>
+                    </div>
+                </ng-template>
+            </li>
+        </ul>
+
+        <!-- Outlet where current tab content is shown -->
+        <div [ngbNavOutlet]="nav" class="mt-2 p-3 tab-content"></div>
+
+    </div>
+</div>
+
+<!-- Expand Image Popup Template -->
+<ng-template #content let-modal id="modal-container">
+    <div class="modal-header">
+        <h4 class="modal-title" id="modal-basic-title">{{openContribLocation}}</h4>
+        <div class="close-icon-container" aria-label="Close" (click)="modal.dismiss('Cross click')">
+            <fa-icon [icon]="closeIcon" size="lg" id="icon"></fa-icon>
+        </div>
+    </div>
+    <div class="modal-body d-flex justify-content-center align-items-center">
+        <img [src]="openContribImage" alt="Contribution Image" loading="lazy" class="modal-image" />
+    </div>
+</ng-template>
+
+<!-- Delete User Confirmation Modal -->
+<ng-template #deleteModal let-modal>
+    <div class="modal-header d-flex align-items-center justify-content-between">
+        <h4 class="modal-title" id="modal-basic-title">{{ 'PROFILE.Delete' | translate }}</h4>
+        <fa-icon [icon]="closeIcon" size="1x" (click)="modal.dismiss()"></fa-icon>
+    </div>
+    <div class="modal-body">
+        <form>
+            <p class="conf-intro">{{ 'PROFILE.DeleteTitle' | translate }}</p>
+            <label class="check-container">
+                <p [ngClass]="hasClickedRemove ? 'warn' : ''">
+                    {{ 'PROFILE.DeleteContent' | translate }}</p>
+                <input type="checkbox" [(ngModel)]="isConfChecked" name="delete-confirmation">
+                <span class="checkmark"></span>
+            </label>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-dark" (click)="modal.close()">{{ 'PROFILE.Cancel' | translate }}</button>
+        <button type="button" class="btn btn-danger" (click)="deleteAccount()">{{ 'PROFILE.Delete' | translate }}</button>
+    </div>
+</ng-template>

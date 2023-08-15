@@ -1,0 +1,75 @@
+.slider-container {
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 10px;
+    padding: 10px 15px;
+    width: calc(100% - 4px);
+    overflow-x: hidden;
+    overflow-y: hidden;
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+.slider-container::-webkit-scrollbar {
+    display: none;
+}
+
+/* non-selected range bar */
+::ng-deep .slider-container .ngx-slider .ngx-slider-bar {
+    background: #EE7927;
+    height: 2px;
+}
+
+/* selected range bar */
+::ng-deep .slider-container .ngx-slider .ngx-slider-selection {
+    background: #F5A32A;
+}
+
+/* selector pointer */
+::ng-deep .slider-container .ngx-slider .ngx-slider-pointer {
+    width: 8px;
+    height: 20px;
+    top: auto;
+    /* to remove the default positioning */
+    bottom: -5px;
+    background-color: #EE7927;
+    border-radius: 3px;
+}
+
+/* default selector pointer */
+::ng-deep .slider-container .ngx-slider .ngx-slider-pointer:after {
+    display: none;
+}
+
+/* date labels positioning */
+::ng-deep .slider-container .ngx-slider .ngx-slider-bubble {
+    bottom: 14px;
+}
+
+/* tick for min and max selected range ticks */
+::ng-deep .slider-container.ngx-slider .ngx-slider-limit {
+    font-weight: bold;
+    color: #F5A32A;
+}
+
+/* not selected ticks */
+::ng-deep .slider-container .ngx-slider .ngx-slider-tick {
+    width: 1px;
+    height: 10px;
+    margin-left: 4px;
+    border-radius: 0;
+    background: #EE7927;
+    top: -1px;
+}
+
+/* selected ticks */
+::ng-deep .slider-container .ngx-slider .ngx-slider-tick.ngx-slider-selected {
+    background: #F5A32A;
+}
+
+::ng-deep .slider-container .ngx-slider-tick-legend {
+    transform: translate(-1px, 0) !important;
+    border-left: 2px solid #EE7927;
+    padding-left: 4px;
+}

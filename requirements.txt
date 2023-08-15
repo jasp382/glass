@@ -37,3 +37,9 @@ jenkspy==0.2.0
 pysal==2.6.0
 geopy==2.3.0
 #rpy2==3.5.10
+Django==3.2.16
+django-cors-headers==3.13.0
+djangorestframework==3.14.0
+django-oauth-toolkit==2.1.0
+drf-yasg==1.21.4
+django-dbbackup==4.0.2

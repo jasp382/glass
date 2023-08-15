@@ -1,0 +1,373 @@
+* {
+    font-family: 'Montserrat', sans-serif !important;
+}
+
+.charts-container {
+    height: 100vh;
+}
+
+.header-container {
+    background-color: #EE6112;
+    height: 120px;
+}
+
+.greeting {
+    color: white;
+    margin-left: 24px;
+}
+
+.greeting h1 {
+    font-size: 34px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.greeting h3 {
+    font-size: 16px;
+}
+
+.search {
+    margin-right: 42px;
+}
+
+.content-container {
+    flex: 1;
+    padding: 20px;
+}
+
+.actions-container {
+    margin: 0 22px 20px 22px;
+}
+
+.actions-container button {
+    height: 40px;
+    width: 130px;
+    background: white;
+    border-radius: 10px;
+    border: none;
+}
+
+.actions-container p {
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 20px;
+    margin: 0 10px;
+}
+
+.actions-container button.add {
+    height: 40px;
+    width: 170px;
+    border-radius: 10px;
+    background: #F5A32A;
+    border: none;
+    color: white;
+}
+
+.actions-container .add p {
+    font-weight: 700;
+    font-size: 12px;
+    line-height: 20px;
+    margin: 0 10px;
+}
+
+.type-dropdown .dropdown-toggle::after {
+    display: none;
+}
+
+.type-dropdown-container {
+    padding: 20px 20px 10px 20px;
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.check-container {
+    display: block;
+    position: relative;
+    padding-left: 25px;
+    margin-bottom: 12px;
+    font-weight: 400;
+    font-size: 12px;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    padding-top: 2px;
+    height: 20px;
+}
+
+.type-dropdown-container .check-container p {
+    color: black;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 18px;
+}
+
+.check-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 20px;
+    width: 20px;
+    background-color: white;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+}
+
+.check-container:hover input~.checkmark {
+    background-color: rgb(240, 240, 240);
+}
+
+.check-container input:checked~.checkmark {
+    background-color: #EE6112;
+    border: 1px solid #FFFFFF;
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.check-container input:checked~.checkmark:after {
+    display: block;
+}
+
+.check-container .checkmark:after {
+    left: 7px;
+    top: 3px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+}
+
+.tables-container {
+    flex: 1;
+    min-height: 440px;
+}
+
+.table-container {
+    margin: 0 22px 0 22px;
+    flex: 1;
+    background-color: white;
+    border-radius: 10px;
+}
+
+.chart-open {
+    width: 35%;
+}
+
+.chart-details-container {
+    width: calc(45% - 10px);
+    height: 100%;
+    margin-right: 22px;
+    background: #FFFFFF;
+    border: 2px solid #EE6112;
+    border-radius: 10px;
+    padding: 25px 20px;
+}
+
+.chart-wrapper {
+    height: 90%;
+}
+
+.graph-container {
+    width: 100%;
+}
+
+.chart-header {
+    height: 10%;
+}
+
+.details-edit {
+    color: #F5A32A;
+}
+
+.details-delete {
+    color: #B00600;
+}
+
+.details-edit:hover,
+.details-delete:hover {
+    cursor: pointer;
+}
+
+.title {
+    height: 100%;
+}
+
+.title h1 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.title h2 {
+    font-size: 14px;
+    font-weight: 400;
+    margin: 0;
+}
+
+.pagination-container {
+    margin: 20px 22px 0 22px;
+    height: 50px;
+}
+
+/* Modals */
+.modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+    margin-bottom: 10px;
+}
+
+.modal-title {
+    font-weight: 400;
+    font-size: 24px;
+    line-height: 29px;
+}
+
+.modal-header .ng-fa-icon:hover {
+    cursor: pointer;
+}
+
+.btn-primary {
+    background-color: #EE6112;
+}
+
+.new-chart-form {
+    padding: 10px 30px;
+    min-height: 320px;
+}
+
+.new-chart-form p {
+    margin: 0;
+    margin-bottom: 4px;
+    padding: 0;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 17px;
+}
+
+.input-group {
+    margin-bottom: 15px;
+    width: max-content;
+}
+
+.input-group div:first-child {
+    margin-right: 140px;
+}
+
+.new-chart-input {
+    width: 200px;
+    height: 30px;
+    border: 1px solid rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    padding: 10px;
+    font-weight: 300;
+    font-size: 14px;
+    line-height: 17px;
+    color: black;
+}
+
+.big-input {
+    width: 300px;
+}
+
+.color-input {
+    width: 200px;
+    height: 30px;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.5);
+}
+
+.new-type-button {
+    height: 32px;
+    width: 200px;
+    background: #FFFFFF;
+    border: 1px solid rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    padding: 9px;
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 15px;
+}
+
+.new-type-button:hover {
+    cursor: pointer;
+}
+
+.ng-invalid:not(form):not([formarrayname]) {
+    border-left: 5px solid #B00600;
+}
+
+.ng-dirty.ng-invalid:not(form):not([formarrayname]) {
+    border-left: 5px solid #EE6112 !important;
+}
+
+.series-form-container {
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+.series-form:not(first-child) {
+    margin-top: 20px;
+    border-radius: 5px;
+}
+
+.series-form div:first-child,
+.series-form div:nth-child(2) {
+    margin-right: 20px;
+}
+
+.conf-intro {
+    margin-top: 20px;
+    margin-bottom: 25px;
+    font-weight: 300;
+    font-size: 16px;
+}
+
+.modal-body form label {
+    height: 40px;
+    overflow: hidden;
+}
+
+.modal-body .check-container p {
+    font-weight: 400;
+    font-size: 12px;
+}
+
+.warn {
+    font-weight: 600 !important;
+    color: #B00600 !important;
+}
+
+/* scroll bar */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+    cursor: pointer;
+}

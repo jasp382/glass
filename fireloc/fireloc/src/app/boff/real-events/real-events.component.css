@@ -1,0 +1,480 @@
+* {
+    font-family: 'Montserrat', sans-serif !important;
+}
+
+.events-container {
+    height: 100vh;
+}
+
+.header-container {
+    background-color: #EE6112;
+    height: 120px;
+}
+
+.greeting {
+    color: white;
+    margin-left: 24px;
+}
+
+.greeting h1 {
+    font-size: 34px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.greeting h3 {
+    font-size: 16px;
+}
+
+.search {
+    margin-right: 42px;
+}
+
+.content-container {
+    flex: 1;
+    padding: 20px;
+}
+
+.actions-container {
+    margin: 0 22px 20px 22px;
+}
+
+.actions-container button {
+    height: 40px;
+    width: max-content;
+    background: white;
+    border-radius: 10px;
+    border: none;
+    padding: 5px 15px;
+    margin-right: 40px;
+}
+
+.actions-container p {
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 20px;
+    margin: 0 10px;
+}
+
+.action-dropdown .dropdown-toggle::after {
+    display: none;
+}
+
+.action-dropdown-container {
+    padding: 20px 20px 10px 20px;
+    width: max-content;
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.dropdown-selection-container {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.loc-filter {
+    width: 350px;
+    height: max-content;
+}
+
+.loc-filter-actions {
+    margin-bottom: 10px;
+}
+
+.loc-filter-actions button {
+    height: 30px;
+    width: max-content;
+    padding: 5px 15px;
+    background: white;
+    border-radius: 5px;
+    border: 1px solid #ACACAC;
+    margin-right: 0;
+}
+
+.loc-filter .map-container {
+    width: 310px;
+    height: 350px;
+}
+
+.dates p {
+    margin: 0;
+    padding: 0;
+}
+
+.dates p:first-child {
+    margin-left: 10px;
+}
+
+.dates p:last-child {
+    margin-right: 10px;
+}
+
+.custom-day {
+    text-align: center;
+    padding: 0.185rem 0.25rem;
+    display: inline-block;
+    height: 2rem;
+    width: 2rem;
+}
+
+.custom-day.focused {
+    background-color: #e6e6e6;
+}
+
+.custom-day.range,
+.custom-day:hover {
+    background-color: #EE6112;
+    color: white;
+}
+
+.custom-day.faded {
+    background-color: #F5A32A;
+}
+
+ngb-datepicker {
+    background-color: none;
+    border: none;
+}
+
+::ng-deep.ngb-dp-navigation-chevron,
+::ng-deep.ngb-dp-arrow,
+::ng-deep.ngb-dp-arrow-btn,
+::ng-deep.ngb-dp-navigation-select,
+::ng-deep.ngb-dp-weekday.ngb-dp-weekday.ngb-dp-weekday {
+    color: #EE6112 !important;
+}
+
+.actions-container button.add {
+    height: 40px;
+    background: #F5A32A;
+    color: white;
+    margin: 0;
+}
+
+.actions-container .add p {
+    font-weight: 700;
+    font-size: 12px;
+    line-height: 20px;
+    margin: 0 10px;
+}
+
+.tables-container {
+    flex: 1;
+    min-height: 440px;
+}
+
+.table-container {
+    margin: 0 22px 0 22px;
+    flex: 1;
+    background-color: white;
+    border-radius: 10px;
+}
+
+.event-open {
+    width: 35%;
+}
+
+.data-details-container {
+    width: calc(45% - 10px);
+    height: 60vh;
+    margin-right: 22px;
+    background: #FFFFFF;
+    border: 2px solid #EE6112;
+    border-radius: 10px;
+    padding: 25px 20px;
+}
+
+.data-header {
+    height: 50px;
+}
+
+.details-edit {
+    color: #F5A32A;
+}
+
+.details-delete {
+    color: #B00600;
+}
+
+.details-info {
+    color: #EE6112;
+    margin-left: 20px;
+}
+
+.details-edit:hover,
+.details-delete:hover,
+.details-info:hover {
+    cursor: pointer;
+}
+
+.event-map {
+    height: calc(100% - 50px);
+}
+
+.event-map .realEventMap {
+    overflow: hidden;
+    width: 400px;
+    height: 300px;
+    border-radius: 25px;
+}
+
+.info-container {
+    height: calc(100% - 50px);
+}
+
+.event-info {
+    height: 100%;
+    overflow-y: auto;
+}
+
+.event-info h1 {
+    color: #EE6112;
+}
+
+.geom-title:hover {
+    cursor: pointer;
+}
+
+.event-info h1:not(:first-of-type) {
+    margin-top: 15px;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 120px auto;
+    grid-template-rows: repeat(auto-fill, max-content);
+    column-gap: 10px;
+    row-gap: 5px;
+    width: calc(100% - 10px);
+}
+
+.freg {
+    grid-template-columns: 60px auto;
+}
+
+.mun {
+    grid-template-columns: 110px auto;
+}
+
+.codes {
+    grid-template-columns: 100px auto;
+}
+
+.geom {
+    grid-template-columns: 40px auto;
+}
+
+.info-grid h2 {
+    justify-self: start;
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.info-grid p {
+    font-size: 14px;
+    font-weight: 400;
+    margin: 0;
+}
+
+.row-border {
+    margin: 10px 0;
+    border-top: 1px solid #ccc;
+    grid-column: 1 / 3;
+}
+
+/* scroll bar */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+    cursor: pointer;
+}
+
+.pagination-container {
+    margin: 20px 22px 0 22px;
+    height: 50px;
+}
+
+/* Modals */
+.modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+    margin-bottom: 10px;
+}
+
+.modal-title {
+    font-weight: 400;
+    font-size: 24px;
+    line-height: 29px;
+}
+
+.modal-header .ng-fa-icon:hover {
+    cursor: pointer;
+}
+
+.btn-primary {
+    background-color: #EE6112;
+}
+
+.new-data-form {
+    padding: 10px 30px;
+    display: grid;
+    grid-template-columns: 200px 200px;
+    grid-template-rows: repeat(max-content);
+    column-gap: 100px;
+    row-gap: 5%;
+    justify-items: stretch;
+    align-items: stretch;
+    min-height: 50vh;
+}
+
+.new-data-form p {
+    margin: 0;
+    margin-bottom: 4px;
+    padding: 0;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 17px;
+}
+
+.new-data-input {
+    width: 200px;
+    height: 30px;
+    border: 1px solid rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    padding: 10px;
+    font-weight: 300;
+    font-size: 14px;
+    line-height: 17px;
+    color: black;
+}
+
+.long-input {
+    width: 500px;
+}
+
+.medium-input {
+    width: 350px;
+}
+
+.big-input {
+    resize: none;
+    width: 300px;
+    height: 230px;
+}
+
+.name-input {
+    grid-column: 1 / 3;
+}
+
+.bundle div:not(:first-child) {
+    margin-top: 15px;
+}
+
+.ng-invalid:not(form) {
+    border-left: 5px solid #B00600;
+}
+
+.ng-dirty.ng-invalid:not(form) {
+    border-left: 5px solid #EE6112 !important;
+}
+
+.conf-intro {
+    margin-top: 20px;
+    margin-bottom: 25px;
+    font-weight: 300;
+    font-size: 16px;
+}
+
+.modal-body form label {
+    height: 40px;
+    overflow: hidden;
+}
+
+.check-container {
+    display: block;
+    position: relative;
+    padding-left: 25px;
+    margin-bottom: 12px;
+    font-weight: 400;
+    font-size: 12px;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    padding-top: 2px;
+    height: 20px;
+}
+
+.check-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 20px;
+    width: 20px;
+    background-color: white;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+}
+
+.check-container:hover input~.checkmark {
+    background-color: rgb(240, 240, 240);
+}
+
+.check-container input:checked~.checkmark {
+    background-color: #EE6112;
+    border: 1px solid #FFFFFF;
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.check-container input:checked~.checkmark:after {
+    display: block;
+}
+
+.check-container .checkmark:after {
+    left: 7px;
+    top: 3px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+}
+
+.modal-body .check-container p {
+    font-weight: 400;
+    font-size: 12px;
+}
+
+.warn {
+    font-weight: 600 !important;
+    color: #B00600 !important;
+}

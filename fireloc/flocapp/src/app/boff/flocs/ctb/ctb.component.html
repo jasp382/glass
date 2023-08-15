@@ -1,0 +1,15 @@
+<div class="contribs-container d-flex flex-column">
+    <!-- Contributions Header -->
+    <header class="header-container d-flex align-items-center justify-content-between">
+        <!-- Greeting -->
+        <div class="greeting">
+            <h1>Contribuições FireLoc</h1>
+            <h3>Todas as contribuições realizadas por voluntários</h3>
+        </div>
+
+        <!-- Search  -->
+        <nav class="search d-flex align-items-center justify-content-end">
+            <feat-search [placeholder]="'Procurar Contribuições...'" (search)="searchContribs($event)"></feat-search>
+        </nav>
+    </header>
+</div>

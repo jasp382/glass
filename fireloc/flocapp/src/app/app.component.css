@@ -1,0 +1,37 @@
+/* Apply font everywhere */
+* {
+    font-family: 'Montserrat', sans-serif !important;
+}
+
+/* For IE */
+html, body, form, fieldset, table, tr, td, img {
+    margin: 0;
+    padding: 0;
+    font: 100%/150% 'Montserrat', sans-serif !important;
+}
+
+input, button, select, textarea, optgroup, option {
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-style: inherit !important;
+    font-weight: inherit !important;
+}
+
+/* Override Bootstrap z-index for modals */
+::ng-deep ngb-modal-backdrop {
+    z-index: 200000 !important;
+}
+
+::ng-deep ngb-modal-window {
+    z-index: 200000 !important;
+}
+
+/* Override Bootstrap style for app alerts */
+.alert-container {
+    width: 100vw !important;
+    z-index: 300000 !important;
+    position: absolute !important;
+    bottom: 15px !important;
+    display: flex !important;
+    justify-content: center !important;
+}

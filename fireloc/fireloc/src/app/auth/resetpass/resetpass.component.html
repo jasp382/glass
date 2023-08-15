@@ -1,0 +1,32 @@
+<div class="modal-body">
+    <!-- Title -->
+    <div>
+        <h1 class="modal-title">RESET PASSWORD</h1>
+    </div>
+
+    <form [formGroup]="newPasswordForm" (ngSubmit)="onSubmit()">
+        <!-- Warning alert for non-matching password inputs -->
+        <ngb-alert [type]="'danger'" *ngIf="newPasswordForm.hasError('notSame')" [dismissible]="false">
+            {{ 'PROFILE.PasswordsMatch' | translate }}
+        </ngb-alert>
+
+        <!-- Password Input -->
+        <app-form-input [icon]="passwordIcon" [inputType]="'password'"
+            [inputPlaceholder]="'PROFILE.NewPassword' | translate" [showIcon]="showIcon" [hideIcon]="hideIcon"
+            formControlName="password" [required]="true"
+            [inputFormControl]="newPasswordForm.get('password')"></app-form-input>
+
+        <!-- Confirm Password Input -->
+        <app-form-input [icon]="passwordIcon" [inputType]="'password'"
+            [inputPlaceholder]="'PROFILE.ConfPassword' | translate" [showIcon]="showIcon" [hideIcon]="hideIcon"
+            formControlName="passwordConfirmation" [required]="true"
+            [inputFormControl]="newPasswordForm.get('passwordConfirmation')"></app-form-input>
+
+        <!-- Change Password Button -->
+        <div class="button-submit">
+            <button type="submit" class="btn btn-primary" [disabled]="!newPasswordForm.valid">
+                {{ 'PROFILE.ChangePass' | translate }}
+            </button>
+        </div>
+    </form>
+</div>

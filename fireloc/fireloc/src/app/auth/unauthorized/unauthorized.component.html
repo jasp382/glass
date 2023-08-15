@@ -1,0 +1,27 @@
+<div class="main-container d-flex flex-column">
+    <!-- Navbar -->
+    <app-headmenu></app-headmenu>
+
+    <div class="content-wrapper d-flex flex-column justify-content-center">
+        <div class="content d-flex">
+            <!-- Image Container -->
+            <div class="left d-flex flex-column justify-content-center align-items-center">
+                <ng-container *ngIf="language === 'pt'">
+                    <img src="./assets/images/401_pt.png">
+                </ng-container>
+                <ng-container *ngIf="language === 'en'">
+                    <img src="./assets/images/401_en.png">
+                </ng-container>
+            </div>
+            <!-- Content Container -->
+            <div class="right d-flex flex-column justify-content-center">
+                <h1>{{ 'UNAUTHORIZED.Title' | translate }}</h1>
+                <h2>{{ 'UNAUTHORIZED.Explanation' | translate }}</h2>
+                <h2>{{ 'UNAUTHORIZED.Redirect' | translate }}</h2>
+
+                <!-- Action button -->
+                <button class="home-btn btn btn-primary" routerLink="/">{{ 'UNAUTHORIZED.Action' | translate }}</button>
+            </div>
+        </div>
+    </div>
+</div>

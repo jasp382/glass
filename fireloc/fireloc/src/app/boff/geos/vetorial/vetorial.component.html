@@ -1,0 +1,447 @@
+<div class="vec-container d-flex flex-column">
+    <!-- Vectorial Header -->
+    <header class="header-container d-flex align-items-center justify-content-between">
+        <!-- Greeting -->
+        <div class="greeting">
+            <h1>Dados Vetoriais</h1>
+            <h3>Todos os conjuntos de dados com informação vetorial</h3>
+        </div>
+
+        <!-- Search  -->
+        <nav class="search d-flex align-items-center justify-content-end">
+            <feat-search [placeholder]="'Procurar Dados...'" (search)="searchDatasets($event)"></feat-search>
+        </nav>
+    </header>
+
+    <!-- Vectorial Content -->
+    <div class="content-container d-flex flex-column">
+        <!-- Actions -->
+        <div class="actions-container d-flex align-items-center justify-content-between">
+            <div>
+                <!-- Category Filter -->
+                <div ngbDropdown class="cat-dropdown d-inline-block">
+                    <!-- Open/Close Dropdown -->
+                    <button class="d-flex align-items-center justify-content-center" ngbDropdownToggle>
+                        <fa-icon [icon]="filterIcon"></fa-icon>
+                        <p>Categorias</p>
+                        <fa-icon [icon]="dropIcon" size="xs"></fa-icon>
+                    </button>
+                    <!-- Dropdown Menu -->
+                    <div ngbDropdownMenu class="cat-dropdown-container dropdown-menu dropdown-menu-lg-end">
+                        <label class="check-container" *ngFor="let cat of categories">
+                            <p>{{cat.name}}</p>
+                            <input type="checkbox" (click)="selectCategory(cat.id)" [checked]="cat.selected">
+                            <span class="checkmark"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Geometry Type Filter -->
+                <div ngbDropdown class="geo-type cat-dropdown d-inline-block">
+                    <!-- Open/Close Dropdown -->
+                    <button class="d-flex align-items-center justify-content-center" ngbDropdownToggle>
+                        <fa-icon [icon]="geometryIcon"></fa-icon>
+                        <p>Geometria</p>
+                        <fa-icon [icon]="dropIcon" size="xs"></fa-icon>
+                    </button>
+                    <!-- Dropdown Menu -->
+                    <div ngbDropdownMenu class="cat-dropdown-container dropdown-menu dropdown-menu-lg-end">
+                        <label class="check-container" *ngFor="let geo of geometryTypes">
+                            <p>{{geo.name}}</p>
+                            <input type="checkbox" (click)="selectGeometryType(geo.name)" [checked]="geo.selected">
+                            <span class="checkmark"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Dataset -->
+            <button class="add d-flex align-items-center justify-content-center" (click)="open(createModal, 'new')">
+                <p>Adicionar Dados</p>
+                <fa-icon [icon]="plusIcon" size="xs"></fa-icon>
+            </button>
+        </div>
+
+        <!-- Tables Container -->
+        <div class="tables-container d-flex align-items-start justify-items-between">
+            <!-- Data Table -->
+            <div class="table-container" [ngClass]="isDatasetOpen ? 'dataset-open' : ''">
+                <feat-table [component]="'vector'" [data]="filteredDatasets" [headers]="displayedHeaders"
+                    [page]="currentPage" [searchFilter]="searchTerms" (rowCount)="updateRowCount($event)"
+                    (selectedID)="toggleDatasetView($event)">
+                </feat-table>
+            </div>
+
+            <!-- Dataset Details -->
+            <div *ngIf="isDatasetOpen" class="data-details-container d-flex flex-column">
+                <!-- Dataset Header -->
+                <div class="data-header d-flex align-items-start justify-content-between">
+                    <!-- Edit Dataset Details -->
+                    <fa-icon [icon]="editIcon" size="2x" class="details-edit" ngbTooltip="Editar Dados"
+                        placement="bottom" (click)="open(editModal, 'edit')"></fa-icon>
+                    <div class="title d-flex flex-column align-items-center justify-content-start">
+                        <h1>{{openDataset.name}}</h1>
+                    </div>
+                    <!-- Delete Dataset -->
+                    <fa-icon [icon]="deleteIcon" size="2x" class="details-delete" ngbTooltip="Remover Dados"
+                        placement="bottom" (click)="open(deleteModal, 'delete')"></fa-icon>
+                </div>
+
+                <div class="info-container d-flex flex-column align-content-center">
+                    <div class="dataset-info d-flex flex-column">
+                        <h1>Categoria</h1>
+                        <div class="info-grid category">
+                            <!-- Slug -->
+                            <h2>Slug</h2>
+                            <p>{{openDataset.category?.slug}}</p>
+                            <!-- Name -->
+                            <h2>Nome</h2>
+                            <p>{{openDataset.category?.name}}</p>
+                            <!-- Description -->
+                            <h2>Descrição</h2>
+                            <p>{{openDataset.category?.description}}</p>
+                        </div>
+                        <h1>Dados</h1>
+                        <div class="info-grid">
+                            <!-- Slug -->
+                            <h2>Slug</h2>
+                            <p>{{openDataset.slug}}</p>
+                            <!-- Name -->
+                            <h2>Nome</h2>
+                            <p>{{openDataset.name}}</p>
+                            <!-- Description -->
+                            <h2>Descrição</h2>
+                            <p>{{openDataset.description}}</p>
+                            <!-- Source -->
+                            <h2>Fonte</h2>
+                            <p>{{openDataset.source}}</p>
+                            <!-- Geometry Type -->
+                            <h2>Tipo Geometria</h2>
+                            <p>{{openDataset.geometryType}}</p>
+                            <!-- Reference Year -->
+                            <h2>Ano dos Dados</h2>
+                            <p *ngIf="openDataset.refYear !== null">{{openDataset.refYear}}</p>
+                            <p *ngIf="openDataset.refYear === null">Sem Informação</p>
+                            <!-- Reference Production -->
+                            <h2>Ano de Produção</h2>
+                            <p *ngIf="openDataset.refProd !== null">{{openDataset.refProd}}</p>
+                            <p *ngIf="openDataset.refProd === null">Sem Informação</p>
+                        </div>
+                        <!-- Levels -->
+                        <h1>Níveis</h1>
+                        <div class="info-grid levels">
+                            <ng-container *ngFor="let level of openDataset.datasetLevels; let index = index">
+                                <h2>Nível</h2>
+                                <p>{{level.level}}</p>
+                                <h2>Slug</h2>
+                                <p>{{level.slug}}</p>
+                                <h2>Nome</h2>
+                                <p>{{level.name}}</p>
+                                <h2>Descrição</h2>
+                                <p>{{level.description}}</p>
+                                <!-- Add separator to divide levels -->
+                                <ng-container *ngIf="index !== openDataset.datasetLevels.length - 1">
+                                    <div class="row-border"></div>
+                                </ng-container>
+                            </ng-container>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Pagination -->
+        <div class="pagination-container d-flex align-items-center justify-content-end">
+            <feat-pagination [rowCount]="rowCount" (page)="getPage($event)"></feat-pagination>
+        </div>
+    </div>
+</div>
+
+<!-- Create New Vector Dataset Modal -->
+<ng-template #createModal let-modal>
+    <div class="modal-header d-flex align-items-center justify-content-between">
+        <h4 class="modal-title" id="modal-basic-title">Adicionar Dados</h4>
+        <fa-icon [icon]="closeIcon" size="1x" (click)="modal.dismiss()"></fa-icon>
+    </div>
+    <div class="modal-body">
+        <form class="new-data-form" [formGroup]="newDataForm">
+
+            <!-- Category -->
+            <div class="new-data-cat d-flex flex-column align-items-start justify-items-center">
+                <p>Categoria</p>
+                <div ngbDropdown class="d-inline-block">
+                    <button class="new-cat-button" ngbDropdownToggle>
+                        {{newData.category?.name}}
+                    </button>
+                    <div ngbDropdownMenu class="new-cat-dropdown dropdown-menu dropdown-menu-lg-end">
+                        <button *ngFor="let cat of categories" ngbDropdownItem [value]="cat.name"
+                            (click)="newData.category = cat">
+                            {{ cat.name }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Geometry Type -->
+            <div class="new-data-geo d-flex flex-column align-items-start justify-items-center">
+                <p>Tipo de Geometria</p>
+                <div ngbDropdown class="d-inline-block">
+                    <button class="new-geo-button" ngbDropdownToggle>
+                        {{newData.geometryType}}
+                    </button>
+                    <div ngbDropdownMenu class="new-geo-dropdown dropdown-menu dropdown-menu-lg-end">
+                        <button *ngFor="let geo of geometryTypes" ngbDropdownItem [value]="geo.name"
+                            (click)="newData.geometryType = geo.name">
+                            {{ geo.name }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-container">
+                <!-- Slug -->
+                <div>
+                    <p>Slug</p>
+                    <input type="text" class="new-data-input" #newSlug required formControlName="slug"
+                        (ngModelChange)="updateNewDataField(newSlug.value, 'slug')">
+                </div>
+                <!-- Name -->
+                <div style="margin-top: 10px;">
+                    <p>Nome</p>
+                    <input type="text" class="new-data-input long-input" #newName required formControlName="name"
+                        (ngModelChange)="updateNewDataField(newName.value, 'name')">
+                </div>
+                <!-- Source -->
+                <div>
+                    <p>Fonte</p>
+                    <input type="text" class="new-data-input long-input" #newSource required formControlName="source"
+                        (ngModelChange)="updateNewDataField(newSource.value, 'source')">
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div>
+                <p>Descrição</p>
+                <textarea type="text" class="new-data-input big-input" #newDesc required rows="4" cols="50"
+                    formControlName="description"
+                    (ngModelChange)="updateNewDataField(newDesc.value, 'description')"></textarea>
+            </div>
+
+            <!-- Ref Year -->
+            <div>
+                <p>Ano dos Dados</p>
+                <input type="number" class="new-data-input" #newRefYear formControlName="refYear"
+                    (ngModelChange)="updateNewDataField(newRefYear.valueAsNumber, 'refYear')">
+            </div>
+
+            <!-- Ref Production -->
+            <div>
+                <p>Ano de Produção</p>
+                <input type="number" class="new-data-input" #newRefProd formControlName="refProd"
+                    (ngModelChange)="updateNewDataField(newRefProd.valueAsNumber, 'refProd')">
+            </div>
+
+            <!-- Levels -->
+            <div class="levels-form-container">
+                <h2>Níveis</h2>
+                <!-- Levels Form Array -->
+                <div class="levels-form d-flex align-items-center justify-content-between" formArrayName="levels"
+                    *ngFor="let s of newLevels.controls; let i = index">
+                    <ng-container [formGroupName]="i">
+                        <div class="d-flex flex-column">
+                            <div>
+                                <p>Slug</p>
+                                <input type="text" class="new-data-input" required formControlName="levelSlug">
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <p>Nível</p>
+                                <input type="number" class="new-data-input" required formControlName="levelLevel">
+                            </div>
+                        </div>
+                        <div class="d-flex flex-column">
+                            <div>
+                                <p>Nome</p>
+                                <input type="text" class="new-data-input long-input" required
+                                    formControlName="levelName">
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <p>Descrição</p>
+                                <input type="text" class="new-data-input long-input" required
+                                    formControlName="levelDescription">
+                            </div>
+                        </div>
+                        <div class="remove-level-control">
+                            <fa-icon [icon]="closeIcon" size="lg" (click)="removeNewLevel(i)"></fa-icon>
+                        </div>
+                    </ng-container>
+                </div>
+            </div>
+
+            <!-- Dynamically add new levels to new dataset -->
+            <button type="button" class="new-levels-button btn btn-primary" (click)="addNewLevels()">Adicionar
+                Nível</button>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-dark" (click)="modal.close()">Cancelar</button>
+        <button type="button" class="btn btn-primary" (click)="createNewDataset()"
+            [disabled]="!newDataForm.valid">Adicionar Dados
+        </button>
+    </div>
+</ng-template>
+
+<!-- Edit Vector Dataset Modal -->
+<ng-template #editModal let-modal>
+    <div class="modal-header d-flex align-items-center justify-content-between">
+        <h4 class="modal-title" id="modal-basic-title">Editar Dados</h4>
+        <fa-icon [icon]="closeIcon" size="1x" (click)="modal.dismiss()"></fa-icon>
+    </div>
+    <div class="modal-body">
+        <form class="new-data-form" [formGroup]="editDataForm">
+
+            <!-- Category -->
+            <div class="new-data-cat d-flex flex-column align-items-start justify-items-center">
+                <p>Categoria</p>
+                <div ngbDropdown class="d-inline-block">
+                    <button class="new-cat-button" ngbDropdownToggle>
+                        {{editData.category?.name}}
+                    </button>
+                    <div ngbDropdownMenu class="new-cat-dropdown dropdown-menu dropdown-menu-lg-end">
+                        <button *ngFor="let cat of categories" ngbDropdownItem [value]="cat.name"
+                            (click)="editData.category = cat">
+                            {{ cat.name }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Geometry Type -->
+            <div class="new-data-geo d-flex flex-column align-items-start justify-items-center">
+                <p>Tipo de Geometria</p>
+                <div ngbDropdown class="d-inline-block">
+                    <button class="new-geo-button" ngbDropdownToggle>
+                        {{editData.geometryType}}
+                    </button>
+                    <div ngbDropdownMenu class="new-geo-dropdown dropdown-menu dropdown-menu-lg-end">
+                        <button *ngFor="let geo of geometryTypes" ngbDropdownItem [value]="geo.name"
+                            (click)="editData.geometryType = geo.name">
+                            {{ geo.name }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-container">
+                <!-- Slug -->
+                <div>
+                    <p>Slug</p>
+                    <input type="text" class="new-data-input" #editSlug required formControlName="slug"
+                        (ngModelChange)="updateEditDataField(editSlug.value, 'slug')">
+                </div>
+                <!-- Name -->
+                <div style="margin-top: 10px;">
+                    <p>Nome</p>
+                    <input type="text" class="new-data-input long-input" #editName required formControlName="name"
+                        (ngModelChange)="updateEditDataField(editName.value, 'name')">
+                </div>
+                <!-- Source -->
+                <div>
+                    <p>Fonte</p>
+                    <input type="text" class="new-data-input long-input" #editSource required formControlName="source"
+                        (ngModelChange)="updateEditDataField(editSource.value, 'source')">
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div>
+                <p>Descrição</p>
+                <textarea type="text" class="new-data-input big-input" #editDesc required rows="4" cols="50"
+                    formControlName="description"
+                    (ngModelChange)="updateEditDataField(editDesc.value, 'description')"></textarea>
+            </div>
+
+            <!-- Ref Year -->
+            <div>
+                <p>Ano dos Dados</p>
+                <input type="number" class="new-data-input" #editRefYear formControlName="refYear"
+                    (ngModelChange)="updateEditDataField(editRefYear.valueAsNumber, 'refYear')">
+            </div>
+
+            <!-- Ref Production -->
+            <div>
+                <p>Ano de Produção</p>
+                <input type="number" class="new-data-input" #editRefProd formControlName="refProd"
+                    (ngModelChange)="updateEditDataField(editRefProd.valueAsNumber, 'refProd')">
+            </div>
+
+            <!-- Levels -->
+            <div class="levels-form-container">
+                <h2>Níveis</h2>
+                <!-- Levels Form Array -->
+                <div class="levels-form d-flex align-items-center justify-content-between" formArrayName="levels"
+                    *ngFor="let s of editLevels.controls; let i = index">
+                    <ng-container [formGroupName]="i">
+                        <div class="d-flex flex-column">
+                            <div>
+                                <p>Slug</p>
+                                <input type="text" class="new-data-input" required formControlName="levelSlug">
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <p>Nível</p>
+                                <input type="number" class="new-data-input" required formControlName="levelLevel">
+                            </div>
+                        </div>
+                        <div class="d-flex flex-column">
+                            <div>
+                                <p>Nome</p>
+                                <input type="text" class="new-data-input long-input" required
+                                    formControlName="levelName">
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <p>Descrição</p>
+                                <input type="text" class="new-data-input long-input" required
+                                    formControlName="levelDescription">
+                            </div>
+                        </div>
+                        <div class="remove-level-control">
+                            <fa-icon [icon]="closeIcon" size="lg" (click)="removeEditLevel(i)"></fa-icon>
+                        </div>
+                    </ng-container>
+                </div>
+            </div>
+
+            <!-- Dynamically add new levels to edit dataset -->
+            <button type="button" class="new-levels-button btn btn-primary" (click)="addEditLevels()">Adicionar
+                Nível</button>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-dark" (click)="modal.close()">Cancelar</button>
+        <button type="button" class="btn btn-primary" (click)="updateDataset()" [disabled]="!editDataForm.valid">Guardar
+            Alterações
+        </button>
+    </div>
+</ng-template>
+
+<!-- Delete Vector Dataset Confirmation Modal -->
+<ng-template #deleteModal let-modal>
+    <div class="modal-header d-flex align-items-center justify-content-between">
+        <h4 class="modal-title" id="modal-basic-title">Apagar Dados</h4>
+        <fa-icon [icon]="closeIcon" size="1x" (click)="modal.dismiss()"></fa-icon>
+    </div>
+    <div class="modal-body">
+        <form>
+            <p class="conf-intro">Tem a certeza que deseja apagar este conjunto de dados?</p>
+            <label class="check-container">
+                <p [ngClass]="hasClickedRemove ? 'warn' : ''">
+                    Tenho conhecimento que esta ação é irreversível e apaga estes dados permanentemente.</p>
+                <input type="checkbox" [(ngModel)]="isConfChecked" name="delete-confirmation">
+                <span class="checkmark"></span>
+            </label>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-dark" (click)="modal.close()">Cancelar</button>
+        <button type="button" class="btn btn-danger" (click)="removeDataset()">Apagar Dados</button>
+    </div>
+</ng-template>

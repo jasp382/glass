@@ -1,0 +1,49 @@
+<div class="events-container d-flex flex-column">
+    <!-- Events Header -->
+    <header class="header-container d-flex align-items-center justify-content-between">
+        <!-- Greeting -->
+        <div class="greeting">
+            <h1>Ocorrências FireLoc</h1>
+            <h3>Todas as ocorrências identificadas pelo sistema FireLoc</h3>
+        </div>
+
+        <!-- Search  -->
+        <nav class="search d-flex align-items-center justify-content-end">
+            <feat-search [placeholder]="'Procurar Eventos...'" (search)="searchEvents($event)"></feat-search>
+        </nav>
+    </header>
+
+    <!-- Firelocs Content -->
+    <div class="content-container d-flex flex-column">
+        <!-- Actions -->
+        <div class="actions-container d-flex align-items-center justify-content-start">
+            <!-- Location Filter -->
+            <div ngbDropdown class="action-dropdown d-inline-block" #locationDrop>
+                <!-- Open/Close Dropdown -->
+                <button type="button" class="d-flex align-items-center justify-content-center" ngbDropdownToggle
+                    id="locDropdown" (click)="toggleFilterMap(locationDrop)">
+                    <fa-icon [icon]="locIcon"></fa-icon>
+                    <p>Localização</p>
+                    <fa-icon [icon]="dropIcon" size="xs"></fa-icon>
+                </button>
+
+                <!-- Dropdown Menu -->
+                <div ngbDropdownMenu class="loc-filter action-dropdown-container dropdown-menu dropdown-menu-lg-end"
+                    aria-labelledby="locDropdown">
+                    <div class="loc-filter-actions d-flex align-items-center justify-content-between">
+                        <button (click)="clearLocFilter()">Limpar Filtro</button>
+                        <button (click)="filterLoc()" [disabled]="pointCounter < 4">Filtrar</button>
+                    </div>
+                    <div *ngIf="showFilterMap" class="map-container">
+                        <app-leafmap [map-settings]="filterMapsettings" (map)="receiveFilterMap($event)"
+                            class="filterMap">
+                        </app-leafmap>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Date Range Filter -->
+            
+        </div>
+    </div>
+</div>

@@ -1,0 +1,49 @@
+* {
+    font-family: 'Montserrat', sans-serif !important;
+}
+
+.main-container {
+    height: 100vh;
+    max-height: 100vh;
+}
+
+.content-wrapper,
+.content {
+    height: 100%;
+}
+
+.left, .right {
+    height: 100%;
+    padding: 15px;
+}
+
+.left {
+    width: 60vw;
+}
+
+.left img {
+    display: block;
+    width: 65%;
+    height: auto;
+}
+
+.right {
+    width: 40vw;
+}
+
+h1 {
+    font-size: xx-large;
+    font-weight: 800;
+    color: #EE7B27;
+    margin-bottom: 50px;
+}
+
+h2 {
+    font-weight: 500;
+}
+
+.home-btn {
+    margin-top: 20px;
+    width: max-content;
+    font-weight: 500;
+}

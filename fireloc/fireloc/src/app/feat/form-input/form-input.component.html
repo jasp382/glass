@@ -1,0 +1,40 @@
+<div class="input-group mb-3">
+
+    <!-- Left side icon -->
+    <div class="input-group-prepend">
+        <span class="input-group-text input-symbol-bg">
+            <fa-icon [icon]="icon" size="sm" class="input-symbol"></fa-icon>
+        </span>
+    </div>
+
+    <!-- Form input -->
+    <input [type]="inputType" class="form-control" [placeholder]="inputPlaceholder" #formInput
+        [required]="isRequired? 'required' : '' " [(ngModel)]="innerValue"
+        (ngModelChange)="onChange($event, formInput.value)">
+
+
+    <!-- If input is password, append a show/hide toggle icon -->
+    <div class="input-group-append" *ngIf="inputType === 'password'">
+        <span class="input-group-text input-symbol-no-bg">
+            <fa-icon *ngIf="!showPassword" [icon]="hideIcon" size="sm" class="show-symbol"
+                (click)="togglePassword(formInput)"></fa-icon>
+            <fa-icon *ngIf="showPassword" [icon]="showIcon" size="sm" class="show-symbol"
+                (click)="togglePassword(formInput)"></fa-icon>
+        </span>
+    </div>
+</div>
+
+<!-- Loop through errors -->
+<div class="input-errors" *ngIf="inputFormControl?.invalid && (inputFormControl?.dirty || inputFormControl?.touched)">
+
+    <!-- Input is required -->
+    <div *ngIf="inputFormControl?.errors?.required" class="alert alert-danger">
+        {{ 'EMPTY.MandatoryField' | translate }}
+    </div>
+
+    <!-- Input is an invalid email -->
+    <div *ngIf="inputFormControl?.errors?.email" class="alert alert-danger">
+        {{ 'EMPTY.ValidEmail' | translate }}
+    </div>
+
+</div>

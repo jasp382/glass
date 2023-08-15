@@ -1,0 +1,20 @@
+<!-- footer container row -->
+<div class="footer-container d-flex flex-row align-items-center h-100">
+  <div class="slider-container" id="container" #elemt
+    appHorizontalScroll 
+    (scrollEvent)="updateSliderZoom($event)"
+    (mousedown)="startDragging($event, elemt)" 
+    (mouseup)="stopDragging()"
+    (mouseleave)="stopDragging()" 
+    (mousemove)="moveEvent($event, elemt)">
+
+    <ngx-slider 
+      [(value)]="minValue" 
+      [(highValue)]="maxValue" 
+      [options]="options" 
+      (userChangeEnd)="onUserChangeEnd($event)"
+      class="slider"
+      [style.width.px]="sliderWidth">
+      </ngx-slider>
+  </div>
+</div>

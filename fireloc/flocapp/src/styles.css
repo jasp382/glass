@@ -1,0 +1,332 @@
+/* bootstrap template import ---------------------------------------------------*/
+@import "~startbootstrap-sb-admin-2/css/sb-admin-2.css";
+@import "~leaflet/dist/leaflet.css";
+@import "~leaflet.markercluster/dist/MarkerCluster.css";
+@import "~leaflet.markercluster/dist/MarkerCluster.Default.css";
+@import '~material-design-icons/iconfont/material-icons.css';
+@import '~flag-icon-css/css/flag-icons.min.css';
+
+/* variables ---------------------------------------------------*/
+
+:root {
+    --white: #fff;
+    --gray: #E3E6F0;
+    --gray-dark: #5a5c69;
+    --primary: #EE7927;
+    --secondary: #F9BE2D;
+    --success: #1cc88a;
+    --info: #36B9CC;
+    --warning: #f6c23e;
+    --danger: #e74a3b;
+    --light: #F9F9FC;
+    --dark: #3a3b45;
+    }
+    
+    /* general elements ---------------------------------------------------*/
+    html, body { height: 100%; }
+    
+    body{
+        color: var(--dark);
+        background-color: var(--light);
+    }
+    
+    a{
+        color:var(--secondary);
+    }
+    
+    a:hover, a:active{
+        color:var(--info);
+        text-decoration: none;
+    }
+    
+    .bg-primary {
+      background-color: var(--primary) !important;
+    }
+    
+    h1{
+        font-size: 16px;
+        font-weight: 700;
+    }
+    
+    h2{
+        font-size: 16px;
+        font-weight: 600;
+    }
+    
+    h3{
+        font-size: 12px;
+        font-weight: 300;
+    }
+    
+    p{
+        font-size: 14px;
+        font-weight: 300;
+    }
+    
+    .text-primary {
+      color: var(--primary) !important;
+    }
+    
+    .pointer{
+        cursor: pointer;
+    }
+    
+    
+    /* form elements ---------------------------------------------------*/
+    
+    .form-control:focus{
+        border-color: var(--light);
+        box-shadow: 0 0 0 0.2rem rgba(54,185,204,.25);
+    }
+    
+    .mat-selected, .mat-form-field.mat-focused .mat-form-field-label, .mat-form-field.mat-focused .mat-form-field-ripple, .mat-form-field.mat-focused .mat-form-field-required-marker, .mat-form-field.mat-focused .mat-input-element, .mat-form-field.mat-focused.mat-primary .mat-select-arrow, .mat-form-field.mat-focused .mat-form-field-underline, .mat-form-field.mat-focused .mat-datepicker-toggle, .mat-datepicker-toggle-active{
+       color: var(--secondary) !important;
+    }
+    
+    .mat-pseudo-checkbox-checked, .mat-calendar-body-selected{
+        background: var(--secondary) !important;
+    }
+    
+    .mat-calendar-body-in-range::before, .mat-calendar-body-cell:hover .mat-calendar-body-cell-content, .mat-calendar-body-active .mat-calendar-body-cell-content{
+        background: #B5DFE6 !important;
+    }
+    
+    /*checkboxes ---------------------------------------------------*/
+    .custom-control-input:checked ~ .custom-control-label::before {
+      color: #fff;
+      border-color: var(--info);
+      background-color: var(--info);
+    }
+    
+    .custom-control-input:focus ~ .custom-control-label::before {
+      box-shadow: 0 0 0 0.2rem rgba(54,185,204,.25);
+    }
+    
+    .custom-control-input:focus:not(:checked) ~ .custom-control-label::before {
+      border-color: var(--light);
+    }
+    
+    .mat-checkbox-layout .mat-checkbox-label{
+        display: inline-flex !important;
+        margin: auto !important;
+    }
+    
+    .mat-checkbox-layout{
+        margin: 0;
+    }
+    
+    .mat-checkbox-checked.mat-accent .mat-checkbox-background,
+    .mat-checkbox-indeterminate.mat-accent .mat-checkbox-background {
+      background-color: var(--info) !important;
+    }
+    
+    .mat-checkbox-ripple .mat-ripple-element,
+    .mat-checkbox-checked.mat-accent .mat-checkbox-background {
+      background-color: var(--info) !important;
+    }
+    
+    .mat-checkbox-checked.mat-accent.mat-checkbox-disabled .mat-checkbox-background{
+        background-color: rgb(170,170,170) !important;
+    }
+    
+    
+    /* button elements ---------------------------------------------------*/
+    
+    .btn:focus, .btn.focus, .btn:active, .btn.active {
+      outline: 0;
+      box-shadow: 0 0 0 0.2rem rgba(54,185,204,.25) !important;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary);
+      border-color: var(--primary);
+    }
+    
+    .btn-primary:hover {
+        background-color: var(--secondary);
+        border-color: var(--secondary);
+    }
+    
+    .btn-primary:focus, .btn-primary.focus, .btn-primary:not(:disabled):not(.disabled):active, .btn-primary:not(:disabled):not(.disabled).active,
+    .show > .btn-primary.dropdown-toggle, .btn-primary.disabled, .btn-primary:disabled {
+      background-color: var(--info);
+      border-color: var(--info);
+    }
+    
+    .btn-secondary {
+      background-color: var(--secondary);
+    }
+    
+    .btn-secondary:hover {
+      background-color: var(--secondary);
+      border-color: var(--secondary);
+    }
+    
+    .btn-secondary:focus, .btn-secondary.focus, .btn-secondary.disabled, .btn-secondary:disabled, .btn-secondary:not(:disabled):not(.disabled):active, .btn-secondary:not(:disabled):not(.disabled).active,
+    .show > .btn-secondary.dropdown-toggle{
+        background-color: var(--info);
+        border-color: var(--info);
+    }
+    
+    /* expandable card elements ---------------------------------------------------*/
+    
+    mat-expansion-panel-header, mat-expansion-panel-header:hover, mat-expansion-panel-header:focus{
+        background-color: var(--light) !important;
+        border: 1px solid var(--gray);
+    }
+    
+    .body-nopadding .mat-expansion-panel-body{
+        padding: 0 !important;
+    }
+    
+    .mat-expansion-panel-header{
+        font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
+        height: 2.5rem !important;
+        cursor: auto;
+    }
+    
+    .mat-expansion-indicator{
+        transform-origin: 50% 75%;
+        margin-bottom: 8px;
+    }
+    
+    
+    /* snackbar elements -----------------------------------------------------------*/
+    .snackbarStyle{
+        background: var(--primary);
+        color: var(--white);
+    }
+    
+    .mat-simple-snackbar span {
+      margin: auto;
+      text-align: center;
+    }
+    
+    /* tables -----------------------------------------------------------*/
+    .table_container{
+        overflow: auto;
+    }
+    
+    th.mat-header-cell:last-of-type, td.mat-cell:last-of-type, td.mat-footer-cell:last-of-type{
+        padding-right: 0px;
+    }
+    
+    th.mat-header-cell:first-of-type, td.mat-cell:first-of-type, td.mat-footer-cell:first-of-type{
+        padding-left: 0px;
+    }
+    
+    tr.mat-header-row{
+        height: 6vh !important;
+    }
+    
+    tr.mat-header-row th.mat-header-cell{
+        color: #3a3b45;
+        font-weight: 400;
+        font-size: 14px;
+    }
+    
+    tr.mat-row{
+        height: 6vh !important;
+    }
+    
+    tr.mat-row:hover{
+        background: whitesmoke;
+    }
+    
+    tr.mat-row:active{
+        background: #efefef;
+    }
+    
+    table,table.mat-table{
+        width: 100%;
+    }
+    
+    tr.mat-header-row{
+        background-color: #F9F9FC !important;
+    }
+    
+    .mat-form-field-infix, .mat-form-field {
+        width:100% !important;
+        max-width: 100% !important;
+    }
+    
+    /*select elements ----------------------------------------------------------*/
+    .mat-form-field-wrapper{
+        padding: 0px;
+    }
+    
+    .mat-form-field-underline{
+        display: none;
+    }
+    
+    /*nvd3 graphics elements ----------------------------------------------------------*/
+    .nvd3 text{
+      font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
+    }
+    
+    
+    /*leaflet map elements ----------------------------------------------------------*/
+    
+    .leaflet-popup-content{
+        margin: 1rem !important;
+    }
+    
+    .leaflet-tooltip{
+        padding: 0.2rem 0.75rem !important;
+    }
+    
+    mat-divider {
+        display: flex;
+        height: 1px;
+        background-color: var(--gray);
+        margin: 0.25rem 0px;
+    }
+    
+    .mapCluster{
+        width: 2rem!important;
+        height: 2rem!important;
+        border-radius: 2rem;
+        border: 1px solid var(--white);
+        background-color: var(--secondary);
+        color: var(--white);
+        text-align: center;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+    }
+    
+    .mapCluster p{
+        margin: auto;
+        width: 100%;
+    }
+    
+    
+    /*timepicker*/
+    
+    .timepicker .mat-form-field-wrapper .mat-form-field-flex{
+        padding: 10.5px !important;
+        padding-bottom: 0px !important;
+    }
+    
+    .timepicker .mat-form-field-wrapper{
+        padding-bottom: 0px !important;
+    }
+    
+    .timepicker .mat-form-field-suffix{
+        position: absolute;
+        top: 0.85rem;
+        right: 0.2rem;
+    }
+    
+    .timepicker .mat-form-field-empty{
+        top: 1.09375em !important;
+        margin-top: -0.5em !important;
+    }
+    
+    .timepicker:active .mat-form-field-empty{
+        top: 0em !important;
+        margin-top: 0em !important;
+    }
+    html, body { height: 100%; }
+    body { margin: 0; /* font-family: Roboto, "Helvetica Neue", sans-serif; */ }

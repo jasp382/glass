@@ -1,0 +1,264 @@
+<div class="charts-container d-flex flex-column">
+    <!-- Charts Header -->
+    <header class="header-container d-flex align-items-center justify-content-between">
+        <!-- Greeting -->
+        <div class="greeting">
+            <h1>Gráficos FireLoc</h1>
+            <h3>Todos os gráficos com informação geográfica presentes no seu sistema</h3>
+        </div>
+
+        <!-- Search  -->
+        <nav class="search d-flex align-items-center justify-content-end">
+            <feat-search [placeholder]="'Procurar Gráficos...'" (search)="searchCharts($event)"></feat-search>
+        </nav>
+    </header>
+
+    <!-- Charts Content -->
+    <div class="content-container d-flex flex-column">
+
+        <!-- Actions -->
+        <div class="actions-container d-flex align-items-center justify-content-between">
+            <!-- Type Filter -->
+            <div ngbDropdown class="type-dropdown d-inline-block">
+                <!-- Open/Close Dropdown -->
+                <button class="d-flex align-items-center justify-content-center" ngbDropdownToggle>
+                    <fa-icon [icon]="typeIcon"></fa-icon>
+                    <p>Tipos</p>
+                    <fa-icon [icon]="dropIcon" size="xs"></fa-icon>
+                </button>
+                <!-- Dropdown Menu -->
+                <div ngbDropdownMenu class="type-dropdown-container dropdown-menu dropdown-menu-lg-end">
+                    <label class="check-container" *ngFor="let type of types">
+                        <p>{{type.name}}</p>
+                        <input type="checkbox" (click)="selectType(type.id)">
+                        <span class="checkmark"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Add Chart -->
+            <button class="add d-flex align-items-center justify-content-center" (click)="open(createModal, 'new')">
+                <p>Adicionar Gráfico</p>
+                <fa-icon [icon]="plusIcon" size="xs"></fa-icon>
+            </button>
+        </div>
+
+        <!-- Tables Container -->
+        <div class="tables-container d-flex align-items-start justify-items-between">
+            <!-- Data Table -->
+            <div class="table-container" [ngClass]="isChartOpen ? 'chart-open' : ''">
+                <feat-table [component]="'graphs'" [data]="filteredCharts" [headers]="displayedHeaders"
+                    [page]="currentPage" [searchFilter]="searchTerms" (rowCount)="updateRowCount($event)"
+                    (selectedID)="toggleChartView($event)">
+                </feat-table>
+            </div>
+
+            <!-- Chart Details -->
+            <div *ngIf="isChartOpen" class="chart-details-container d-flex flex-column">
+                <!-- Chart Header -->
+                <div class="chart-header d-flex align-items-start justify-content-between">
+                    <!-- Edit Chart Details -->
+                    <fa-icon [icon]="editIcon" size="2x" class="details-edit" ngbTooltip="Editar Gráfico"
+                        placement="bottom" (click)="open(editModal, 'edit')"></fa-icon>
+                    <!-- Chart Title and Description -->
+                    <div class="title d-flex flex-column align-items-center justify-content-start">
+                        <h1>{{openChart.designation}}</h1>
+                        <h2>{{openChart.description}}</h2>
+                    </div>
+                    <!-- Delete User -->
+                    <fa-icon [icon]="deleteIcon" size="2x" class="details-delete" ngbTooltip="Remover Gráfico"
+                        placement="bottom" (click)="open(deleteModal, 'delete')"></fa-icon>
+                </div>
+
+                <!-- Chart -->
+                <div class="chart-wrapper d-flex align-items-center justify-content-center">
+                    <div class="graph-container">
+                        <feat-graph [chartData]="chartDataInput"></feat-graph>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Pagination -->
+        <div class="pagination-container d-flex align-items-center justify-content-end">
+            <feat-pagination [rowCount]="rowCount" (page)="getPage($event)"></feat-pagination>
+        </div>
+    </div>
+</div>
+
+<!-- Create New Chart Modal -->
+<ng-template #createModal let-modal>
+    <div class="modal-header d-flex align-items-center justify-content-between">
+        <h4 class="modal-title" id="modal-basic-title">Adicionar Gráfico</h4>
+        <fa-icon [icon]="closeIcon" size="1x" (click)="modal.dismiss()"></fa-icon>
+    </div>
+    <div class="modal-body">
+        <form class="new-chart-form d-flex flex-column align-items-center" [formGroup]="addChartForm">
+            <div class="input-group d-flex align-items-center">
+                <!-- Title -->
+                <div>
+                    <p>Título</p>
+                    <input type="text" class="new-chart-input big-input" required formControlName="designation">
+                </div>
+                <!-- Slug -->
+                <div>
+                    <p>Slug</p>
+                    <input type="text" class="new-chart-input" required formControlName="slug">
+                </div>
+            </div>
+
+            <div class="input-group d-flex align-items-center">
+                <!-- Description -->
+                <div>
+                    <p>Descrição</p>
+                    <input type="text" class="new-chart-input big-input" required formControlName="description">
+                </div>
+                <!-- Chart Type -->
+                <div>
+                    <p>Tipo</p>
+                    <div ngbDropdown class="d-inline-block">
+                        <button class="new-type-button" ngbDropdownToggle>
+                            {{newChartType}}
+                        </button>
+                        <div ngbDropdownMenu class="new-type-dropdown dropdown-menu dropdown-menu-lg-end">
+                            <button *ngFor="let type of types" ngbDropdownItem [value]="type.name"
+                                (click)="newChartType=type.name">
+                                {{ type.name }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="series-form-container">
+                <h2>Séries</h2>
+                <!-- Series Form Array -->
+                <div class="series-form d-flex align-items-center" formArrayName="series"
+                    *ngFor="let s of newSeries.controls; let i = index">
+                    <ng-container [formGroupName]="i">
+                        <div>
+                            <p>Slug</p>
+                            <input type="text" class="new-chart-input" required formControlName="seriesSlug">
+                        </div>
+                        <div>
+                            <p>Nome</p>
+                            <input type="text" class="new-chart-input" required formControlName="seriesName">
+                        </div>
+                        <div>
+                            <p>Cor</p>
+                            <input type="color" class="color-input" required formControlName="seriesColor"
+                                [value]="s.get('seriesColor')?.value">
+                        </div>
+                    </ng-container>
+                </div>
+            </div>
+            <!-- Dynamically add new series to new Chart -->
+            <button type="button" class="btn btn-primary" (click)="addNewSeries()">Adicionar Série </button>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-dark" (click)="modal.close()">Cancelar</button>
+        <button type="button" class="btn btn-primary" (click)="createNewChart()"
+            [disabled]="!addChartForm.valid">Adicionar Gráfico
+        </button>
+    </div>
+</ng-template>
+
+<!-- Edit Chart Modal -->
+<ng-template #editModal let-modal>
+    <div class="modal-header d-flex align-items-center justify-content-between">
+        <h4 class="modal-title" id="modal-basic-title">Editar Gráfico</h4>
+        <fa-icon [icon]="closeIcon" size="1x" (click)="modal.dismiss()"></fa-icon>
+    </div>
+    <div class="modal-body">
+        <form class="new-chart-form d-flex flex-column align-items-center" [formGroup]="editChartForm">
+            <div class="input-group d-flex align-items-center">
+                <!-- Title -->
+                <div>
+                    <p>Título</p>
+                    <input type="text" class="new-chart-input big-input" required formControlName="designation">
+                </div>
+                <!-- Slug -->
+                <div>
+                    <p>Slug</p>
+                    <input type="text" class="new-chart-input" required formControlName="slug">
+                </div>
+            </div>
+
+            <div class="input-group d-flex align-items-center">
+                <!-- Description -->
+                <div>
+                    <p>Descrição</p>
+                    <input type="text" class="new-chart-input big-input" required formControlName="description">
+                </div>
+                <!-- Chart Type -->
+                <div>
+                    <p>Tipo</p>
+                    <div ngbDropdown class="d-inline-block">
+                        <button class="new-type-button" ngbDropdownToggle>
+                            {{editChart.chartType}}
+                        </button>
+                        <div ngbDropdownMenu class="new-type-dropdown dropdown-menu dropdown-menu-lg-end">
+                            <button *ngFor="let type of types" ngbDropdownItem [value]="type.name"
+                                (click)="editChart.chartType=type.name">
+                                {{ type.name }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="series-form-container">
+                <h2>Séries</h2>
+                <!-- Series Form Array -->
+                <div class="series-form d-flex align-items-center" formArrayName="series"
+                    *ngFor="let s of editSeries.controls; let i = index">
+                    <ng-container [formGroupName]="i">
+                        <div>
+                            <p>Slug</p>
+                            <input type="text" class="new-chart-input" readonly formControlName="seriesSlug">
+                        </div>
+                        <div>
+                            <p>Nome</p>
+                            <input type="text" class="new-chart-input" required formControlName="seriesName">
+                        </div>
+                        <div>
+                            <p>Cor</p>
+                            <input type="color" class="color-input" required formControlName="seriesColor"
+                                [value]="s.get('seriesColor')?.value" [defaultValue]="'#000'">
+                        </div>
+                    </ng-container>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-dark" (click)="modal.close()">Cancelar</button>
+        <button type="button" class="btn btn-primary" (click)="updateChart()" [disabled]="!editChartForm.valid">Guardar
+            Alterações
+        </button>
+    </div>
+</ng-template>
+
+<!-- Delete Chart Confirmation Modal -->
+<ng-template #deleteModal let-modal>
+    <div class="modal-header d-flex align-items-center justify-content-between">
+        <h4 class="modal-title" id="modal-basic-title">Apagar Gráfico</h4>
+        <fa-icon [icon]="closeIcon" size="1x" (click)="modal.dismiss()"></fa-icon>
+    </div>
+    <div class="modal-body">
+        <form>
+            <p class="conf-intro">Tem a certeza que deseja apagar este gráfico?</p>
+            <label class="check-container">
+                <p [ngClass]="hasClickedRemove ? 'warn' : ''">
+                    Tenho conhecimento que esta ação é irreversível e apaga o gráfico permanentemente.</p>
+                <input type="checkbox" [(ngModel)]="isConfChecked" name="delete-confirmation">
+                <span class="checkmark"></span>
+            </label>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-dark" (click)="modal.close()">Cancelar</button>
+        <button type="button" class="btn btn-danger" (click)="removeChart()">Apagar Gráfico</button>
+    </div>
+</ng-template>
