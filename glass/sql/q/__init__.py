@@ -23,7 +23,7 @@ def q_to_obj(dbname, query, db_api='psql', geomCol=None, epsg=None, of='df',
 
     from glass.sql.c import alchemy_engine
 
-    pgengine = alchemy_engine(dbname, dbset=dbset)
+    pgengine = alchemy_engine(dbname, api=db_api, dbset=dbset)
 
     if not query.startswith('SELECT '):
         # Assuming query is a table name

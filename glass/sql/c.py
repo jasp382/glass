@@ -91,9 +91,9 @@ def alchemy_engine(db, api='psql', dbset='default'):
         from glass.pys.oss import os_name
         
         if os_name() == 'Windows':
-            constr = r'sqlite:///{}'.format(db)
+            constr = rf'sqlite:///{db}'
         else:
-            constr = 'sqlite:///{}'.format(db)
+            constr = f'sqlite:///{db}'
     
         return create_engine(constr)
     

@@ -7,9 +7,9 @@ from glass.ete.otol.vec import priority_rule
 
 
 if __name__ == "__main__":
-    shp = '/mnt/disk1/jasp/osmlulc/terceira.gpkg'
+    shp = '/home/jasp/osmpr/terceira.gpkg'
 
-    refraster = '/mnt/disk1/jasp/osmlulc/ref/rst_terceira.tif'
+    refraster = '/home/jasp/osmpr/rst_terceira.tif'
 
     lyr = 'osmtolulc_v2'
 
