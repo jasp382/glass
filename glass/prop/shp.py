@@ -6,7 +6,8 @@ Feature Class properties
 Extent of Shapefiles and such
 """
 
-def get_ext(shp):
+
+def get_ext(shp, lyrname=None):
     """
     Return extent of a Vectorial file
     
@@ -22,9 +23,13 @@ def get_ext(shp):
     if gisApi == 'ogr':
         from osgeo         import ogr
         from glass.prop.df import drv_name
+
+        drv = 'OpenFileGDB' if '.gdb' in shp else drv_name(shp)
     
-        dt = ogr.GetDriverByName(drv_name(shp)).Open(shp, 0)
-        lyr = dt.GetLayer()
+        dt = ogr.GetDriverByName(drv).Open(shp, 0)
+
+        lyr = dt.GetLayer(lyrname) if lyrname else dt.GetLayer()
+        
         extent = lyr.GetExtent()
     
         dt.Destroy()

@@ -5,11 +5,11 @@ Download Sentinel-2 IMG
 if __name__ == '__main__':
     from glass.acq.stl import down_imgs_v2
 
-    imgs = '/mnt/e/water7/pilot_img/pilotimg.shp'
+    imgs = '/mnt/g/autocls/sat_s2_alentejo/img_2018.shp'
 
     imgid = 'uuid'
 
-    ofolder = '/home/jakim/pilotimg2023'
+    ofolder = '/home/jasp/s2img'
 
     down_imgs_v2(imgs, imgid, ofolder=ofolder)
 

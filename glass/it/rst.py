@@ -634,7 +634,6 @@ def grsws_to_rst(f, outfolder, exclude=None):
 
             if not i:
                 from glass.prop.grs import list_raster
-                from glass.it.rst   import grs_to_rst
 
                 i += 1
             

@@ -128,9 +128,9 @@ def cell_work(cellid, geom, obs_dt, dem_dt, wfolder):
     else:
         fvis= rstcalc(" + ".join(vl), 'joinvis_f', api="grass")
     
-    visrst = grs_to_rst(fvis, os.path.join(wfolder, 'visrst_{}.tif'.format(
-        str(cellid)
-    )))
+    visrst = grs_to_rst(fvis, os.path.join(
+        wfolder, f'visrst_{str(cellid)}.tif'
+    ))
 
     del_folder(gw)
 

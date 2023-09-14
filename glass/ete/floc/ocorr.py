@@ -167,7 +167,11 @@ def ctbs_to_obslocal(ctbs, output, tmax=30*60,
     res = grsrstcalc(exp, oname)
 
     # Export result
-    grs_to_rst(res, output, dtype="Float32", nodata=0)
+    grs_to_rst(
+        res, output,
+        rtype=float, dtype="Float32",
+        nodata=0
+    )
 
     return output
 

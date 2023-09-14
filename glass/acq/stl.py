@@ -32,8 +32,8 @@ def lst_prod(shpext, start_time, end_time,
     from glass.pys     import obj_to_lst
     from glass.pys.oss import fprop
     from glass.wt.shp  import df_to_shp
-    from glass.prop.df import is_rst
     from glass.gobj    import wkt_to_geom
+    from glass.gp.cnv  import ext_to_polygon
 
     def get_tileid(row):
         row['tileid'] = row.title.split('_')[5][1:]
@@ -50,28 +50,34 @@ def lst_prod(shpext, start_time, end_time,
             boundary = geojson_to_wkt(shpext)
     
         else:
-            if is_rst(shpext):
-                from glass.wt.shp import rstext_to_shp
-
-                # Raster extent to shape
-                shpext = rstext_to_shp(shpext, os.path.join(
-                    os.path.dirname(shpext),
-                    f"{fprop(shpext, 'fn')}.shp"
-                ))
-            
-            boundary = shp_to_obj(
-                shpext, output='array', fields=None,
-                geom_as_wkt=True, srs_to=4326
-            )[0]["GEOM"]
+            boundary = ext_to_polygon(
+                shpext, out_srs=4326,
+                outaswkt=None
+            )
     else:
-        # Assuming we have an WKT
-        # Check if WKT  is valid
-        tstgeom = wkt_to_geom(shpext)
+        # Check if we have a geodatabase
+        if '.gdb' in shpext:
+            lyr = os.path.basename(shpext)
 
-        if not tstgeom:
-            raise ValueError('Invalid geometry')
+            gdb = os.path.dirname(shpext)
+
+            if gdb[-4:] != '.gdb':
+                gdb = os.path.dirname(gdb)
+            
+            boundary = ext_to_polygon(
+                gdb, out_srs=4326,
+                outaswkt=None, geolyr=lyr
+            )
         
-        boundary = shpext
+        else:
+            # Assuming we have an WKT
+            # Check if WKT  is valid
+            tstgeom = wkt_to_geom(shpext)
+
+            if not tstgeom:
+                raise ValueError('Invalid geometry')
+        
+            boundary = shpext
     
     # Create API instance
     api = SentinelAPI(user, passw, url)

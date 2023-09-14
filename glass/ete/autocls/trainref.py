@@ -56,7 +56,7 @@ def random_select_from_ref(train_ref, class_col, class_proportion,
     tres = grs_to_rst(train_rst, os.path.join(
         ws, loc,
         f"tmp_{fprop(orst, 'fn')}.tif"
-    ), is_int=True)
+    ), rtype=int)
 
     # Select random sample
     proprndcells_to_rst(

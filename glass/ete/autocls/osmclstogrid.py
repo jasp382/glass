@@ -5,11 +5,14 @@ Produce Ref GRID from OSM2LULC results
 import os
 import pandas          as pd
 import multiprocessing as mp
-from glass.pys.oss     import mkdir, fprop
+
+from glass.pys.oss  import mkdir, fprop, cpu_cores
+from glass.pd.split import df_split
+from glass.wenv.grs import run_grass
+from glass.gp.gen   import dissolve
 
 
 def lulc_by_cell(tid, boundary, lulc_shps, fishnet, result, workspace):
-    from glass.wenv.grs import run_grass
     from glass.dtt.torst import shp_to_rst
 
     bname = fprop(boundary, 'fn')
@@ -71,7 +74,7 @@ def lulc_by_cell(tid, boundary, lulc_shps, fishnet, result, workspace):
             for e in range(i+1, len(l_lulc_grs)):
                 ishp = grsintersection(
                     l_lulc_grs[i], l_lulc_grs[e],
-                    'lulcint_' + str(i) + '_' + str(e),
+                    f'lulcint_{str(i)}_{str(e)}',
                     cmd=True
                 )
                 
@@ -120,7 +123,7 @@ def lulc_by_cell(tid, boundary, lulc_shps, fishnet, result, workspace):
 
 def thrd_lulc_by_cell(thrd_id, df_fishnet, l_lulc, result):
     # Create folder for this thread
-    t_folder = mkdir(os.path.join(result, 'thrd_' + str(thrd_id)))
+    t_folder = mkdir(os.path.join(result, f'thrd_{str(thrd_id)}'))
     
     # For each fishnet, do the job
     for idx, row in df_fishnet.iterrows():
@@ -135,9 +138,8 @@ def osmlulc_to_s2grid(ref_raster, osmtolulc, lucol, tmp_folder, results):
     """
 
     from glass.smp.fish import nfishnet_fm_rst
-    from glass.pys.oss  import lst_ff, cpu_cores
+    from glass.pys.oss  import lst_ff
     from glass.wt       import obj_to_tbl
-    from glass.pd.split import df_split
     from glass.rd.shp   import shp_to_obj
     from glass.wt.shp   import df_to_shp, shpext_to_boundshp
 
@@ -171,7 +173,7 @@ def osmlulc_to_s2grid(ref_raster, osmtolulc, lucol, tmp_folder, results):
     dfs = df_split(df_fnet, n_cpu)
 
     thrds = [mp.Process(
-        target=thrd_lulc_by_cell, name='th_{}'.format(str(i+1)),
+        target=thrd_lulc_by_cell, name=f'th_{str(i+1)}',
         args=(i+1, dfs[i], lst_lulc, tmp_folder)
     ) for i in range(len(dfs))]
 
@@ -233,4 +235,120 @@ def osmlulc_to_s2grid(ref_raster, osmtolulc, lucol, tmp_folder, results):
     obj_to_tbl(df_fnet, os.path.join(results, 'fishnet_list.xlsx'))
 
     return results
+
+
+def fishnet_to_train(tid, ref, _lulcs, output, ws):
+    ifld = mkdir(os.path.join(ws, f'ires_{tid}'), overwrite=True)
+    
+    # Start GRASS GIS Session
+    loc = f'loc_{str(tid)}'
+    gb = run_grass(ws, location=loc, srs=ref)
+    
+    import grass.script.setup as gsetup
+    
+    gsetup.init(gb, ws, loc, 'PERMANENT')
+    
+    from glass.smp.fish   import grass_fishnet
+    from glass.it.shp     import shp_to_grs, grs_to_shp
+    from glass.gp.ovl.grs import grsintersection
+    from glass.prop.feat  import feat_count
+    from glass.tbl.attr   import geomattr_to_db
+    from glass.tbl.joins  import join_table
+    
+    # Create Fishnet
+    fishnet = grass_fishnet(f'fishnet_{str(tid)}', ascmd=True)
+    
+    # Intersect with classes
+    for k in _lulcs:
+        # Import classes into GRASS GIS
+        grslulc = shp_to_grs(_lulcs[k], f'l_{k}', filterByReg=True)
+        
+        if not feat_count(grslulc, gisApi='grass', work=ws, loc=loc):
+            continue
+        
+        # Intersection
+        igrs = grsintersection(
+            fishnet, grslulc, f"i_{grslulc}",
+            cmd=True
+        )
+        geomattr_to_db(igrs, f'c{k}', "area", "boundary", unit="meters")
+        
+        # Export Intersection result
+        ishp = grs_to_shp(igrs, os.path.join(ifld, f"{igrs}.shp"), 'area')
+        
+        # Dissolve
+        idiss = dissolve(
+            ishp, os.path.join(ifld, f"{igrs}_diss.shp"),
+            'a_cat',
+            statistics={f'c{k}' : 'SUM'}
+        )
+        
+        # Dissolve result to GRASS
+        grsdiss = shp_to_grs(idiss, fprop(idiss, 'fn'))
+        
+        # Join with original Fishnet
+        join_table(fishnet, grsdiss, 'cat', 'a_cat')
+    
+    # Export fishnet
+    grs_to_shp(fishnet, output, 'area')
+
+
+def thrd_fish_to_train(_tid, df, lstlulc, ofolder):
+    """
+    Run fishnet_to_train for each row in df
+    """
+
+    for i, row in df.iterrows():
+        rraster = row.study_areas
+        rname = fprop(rraster, 'fn')
+
+        fishnet_to_train(
+            f'{_tid}{str(i)}', rraster, lstlulc,
+            os.path.join(ofolder, f'fish_{rname}.shp'),
+            ofolder
+        )
+
+
+def osmlulc_to_s2grid_v2(refrst, lulcshp, lulccol, out_folder):
+    """
+    OSM LULC to Sentinel-2 GRID Version 2
+    """
+
+    from glass.dtt.rst.split import nrsts_fm_rst
+    from glass.dtt.split     import split_shp_by_attr
+
+    # Split study area in several parts
+    reffolder = mkdir(os.path.join(out_folder, 'ref_rasters'), overwrite=True)
+
+    refparts = nrsts_fm_rst(refrst, 500, 500, reffolder, 'refrst')
+
+    dfareas = pd.DataFrame(refparts, columns=['study_areas'])
+
+    # Create one shapefile for each lulc class
+    lulc_folder = mkdir(os.path.join(out_folder, 'lulc'), overwrite=True)
+
+    lulcs = split_shp_by_attr(
+        lulcshp, lulccol, lulc_folder,
+        outname='l', valinname=True
+    )
+
+    # Get CPU Cores
+    n_cpu = cpu_cores()
+
+    # Split data by CPU
+    dfs = df_split(dfareas, n_cpu)
+
+    # Create fishnet with LULC information
+    thrds = [mp.Process(
+        target=thrd_fish_to_train, name=f'td_{str(e+1)}',
+        args=(e+1, dfs[e], lulcs, out_folder)
+    ) for e in range(len(dfs))]
+
+    for t in thrds:
+        t.start()
+    
+    for t in thrds:
+        t.join()
+    
+    return out_folder
 

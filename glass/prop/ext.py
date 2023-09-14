@@ -2,8 +2,10 @@
 Extent related
 """
 
+import os
 
-def get_ext(ingeo, oepsg=None):
+
+def get_ext(ingeo, oepsg=None, geolyr=None):
     """
     Get Extent of any GIS Data
     
@@ -21,9 +23,17 @@ def get_ext(ingeo, oepsg=None):
         from glass.prop.shp import get_ext as gext
         
     else:
-        return None
+        # Probabily, we have a geodatabase
+        if '.gdb' in ingeo and not geolyr:
+            from glass.prop.shp import get_ext as gext
+
+            ingeo  = os.path.dirname(ingeo)
+            geolyr = os.path.basename(ingeo)
+        
+        else: return None
     
-    ext = gext(ingeo)
+    ext = gext(ingeo) if not is_shp else \
+        gext(ingeo, lyrname=geolyr)
     
     if oepsg:
         from glass.prop.prj import get_epsg

@@ -375,7 +375,7 @@ def fx_rst(topleft, shape, cellsize, pnt, errod, direction, dmax, fxrst, epsg):
 
     set_null(_fxrst, 0, ascmd=True)
 
-    grs_to_rst(_fxrst, fxrst, dtype="Float32", nodata=0)
+    grs_to_rst(_fxrst, fxrst, rtype=float, dtype="Float32", nodata=0)
 
     return fxrst
 
@@ -611,7 +611,10 @@ def fx_to_geom(rst, reduce_raster=None):
         # Set Mask
         grs_to_mask(fx_rcls)
 
-        grs_to_rst(fx, reduce_raster, dtype="Float32", nodata=0)
+        grs_to_rst(
+            fx, reduce_raster,
+            rtype=float, dtype="Float32", nodata=0
+        )
 
         return geom, reduce_raster
 

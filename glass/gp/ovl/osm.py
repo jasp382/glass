@@ -17,63 +17,28 @@ def osm_extraction(boundary, osmdata: str, output: str,
     from glass.pys.oss import fprop
     from glass.prj.obj import prj_ogrgeom
     from glass.prop.df import is_rst
+    from glass.gp.cnv  import ext_to_polygon, featext_to_polygon
 
     apis = ['osmosis', 'osmconvert']
     api = 'osmosis' if api not in apis else 'osmosis'
 
-    refattr = []
     outbasename = 'osmexct' if not outbasename else outbasename
 
     # Check if boundary is a file
     if os.path.isfile(boundary):
-        # Check if boundary is a raster
-        isrst = is_rst(boundary)
 
-        if isrst:
-            # Get Raster EPSG and Extent
-            from glass.prop.prj import rst_epsg
-            from glass.prop.rst import rst_ext
-            from glass.gobj     import create_polygon
-
-            in_epsg = rst_epsg(boundary)
-            left, right, bottom, top = rst_ext(boundary)
-            boundaries = [create_polygon([
-                (left, top), (right, top), (right, bottom),
-                (left, bottom), (left, top)
-            ])]
+        if not each_feat:
+            boundaries, attr = [ext_to_polygon(boundary, out_srs=4326)], None
         
-    
         else:
-            # Get Shape EPSG
-            from glass.prop.prj import shp_epsg
+            # Check if boundary is a raster
+            isrst = is_rst(boundary)
 
-            in_epsg = shp_epsg(boundary)
-
-            if not each_feat:
-                # Get Shape Extent
-                from glass.prop.feat import get_ext
-                from glass.gobj      import create_polygon
-
-                left, right, bottom, top = get_ext(boundary)
-                boundaries = [create_polygon([
-                    (left, top), (right, top), (right, bottom),
-                    (left, bottom), (left, top)
-                ])]
-        
-            else:
-                # Get Extent of each feature
-                from osgeo         import ogr
-                from glass.prop.df import drv_name
-
-                src = ogr.GetDriverByName(drv_name(boundary)).Open(boundary)
-                lyr = src.GetLayer()
-
-                boundaries = []
-
-                for feat in lyr:
-                    boundaries.append(feat.GetGeometryRef())
-                    refattr.append(feat.GetField(each_feat) \
-                        if type(each_feat) == str else feat.GetFID())
+            boundaries, attr = [ext_to_polygon(boundary, out_srs=4326)], None \
+                if isrst else featext_to_polygon(
+                    boundary, feat_id=each_feat,
+                    out_srs=4326
+                )
                 
     else:
         from glass.gobj import wkt_to_geom
@@ -81,18 +46,42 @@ def osm_extraction(boundary, osmdata: str, output: str,
         in_epsg = 4326 if not epsg else epsg
 
         if type(boundary) == str:
-            # Assuming it is a WKT string
-            wkt_boundaries = [boundary]
+            if '.gdb' in boundary:
+                # Assuming it is a geodatabase
+                gdb  = os.path.dirname(boundary)
+                fcls = os.path.basename(boundary)
+
+                if gdb[-4:] != '.gdb':
+                    gdb = os.path.dirname(gdb)
+                
+                boundaries, attr = [ext_to_polygon(
+                    gdb, out_srs=4326, geolyr=fcls)
+                ], None
+            else:
+                # Assuming it is a WKT string
+
+                bgeom = wkt_to_geom(boundary)
+
+                if in_epsg != 4326:
+                    bgeom = prj_ogrgeom(bgeom, int(in_epsg), 4326, api='shapely')
+
+                boundaries, attr = [bgeom], None
+        
         elif type(boundary) == list:
             # Assuming it is a List with WKT strings
-            wkt_boundaries = boundary
+            boundaries = []
+            for b in boundary:
+                bgeom = wkt_to_geom(b)
+
+                if in_epsg != 4326:
+                    bgeom = prj_ogrgeom(bgeom, int(in_epsg), 4326, api='shapely')
+                
+                boundaries.append(bgeom)
+            
+            attr = list(range(len(boundaries)))
+
         else:
-            raise ValueError(
-                'Given boundary has a not valid value'
-            )
-        
-        boundaries = [wkt_to_geom(g) for g in wkt_boundaries]
-        refattr = list(range(len(boundaries)))
+            raise ValueError('Given boundary has a not valid value')
 
         if None in boundaries:
             raise ValueError((
@@ -113,18 +102,14 @@ def osm_extraction(boundary, osmdata: str, output: str,
         path = output if os.path.isdir(output) else os.path.dirname(output)
 
         out_files = [os.path.join(
-            path, f"{outbasename}_{str(refattr[i])}{ff}"
+            path, f"{outbasename}_{str(attr[i])}{ff}"
         ) for i in range(len(boundaries))]
     
     # Extract data using OSMOSIS
     for g in range(len(boundaries)):
-        # Convert boundary to WGS84 -EPSG 4326
-        geom_wgs = prj_ogrgeom(
-            boundaries[g], int(in_epsg), 4326, api='shapely'
-        ) if int(in_epsg) != 4326 else boundaries[g]
     
         # Get boundary extent
-        left, right, bottom, top = geom_wgs.GetEnvelope()
+        left, right, bottom, top = boundaries[g].GetEnvelope()
     
         # Osmosis shell comand
         osmext = fprop(osmdata, 'ff')
