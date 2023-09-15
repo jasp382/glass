@@ -48,15 +48,14 @@ def trip_chain_meth(conParam, TABLES_SCHEMA, output, FILTER_DAY=None,
     """
     
     from glass.pys                 import obj_to_lst
-    from glass.cpu.psql.mng.fld    import drop_column
+    from glass.sql import drop_col, del_tables
     from glass.sql.q     import q_to_ntbl
     from glass.sql.tbl import replace_null_with_other_col_value
-    from glass.cpu.psql.mng._del   import drop_where_cols_are_same
-    from glass.cpu.psql.mng._del   import del_tables
+    from glass.sql   import drop_where_cols_are_same
     from glass.cpu.psql.anls.count import sel_where_groupByIs
     from glass.mob.bustops         import get_isValidDestination_table
     from glass.mob.bustops         import get_nearStopTable
-    from glass.to.xls              import psql_to_xls
+    from glass.wt import obj_to_tbl
     
     # List to record generated tables
     LONG_TABLES = []
@@ -127,7 +126,7 @@ def trip_chain_meth(conParam, TABLES_SCHEMA, output, FILTER_DAY=None,
         conParam, "p_matrix_od", 'dest_stop', 'tmpst'
     )
     
-    drop_column(conParam, "p_matrix_od", ["tmpv", "tmpst"])
+    drop_col(conParam, "p_matrix_od", ["tmpv", "tmpst"])
     
     # It is possible to find rows in which
     # origins and destinations are the same
