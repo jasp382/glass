@@ -15,6 +15,7 @@ def st_dissolve(db, table, geomcol, outTable, whrClause=None,
     * psql
     """
     
+    import os
     from glass.pys import obj_to_lst
     
     diss_cols = obj_to_lst(diss_cols) if diss_cols else None
@@ -41,6 +42,12 @@ def st_dissolve(db, table, geomcol, outTable, whrClause=None,
     )
     
     if outTblIsFile:
+        # Save query for debugin proporses
+        with open(os.path.join(
+            os.path.dirname(outTable), 'q_module1_d.txt'
+        ), 'w') as txt:
+            txt.write(sql)
+        
         if api == 'sqlite':
             from glass.tbl.filter import sel_by_attr
             

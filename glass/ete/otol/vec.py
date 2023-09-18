@@ -2,6 +2,7 @@
 OSM TO LULC - Modules to deal with vetorial data
 """
 
+import os
 import datetime as dt
 
 from glass.cons.otol import DB_SCHEMA, OSM_TABLES, OSM_PK, OSM_GEOM
@@ -69,6 +70,12 @@ def module_1(tags, osmdb, epsg, gpkg, layer):
     # (one query by class)
     fq = " UNION ALL ".join(qs)
     time_c = dt.datetime.now().replace(microsecond=0)
+
+    # Save query for debugin proporses
+    with open(os.path.join(
+        os.path.dirname(gpkg), 'q_module1.txt'
+    ), 'w') as txt:
+        txt.write(fq)
 
     # Check if we have interest data
     nrows = row_num(osmdb, fq, api='psql')

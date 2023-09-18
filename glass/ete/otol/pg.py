@@ -6,7 +6,7 @@ import os
 import datetime as dt
 
 
-def osm_to_lulc(osm, nomenclature, epsg, outfile, savedb=None, tmpfld=None):
+def osm_to_lulc(osm, nomenclature, epsg, outfile, savedb=None, tmpfld=None, overwrite_temp=None):
     """
     Convert OSM Data into Land Use/Land Cover Information
 
@@ -16,17 +16,17 @@ def osm_to_lulc(osm, nomenclature, epsg, outfile, savedb=None, tmpfld=None):
     # ************************************************************************ #
     # glass dependencies #
     # ************************************************************************ #
-    from glass.cons.otol import OTOL_LULC, nomenclature_id, module_osmtags
-    from glass.cons.otol import get_legend
-    from glass.dtt.mge import shps_to_shp
+    from glass.cons.otol    import OTOL_LULC, nomenclature_id, module_osmtags
+    from glass.cons.otol    import get_legend
+    from glass.dtt.mge      import shps_to_shp
     from glass.ete.otol.vec import module_1, module_2, module_3_and_4, module_5
     from glass.ete.otol.vec import module_6
-    from glass.it.db             import osm_to_psql
-    from glass.pys.oss import fprop
-    from glass.pys.tm import now_as_str
-    from glass.rd.shp import shp_to_obj
-    from glass.sql.db           import create_pgdb, drop_db
-    from glass.wt.shp import df_to_shp
+    from glass.it.db        import osm_to_psql
+    from glass.pys.oss      import fprop, mkdir
+    from glass.pys.tm       import now_as_str
+    from glass.rd.shp       import shp_to_obj
+    from glass.sql.db       import create_pgdb, drop_db
+    from glass.wt.shp       import df_to_shp
 
     # ************************************************************************ #
     # Global Settings #
@@ -51,10 +51,17 @@ def osm_to_lulc(osm, nomenclature, epsg, outfile, savedb=None, tmpfld=None):
     # Todo: check if EPSG is Projected or not
 
     # Workspace
-    ws = tmpfld if tmpfld else os.path.join(
-        os.path.dirname(osm),
-        now_as_str(utc=True)
-    )
+    if tmpfld and not os.path.exists(tmpfld):
+        ws = mkdir(tmpfld)
+    elif tmpfld and os.path.exists(tmpfld):
+        ws = tmpfld if not overwrite_temp else \
+            mkdir(tmpfld, overwrite=True)
+    
+    else:
+        ws = mkdir(os.path.join(
+            os.path.dirname(osm),
+            now_as_str(utc=True)
+        ), overwrite=True)
 
     # Create intermediate geopackage
     tmpgpkg = os.path.join(ws, 'modules_res.gpkg')
