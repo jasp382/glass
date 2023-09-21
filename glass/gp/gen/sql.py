@@ -42,12 +42,6 @@ def st_dissolve(db, table, geomcol, outTable, whrClause=None,
     )
     
     if outTblIsFile:
-        # Save query for debugin proporses
-        with open(os.path.join(
-            os.path.dirname(outTable), 'q_module1_d.txt'
-        ), 'w') as txt:
-            txt.write(sql)
-        
         if api == 'sqlite':
             from glass.tbl.filter import sel_by_attr
             
