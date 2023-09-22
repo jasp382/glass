@@ -19,8 +19,8 @@ from glass.pys.zzip import unzip
 
 
 # GLOBAL VARIABLES
-API_MAIN_URL = 'http://172.16.3.31/api/geodb'
-CREDENTIALS = ('kurosaki', 'zangetsu++0012')
+API_MAIN_URL = 'http://localhost/api/geodb'
+CREDENTIALS = ('', '')
 
 CELL_DIM = 20000
 EPSG     = 3763
@@ -32,11 +32,11 @@ def cell_work(cellid, geom, obs_dt, dem_dt, wfolder):
     """
 
     # Create processing folder
-    gw = mkdir(os.path.join(wfolder, 'visproc_' + str(cellid)))
+    gw = mkdir(os.path.join(wfolder, f'visproc_{str(cellid)}'))
 
     # Get Observation Points
     dataext = data_from_post(
-        "{}/getdata/".format(API_MAIN_URL),
+        f"{API_MAIN_URL}/getdata/",
         postdata={
             "dataset" : obs_dt,
             "geom"    : geom,
@@ -44,9 +44,11 @@ def cell_work(cellid, geom, obs_dt, dem_dt, wfolder):
         }, credentials=CREDENTIALS
     )
 
-    obs_pnt = get_file("{}/download/{}/".format(
-        API_MAIN_URL, dataext['data']['token']
-    ), os.path.join(gw, 'obspoints.zip'), useWget=True)
+    obs_pnt = get_file(
+        f"{API_MAIN_URL}/download/{dataext['data']['token']}/",
+        os.path.join(gw, 'obspoints.zip'),
+        useWget=True
+    )
 
     unzip(obs_pnt, gw)
     obs_shp = lst_ff(gw, file_format='.shp')[0]
@@ -63,14 +65,11 @@ def cell_work(cellid, geom, obs_dt, dem_dt, wfolder):
     ], api='ogr').ExportToWkt()
 
     # Get DEM
-    dtext = data_from_post(
-        "{}/getdata/".format(API_MAIN_URL),
-        postdata={
-            "dataset" : dem_dt,
-            "geom"    : geomexp,
-            "epsg"    : EPSG
-        }, credentials=CREDENTIALS
-    )
+    dtext = data_from_post(f"{API_MAIN_URL}/getdata/", postdata={
+        "dataset" : dem_dt,
+        "geom"    : geomexp,
+        "epsg"    : EPSG
+    }, credentials=CREDENTIALS)
 
     dem = get_file("{}/download/{}/".format(
         API_MAIN_URL, dtext['data']['token']
