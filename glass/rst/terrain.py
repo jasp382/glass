@@ -28,7 +28,7 @@ def ob_ref_rst(ref, folder, cellsize=None):
 
             ref_rst = shp_to_rst(
                 ref, None, 10 if not cellsize else cellsize,
-                -1, os.path.join(folder, 'ref_raster.tif'), api='gdal'
+                -1, os.path.join(folder, 'ref_raster.tif'), api='pygdal'
             )
 
             return ref_rst

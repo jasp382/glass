@@ -5,7 +5,7 @@ Shape To some Python Object
 import os
 
 def shp_to_obj(shp, geom_col=None, fields=None, output='df', srs_to=None,
-    colsAsArray=None, geom_as_wkt=None, lyr=None, outgeom=None):
+    colsAsArray=None, geom_as_wkt=None, lyr:str|None=None, outgeom=None):
     """
     Feature Class to Python Object
 

@@ -15,7 +15,6 @@ def st_dissolve(db, table, geomcol, outTable, whrClause=None,
     * psql
     """
     
-    import os
     from glass.pys import obj_to_lst
     
     diss_cols = obj_to_lst(diss_cols) if diss_cols else None

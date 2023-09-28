@@ -73,7 +73,7 @@ def infovalue(landslides, variables, iv_rst):
         land_raster = shp_to_rst(
             land_poly, None, rst_cellsize(variables[0], gisApi='gdal'), -9999,
             os.path.join(workspace, 'landslides_rst.tif'),
-            rst_template=variables[0], api='gdal'
+            rst_template=variables[0], api='pygdal'
         )
         
         land_rst = rst_to_array(land_raster)

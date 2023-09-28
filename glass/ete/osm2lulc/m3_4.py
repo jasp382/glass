@@ -50,14 +50,14 @@ def rst_area(db, polygonTable, UPPER=True, api='SQLITE'):
             ), notTable=True, filterByReg=True, outShpIsGRASS=True
         )
         time_y = dt.datetime.now().replace(microsecond=0)
-        timeGasto[tk] = ('import_{}'.format(cls), time_y - time_x)
+        timeGasto[tk] = (f'import_{cls}', time_y - time_x)
         
         grsRst = shp_to_rst(
             grsVect, int(cls), f"rst_{RULE_COL}",
             cmd=True
         )
         time_z = dt.datetime.now().replace(microsecond=0)
-        timeGasto[tk+1] = ('torst_{}'.format(cls), time_z - time_y)
+        timeGasto[tk+1] = (f'torst_{cls}', time_z - time_y)
         
         clsRst[int(cls)] = grsRst
         tk += 2
@@ -158,7 +158,7 @@ def num_selbyarea(db, polyTbl, folder, cellsize, srscode, rstTemplate,
                 db, SQL_Q.format(c=str(CLS), tbl=polyTbl, w=WHR.format(
                     op=OPERATOR, r=RULE_COL, ga=GEOM_AREA, cls_=CLS
                 )),
-                os.path.join(folder, "{}_{}.shp".format(RULE_COL,CLS)),
+                os.path.join(folder, f"{RULE_COL}_{CLS}.shp"),
                 api_gis='ogr'
             )
         else:
@@ -166,21 +166,21 @@ def num_selbyarea(db, polyTbl, folder, cellsize, srscode, rstTemplate,
                 db, SQL_Q.format(c=str(CLS), tbl=polyTbl, w=WHR.format(
                     op=OPERATOR, r=RULE_COL, ga=GEOM_AREA, cls_=CLS
                 )), "geometry", os.path.join(
-                    folder, "{}_{}.shp".format(RULE_COL, str(CLS))
+                    folder, f"{RULE_COL}_{str(CLS)}.shp"
                 ), api='pgsql2shp', tableIsQuery=True
             )
         time_y = dt.datetime.now().replace(microsecond=0)
         
         rst = shp_to_rst(
             shpCls, None, cellsize, 0, os.path.join(
-                folder, "{}_{}.tif".format(RULE_COL, CLS)
-            ), epsg=srscode, rst_template=rstTemplate, api='gdal'
+                folder, f"{RULE_COL}_{CLS}.tif"
+            ), epsg=srscode, rst_template=rstTemplate, api='pygdal'
         )
         time_z = dt.datetime.now().replace(microsecond=0)
         
         clsRst[int(CLS)] = rst
-        timeGasto[cnt + 1] = ('sq_to_shp_{}'.format(str(CLS)), time_y - time_x)
-        timeGasto[cnt + 2] = ('shp_to_rst_{}'.format(str(CLS)), time_z - time_y)
+        timeGasto[cnt + 1] = (f'sq_to_shp_{str(CLS)}', time_y - time_x)
+        timeGasto[cnt + 2] = (f'shp_to_rst_{str(CLS)}', time_z - time_y)
     
     thrds = [Thread(
         name="area-tk{}".format(lulcCls[i]), target=selAndExport,

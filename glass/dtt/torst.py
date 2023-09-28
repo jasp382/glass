@@ -59,19 +59,21 @@ def grsshp_to_grsrst(inshp, src, outrst, cmd=None):
 
 
 def shp_to_rst(shp, inSource, cellsize, nodata, outRaster, epsg=None,
-               rst_template=None, snapRst=None, api='gdal'):
+               rst_template=None, snapRst=None, lyrname=None, api='pygdal',
+               rtype=None, dtype=None):
     """
     Feature Class to Raster
     
     cellsize will be ignored if rst_template is defined
     
     * API's Available:
+    - pygdal;
     - gdal;
     - pygrass;
     - grass;
     """
     
-    if api == 'gdal':
+    if api == 'pygdal':
         from osgeo         import gdal, ogr
         from glass.prop.df import drv_name
     
@@ -130,6 +132,45 @@ def shp_to_rst(shp, inSource, cellsize, nodata, outRaster, epsg=None,
     
         del lyr
         dtShp.Destroy()
+    
+    elif api == "gdal":
+        from glass.pys      import execmd
+        from glass.prop.df  import drv_name
+        from glass.prop.ext import get_ext
+
+        left, right, bottom, top = get_ext(
+            shp, geolyr=lyrname
+        ) if not rst_template else get_ext(rst_template)
+
+        __use = f"-a {inSource}" if type(inSource) == str else \
+            f"-burn {str(inSource)}" if type(inSource) == float \
+                or type(inSource) == int else "-burn 1"
+        
+        lyr = f" -l {lyrname}" if lyrname else ""
+
+        predictor = "1" if not rtype else "2" if rtype==int else \
+            "3" if rtype==float else "1"
+        
+        if not dtype:
+            ot = " -ot UInt16" if rtype == int else " -ot Float64"
+        
+        else:
+            ot = f" -ot {dtype}"
+
+        opt = (
+            f"-co COMPRESS=LZW -co PREDICTOR={predictor} "
+            "-co TILED=YES -co BIGTIFF=IF_NEEDED -co TFW=YES"
+        )
+
+        cmd = (
+            f"gdal_rasterize -of {drv_name(outRaster)} "
+            f"-a_nodata {str(nodata)}{lyr} {__use} "
+            f"-te {str(left)} {str(bottom)} {str(right)} {str(top)} "
+            f"-tr {str(cellsize)} {str(cellsize)} "
+            f"{shp} {outRaster} {opt}{ot}"
+        )
+
+        rcmd = execmd(cmd)
     
     elif api == 'grass' or api == 'pygrass':
         """
@@ -203,7 +244,7 @@ def shape_to_rst_wShapeCheck(inShp, maxCellNumber, desiredCellsizes, outRst,
     RASTERS = [shp_to_rst(
         inShp, None, cellsize, -1, os.path.join(
             workspace, f'tst_cell_{str(cellsize)}.tif'
-        ), inEPSG
+        ), inEPSG, api='pygdal'
     ) for cellsize in desiredCellsizes]
     
     tstShape = rst_shape(RASTERS)

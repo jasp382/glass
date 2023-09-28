@@ -63,7 +63,7 @@ if __name__ == '__main__':
             pd.DataFrame(
                 [[1, 1, row.geometry, row[idcol]]],
                 columns=cols
-            ), crs='EPSG:{}'.format(str(epsg)),
+            ), crs=f'EPSG:{str(epsg)}',
             geometry="geom"
         )
 
@@ -71,12 +71,12 @@ if __name__ == '__main__':
         main_df = main_df.append(nutdf, ignore_index=True, sort=False)
 
         nutshp = obj_to_shp(nutdf, 'geom', epsg, os.path.join(
-            workspace, 'fgrid_{}_1.shp'.format(row[idcol])
+            workspace, f'fgrid_{row[idcol]}_1.shp'
         ))
 
         # Create Reference raster
         rref = shp_to_rst(nutshp, None, 10, 0, os.path.join(
-            workspace, 'rnut_{}.tif'.format(row[idcol])
+            workspace, f'rnut_{row[idcol]}.tif'
         ))
 
         # Create GRASS GIS Session

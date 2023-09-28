@@ -40,7 +40,7 @@ def cae_vs_polygon(caeshp, polyshp, lulccls_col, refshp, oshp, source, polycae=N
 
     refrst = shp_to_rst(refshp, None, 10, 0, os.path.join(
         ws, f'rst{bname}.tif'
-    ))
+    ), api='pygdal')
 
     gb = run_grass(ws, location=loc, srs=refrst, grassBIN="grass78")
 

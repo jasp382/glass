@@ -112,14 +112,14 @@ def num_base_buffer(osmdb, lineTbl, folder, cells, srscode, rtemplate,
         # To raster
         rstCls = shp_to_rst(
             bb_file, None, cells, 0,
-            os.path.join(folder, 'rst_bbfr_{}.tif'.format(CLS)),
-            epsg=srscode, rst_template=rtemplate, api='gdal'
+            os.path.join(folder, f'rst_bbfr_{CLS}.tif'),
+            epsg=srscode, rst_template=rtemplate, api='pygdal'
         )
         time_z = datetime.datetime.now().replace(microsecond=0)
         
         clsRst[CLS] = rstCls
-        timeGasto[cnt + 1] = ('buffer_{}'.format(str(CLS)), time_y - time_x)
-        timeGasto[cnt + 2] = ('torst_{}'.format(str(CLS)), time_z - time_y)
+        timeGasto[cnt + 1] = (f'buffer_{str(CLS)}', time_y - time_x)
+        timeGasto[cnt + 2] = (f'torst_{str(CLS)}', time_z - time_y)
     
     thrds = [Thread(
         name="r5-{}".format(lulcCls[i]), target=exportAndBufferB,

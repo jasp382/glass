@@ -333,7 +333,7 @@ def num_roads(osmdata, nom, lineTbl, polyTbl, folder, cellsize, srs, rstTemplate
         distRst = shp_to_rst(
             roadFile, None, cellsize, -1,
             os.path.join(folder, 'rst_roads.tif'),
-            epsg=srs, rst_template=rstTemplate, api="gdal"
+            epsg=srs, rst_template=rstTemplate, api="pygdal"
         )
         time_d = dt.datetime.now().replace(microsecond=0)
         
@@ -367,7 +367,7 @@ def num_roads(osmdata, nom, lineTbl, polyTbl, folder, cellsize, srs, rstTemplate
         bRst = shp_to_rst(
             bShp, None, cellsize, -1,
             os.path.join(folder, 'road_builds.tif'),
-            epsg=srs, rst_template=rstTemplate, api='gdal'
+            epsg=srs, rst_template=rstTemplate, api='pygdal'
         )
         time_g = dt.datetime.now().replace(microsecond=0)
         
@@ -471,7 +471,7 @@ def pg_num_roads(osmdb, nom, lnhTbl, polyTbl, folder, cellsize, srs, rstT):
     roadsRst = shp_to_rst(
         bufferShp, None, cellsize, 0,
         os.path.join(folder, "rst_roads.tif"), epsg=srs, rst_template=rstT,
-        api='gdal'
+        api='pygdal'
     )
     time_g = datetime.datetime.now().replace(microsecond=0)
     

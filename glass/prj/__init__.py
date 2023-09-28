@@ -68,7 +68,7 @@ def def_prj(shp, epsg=None, template=None, api='ogr'):
 
 
 def proj(inShp, outShp, outEPSG, inEPSG=None,
-        api='ogr', sql=None, db_name=None):
+        api='ogr', sql=None, db_name=None, ilyr=None, olyr=None):
     """
     Project Geodata using GIS
     
@@ -79,6 +79,8 @@ def proj(inShp, outShp, outEPSG, inEPSG=None,
     * ogr2ogr_SQLITE;
     * psql;
     """
+
+    import os
     
     if api == 'ogr':
         """
@@ -154,11 +156,24 @@ def proj(inShp, outShp, outEPSG, inEPSG=None,
         from glass.pys     import execmd
         from glass.prop.df import drv_name
 
-        _sql = '' if not sql else f' -dialect sqlite -sql "{sql}"'
+        drv = drv_name(outShp)
+
+        up = "" if drv != 'GPKG' else f" -update -append" \
+            if os.path.exists(outShp) else ""
+        
+        otbl = olyr if olyr else fprop(outShp, 'fn')
+
+        if not sql and not ilyr:
+            _sql = ''
+        elif not sql and ilyr:
+            _sql = f' -dialect sqlite -sql "SELECT * FROM {ilyr}"'
+        else:
+            _sql = f' -dialect sqlite -sql "{sql}"'
         
         ocmd = execmd((
-            f'ogr2ogr -f "{drv_name(outShp)}" {outShp} {inShp}'
-            f'{_sql} -s_srs EPSG:{str(inEPSG)} '
+            f'ogr2ogr{up} -f "{drv}" {outShp} -nln "{otbl}" '
+            f'{inShp}{_sql} '
+            f'-s_srs EPSG:{str(inEPSG)} '
             f'-t_srs EPSG:{str(outEPSG)}'
         ))
     
@@ -179,15 +194,12 @@ def proj(inShp, outShp, outEPSG, inEPSG=None,
         # TODO: Verify if database is sqlite
         
         db, tbl = inShp['DB'], inShp['TABLE']
-        sql = 'SELECT * FROM {}'.format(tbl) if not sql else sql
+        sql = f'SELECT * FROM {tbl}' if not sql else sql
         
         outcmd = execmd((
-            'ogr2ogr -update -append -f "SQLite" {db} -nln "{nt}" '
-            '-dialect sqlite -sql "{_sql}" -s_srs EPSG:{inepsg} '
-            '-t_srs EPSG:{outepsg} {db}'
-        ).format(
-            db=db, nt=outShp, _sql=sql, inepsg=str(inEPSG),
-            outepsg=str(outEPSG)
+            f'ogr2ogr -update -append -f "SQLite" {db} -nln "{outShp}" '
+            f'-dialect sqlite -sql "{_sql}" -s_srs EPSG:{str(inEPSG)} '
+            f'-t_srs EPSG:{str(outEPSG)} {db}'
         ))
     
     elif api == 'pandas':

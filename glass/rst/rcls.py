@@ -193,6 +193,21 @@ def category_rules(dic, out_rules):
     return out_rules
 
 
+def onlydata_rules(orules, mindata=1, maxdata=66000):
+    """
+    Write rules to reclassify GRASS GIS Raster
+
+    Data = 0; NoData = null
+    """
+
+    with open(orules, 'w') as txt:
+        txt.write(f'{str(mindata)} thru {str(maxdata)} = 1\n')
+        txt.write('*    = NULL\n')
+        txt.write('end')
+    
+    return orules
+
+
 def set_null(rst, value, ascmd=None):
     """
     Null in Raster to Some value

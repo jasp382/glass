@@ -20,7 +20,7 @@ def lulc_by_cell(tid, boundary, lulc_shps, fishnet, result, workspace):
     ref_rst = shp_to_rst(
         boundary, None, 10, 0, os.path.join(
             workspace, f'rst_{bname}.tif'
-        )
+        ), api='pygdal'
     )
     
     # Create GRASS GIS Session

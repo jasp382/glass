@@ -32,7 +32,7 @@ def get_ext(ingeo, oepsg=None, geolyr=None):
         
         else: return None
     
-    ext = gext(ingeo) if not is_shp else \
+    ext = gext(ingeo) if not ishp else \
         gext(ingeo, lyrname=geolyr)
     
     if oepsg:

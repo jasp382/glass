@@ -109,3 +109,39 @@ def add_endpnt_to_tbl(db, inTable, outTable,
         f"ORDER BY {idCol}, pnt_idx"
     ), api='psql')
 
+
+def polyg_to_lines(db, itbl, geomcol, otbl, 
+                   out_is_file=None, olyr=None, outsrs=None):
+    """
+    Polygons to Lines
+    """
+
+    gg = f"ST_Transform({geomcol}, {str(outsrs)})" \
+        if outsrs else geomcol
+
+    sql = (
+        "SELECT (ST_Dump(ST_LineMerge(ST_Collect("
+            f"ST_Boundary({gg}))))).geom AS {geomcol}, "
+        "ROW_NUMBER() OVER() AS cat "
+        f"FROM {itbl} AS mtbl"
+    )
+
+    if out_is_file:
+        from glass.it.shp import dbtbl_to_shp
+
+        dbtbl_to_shp(
+            db, sql, geomcol, otbl,
+            api='ogr2ogr', tableIsQuery=True,
+            olyr=olyr
+        )
+    
+    else:
+        from glass.sql.q import q_to_ntbl
+
+        q_to_ntbl(
+            db, otbl, sql,
+            api="ogr2ogr"
+        )
+    
+    return otbl
+
