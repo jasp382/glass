@@ -36,4 +36,5 @@ py_expression_eval==0.3.14
 jenkspy==0.2.0
 pysal==2.6.0
 geopy==2.3.0
+rioxarray==0.15.0
 #rpy2==3.5.10

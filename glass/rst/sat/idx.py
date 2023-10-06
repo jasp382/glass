@@ -128,10 +128,18 @@ def calc_nbr(nir, swir, outrst):
     )
 
 
-def calc_savi(nir, red, out):
+def calc_savi(nir, red, out, formula='regular'):
     """
     Apply Soil Adjusted Vegetation
+
+    * regular - https://www.indexdatabase.de/db/si-single.php?sensor_id=96&rsindex_id=87
+    * adjusted - https://www.indexdatabase.de/db/si-single.php?sensor_id=96&rsindex_id=209
+    * modified
     """
+
+    opt = ['regular', 'adjusted', 'modified']
+
+    formula = 'regular' if formula not in opt else formula
 
     # Open Images
     snir = gdal.Open(nir, gdal.GA_ReadOnly)
@@ -142,7 +150,21 @@ def calc_savi(nir, red, out):
     nred = sred.GetRasterBand(1).ReadAsArray().astype(float)
 
     # Do calculation
-    savi = (1.5 * (nnir - nred)) / (nnir + nred + 0.5)
+    L = 0.5 # L varies from -0,9 and 1,6
+    if formula == 'regular':
+        savi = ((nnir - nred) / (nnir + nred + 0.5)) * (1 + L)
+    
+    elif formula == 'adjusted':
+        n = nnir - 1.22 * nred - 0.03
+        d = 1.22 * nnir + nred - 1.22 * 0.03 + 0.08 * (1 + 1.22**2)
+
+        savi = 1.22 * (n/d)
+    
+    elif formula == 'modified':
+        n = np.power(2 * nnir + 1, 2) - 8 * (nnir - nred)
+        nsqrt = np.sqrt(n)
+
+        savi = (2 * nnir + 1 - nsqrt) / 2
 
     # Place NoData Value
     nir_nd = snir.GetRasterBand(1).GetNoDataValue()
@@ -150,6 +172,9 @@ def calc_savi(nir, red, out):
     
     savi_nd = np.amin(savi) - 1
     
+    np.place(savi, nnir==0, savi_nd)
+    np.place(savi, nred==0, savi_nd)
+
     np.place(savi, nnir==nir_nd, savi_nd)
     np.place(savi, nred==red_nd, savi_nd)
     
@@ -158,6 +183,8 @@ def calc_savi(nir, red, out):
         savi, out, nir, snir.GetGeoTransform(),
         rst_epsg(snir), noData=savi_nd
     )
+
+
 
 
 def calc_evi(nir, red, blue, out):
@@ -325,5 +352,81 @@ def calc_ndsi(swir2, blue, out):
     return obj_to_rst(
         ndsi, out, sswir.GetGeoTransform(),
         rst_epsg(sswir), noData=nd
+    )
+
+
+def calc_ci_rededge(nir, rededge, out):
+    """
+    Calculate Chlorophyll IndexRedEdge
+
+    https://www.indexdatabase.de/db/si-single.php?sensor_id=96&rsindex_id=131
+    """
+
+    # Open Images
+    snir = gdal.Open(nir, gdal.GA_ReadOnly)
+    sred = gdal.Open(rededge, gdal.GA_ReadOnly)
+    
+    # To Array
+    nnir = snir.GetRasterBand(1).ReadAsArray().astype(float)
+    nred = sred.GetRasterBand(1).ReadAsArray().astype(float)
+
+    # Do calculation
+    cire = np.where(
+        nred == 0, 100,
+        (nnir / nred) - 1
+    )
+
+    # Place NoData Value
+    nd_nir = snir.GetRasterBand(1).GetNoDataValue()
+    nd_red = sred.GetRasterBand(1).GetNoDataValue()
+
+    nd_cire = np.amin(cire) - 1
+
+    np.place(cire, nnir==0, nd_cire)
+    np.place(cire, nred==0, nd_cire)
+
+    np.place(cire, nnir==nd_nir, nd_cire)
+    np.place(cire, nred==nd_red, nd_cire)
+
+    # Export Result
+    return obj_to_rst(
+        cire, out, snir.GetGeoTransform(),
+        rst_epsg(snir), noData=nd_cire
+    )
+
+
+def calc_coloration_idx(red, blue, out):
+    """
+    Calculate Coloration Index
+
+    https://www.indexdatabase.de/db/si-single.php?sensor_id=96&rsindex_id=11
+    """
+
+    # Open Images
+    sred  = gdal.Open(red, gdal.GA_ReadOnly)
+    sblue = gdal.Open(blue, gdal.GA_ReadOnly)
+
+    # To Array
+    nred = sred.GetRasterBand(1).ReadAsArray().astype(float)
+    nblue = sblue.GetRasterBand(1).ReadAsArray().astype(float)
+
+    # Do calculation
+    ci = np.where(nred == 0, 100, (nred - nblue) / nred)
+
+    # Place NoData Value
+    nd_red  = sred.GetRasterBand(1).GetNoDataValue()
+    nd_blue = sblue.GetRasterBand(1).GetNoDataValue()
+
+    nd_ci = np.amin(ci) - 1
+
+    np.place(ci, nred==0, nd_ci)
+    np.place(ci, nblue==0, nd_ci)
+
+    np.place(ci, nred==nd_red, nd_ci)
+    np.place(ci, nblue==nd_blue, nd_ci)
+
+    return obj_to_rst(
+        ci, out, sred.GetGeoTransform(),
+        rst_epsg(sred), noData=nd_ci
     )
 

@@ -197,18 +197,29 @@ def split_shp_by_attr(inshp, attr, outdir, ilyr=None,
         off = _format if _format[0] == '.' else '.' + _format
 
     is_gpkg = True if off == '.gpkg' else None
+
+    # Get table name for the SQL queries
+    if '.gdb' in inshp and not ilyr:
+        isrc = os.path.dirname(inshp)
+
+        ilyr = os.path.basename(inshp)
+
+        if isrc[-4:] != '.gdb':
+            isrc = os.path.dirname(isrc)
+        
+    else:
+        isrc = inshp
+        ilyr = fprop(inshp, 'fn') if not ilyr else ilyr
     
     # SHP TO DF
-    gdf = shp_to_obj(inshp, lyr=ilyr)
+    gdf = shp_to_obj(isrc, lyr=ilyr)
     
     # Get values in attr
     attrs = gdf[attr].unique()
     
     # Export Features with the same value
     # in attr to a new File/Layer
-    bname = fprop(
-        inshp, 'fn', forceLower=True
-    ) if not outname else outname
+    bname = ilyr if not outname else outname
 
     shps_res = {}
     i = 0
@@ -217,10 +228,8 @@ def split_shp_by_attr(inshp, attr, outdir, ilyr=None,
 
         _val = str(val) if type(val) != str else f"'{val}'"
 
-        in_lyr = ilyr if ilyr else fprop(inshp, 'fn')
-
         sql = (
-            f"-dialect sqlite -sql \"SELECT * FROM {in_lyr} "
+            f"-dialect sqlite -sql \"SELECT * FROM {ilyr} "
             f"WHERE {attr}={_val}\""
         )
 
@@ -235,14 +244,14 @@ def split_shp_by_attr(inshp, attr, outdir, ilyr=None,
             if not os.path.exists(out):
                 cmd = (
                     f"ogr2ogr -f \"{drv}\" {out} -nln "
-                    f"{lyr} {inshp} {sql}"
+                    f"{lyr} {isrc} {sql}"
                     #f"-where \"\"{attr}\" = {_val}\""
                 )
             
             else:
                 cmd = (
                     f"ogr2ogr -f \"{drv}\" -update -append "
-                    f"{out} -nln {lyr} {inshp} {sql} "
+                    f"{out} -nln {lyr} {isrc} {sql} "
                     #f"-where \"\"{attr}\" = {_val}\""
                 )
         
