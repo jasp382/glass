@@ -34,13 +34,20 @@ def calc_ndwi(green, nir_swir, outRst):
         num_nir   = srcnir.GetRasterBand(1).ReadAsArray().astype(float)
 
         # Calculation
-        ndwir = (num_green - num_nir) / (num_green + num_nir)
+        den = num_green + num_nir
+        ndwir = np.where(
+            den == 0, 100,
+            (num_green - num_nir) / den
+        )
 
         # Place NoData Value
         gnd = srcg.GetRasterBand(1).GetNoDataValue()
         nnd = srcnir.GetRasterBand(1).GetNoDataValue()
 
         nd = np.amin(ndwir) - 1
+
+        np.place(ndwir, num_green == 0, nd)
+        np.place(ndwir, num_nir == 0, nd)
 
         np.place(ndwir, num_green==gnd, nd)
         np.place(ndwir, num_nir==nnd, nd)
@@ -76,13 +83,20 @@ def calc_ndvi(nir, red, outRst):
     num_red = src_red.GetRasterBand(1).ReadAsArray().astype(float)
     
     # Do Calculation
-    ndvir = (num_nir - num_red) / (num_nir + num_red)
+    den = (num_nir + num_red)
+    ndvir = np.where(
+        den == 0, 100,
+        (num_nir - num_red) / den
+    )
     
     # Place NoData Value
     nirNdVal = src_nir.GetRasterBand(1).GetNoDataValue()
     redNdVal = src_red.GetRasterBand(1).GetNoDataValue()
     
     ndNdvi = np.amin(ndvir) - 1
+
+    np.place(ndvir, num_nir == 0, ndNdvi)
+    np.place(ndvir, num_red == 0, ndNdvi)
     
     np.place(ndvir, num_nir==nirNdVal, ndNdvi)
     np.place(ndvir, num_red==redNdVal, ndNdvi)
@@ -305,13 +319,20 @@ def calc_ndbi(swir, nir, out):
     nnir  = snir.GetRasterBand(1).ReadAsArray().astype(float)
     
     # Do Calculation
-    ndbi = (nswir - nnir) / (nswir + nnir)
+    den = nswir + nnir
+    ndbi = np.where(
+        den == 0, 100,
+        (nswir - nnir) / den
+    )
     
     # Place NoData Value
     swir_nd = sswir.GetRasterBand(1).GetNoDataValue()
     nir_nd  = snir.GetRasterBand(1).GetNoDataValue()
     
     nd = np.amin(ndbi) - 1
+
+    np.place(ndbi, nswir == 0, nd)
+    np.place(ndbi, nnir == 0, nd)
     
     np.place(ndbi, nswir==swir_nd, nd)
     np.place(ndbi, nnir==nir_nd, nd)

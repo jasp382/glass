@@ -46,7 +46,6 @@ def random_select_from_ref(train_ref, class_col, class_proportion,
         train_rst = rst_to_grs(train_ref)
     
     # Remove clouds if necessary
-
     if clouds:
         _clouds = rst_to_grs(clouds)
     
