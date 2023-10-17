@@ -2,6 +2,13 @@
 Measure separability
 """
 
+import numpy as np
+import pandas as pd
+
+from osgeo import gdal, gdal_array
+
+
+
 def r_separability(trainref, trainvar, omtx):
     """
     Use R Statistics to calculate separability between classes
@@ -12,10 +19,6 @@ def r_separability(trainref, trainvar, omtx):
     """
 
     import os
-    import numpy as np
-    import pandas as pd
-
-    from osgeo import gdal
 
     import rpy2.robjects as robjects
     from rpy2.robjects import numpy2ri
@@ -86,4 +89,45 @@ def r_separability(trainref, trainvar, omtx):
     ])
 
     return omtx
+
+
+def bhattacharyya_distance(mean1, cov1, mean2, cov2):
+    dist = 0.125 * (mean2 - mean1).T @ np.linalg.inv(0.5 * (cov1 + cov2)) @ (mean2 - mean1)
+    return dist
+
+
+def separability_matrix(refrst, featfolder, classes_leg, out_tbl, fformat='.tif'):
+    """
+    Compute separability matrices
+    * Bhattacharyya Distance
+    * Jeffries-Matusita Distance
+
+    Inputs:
+    * refrst - raster with LULC classes
+    * featfolder - path to folder where the features
+    are stored
+    * classes_leg - relation between class ID and class label
+    * out_tbl - path to the output table
+    """
+
+    from glass.pys.oss import lst_ff
+    from glass.wt import obj_to_tbl
+
+    # List feature files
+    featfiles = lst_ff(featfolder, file_format=fformat)
+
+    # Open Data
+    refimg = gdal.Open(refrst, gdal.GA_ReadOnly)
+    feats = [gdal.Open(i, gdal.GA_ReadOnly) for i in featfiles]
+
+    # Get Ref NoData Value
+    ndval = refimg.GetRasterBand(1).GetNoDataValue()
+
+    # Get band number for each raster
+    featbands = [i.RasterCount for i in feats]
+
+    # Get number of features
+    nfeat = sum(featbands)
+
+    return out_tbl
 

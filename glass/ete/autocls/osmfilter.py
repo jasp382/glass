@@ -144,7 +144,7 @@ def rm_mixed_pixels(osmlulc, osmlyr, lulc_col, refimg, out):
     return out
 
 
-def apply_idxfilter(lulc_rst, idxrst, idx_rules, fraster):
+def apply_idxfilter(lulc_rst, idxrst, idx_rules, fraster, watercls=None):
     """
     Apply filters to OSM2LULC Results based
     on radiometric indexes
@@ -154,7 +154,7 @@ def apply_idxfilter(lulc_rst, idxrst, idx_rules, fraster):
 
     from glass.rd.rst import rst_to_array
     from glass.prop.rst import get_nodata
-    from glass.pys.oss import lst_ff, fprop
+    from glass.pys.oss import fprop
     
     from glass.pys.tm import now_as_str
     from glass.rd import tbl_to_obj
@@ -295,6 +295,16 @@ def apply_idxfilter(lulc_rst, idxrst, idx_rules, fraster):
         ifs[-1],
         fprop(fraster, 'fn'), ascmd=True
     )
+
+    # Place waters with low NDWI
+    # if water cls
+    if watercls:
+
+        exp = (
+            f"if({lulc_grs} == {watercls} && {rfnl} == 0, "
+            f"99, {rfnl})"
+        )
+        rfnl = grsrstcalc(exp, f"{rfnl}_watercorr", ascmd=True)
 
     grs_to_rst(
         rfnl, fraster, as_cmd=True,

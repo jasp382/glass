@@ -195,6 +195,9 @@ def split_shp_by_attr(inshp, attr, outdir, ilyr=None,
     
     else:
         off = _format if _format[0] == '.' else '.' + _format
+    
+    if not off:
+        raise ValueError('No File Format for outputs')
 
     is_gpkg = True if off == '.gpkg' else None
 
@@ -264,7 +267,7 @@ def split_shp_by_attr(inshp, attr, outdir, ilyr=None,
             drv = drv_name(out)
 
             cmd = (
-                f"ogr2ogr -f \"{drv}\" {out} {inshp} {sql}"
+                f"ogr2ogr -f \"{drv}\" {out} {isrc} {sql}"
                 #f"-where \"\"{attr}\" = {_val}\""
             )
         
