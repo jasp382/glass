@@ -112,33 +112,41 @@ def calc_nbr(nir, swir, outrst):
     """
     Normalized Burn Ratio
     
-    EXPRESSION Sentinel-2A: (9-12) / (9+12)
+    EXPRESSION Sentinel-2A: (8-12) / (8+12)
+
+    https://custom-scripts.sentinel-hub.com/sentinel-2/nbr/
     """
     
     # Open Images
-    srcNir  = gdal.Open(nir, gdal.GA_ReadOnly)
-    srcSwir = gdal.Open(swir, gdal.GA_ReadOnly)
+    snir  = gdal.Open(nir, gdal.GA_ReadOnly)
+    _swir = gdal.Open(swir, gdal.GA_ReadOnly)
     
     # To Array
-    numNir  = srcNir.GetRasterBand(1).ReadAsArray().astype(float)
-    numSwir = srcSwir.GetRasterBand(1).ReadAsArray().astype(float)
+    nnir  = snir.GetRasterBand(1).ReadAsArray().astype(float)
+    nwir = _swir.GetRasterBand(1).ReadAsArray().astype(float)
     
     # Do Calculation
-    nbr = (numNir - numSwir) / (numNir + numSwir)
+    den = nnir + nwir
+    nbr = np.where(
+        den == 0, 100,
+        (nnir - nwir) / den
+    )
     
     # Place NoData Value
-    nirNdVal  = srcNir.GetRasterBand(1).GetNoDataValue()
-    swirNdVal = srcSwir.GetRasterBand(1).GetNoDataValue()
+    nir_nd = snir.GetRasterBand(1).GetNoDataValue()
+    wir_nd = _swir.GetRasterBand(1).GetNoDataValue()
     
     nd = np.amin(nbr) - 1
+
+    np.place(nbr, den == 0, nd)
     
-    np.place(nbr, numNir == nirNdVal, nd)
-    np.place(nbr, numSwir == swirNdVal, nd)
+    np.place(nbr, nnir == nir_nd, nd)
+    np.place(nbr, nwir == wir_nd, nd)
     
     # Export Result
     return obj_to_rst(
-        nbr, outrst, srcNir.GetGeoTransform(),
-        rst_epsg(srcNir), noData=nd
+        nbr, outrst, snir.GetGeoTransform(),
+        rst_epsg(snir), noData=nd
     )
 
 
@@ -164,9 +172,9 @@ def calc_savi(nir, red, out, formula='regular'):
     nred = sred.GetRasterBand(1).ReadAsArray().astype(float)
 
     # Do calculation
-    L = 0.5 # L varies from -0,9 and 1,6
+    L = 0.428 # L varies from -0,9 and 1,6
     if formula == 'regular':
-        savi = ((nnir - nred) / (nnir + nred + 0.5)) * (1 + L)
+        savi = ((nnir - nred) / (nnir + nred + L)) * (1 + L)
     
     elif formula == 'adjusted':
         n = nnir - 1.22 * nred - 0.03
@@ -194,7 +202,7 @@ def calc_savi(nir, red, out, formula='regular'):
     
     # Export Result
     return obj_to_rst(
-        savi, out, nir, snir.GetGeoTransform(),
+        savi, out, snir.GetGeoTransform(),
         rst_epsg(snir), noData=savi_nd
     )
 
@@ -287,13 +295,19 @@ def calc_ngrdi(green, red, out):
     nred = sred.GetRasterBand(1).ReadAsArray().astype(float)
     
     # Do Calculation
-    ngrdi = (ngre - nred) / (ngre + nred)
+    den = ngre + nred
+    ngrdi = np.where(
+        den == 0, 100,
+        (ngre - nred) / den
+    )
     
     # Place NoData Value
     green_nd = sgre.GetRasterBand(1).GetNoDataValue()
     red_nd   = sred.GetRasterBand(1).GetNoDataValue()
     
     ngrdi_nd = np.amin(ngrdi) - 1
+
+    np.place(ngrdi, den == 0, ngrdi_nd)
     
     np.place(ngrdi, ngre==green_nd, ngrdi_nd)
     np.place(ngrdi, nred==red_nd, ngrdi_nd)
@@ -331,8 +345,7 @@ def calc_ndbi(swir, nir, out):
     
     nd = np.amin(ndbi) - 1
 
-    np.place(ndbi, nswir == 0, nd)
-    np.place(ndbi, nnir == 0, nd)
+    np.place(ndbi, den == 0, nd)
     
     np.place(ndbi, nswir==swir_nd, nd)
     np.place(ndbi, nnir==nir_nd, nd)
@@ -344,35 +357,44 @@ def calc_ndbi(swir, nir, out):
     )
 
 
-def calc_ndsi(swir2, blue, out):
+def calc_ndsi(b03, b11, out):
     """
-    Apply Normalized Difference Soil Index
+    Apply Normalized Difference Snow Index
+
+    https://custom-scripts.sentinel-hub.com/sentinel-2/ndsi/
+    https://sentinels.copernicus.eu/web/sentinel/technical-guides/sentinel-2-msi/level-2a/algorithm-overview
     """
 
     # Open Images
-    sswir = gdal.Open(swir2, gdal.GA_ReadOnly)
-    sblue = gdal.Open(blue, gdal.GA_ReadOnly)
+    sb03 = gdal.Open(b03, gdal.GA_ReadOnly)
+    sb11 = gdal.Open(b11, gdal.GA_ReadOnly)
     
     # To Array
-    nswir = sswir.GetRasterBand(1).ReadAsArray().astype(float)
-    nblue = sblue.GetRasterBand(1).ReadAsArray().astype(float)
+    nb03 = sb03.GetRasterBand(1).ReadAsArray().astype(float)
+    nb11 = sb11.GetRasterBand(1).ReadAsArray().astype(float)
     
     # Do Calculation
-    ndsi = (nswir - nblue) / (nswir + nblue)
+    den = nb03 + nb11
+    ndsi = np.where(
+        den == 0, 100,
+        (nb03 - nb11) / den
+    )
     
     # Place NoData Value
-    swir_nd = sswir.GetRasterBand(1).GetNoDataValue()
-    blue_nd = sblue.GetRasterBand(1).GetNoDataValue()
+    b03nd = sb03.GetRasterBand(1).GetNoDataValue()
+    b11nd = sb11.GetRasterBand(1).GetNoDataValue()
     
     nd = np.amin(ndsi) - 1
+
+    np.place(ndsi, den == 0, nd)
     
-    np.place(ndsi, nswir==swir_nd, nd)
-    np.place(ndsi, nblue==blue_nd, nd)
+    np.place(ndsi, nb03==b03nd, nd)
+    np.place(ndsi, nb11==b11nd, nd)
     
     # Export Result
     return obj_to_rst(
-        ndsi, out, sswir.GetGeoTransform(),
-        rst_epsg(sswir), noData=nd
+        ndsi, out, sb03.GetGeoTransform(),
+        rst_epsg(sb03), noData=nd
     )
 
 
@@ -449,5 +471,84 @@ def calc_coloration_idx(red, blue, out):
     return obj_to_rst(
         ci, out, sred.GetGeoTransform(),
         rst_epsg(sred), noData=nd_ci
+    )
+
+
+def calc_gndvi(nir, green, orst):
+    """
+    Compute Green Normalized Difference Vegetation
+    Index
+
+    https://custom-scripts.sentinel-hub.com/sentinel-2/gndvi/
+    """
+
+    # Open Images
+    snir = gdal.Open(nir, gdal.GA_ReadOnly)
+    sgre = gdal.Open(green, gdal.GA_ReadOnly)
+    
+    # To Array
+    nnir = snir.GetRasterBand(1).ReadAsArray().astype(float)
+    ngre = sgre.GetRasterBand(1).ReadAsArray().astype(float)
+    
+    # Do Calculation
+    den = nnir + ngre
+    gndvi = np.where(
+        den == 0, 100,
+        (nnir - ngre) / den
+    )
+    
+    # Place NoData Value
+    nir_nd = snir.GetRasterBand(1).GetNoDataValue()
+    gre_nd = sgre.GetRasterBand(1).GetNoDataValue()
+    
+    nd = np.amin(gndvi) - 1
+
+    np.place(gndvi, den == 0, nd)
+    
+    np.place(gndvi, nnir == nir_nd, nd)
+    np.place(gndvi, ngre == gre_nd, nd)
+
+    return obj_to_rst(
+        gndvi, orst, snir.GetGeoTransform(),
+        rst_epsg(snir), noData=nd
+    )
+
+
+def calc_ndci(b05, b04, orst):
+    """
+    Compute Normalized Difference Chlorophyll Index
+
+    https://custom-scripts.sentinel-hub.com/sentinel-2/ndci/
+    """
+
+    # Open Images
+    sb05 = gdal.Open(b05, gdal.GA_ReadOnly)
+    sb04 = gdal.Open(b04, gdal.GA_ReadOnly)
+    
+    # To Array
+    nb05 = sb05.GetRasterBand(1).ReadAsArray().astype(float)
+    nb04 = sb04.GetRasterBand(1).ReadAsArray().astype(float)
+    
+    # Do Calculation
+    den = nb05 + nb04
+    ndci = np.where(
+        den == 0, 100,
+        (nb05 - nb04) / den
+    )
+    
+    # Place NoData Value
+    b05nd = sb05.GetRasterBand(1).GetNoDataValue()
+    b04nd = sb04.GetRasterBand(1).GetNoDataValue()
+    
+    nd = np.amin(ndci) - 1
+
+    np.place(ndci, den == 0, nd)
+    
+    np.place(ndci, nb05 == b05nd, nd)
+    np.place(ndci, nb04 == b04nd, nd)
+
+    return obj_to_rst(
+        ndci, orst, sb05.GetGeoTransform(),
+        rst_epsg(sb05), noData=nd
     )
 

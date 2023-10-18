@@ -5,14 +5,14 @@ Confusion matrix from Raster to Table file
 from glass.rst.confmtx import confmtx_fmrst
 
 
-def confmtx_twrst(ref_rst, cls_rst, out_tbl):
+def confmtx_twrst(ref_rst, cls_rst, out_tbl, classes=None):
     """
     Confusion matrix for two raster
     """
 
     from glass.wt import obj_to_tbl
 
-    out_df = confmtx_fmrst(ref_rst, cls_rst)
+    out_df = confmtx_fmrst(ref_rst, cls_rst, class_labels=classes)
 
     obj_to_tbl(out_df, out_tbl)
 

@@ -7,7 +7,7 @@ import numpy  as np
 import pandas as pd
 
 
-def confmtx_fmrst(ref_rst, cls_rst):
+def confmtx_fmrst(ref_rst, cls_rst, class_labels=None):
     """
     Confusion matrix for two raster
     """
@@ -16,6 +16,16 @@ def confmtx_fmrst(ref_rst, cls_rst):
 
     ref_img = gdal.Open(ref_rst, gdal.GA_ReadOnly)
     cls_img = gdal.Open(cls_rst, gdal.GA_ReadOnly)
+
+    # Check Shapes
+    refshp = (ref_img.RasterYSize, ref_img.RasterXSize)
+    clsshp = (cls_img.RasterYSize, cls_img.RasterXSize)
+
+    if refshp != clsshp:
+        raise ValueError((
+                'Reference Raster and Classification '
+                'Raster have different shape'
+            ))
 
     ref_nd = ref_img.GetRasterBand(1).GetNoDataValue()
     cls_nd = cls_img.GetRasterBand(1).GetNoDataValue()
@@ -82,6 +92,14 @@ def confmtx_fmrst(ref_rst, cls_rst):
     mtx_df.reset_index(inplace=True)
     mtx_df.rename(columns={'index' : 'class'}, inplace=True)
     out_df = get_measures_for_mtx(mtx_df, 'class')
+
+    if class_labels:
+        out_df.rename(columns=class_labels, inplace=True)
+
+        labels = [class_labels[c] for c in ref_cls_] + \
+            [None for i in range(out_df.shape[0] - len(ref_cls_))]
+
+        out_df['label'] = labels
 
     return out_df
 
