@@ -1,6 +1,6 @@
 from osgeo import ogr
 
-from django.contrib.gis.geos import GEOSGeometry
+#from django.contrib.gis.geos import GEOSGeometry
 
 from glass.prj.obj import prj_ogrgeom
 
