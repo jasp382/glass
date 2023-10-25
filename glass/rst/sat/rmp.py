@@ -2,6 +2,116 @@
 Resampling methods for Satellite images
 """
 
+import os
+
+
+def resample_s2img(imgzip, ref, ofolder, reflyr=None,
+                   bands=['b02', 'b03', 'b04', 'b05', 'b06', 'b07', 'b08', 'b11', 'b12', 'scl']):
+    """
+    Unzip and resample the bands of a sentinel-2 image
+    """
+
+    from glass.cons.sat import bandsmap, get_lwibands
+    from glass.dtt.stl  import unzip_img
+    from glass.pys.oss  import fprop, mkdir
+    from glass.pys.tm import now_as_str
+    from glass.prop.ext import get_ext
+    from glass.prop.prj import get_epsg
+    from glass.wt.shp import coords_to_boundshp
+    from glass.wenv.grs import run_grass
+
+    bandsww = bands if bands else get_lwibands()
+
+    bmap = bandsmap()
+
+    # Check if outfolder exists
+    if not os.path.exists(ofolder):
+        mkdir(ofolder, overwrite=None)
+    
+    # Create Workspace
+    ws = mkdir(os.path.join(ofolder, now_as_str(utc=True)))
+
+    # Unzip Image
+    _bands = unzip_img(imgzip, ws)
+
+    # ref raster
+    refrst = _bands["B02_10m"]
+    img_epsg = get_epsg(refrst)
+    
+    # Get reference Shapefile
+    left, right, bottom, top = get_ext(ref, oepsg=img_epsg, geolyr=reflyr)
+
+    refshp = coords_to_boundshp(
+        (left, top),
+        (right, bottom), img_epsg,
+        os.path.join(ws, 'refshp.shp')
+    )
+
+    # Get image date
+    iname = fprop(imgzip, 'fn')
+    idate = iname.split('_')[2]
+    idate = idate.split('T')[0]
+
+    # Start GRASS GIS Session
+    grsb = run_grass(
+        ws, grassBIN='grass78', location='resample',
+        srs=refrst
+    )
+
+    import grass.script.setup as gsetup
+
+    gsetup.init(grsb, ws, 'resample', 'PERMANENT')
+
+    """
+    Import packages related with GRASS GIS
+    """
+    from glass.it.rst    import rst_to_grs, grs_to_rst, grs_to_mask
+    from glass.it.shp    import shp_to_grs
+    from glass.wenv.grs  import shp_to_region, align_region, rst_to_region
+    from glass.rst.rcls import set_null
+    from glass.dtt.torst import grsshp_to_grsrst as shp_to_rst
+
+    # Import all bands we want
+    bands_ = {bmap[b] : _bands[b] for b in _bands}
+    gbands = [rst_to_grs(
+        bands_[b], f'{b}_{idate}'
+    ) for b in bands_ if b in bandsww]
+
+    # Import Clip shape to GRASS GIS
+    clip_shp = shp_to_grs(refshp, asCMD=True)
+
+    # Set Clip Shape as region
+    shp_to_region(clip_shp)
+
+    # Align region
+    align_region(gbands[0])
+
+    # Clip Shape to Raster
+    clip_rst = shp_to_rst(
+        clip_shp, 1, f'rst_{clip_shp}',
+        cmd=True
+    )
+
+    # Set Mask
+    rst_to_region(clip_rst)
+    grs_to_mask(clip_rst)
+
+    # Export bands
+    # Set 0 as NULL
+    # Put 0 as NoData Value
+    bands_lst = []
+
+    for i in gbands:
+        set_null(i, 0, ascmd=True)
+        ob = grs_to_rst(
+            i, os.path.join(ofolder, f'{i}.tif'),
+            rtype=int, nodata=0
+        )
+
+        bands_lst.append(ob)
+
+    return bands_lst
+
 
 def resample_s2img_shp(shp, folder, ofolder, refgeo=None):
     """
@@ -12,7 +122,6 @@ def resample_s2img_shp(shp, folder, ofolder, refgeo=None):
     """
 
     import pandas as pd
-    import os
 
     from glass.rd.shp  import shp_to_obj
     from glass.pys.tm  import now_as_str

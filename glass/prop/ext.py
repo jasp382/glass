@@ -18,27 +18,36 @@ def get_ext(ingeo, oepsg=None, geolyr=None):
     
     if irst and not ishp:
         from glass.prop.rst import rst_ext as gext
+
+        isrc = ingeo
     
     elif not irst and ishp:
         from glass.prop.shp import get_ext as gext
+
+        isrc = ingeo
         
     else:
         # Probabily, we have a geodatabase
         if '.gdb' in ingeo and not geolyr:
             from glass.prop.shp import get_ext as gext
 
-            ingeo  = os.path.dirname(ingeo)
+            isrc  = os.path.dirname(ingeo)
             geolyr = os.path.basename(ingeo)
+
+            if isrc[-4:] != '.gdb':
+                isrc = os.path.dirname(isrc)
+            
+            ishp = True
         
         else: return None
     
-    ext = gext(ingeo) if not ishp else \
-        gext(ingeo, lyrname=geolyr)
+    ext = gext(isrc) if not ishp else \
+        gext(isrc, lyrname=geolyr)
     
     if oepsg:
         from glass.prop.prj import get_epsg
         
-        iepsg = get_epsg(ingeo)
+        iepsg = get_epsg(isrc, lyrname=geolyr)
         
         if not iepsg:
             raise ValueError('cannot get EPSG of input file')

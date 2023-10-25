@@ -204,7 +204,7 @@ def apply_idxfilter(lulc_rst, idxrst, idx_rules, fraster, watercls=None):
 
     ndval = get_nodata(lulc_rst)
 
-    lulc_class = [v for v in np.unique(lulc_img) if v != ndval]
+    lulc_class = [v for v in np.unique(lulc_img) if v in _rules and v != ndval]
 
     # Send all rasters to GRASS GIS
     lulc_grs = rst_to_grs(lulc_rst, fprop(lulc_rst, 'fn'))
@@ -265,7 +265,7 @@ def apply_idxfilter(lulc_rst, idxrst, idx_rules, fraster, watercls=None):
             )
         
             cls_masks[cls][idx] = grsrstcalc(
-                f"if({cntrst} == {_rules[cls][idx]['nimgs']}, 1, 0)",
+                f"if({cntrst} >= {_rules[cls][idx]['nimgs']}, 1, 0)",
                 f'clsidxmask_{cls}_{idx}', ascmd=True
             )
     

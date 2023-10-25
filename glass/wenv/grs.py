@@ -267,6 +267,18 @@ def shp_to_region(shp, cellsize=None):
     r()
 
 
+def align_region(raster):
+    """
+    Align region
+    """
+
+    from grass.pygrass.modules import Module
+
+    r = Module("g.region", align=raster, run_=False, quiet=True)
+
+    r()
+
+
 """
 Delete GIS Files
 """

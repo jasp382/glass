@@ -338,6 +338,12 @@ def random_cells_extract(irst, ncells, orst):
     if nd in idval:
         idval.remove(nd)
     
+    # Get absolute frequencies of inrst
+    # Exclude no data values
+    ref_sem_nd = onum[onum != nd]
+    freq = np.bincount(ref_sem_nd)
+    freq = freq[freq != 0]
+    
     # Get index array
     idx_ref = np.arange(onum.size)
 
@@ -346,7 +352,7 @@ def random_cells_extract(irst, ncells, orst):
 
     # Get indexes to be selected for each class
     sel_val = [np.random.choice(
-        idx_cls[e], size=ncells[idval[e]],
+        idx_cls[e], size=ncells if ncells < freq[e] else freq[e],
         replace=False
     ) for e in range(len(idval))]
 

@@ -86,20 +86,18 @@ def confmtx_fmrst(ref_rst, cls_rst, class_labels=None):
         for v_ in ref_cls_:
             r.append(mtx_values[(v, v_)])
         mtx_lst.append(r)
-    
-    mtx_df = pd.DataFrame(mtx_lst, columns=ref_cls_, index=ref_cls_)
-
-    mtx_df.reset_index(inplace=True)
-    mtx_df.rename(columns={'index' : 'class'}, inplace=True)
-    out_df = get_measures_for_mtx(mtx_df, 'class')
 
     if class_labels:
-        out_df.rename(columns=class_labels, inplace=True)
+        labels = [class_labels[c] for c in ref_cls_]
+    
+    else:
+        labels = ref_cls_
+    
+    mtx_df = pd.DataFrame(mtx_lst, columns=labels)
 
-        labels = [class_labels[c] for c in ref_cls_] + \
-            [None for i in range(out_df.shape[0] - len(ref_cls_))]
+    mtx_df["class"] = labels
 
-        out_df['label'] = labels
+    out_df = get_measures_for_mtx(mtx_df, 'class')
 
     return out_df
 

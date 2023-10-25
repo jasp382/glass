@@ -51,7 +51,7 @@ def shp_sref(shp, lyrn=None):
     else:
         drv = 'OpenFileGDB' if '.gdb' in shp else drv_name(shp)
 
-        data = ogr.GetDriverByName(drv).Open(shp)
+        data = ogr.GetDriverByName(drv).Open(shp, 0)
         
         lyr = data.GetLayer() if not lyrn \
             else data.GetLayer(lyrn)
@@ -188,7 +188,8 @@ def get_epsg(inFile, is_proj=None, lyrname=None):
         )
     
     else:
-        return None
+        # Assuming we have a geodatabase
+        return shp_epsg(inFile, returnIsProj=is_proj, lyrname=lyrname)
 
 
 def get_srs(in_file):
