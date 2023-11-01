@@ -66,7 +66,7 @@ def obj_to_tbl(pyObj, outTbl, delimiter=None, wIndex=None,
         for i in range(len(dfs)):
             dfs[i].to_excel(
                 writer,
-                sheet_name=f"{fprop(outTbl, 'fn')}_{str(i)}" \
+                sheet_name=f"{fprop(outTbl, 'fn')}_{str(i)}"[:30] \
                     if not sheetsName or i+1 > len(sheetsName) else sheetsName[i],
                 index=wIndex
             )
