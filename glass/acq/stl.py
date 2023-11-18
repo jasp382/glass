@@ -80,7 +80,7 @@ def lst_prod(shpext, start_time, end_time,
             boundary = shpext
     
     # Create API instance
-    api = SentinelAPI(user, passw, url)
+    api = SentinelAPI(user, passw)
     
     # Search for products
     products = api.query(

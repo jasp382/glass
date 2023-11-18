@@ -221,21 +221,27 @@ def lst_folders_subfiles(path, filter_folder=None, files_format=None,
 Manage folders
 """
 
-def mkdir(folder, randName=None, overwrite=True):
+def mkdir(folder, randName=None, timerand=None, overwrite=True):
     """
     Create a new folder
     Replace the given folder if that one exists
     """
     
-    if randName:
+    if randName or timerand:
         import random
-        chars = '0123456789qwertyuiopasdfghjklzxcvbnm'
+        from glass.pys.tm import now_as_str
+
+        if timerand:
+            folder = os.path.join(folder, now_as_str())
         
-        name = ''
-        for i in range(10):
-            name+=random.choice(chars)
+        else:
+            chars = '0123456789qwertyuiopasdfghjklzxcvbnm'
         
-        folder = os.path.join(folder, name)
+            name = ''
+            for i in range(10):
+                name+=random.choice(chars)
+        
+            folder = os.path.join(folder, name)
     
     if os.path.exists(folder):
         if overwrite:

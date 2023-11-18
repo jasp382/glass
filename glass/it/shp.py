@@ -6,7 +6,7 @@ import os
 
 from glass.pys import execmd
 
-def shp_to_shp(inshp, outshp, gapi='ogr', spatialite=None):
+def shp_to_shp(inshp, outshp, gapi='ogr', spatialite=None, lyrname=None):
     """
     Convert a vectorial file to another with other file format
     
@@ -27,8 +27,10 @@ def shp_to_shp(inshp, outshp, gapi='ogr', spatialite=None):
             splite = ' -dsco "SPATIALITE=YES"'
         else:
             splite = ''
+
+        lstr = "" if not lyrname else f' {lyrname}'
     
-        cmd = f'ogr2ogr -f "{drv}" {outshp} {inshp}{splite}'
+        cmd = f'ogr2ogr -f "{drv}" {outshp} {inshp}{lstr}{splite}'
     
         # Run command
         cmdout = execmd(cmd)

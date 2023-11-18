@@ -68,7 +68,7 @@ def resample_s2img(imgzip, ref, ofolder, reflyr=None,
     from glass.it.rst    import rst_to_grs, grs_to_rst, grs_to_mask
     from glass.it.shp    import shp_to_grs
     from glass.wenv.grs  import shp_to_region, align_region, rst_to_region
-    from glass.rst.rcls import set_null
+    from glass.rst.rcls  import set_null
     from glass.dtt.torst import grsshp_to_grsrst as shp_to_rst
 
     # Import all bands we want

@@ -189,6 +189,13 @@ def get_epsg(inFile, is_proj=None, lyrname=None):
     
     else:
         # Assuming we have a geodatabase
+        if inFile[-4:] != '.gdb':
+            lyrname = os.path.basename(inFile)
+            inFile = os.path.dirname(inFile)
+
+            if inFile[-4:] != '.gdb':
+                inFile = os.path.dirname(inFile)
+            
         return shp_epsg(inFile, returnIsProj=is_proj, lyrname=lyrname)
 
 
