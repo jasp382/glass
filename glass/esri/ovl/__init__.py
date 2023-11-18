@@ -162,10 +162,10 @@ def erase(inShp, erase_feat, out):
     Difference between two feature classes
     """
         
-    arcpy.Erase_analysis(
+    lyr = arcpy.analysis.Erase(
         in_features=inShp, erase_features=erase_feat, 
         out_feature_class=out
-    )
+    )[0]
     
-    return out
+    return lyr
 
