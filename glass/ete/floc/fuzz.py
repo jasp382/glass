@@ -189,7 +189,7 @@ def fx_rst(topleft, shape, cellsize, pnt, errod, direction, dmax, fxrst, epsg):
     from glass.rst.alg    import grsrstcalc
     from glass.rst.direct import grs_bearing_from_pnt
     from glass.rst.dst    import grow_distance
-    from glass.rst.rcls   import set_null
+    from glass.rst.rcls.grs import set_null
 
     # Get bearing raster
     bearing = grs_bearing_from_pnt(pnt, "bearingrst", asint=None)
@@ -571,7 +571,7 @@ def fx_to_geom(rst, reduce_raster=None):
     # Import GRASS GIS modules
     from glass.it.rst        import rst_to_grs, grs_to_mask, grs_to_rst
     from glass.it.shp        import grs_to_shp
-    from glass.rst.rcls      import rcls_rst, rcls_rules
+    from glass.rst.rcls.grs  import grs_rcls, rcls_rules
     from glass.dtt.rst.toshp import rst_to_polyg
     from glass.wenv.grs      import shp_to_region
 
@@ -583,7 +583,7 @@ def fx_to_geom(rst, reduce_raster=None):
         ws, loc, f'rules_{fx}.txt'
     ))
 
-    fx_rcls = rcls_rst(fx, rules, f'rlcs_{fx}', api="grass")
+    fx_rcls = grs_rcls(fx, rules, f'rlcs_{fx}', as_cmd=True)
 
     # Raster to Vector
     fx_shp = rst_to_polyg(fx_rcls, f'shp_{fx}', api='grass')

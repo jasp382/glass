@@ -101,9 +101,10 @@ def bspline(inPnt, attrCol, rstOutput, lyrN=1, asCMD=None, mway="bilinear"):
         from glass.pys import execmd
         
         tcmd = (
-            "v.surf.bspline input={} layer={} column={} raster_output={} "
-            "method={} --overwrite --quiet"
-        ).format(inPnt, lyrN, attrCol, rstOutput, mway)
+            f"v.surf.bspline input={inPnt} layer={lyrN} column={attrCol} "
+            f"raster_output={rstOutput} method={mway} "
+            "--overwrite --quiet"
+        )
         
         rcmd = execmd(tcmd)
     
@@ -131,9 +132,9 @@ def surfrst(inPnt, attrCol, output, lyrN=1, ascmd=None):
         from glass.pys import execmd
 
         tcmd = (
-            "v.surf.rst input={} layer={} zcolumn={} "
-            "elevation={} --overwrite --quiet"
-        ).format(inPnt, lyrN, attrCol, output)
+            f"v.surf.rst input={inPnt} layer={lyrN} zcolumn={attrCol} "
+            f"elevation={output} --overwrite --quiet"
+        )
         
         rcmd = execmd(tcmd)
     

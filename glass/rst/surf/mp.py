@@ -35,7 +35,7 @@ def rstfld_to_slope(rst_folder, dclv_folder, out_name, perc_folder=None):
         gsetup.init(gbase, outfolder, loc_name, 'PERMANENT')
 
         from glass.it.rst   import rst_to_grs, grs_to_rst
-        from glass.rst.surf import slope
+        from glass.rst.surf.grs import slope
         from glass.wenv.grs import rst_to_region
 
         for rst in iirsts:
@@ -113,7 +113,7 @@ def rstfld_to_aspect(rst_folder, expo_folder, oname):
         gsetup.init(gbase, outfolder, loc_name, 'PERMANENT')
     
         from glass.it.rst   import rst_to_grs, grs_to_rst
-        from glass.rst.surf import aspect
+        from glass.rst.surf.grs import aspect
         from glass.wenv.grs import rst_to_region
     
         for rst in iirsts:

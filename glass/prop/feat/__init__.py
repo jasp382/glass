@@ -230,31 +230,3 @@ def get_cntr_bnd(shp, isFile=None):
     
     return cnt
 
-
-def area_to_dic(shp):
-    """
-    Return the following output:
-    
-    dic = {
-        id_feat: area,
-        ...,
-        id_feat: area
-    }
-    """
-    
-    from osgeo         import ogr
-    from glass.prop.df import drv_name
-    
-    o = ogr.GetDriverByName(drv_name(shp)).Open(shp, 0)
-    l = o.GetLayer()
-    d = {}
-    c = 0
-    for feat in l:
-        g = feat.GetGeometryRef()
-        area = g.GetArea()
-        d[c] = area
-        c += 1
-    del l
-    o.Destroy()
-    return d
-

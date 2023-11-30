@@ -39,9 +39,9 @@ def acost_surface(mdt, tax_cos, cos, leg_cos, barr, rdv, fldRdv, w, SupCst):
         filename = str(os.path.basename(shp))
         wext = str.split(filename, ".")[0]
         if len(wext) < 6:
-            fld_name = "FID_{c}".format(c=wext)
+            fld_name = f"FID_{wext}"
         else:
-            fld_name = "FID_{c}".format(c=wext[:6])
+            fld_name = f"FID_{wext[:6]}"
         return fld_name
     
     def GetRulesBarrCos(t, cd):

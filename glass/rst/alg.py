@@ -5,6 +5,7 @@ Algebra tools
 import numpy as np
 from osgeo import gdal
 
+from glass.pys      import execmd
 from glass.prop.img import rst_epsg, get_nd
 from glass.wt.rst   import obj_to_rst
 
@@ -68,13 +69,30 @@ def grsrstcalc(expression, result, ascmd=None):
         rc()
     
     else:
-        from glass.pys import execmd
-
         rcmd = execmd((
             f"r.mapcalc \"{result} = {expression}\" "
             "--overwrite --quiet"
         ))
     
+    return result
+
+
+def gdalrstcalc(irsts, expression, result, odtype=None):
+    """
+    GDAL Raster Calculator
+    """
+
+    irsts_str = " ".join([f"-{k} {irsts[k]}" for k in irsts])
+
+    otype = "" if not odtype else f' --type={odtype}'
+
+    cmd = (
+        f"gdal_calc.py {irsts_str} --outfile={result} "
+        f"--calc=\"{expression}\"{otype}"
+    )
+
+    ocmd = execmd(cmd)
+
     return result
 
 
@@ -88,7 +106,6 @@ def rstcalc(expression, output, api='saga', grids=None):
     
     if api == 'saga':
         # Using SAGA GIS
-        from glass.pys    import execmd
         from glass.it.rst import saga_to_tif
         
         SAGA_RASTER = os.path.join(

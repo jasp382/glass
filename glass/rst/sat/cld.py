@@ -36,7 +36,7 @@ def rm_anyclouds(folder, bands, scl, ff, ofolder, noclouds_raster):
     from glass.pys.oss  import lst_ff, fprop
     from glass.pys.tm   import now_as_str
     from glass.wenv.grs import run_grass
-    from glass.rst.rcls import rcls_rules
+    from glass.rst.rcls.grs import rcls_rules
 
     # list bands
     imgs = lst_ff(folder, file_format=ff, fnpart=bands)
@@ -54,7 +54,7 @@ def rm_anyclouds(folder, bands, scl, ff, ofolder, noclouds_raster):
     gsetup.init(grsb, ws, loc, 'PERMANENT')
 
     from glass.it.rst   import rst_to_grs, grs_to_rst
-    from glass.rst.rcls import rcls_rst
+    from glass.rst.rcls.grs import grs_rcls
     from glass.rst.alg  import grsrstcalc
 
     cldrules = rcls_rules({
@@ -72,7 +72,7 @@ def rm_anyclouds(folder, bands, scl, ff, ofolder, noclouds_raster):
         _s = rst_to_grs(s, fprop(s, 'fn'))
 
         # Reclassify all files to get only things related to clouds
-        rs = rcls_rst(_s, cldrules, f'rcls_{_s}', api='grass')
+        rs = grs_rcls(_s, cldrules, f'rcls_{_s}', as_cmd=True)
         _rs = grsrstcalc(rs, f'cp_{_s}')
     
         rscl.append(_rs)

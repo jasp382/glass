@@ -48,7 +48,7 @@ def grs_rst_roads(osmdb, lineTbl, polyTbl, LULC_CLS):
     
     if NB:
         from glass.rst.alg  import grsrstcalc
-        from glass.rst.rcls import set_null, null_to_value
+        from glass.rst.rcls.grs import set_null, null_to_value
         
         buildsShp = dbtbl_to_shp(
             osmdb, polyTbl, "geom", "all_builds",
@@ -70,7 +70,7 @@ def grs_rst_roads(osmdb, lineTbl, polyTbl, LULC_CLS):
         
         # Do the math: roads + builds | if builds and roads at the same cell
         # cell will be null in the road layer
-        roadsRes = rstcalc(f"{roadRst} + {buildsRst}", "cls_roads")
+        roadsRes = grsrstcalc(f"{roadRst} + {buildsRst}", "cls_roads")
         time_l = dt.datetime.now().replace(microsecond=0)
         
         return {LULC_CLS : roadsRes}, {

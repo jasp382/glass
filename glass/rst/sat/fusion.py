@@ -17,7 +17,7 @@ def month_representative(img_folder, refimg, ofolder, bname, fformat='.tif'):
     from glass.pys.oss  import lst_ff, fprop
     from glass.pys.tm   import now_as_str
     from glass.wenv.grs import run_grass
-    from glass.rst.rcls import rcls_rules
+    from glass.rst.rcls.grs import rcls_rules
 
     # Constants
     bands = [

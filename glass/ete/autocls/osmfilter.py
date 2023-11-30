@@ -24,7 +24,7 @@ def rm_mixed_pixels(osmlulc, osmlyr, lulc_col, refimg, out):
     from glass.prop.prj   import get_epsg, shp_epsg
     from glass.pys.tm     import now_as_str
     from glass.rst.mos    import rsts_to_mosaic
-    from glass.rst.rcls   import null_to_value, set_null
+    from glass.rst.rcls.grs import null_to_value, set_null
     from glass.sql.db     import create_pgdb
 
     # Setup workspace and GRASS GIS Session

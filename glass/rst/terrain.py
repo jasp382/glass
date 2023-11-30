@@ -36,7 +36,7 @@ def ob_ref_rst(ref, folder, cellsize=None):
         return ref
 
 
-def make_dem(grass_workspace, data, field, output, extent_template,
+def make_dem(data, field, output, hardclip,
              method="IDW", cell_size=None, mask=None):
     """
     Create Digital Elevation Model
@@ -46,22 +46,60 @@ def make_dem(grass_workspace, data, field, output, extent_template,
     * BSPLINE;
     * SPLINE;
     * CONTOUR;
+
+    - Hard Clip could be a ESRI Shapefile or a GeoTiff
     """
 
-    from glass.pys.oss  import fprop
+    from glass.pys.oss  import fprop, mkdir
+    from glass.pys.tm   import now_as_str
     from glass.wenv.grs import run_grass
     from glass.prop.prj import get_epsg
+    from glass.prop.df  import is_rst, is_shp
+    from glass.prop.rst import rst_fullprop
+    from glass.prop.shp import get_ext
+    from glass.wt.rst   import shpext_to_rst, rst_from_origin
+
+    gws, loc = mkdir(os.path.join(
+        os.path.dirname(output),
+        now_as_str(utc=True)
+    ), overwrite=True), 'dem_loc'
     
-    LOC_NAME = fprop(data, 'fn', forceLower=True)[:5] + "_loc"
+    # Get EPSG From Data
+    epsg = get_epsg(data)
+    if not epsg:
+        raise ValueError(f'Cannot get EPSG code of your data file ({data})')
     
-    # Get EPSG From Raster
-    EPSG = get_epsg(extent_template)
-    if not EPSG:
-        raise ValueError(
-            'Cannot get EPSG code of Extent Template File ({})'.format(
-                extent_template
-            )
+    # Get GeoTransform of the hardclip
+    irst, ishp = is_rst(hardclip), is_shp(hardclip)
+
+    if irst and not ishp:
+        ext, cellsize, shape = rst_fullprop(hardclip)
+
+        if cell_size:
+            cellsize = (cell_size, -cell_size)
+        
+    elif not irst and ishp:
+        ext = get_ext(hardclip)
+
+        cellsize = (
+            cell_size if cell_size else 10,
+            -cell_size if cell_size else -10
         )
+
+        lnhs = (ext[3] - ext[2]) / abs(cellsize[1])
+        cols = (ext[1] - ext[0]) / abs(cellsize[0])
+
+        shape = (
+            lnhs if round(lnhs, 0) == lnhs else int(round(lnhs, 0) + 1),
+            cols if round(cols, 0) == cols else int(round(cols, 0) + 1)
+        )
+        
+    else:
+        # Assuming we have a GeoDatabase
+        raise ValueError((
+            'Assuming hardclip is a GeoDatabase. '
+            'This method is not prepared for that'
+        ))
     
     # Know if data geometry are points
     if method == 'BSPLINE' or method == 'SPLINE':
@@ -70,16 +108,24 @@ def make_dem(grass_workspace, data, field, output, extent_template,
         data_gtype = get_gtype(data, gisApi='ogr')
     
     # Create GRASS GIS Location
-    grass_base = run_grass(grass_workspace, location=LOC_NAME, srs=EPSG)
+    gb = run_grass(gws, location=loc, srs=epsg)
     
     # Start GRASS GIS Session
     import grass.script.setup as gsetup
-    gsetup.init(grass_base, grass_workspace, LOC_NAME, 'PERMANENT')
+    gsetup.init(gb, gws, loc, 'PERMANENT')
 
-    # Get Extent Raster
-    ref_template = ob_ref_rst(extent_template, os.path.join(
-        grass_workspace, LOC_NAME
-    ), cellsize=cell_size)
+    # Get Initial DEM Extent Raster
+    refrst = shpext_to_rst(data, os.path.join(
+        gws, loc,
+        f"ref_{fprop(data, 'fn')}.tif"
+    ), cellsize=cellsize[0], epsg=epsg)
+
+    # Get Final DEM Extent Raster
+    cliprst = rst_from_origin(
+        (ext[0], ext[3]), shape, cellsize,
+        os.path.join(gws, loc, "hardclip.tif"),
+        epsg
+    )
     
     # IMPORT GRASS GIS MODULES #
     from glass.it.rst   import rst_to_grs, grs_to_rst
@@ -87,13 +133,14 @@ def make_dem(grass_workspace, data, field, output, extent_template,
     from glass.wenv.grs import rst_to_region
     
     # Configure region
-    rst_to_grs(ref_template, 'extent')
-    rst_to_region('extent')
+    grsref  = rst_to_grs(refrst, as_cmd=True)
+    grsclip = rst_to_grs(cliprst, as_cmd=True)
+    rst_to_region(grsref)
     
     # Convert elevation "data" to GRASS Vector
-    elv = shp_to_grs(data, 'elevation')
+    elv = shp_to_grs(data)
     
-    OUTPUT_NAME = fprop(output, 'fn', forceLower=True)
+    oname = fprop(output, 'fn', forceLower=True)
     
     if method == "BSPLINE":
         from glass.rst.itp import bspline
@@ -106,7 +153,7 @@ def make_dem(grass_workspace, data, field, output, extent_template,
         else:
             elev_pnt = elv
         
-        outRst = bspline(elev_pnt, field, OUTPUT_NAME, mway='bicubic', lyrN=1, asCMD=True)
+        outRst = bspline(elev_pnt, field, oname, mway='bicubic', lyrN=1, asCMD=True)
     
     elif method == "SPLINE":
         from glass.rst.itp import surfrst
@@ -118,24 +165,24 @@ def make_dem(grass_workspace, data, field, output, extent_template,
         else:
             elev_pnt = elv
         
-        outRst = surfrst(elev_pnt, field, OUTPUT_NAME, lyrN=1, ascmd=True)
+        outRst = surfrst(elev_pnt, field, oname, lyrN=1, ascmd=True)
     
     elif method == "CONTOUR":
-        from glass.dtt.torst import grsshp_to_grsrst as shp_to_rst
-        from glass.rst.itp  import surfcontour
+        from glass.dtt.torst   import grsshp_to_grsrst as shp_to_rst
+        from glass.rst.itp.grs import surfcontour
         
         # Apply mask if mask
         if mask:
             from glass.it.rst import grs_to_mask, rst_to_grs
             
-            rst_mask = rst_to_grs(mask, 'rst_mask', as_cmd=True)
+            rst_mask = rst_to_grs(mask, as_cmd=True)
             grs_to_mask(rst_mask)
         
         # Elevation (GRASS Vector) to Raster
         elevRst = shp_to_rst(elv, field, 'rst_elevation')
         
         # Run Interpolator
-        outRst = surfcontour(elevRst, OUTPUT_NAME, ascmd=True)
+        outRst = surfcontour(elevRst, oname, ascmd=True)
     
     elif method == "IDW":
         from glass.rst.itp  import ridw
@@ -149,12 +196,14 @@ def make_dem(grass_workspace, data, field, output, extent_template,
         # Run IDW to generate the new DEM
         ridw('rst_elev_int', 'dem_int', numberPoints=15)
         # DEM to Float
-        grsrstcalc('dem_int / 100000.0', OUTPUT_NAME)
+        outRst = grsrstcalc('dem_int / 100000.0', oname)
+    
+    # Set final extent
+    rst_to_region(grsclip)
     
     # Export DEM to a file outside GRASS Workspace
-    grs_to_rst(OUTPUT_NAME, output)
     
-    return output
+    return grs_to_rst(outRst, output, rtype=float, dtype="Float64")
 
 
 def thrd_dem(countours_folder, ref_folder, dem_folder, attr,

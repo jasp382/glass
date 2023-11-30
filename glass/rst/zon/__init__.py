@@ -20,7 +20,7 @@ def zonal_geometry(in_rst, out_rst, work):
     
     import codecs
     from grass.pygrass.modules import Module
-    from glass.rst.rcls import rcls_rst
+    from glass.rst.rcls.grs import grs_rcls
     
     txt_file = os.path.join(work, 'report.txt')
     r_geometry = Module(
@@ -42,7 +42,7 @@ def zonal_geometry(in_rst, out_rst, work):
         f.close()
         opened_rules.close()
     
-    rcls_rst(in_rst, recls_rules, out_rst, api='pygrass')
+    grs_rcls(in_rst, recls_rules, out_rst, as_cmd=True)
     
     return out_rst
 
