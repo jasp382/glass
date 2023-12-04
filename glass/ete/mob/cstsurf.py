@@ -171,8 +171,8 @@ def mk_costsuf(dem, lulc, lucol, rdv, kph, barr, out):
     for l in otxt.readlines():
         try:
             if c >= 4:
-                pl = l.split('|')
-                cat = pl[2].split('; ')
+                pl   = l.split('|')
+                cat  = pl[2].split('; ')
                 cat1 = cat[0].split(' ')
                 cat2 = cat[1].split(' ')
 

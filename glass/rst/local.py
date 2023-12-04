@@ -2,7 +2,7 @@
 Local Tools
 """
 
-def combine(inRst, outRst, api="pygrass", template=None):
+def combine(inRst, outRst, api="pygrass"):
     """
     Combine Rasters
     """

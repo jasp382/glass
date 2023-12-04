@@ -192,6 +192,14 @@ def shpext_to_rst(inShp, outRaster, cellsize=None, epsg=None,
     from glass.prop.ext import get_ext, get_dfext
         
     cellsize = 10 if not cellsize else cellsize
+
+    if not epsg:
+        from glass.prop.prj import get_epsg
+
+        _epsg = get_epsg(inShp)
+    
+    else:
+        _epsg = epsg
     
     # Get extent
     if type(inShp) == gp.GeoDataFrame:
@@ -205,7 +213,7 @@ def shpext_to_rst(inShp, outRaster, cellsize=None, epsg=None,
     
     return ext_to_rst(
         (left, top), (right, bottom), outRaster,
-        cellsize=cellsize, epsg=epsg, outEpsg=outEpsg,
+        cellsize=cellsize, epsg=_epsg, outEpsg=outEpsg,
         invalidResultAsNull=invalidResultAsNone
     )
 

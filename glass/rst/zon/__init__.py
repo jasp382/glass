@@ -5,8 +5,6 @@ Grouping and Zonal geometries
 import os
 
 
-
-
 def zonal_geometry(in_rst, out_rst, work):
     """
     Equivalent to ArcGIS Zonal Geometry Tool

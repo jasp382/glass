@@ -571,7 +571,7 @@ def osm_to_lulc(osm, nomenclature, ref, lulc, overwrite=None, savedb=None, tmpfl
         oshps.append(modshp)
     
     for shp in oshps:
-        def_prj(f'{os.path.splitext(shp)[0]}.prj', epsg=epsg, api='epsgio')
+        def_prj(f'{os.path.splitext(shp)[0]}.prj', epsg=epsg, api='epsg.io')
     
     oshps = same_attr_to_shp(
         oshps, "cat", ws,
@@ -654,7 +654,7 @@ def osm_to_lulc(osm, nomenclature, ref, lulc, overwrite=None, savedb=None, tmpfl
     # Check if prj of lulcShp exists and create it if necessary
     prj_ff = os.path.splitext(lulc)[0] + '.prj'
     if not os.path.exists(prj_ff):
-        def_prj(prj_ff, epsg=epsg, api='epsgio')
+        def_prj(prj_ff, epsg=epsg, api='epsg.io')
     
     time_r = dt.datetime.now().replace(microsecond=0)
 
