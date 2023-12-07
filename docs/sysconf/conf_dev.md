@@ -6,15 +6,12 @@ GLASS | Setup development environment
 ```Bash
 sudo apt install git
 
-mkdir ~/code
 git clone https://github.com/jasp382/glass ~/glass
 ```
 
 ## Install dependencies
 
 * [Ubuntu 22.04](dep/ub22.md);
-
-* [MacOS](dep/macos.md);
 
 ## Setup Python virtual environment
 
