@@ -29,7 +29,7 @@ def random_select_from_ref(train_ref, class_col, class_proportion,
 
     from glass.it.shp import shp_to_grs
     from glass.it.rst   import rst_to_grs, grs_to_rst
-    from glass.dtt.torst import grsshp_to_grsrst
+    from glass.dtt.rst.torst import grsshp_to_grsrst
     from glass.rst.alg  import grsrstcalc
 
     # Check if train ref is raster or not

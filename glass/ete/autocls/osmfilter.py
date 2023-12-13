@@ -17,7 +17,7 @@ def rm_mixed_pixels(osmlulc, osmlyr, lulc_col, refimg, out):
 
     from glass.dtt.cg.sql import polyg_to_lines
     from glass.dtt.split  import split_shp_by_attr
-    from glass.dtt.torst  import shp_to_rst, grsshp_to_grsrst
+    from glass.dtt.rst.torst import shp_to_rst, grsshp_to_grsrst
     from glass.it.db      import shp_to_psql
     from glass.it.shp     import shp_to_grs
     from glass.prj        import proj

@@ -94,7 +94,7 @@ def mk_costsuf(dem, lulc, lucol, rdv, kph, barr, out):
     from glass.gp.gen     import dissolve
     from glass.tbl.grs    import add_table, cols_calc
     from glass.tbl.col    import add_fields
-    from glass.dtt.torst  import grsshp_to_grsrst
+    from glass.dtt.rst.torst  import grsshp_to_grsrst
     from glass.rst.rcls.grs import set_null
     from glass.rst.mos    import rsts_to_mosaic
     from glass.rst.local  import combine

@@ -149,7 +149,7 @@ def osm_vs_imd(osmxlsx, osmxml, imd, outfishnet, outshp):
     from glass.gp.gen import dissolve
     from glass.tbl.col import add_fields, cols_calc
     from glass.gp.ovl.grs import grsintersection
-    from glass.smp import sample_to_points
+    from glass.smp.pnt import sample_to_points
 
     # Import data
 

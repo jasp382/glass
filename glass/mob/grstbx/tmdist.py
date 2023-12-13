@@ -2,8 +2,8 @@
 Compute time distance between features
 """
 
-def distance_between_catpoints(srcShp, facilitiesShp, networkShp, speedLimitCol,
-                     onewayCol, outputShp):
+def distance_between_catpoints(srcShp, facilitiesShp, nd, speedLimitCol,
+                     onewayCol, outshp):
     """
     Path bet points
     
@@ -12,6 +12,7 @@ def distance_between_catpoints(srcShp, facilitiesShp, networkShp, speedLimitCol,
     
     import os
     from glass.pys.oss   import fprop
+    from glass.pys.tm import now_as_str
     from glass.wenv.grs  import run_grass
     from glass.dtt.mge    import shps_to_shp
     from glass.prop.feat import feat_count
@@ -19,20 +20,19 @@ def distance_between_catpoints(srcShp, facilitiesShp, networkShp, speedLimitCol,
     # Merge Source points and Facilities into the same Feature Class
     SRC_NFEAT      = feat_count(srcShp, gisApi='pandas')
     FACILITY_NFEAT = feat_count(facilitiesShp, gisApi='pandas')
+
+    ws, loc = os.path.dirname(outshp), now_as_str()
     
     POINTS = shps_to_shp([srcShp, facilitiesShp],
-        os.path.join(os.path.dirname(outputShp), "points_net.shp"),
+        os.path.join(ws, "points_net.shp"),
         api='pandas'
     )
     
     # Open an GRASS GIS Session
-    gbase = run_grass(
-        grsWorkspace,
-        location=grsLocation, srs=networkShp
-    )
+    gbase = run_grass(ws,location=loc, srs=nd)
     
     import grass.script.setup as gsetup
-    gsetup.init(gbase, grsWorkspace, grsLocation, 'PERMANENT')
+    gsetup.init(gbase, ws, loc, 'PERMANENT')
     
     # Import GRASS GIS Module
     from glass.it.shp          import shp_to_grs, grs_to_shp
@@ -45,9 +45,8 @@ def distance_between_catpoints(srcShp, facilitiesShp, networkShp, speedLimitCol,
     from glass.mob.grstbx.vnet import netpath
     
     # Add Data to GRASS GIS
-    rdvMain = shp_to_grs(networkShp, fprop(
-        networkShp, 'fn', forceLower=True))
-    pntShp  = shp_to_grs(POINTS, "points_net")
+    rdvMain = shp_to_grs(nd)
+    pntShp  = shp_to_grs(POINTS)
     
     """Get closest facility layer:"""
     # Connect Points to Network
@@ -91,9 +90,9 @@ def distance_between_catpoints(srcShp, facilitiesShp, networkShp, speedLimitCol,
     
     # Produce result
     result = netpath(
-        newNetwork, "", "ft_minutes", "tf_minutes", fprop(outputShp, 'fn'),
+        newNetwork, "", "ft_minutes", "tf_minutes", fprop(outshp, 'fn'),
         arcLyr=3, nodeLyr=2
     )
     
-    return grs_to_shp(result, outputShp, geomType="line", lyrN=3)
+    return grs_to_shp(result, outshp, geomType="line", lyrN=3)
 

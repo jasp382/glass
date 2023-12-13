@@ -13,7 +13,7 @@ def grs_rst_roads(osmdb, lineTbl, polyTbl, LULC_CLS):
     """
     
     from glass.it.shp            import dbtbl_to_shp
-    from glass.dtt.torst         import grsshp_to_grsrst as shp_to_rst
+    from glass.dtt.rst.torst         import grsshp_to_grsrst as shp_to_rst
     from glass.gp.prox.bfing.sql import splite_buffer
     from glass.prop.sql          import row_num
     
@@ -274,7 +274,7 @@ def roads_fmdb(osmdb, lnhTbl, plTbl, asRst=None):
     time_g = dt.datetime.now().replace(microsecond=0)
     
     if asRst:
-        from glass.dtt.torst import grsshp_to_grsrst as shp_to_rst
+        from glass.dtt.rst.torst import grsshp_to_grsrst as shp_to_rst
         
         drdv = shp_to_rst(drdv, int(asRst), "rst_roads", cmd=True)
         
@@ -304,7 +304,7 @@ def num_roads(osmdata, nom, lineTbl, polyTbl, folder, cellsize, srs, rstTemplate
     from glass.rd.rst            import rst_to_array
     from glass.tbl.filter        import sel_by_attr
     from glass.gp.prox.bfing.sql import splite_buffer
-    from glass.dtt.torst         import shp_to_rst
+    from glass.dtt.rst.torst         import shp_to_rst
     from glass.prop.rst          import rst_geoprop
     from glass.wt.rst            import obj_to_rst
     from glass.prop.sql          import row_num
@@ -417,7 +417,7 @@ def pg_num_roads(osmdb, nom, lnhTbl, polyTbl, folder, cellsize, srs, rstT):
     import os
     from glass.prop.sql          import row_num
     from glass.gp.prox.bfing.sql import st_buffer
-    from glass.dtt.torst         import shp_to_rst
+    from glass.dtt.rst.torst     import shp_to_rst
     
     # There are roads?
     time_a = datetime.datetime.now().replace(microsecond=0)
