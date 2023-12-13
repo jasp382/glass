@@ -17,9 +17,9 @@ git clone https://github.com/jasp382/glass ~/glass
 
 ```Bash
 # Create new virtual env
-mkvirtualenv genv
+mkvirtualenv gs
 
-workon genv
+workon gs
 
 # Install GLASS
 pip install --upgrade pip
