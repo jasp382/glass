@@ -24,7 +24,7 @@ def write_sld(attr_name, attr_colors, mapAttrKeys, sld_path,
        
     QUANTITATIVE - LIST EXAMPLE:
     attr_colors = [
-        {'min':  0, 'max':  5, 'R': X, 'G': X, 'B': X, 'stroke_r': 200, 'SG' : 200', 'SB' : 200},
+        {'min':  0, 'max':  5, 'R': X, 'G': X, 'B': X},
         {'min':  5, 'max': 10, 'R': X, 'G': X, 'B': X},
         {'min': 10, 'max': 15, 'R': X, 'G': X, 'B': X},
         {'min': 15, 'max': 20, 'R': X, 'G': X, 'B': X},
@@ -41,7 +41,7 @@ def write_sld(attr_name, attr_colors, mapAttrKeys, sld_path,
     EXAMPLE:
     mapAttrKeys = {
         'r' : 'R', 'g' : 'G', 'b' : 'B', 'interval_min' : 'min',
-        'interval_max' : 'max', 'stroke_r' : 'stroke_r'
+        'interval_max' : 'max'
     }
     
     keys that could be used:
@@ -67,8 +67,8 @@ def write_sld(attr_name, attr_colors, mapAttrKeys, sld_path,
     """
 
     import os
-    from glass.pys.Xml            import write_xml_tree
-    from glass.pys.oss            import fprop
+    from glass.pys.Xml      import write_xml_tree
+    from glass.pys.oss      import fprop
     from glass.wg.sld.rules import get_categorical_rules
     from glass.wg.sld.rules import get_quantitative_rules
     
@@ -87,8 +87,7 @@ def write_sld(attr_name, attr_colors, mapAttrKeys, sld_path,
                 attr_colors = json.load(open(attr_colors, 'r'))
             
             elif ff == '.xlsx' or ff == '.xls':
-                from glass.rd import tbl_to_obj
-                
+                from glass.rd import tbl_to_obj                
                 attr_colors = tbl_to_obj(
                     attr_colors, sheet=0, useFirstColAsIndex=None, output='array'
                 )

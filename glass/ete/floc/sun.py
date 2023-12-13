@@ -2,7 +2,7 @@
 Sun declination related
 """
 
-from firegis.api import get_headers
+from glass.fireapi import get_headers
 import requests as rq
 import pandas as pd
 
@@ -101,7 +101,7 @@ def calc_sun_azimute(df, lon, lat, datehour, ascension=None, declination=None, a
     import numpy as np
     import geopandas as gp
 
-    from firegis.api.sundata import get_sun_decl_as
+    from glass.fireapi.sundata import get_sun_decl_as
 
     ncols = []
 
@@ -345,7 +345,7 @@ def sunazimute_to_ctb(token, df, geom, dhour, _dhour, dstr):
     For each contribution, get the Sun Azimute
     """
 
-    from firegis.api.sundata import get_sun_decl_as
+    from glass.fireapi.sundata import get_sun_decl_as
     from glass.it.pd import obj_to_geodf
 
     # To GeoDataFrame

@@ -10,7 +10,7 @@ def send_email(to_email, subject, html_msg, date):
     import smtplib, ssl
     from email.mime.text import MIMEText
     from email.mime.multipart import MIMEMultipart
-    from firegis.cons.email import con_email
+    from glass.firecons.email import con_email
 
     ep = con_email()
 
