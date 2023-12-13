@@ -1,7 +1,0 @@
-{
-    "/api/*": {
-        "target": "https://locusignis@dei.uc.pt/",
-        "secure": false,
-        "logLevel": "debug"
-    }
-}

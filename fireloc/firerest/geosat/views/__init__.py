@@ -1,3 +1,0 @@
-"""
-Sentinel Related Views
-"""
