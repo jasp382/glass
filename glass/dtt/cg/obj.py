@@ -2,13 +2,13 @@
 Change Geometry types
 """
 
+import geopandas as gp
+import pandas as pd
+
 def multipart_to_single(df, geomType, use_explode=True):
     """
     Multipart Geometries to SinglePart Geometries
     """
-    
-    import geopandas as gp
-    import pandas as pd
 
     if not use_explode:
         df_wsingle = df[df.geometry.type == geomType]
@@ -97,4 +97,21 @@ def dfpnt_to_convex_hull(pntDf, xCol, yCol, epsg, outEpsg=None, outShp=None):
         return df_to_shp(convexDf, outShp)
     
     return convexDf
+
+
+
+def centroid_dfgeoms(df, geom, epsg=None):
+    """
+    Retrieve centroids from Geometries in a
+    GeoDataFrame
+    """
+
+    _df = df.copy(deep=True)
+
+    _df[geom] = gp.GeoSeries(_df[geom].centroid)
+
+    if epsg:
+        _df = gp.GeoDataFrame(_df, geometry=geom, crs=f"EPSG:{str(epsg)}")
+    
+    return _df
 

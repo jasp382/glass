@@ -11,12 +11,17 @@ from osgeo import gdal, gdal_array
 from glass.wt.rst import obj_to_rst
 
 
-def k_means(imgs, out, n_cls=8):
+def img_clustering(imgs, out, method="k-means", n_cls=8):
     """
-    K-Means implementation
+    Clustering methods implementation
+
+    methods:
+    * k-means
+    * mean-shift
     """
     
-    from sklearn import cluster
+    from sklearn.cluster import MeanShift, KMeans
+    from sklearn.cluster import estimate_bandwidth
 
     from glass.prop.img import rst_epsg
     from glass.pys import obj_to_lst
@@ -73,12 +78,18 @@ def k_means(imgs, out, n_cls=8):
     
     else:
         X = jarray.reshape((-1, 1))
-            
-    kmeans = cluster.KMeans(n_clusters=n_cls)
-            
-    kmeans.fit(X)
+
+    if method == 'k-means':
+        mdl = KMeans(n_clusters=n_cls)
     
-    X_cluster = kmeans.labels_
+    else:
+        bandwith = estimate_bandwidth(X, quantile=0.2, n_samples=500)
+
+        mdl = MeanShift(bandwidth=bandwith, bin_seeding=True)
+            
+    mdl.fit(X)
+    
+    X_cluster = mdl.labels_
     
     if len(arrays) > 1:
         X_cluster = X_cluster.reshape(jarray[:, :, 0].shape)
@@ -93,7 +104,7 @@ def k_means(imgs, out, n_cls=8):
 
 
 def train_to_mdl(train_rst, imgs, outmdl, ntrees=1000, fileformat='.tif',
-                 method='RandomForest'):
+                 method='RandomForest', mxsamples=None):
     """
     Train a model for classification and save the model in a file
 
@@ -186,7 +197,8 @@ def train_to_mdl(train_rst, imgs, outmdl, ntrees=1000, fileformat='.tif',
     # Fit model
     if method == 'RandomForest':
         m = RandomForestClassifier(
-            n_estimators=ntrees, random_state=0, n_jobs=-1
+            n_estimators=ntrees, random_state=0, n_jobs=-1,
+            max_samples=mxsamples
         )
     
     elif method == 'NaiveBayes':

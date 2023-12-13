@@ -2,6 +2,8 @@
 Split Raster's into tiles
 """
 
+import os
+from osgeo import gdal
 
 
 def nrsts_fm_rst(rst, rows, cols, out_fld, bname):
@@ -13,8 +15,6 @@ def nrsts_fm_rst(rst, rows, cols, out_fld, bname):
     rasters could have.
     """
 
-    import os
-    from osgeo          import gdal
     from glass.prop.img import rst_epsg
     from glass.wt.rst   import ext_to_rst
 
@@ -76,4 +76,55 @@ def nrsts_fm_rst(rst, rows, cols, out_fld, bname):
             newrst.append(nrst)
     
     return newrst
+
+
+
+def split_raster_by_window(rst, ntile_rows, ntile_cols, out_fld):
+    """
+    Split Raster By Spatial Window
+    """
+
+    from glass.pys     import execmd
+    from glass.pys.oss import fprop
+    from glass.prop.df import drv_name
+
+    # Open Raster
+    img = gdal.Open(rst, gdal.GA_ReadOnly)
+
+    # Get Raster cols and Rows
+    rrows, rcols = img.RasterYSize, img.RasterXSize
+
+    # Driver
+    drv = drv_name(rst)
+
+    # Basename
+    fp = fprop(rst, ['ff', 'fn'])
+    fn, ff = fp['filename'], fp['fileformat']
+
+    # Create new subrasters
+    nc = 0
+    res = []
+    for c in range(0, rcols, ntile_cols):
+        nr = 0
+        for r in range(0, rrows, ntile_rows):
+            outrst = os.path.join(
+                out_fld,
+                f'{fn}_r{str(nr)}c{str(nc)}{ff}'
+            )
+            cmd = (
+                f'gdal_translate -of {drv} '
+                f'-srcwin {str(c)} {str(r)} '
+                f'{str(ntile_cols)} {str(ntile_rows)} '
+                f'{rst} {outrst}'
+            )
+
+            rcmd = execmd(cmd)
+
+            res.append(outrst)
+
+            nr += 1
+        
+        nc += 1
+    
+    return res
 

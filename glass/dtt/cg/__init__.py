@@ -252,13 +252,15 @@ def polylines_from_points(points, polylines, POLYLINE_COLUMN,
     return polylines
 
 
-def feat_to_pnt(inShp, outPnt, epsg=None):
+def feat_to_pnt(inShp, outPnt, epsg=None, geomcol='geometry', api='pandas'):
     """
     Get Centroid from each line in a PolyLine Feature Class
     """
     
     import os
+    import pandas as pd
     from osgeo  import ogr
+
     from glass.prop.df   import drv_name
     from glass.lyr.fld   import copy_flds
     from glass.prop.feat import lst_fld

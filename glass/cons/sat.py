@@ -39,6 +39,7 @@ def get_lwibands():
 
 def bandsmap():
     return {
+        'AOT_10m' : 'aot', 'SCL_20m' : 'scl',
         'B02_10m' : 'b02', 'B03_10m' : 'b03',
         'B04_10m' : 'b04', 'B08_10m' : 'b08',
         'B05_20m' : 'b05', 'B06_20m' : 'b06',

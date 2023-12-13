@@ -342,8 +342,7 @@ def grs_to_rst(grsRst, rst, as_cmd=None, allBands=None,
     if not as_cmd:
         from grass.pygrass.modules import Module
 
-        _flags = 'c' if not allBands else ''
-        _flags = f'{_flags}f' if dtype == 'Float32' else _flags
+        _flags = 'cf' if not allBands else 'f'
         
         m = Module(
             "r.out.gdal", input=grsRst, output=rst,
@@ -351,6 +350,7 @@ def grs_to_rst(grsRst, rst, as_cmd=None, allBands=None,
             nodata=nodata,
             createopt="INTERLEAVE=PIXEL,TFW=YES" if allBands else \
                 compress,
+            type=dtype if dtype else None,
             overwrite=True, run_=False, quiet=True
         )
         
@@ -360,21 +360,23 @@ def grs_to_rst(grsRst, rst, as_cmd=None, allBands=None,
         from glass.pys import execmd
         
         if not allBands:
-            opt = compress
+            opt = f"createopt=\"{compress}\""
         else:
             opt = "createopt=\"INTERLEAVE=PIXEL,TFW=YES\""
         
         flags = [
             '-c' if not allBands else '',
-            '-f' if dtype == 'Float32' else '',
-            '--overwrite', '--quiet'
+            '-f', '--overwrite', '--quiet'
         ]
         _flags = ' '.join(flags)
+
+        _type = "" if not dtype else f" type={dtype}"
         
         rcmd = execmd((
             f"r.out.gdal input={grsRst} output={rst} "
             f"{'' if not dtype else f'type={dtype} '}"
             f"{f'nodata={str(nodata)} ' if nodata != None else ''}"
+            f"{_type}"
             f"format={rstDrv[rstExt]} {opt} {_flags}"
         ))
     
@@ -634,7 +636,6 @@ def grsws_to_rst(f, outfolder, exclude=None):
 
             if not i:
                 from glass.prop.grs import list_raster
-                from glass.it.rst   import grs_to_rst
 
                 i += 1
             

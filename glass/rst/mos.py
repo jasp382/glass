@@ -113,14 +113,47 @@ def rseries(lst, out, meth, as_cmd=None):
     else:
         from glass.pys import execmd
 
+        ilst = ",".join(lst)
+
         rcmd = execmd((
-            "r.series input={} output={} method={} "
+            f"r.series input={ilst} output={out} "
+            f"method={meth} "
             "--overwrite --quiet"
-        ).format(
-            ",".join(lst), out, meth
         ))
     
     return out
+
+
+def fullgrass_rseries(ifolder, refrst, method, orst):
+    """
+    R. Series using grass
+    """
+
+    import os
+
+    from glass.wenv.grs import run_grass
+    from glass.pys.tm import now_as_str
+    from glass.pys.oss import lst_ff, fprop
+
+    loc = now_as_str()
+
+    gbase = run_grass(ifolder, location=loc, srs=refrst)
+
+    import grass.script.setup as gsetup
+
+    gsetup.init(gbase, ifolder, loc, "PERMANENT")
+
+    from glass.it.rst import rst_to_grs, grs_to_rst
+
+    rsts = [rst_to_grs(
+        r, fprop(r, 'fn')
+    ) for r in lst_ff(ifolder, file_format='.tif')]
+
+    prst = rseries(rsts, fprop(orst, 'fn'), method, as_cmd=True)
+
+    grs_to_rst(prst, orst)
+
+    return orst
 
 
 def bnds_to_mosaic(bands, outdata, ref_raster, loc=None):

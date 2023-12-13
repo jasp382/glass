@@ -3,7 +3,7 @@ Raster Charts
 """
 
 
-def rst_histogram(rst, bins, png):
+def rst_histogram(rst, bins, png, xaxis=None, figdim=(10,6)):
     """
     Create Raster Histogram
     """
@@ -22,14 +22,21 @@ def rst_histogram(rst, bins, png):
     fn = fprop(rst, 'fn')
 
     # Plot a histogram
-    f, ax = plt.subplots(figsize=(10, 6))
+    f, ax = plt.subplots(figsize=figdim)
 
     src.plot.hist(ax=ax, color="purple", bins=bins)
 
-    ax.set(
-        title=f"Distribution of {fn} Raster",
-        xlabel=fn, ylabel='Frequency'
-    )
+    if not xaxis:
+        ax.set(
+            title=f"Distribution of {fn} Raster",
+            xlabel=fn, ylabel='Frequency'
+        )
+    else:
+        ax.set(
+            title=f"Distribution of {fn} Raster",
+            xlabel=fn, ylabel='Frequency',
+            xticks=xaxis
+        )
     plt.savefig(png)
 
     return png

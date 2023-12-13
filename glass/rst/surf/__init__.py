@@ -2,117 +2,76 @@
 Surface tools for Raster
 """
 
+import os
+
+from glass.wenv.grs import run_grass
+
 """
 Terrain
 """
 
-from os import truncate
 
-
-def slope(demRst, slopeRst, data=None, api="pygrass"):
+def slope_aspect(dem, slope_rst=None, aspect_rst=None, api="grass", slope_units="degrees"):
     """
-    Get Slope Raster
-    
-    Data options:
-    * percent;
-    * degrees;
+    Generate Slope and Aspect Rasters from
+    Digital Elevation Model
     """
 
-    dataf = data if data == 'percent' or data == 'degrees' else 'degrees'
+    from glass.pys.oss import fprop, mkdir
+    from glass.pys.tm import now_as_str
 
-    if api == "pygrass":
-        from grass.pygrass.modules import Module
+    if not slope_rst and not aspect_rst:
+        bname      = fprop(dem, 'fn')
+        slope_rst  = os.path.join(os.path.dirname(dem), f'{bname}_slope.tif')
+        aspect_rst = os.path.join(os.path.dirname(dem), f'{bname}_aspect.tif')
     
-        sl = Module(
-            "r.slope.aspect", elevation=demRst, slope=slopeRst,
-            format=dataf,
-            overwrite=True, precision="FCELL", run_=False, quiet=True
-        )
+    # Create GRASS GIS session
+    gws, loc = mkdir(os.path.join(
+        os.path.dirname(dem),
+        now_as_str(utc=True)
+    )), 'surface_loc'
+
+    # Create GRASS GIS Location
+    gb = run_grass(gws, location=loc, srs=dem)
     
-        sl()
-    
-    elif api == "grass":
-        from glass.pys import execmd
-        
-        rcmd = execmd((
-            f"r.slope.aspect elevation={demRst} "
-            f"slope={slopeRst} format={dataf} "
-            f"precision=FCELL --overwrite --quiet"
-        ))
-    
+    # Start GRASS GIS Session
+    import grass.script.setup as gsetup
+    gsetup.init(gb, gws, loc, 'PERMANENT')
+
+    # Import GRASS GIS methods
+    from glass.it.rst import rst_to_grs, grs_to_rst
+    from glass.rst.surf.grs import slope, aspect
+
+    # Import dem
+    grs_dem = rst_to_grs(dem, as_cmd=True)
+
+    # Run Slope and Aspect
+    grs_slope = None if not slope_rst else slope(
+        grs_dem, fprop(slope_rst, 'fn'),
+        data=slope_units, api=api
+    )
+
+    grs_aspec = None if not aspect_rst else aspect(
+        grs_dem, fprop(aspect_rst, 'fn'),
+        from_north=True, api=api
+    )
+
+    oslope = None if not grs_slope else grs_to_rst(
+        grs_slope, slope_rst, rtype=float,
+        dtype="Float64"
+    )
+
+    oaspec = None if not grs_aspec else grs_to_rst(
+        grs_aspec, aspect_rst, rtype=float,
+        dtype="Float64"
+    )
+
+    if oslope and oaspec:
+        return oslope, oaspec
+    elif oslope and not oaspec:
+        return oslope
     else:
-        raise ValueError(f"API {api} is not available")
-    
-    return slopeRst
-
-
-def aspect(dem, rst_aspect, from_north=None, api="pygrass"):
-    """
-    Generate Aspect Raster
-    """
-
-    aspect_tmp = rst_aspect if not from_north else rst_aspect + '_normal'
-    
-
-    if api == 'pygrass':
-        from grass.pygrass.modules import Module
-
-        m = Module(
-            "r.slope.aspect", elevation=dem, aspect=aspect_tmp,
-            overwrite=True, precision="FCELL", run_=False, quiet=True
-        )
-
-        m()
-    
-    elif api == 'grass':
-        from glass.pys import execmd
-
-        rcmd = execmd((
-            f"r.slope.aspect elevation={dem} aspect={aspect_tmp} "
-            f"precision=FCELL --overwrite --quiet"
-        ))
-    
-    else:
-        raise ValueError(f"API {api} is not available")
-    
-    if from_north:
-        from glass.rst.alg import grsrstcalc
-
-        expression = None if not from_north else (
-            "if({r} == 0, -1, if({r} < 90, 90 - {r}, 450 - {r}))"
-        ).format(r=aspect_tmp)
-
-        rrcmd = grsrstcalc(expression, rst_aspect, api=api)
-    
-    return rst_aspect
-
-
-def curvature(dem, profile, tangential, ascmd=None):
-    """
-    Returns profile and tangential curvature rasters
-    """
-
-    if ascmd:
-        from glass.pys import execmd
-
-        rmcd = execmd((
-            f"r.slope.aspect elevation={dem} "
-            f"pcurvature={profile} tcurvature="
-            f"{tangential} --overwrite --quiet"
-        ))
-    
-    else:
-        from grass.pygrass.modules import Module
-
-        m = Module(
-            'r.slope.aspect', elevation=dem,
-            pcurvature=profile, tcurvature=tangential,
-            overwrite=True, run_=False, quiet=True
-        )
-
-        m()
-
-    return profile, tangential
+        return oaspec
 
 
 def gdal_slope(dem, srs, slope, unit='DEGREES'):

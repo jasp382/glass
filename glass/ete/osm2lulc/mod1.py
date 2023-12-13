@@ -139,7 +139,7 @@ def num_selection(osmdb, polyTbl, folder,
         rstCls = shp_to_rst(
             shp, None, cellsize, 0,
             os.path.join(folder, f'sel_{str(CLS)}.tif'),
-            epsg=srscode, rst_template=rstTemplate, api='gdal'
+            epsg=srscode, rst_template=rstTemplate, api='pygdal'
         )
         time_z = datetime.datetime.now().replace(microsecond=0)
         

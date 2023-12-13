@@ -2,6 +2,7 @@
 OSM TO LULC - Modules to deal with vetorial data
 """
 
+import os
 import datetime as dt
 
 from glass.cons.otol import DB_SCHEMA, OSM_TABLES, OSM_PK, OSM_GEOM
@@ -59,7 +60,8 @@ def module_1(tags, osmdb, epsg, gpkg, layer):
             f"SELECT {OSM_PK}, 'selection' AS {OTOL_MODULE}, "
             f"{lcls} AS {OTOL_LULC}, {geom_col} "
             f"FROM {OSM_TABLES['polygons']} AS tcls "
-            f"WHERE {str(clsdf[valcol].str.cat(sep=' OR '))}"
+            f"WHERE ({str(clsdf[valcol].str.cat(sep=' OR '))}) "
+            f"AND ST_Area(ST_MakeValid({OSM_GEOM})) > 0"
         )
 
         qs.append(q)
@@ -69,6 +71,12 @@ def module_1(tags, osmdb, epsg, gpkg, layer):
     # (one query by class)
     fq = " UNION ALL ".join(qs)
     time_c = dt.datetime.now().replace(microsecond=0)
+
+    # Save query for debuging purposes
+    with open(os.path.join(
+        os.path.dirname(gpkg), 'q_module1.txt'
+    ), 'w') as txt:
+        txt.write(fq)
 
     # Check if we have interest data
     nrows = row_num(osmdb, fq, api='psql')
@@ -137,7 +145,8 @@ def module_2(tags, osmdb, epsg, gpkg, layer):
     build_tbl = (
         f"SELECT building, {geom_ply} "
         f"FROM {OSM_TABLES['polygons']} "
-        "WHERE building IS NOT NULL"
+        "WHERE building IS NOT NULL "
+        f"AND ST_Area(ST_MakeValid({OSM_GEOM})) > 0"
     )
 
     # New tables to be created
@@ -283,6 +292,7 @@ def module_3_and_4(tags, osmdb, epsg, gpkg, layer, upper=True):
     modcol = DB_SCHEMA['MODULES']['NAME']
 
     o = ">" if upper else "<="
+    whrarea = f" AND ST_Area(ST_MakeValid({OSM_GEOM})) > 0"if o == "<=" else ""
     module = 'area_upper' if upper else 'area_lower'
 
     # Get tags related with module one
@@ -330,7 +340,7 @@ def module_3_and_4(tags, osmdb, epsg, gpkg, layer, upper=True):
                 f"FROM {OSM_TABLES['polygons']} AS tcls "
                 f"WHERE ({str(subclsdf[valcol].str.cat(sep=' OR '))}) "
                 f"AND ST_Area(ST_MakeValid(ST_Transform({OSM_GEOM}, {epsg}))) {o} "
-                f"{t}"
+                f"{t}{whrarea}"
             )
 
             qs.append(q)
@@ -515,7 +525,8 @@ def module_6(tags, osmdb, epsg, gpkg, layer):
                 f"SELECT {OSM_PK}, 'buildings' AS {OTOL_MODULE}, "
                 f"{lcls} AS {OTOL_LULC}, {geom_col} "
                 f"FROM {tbl} AS tcls "
-                f"WHERE {str(clsdf[valcol].str.cat(sep=' OR '))}"
+                f"WHERE ({str(clsdf[valcol].str.cat(sep=' OR '))}) "
+                f"AND ST_Area(ST_MakeValid({OSM_GEOM})) > 0"
             )
 
             qs.append(q)

@@ -73,7 +73,7 @@ def infovalue(landslides, variables, iv_rst):
         land_raster = shp_to_rst(
             land_poly, None, rst_cellsize(variables[0], gisApi='gdal'), -9999,
             os.path.join(workspace, 'landslides_rst.tif'),
-            rst_template=variables[0], api='gdal'
+            rst_template=variables[0], api='pygdal'
         )
         
         land_rst = rst_to_array(land_raster)
@@ -209,7 +209,7 @@ def grs_infovalue(movs, _var, refrst, out):
     from glass.it.shp   import shp_to_grs
     from glass.it.rst   import rst_to_grs, grs_to_rst
     from glass.rst.alg  import grsrstcalc
-    from glass.rst.rcls import category_rules, rcls_rst
+    from glass.rst.rcls.grs import category_rules, grs_rcls
 
     # Check if movs are raster
     isrst = is_rst(movs)
@@ -240,7 +240,7 @@ def grs_infovalue(movs, _var, refrst, out):
     # Ensure that we have only cells with data in all rasters
     refrules = category_rules({0 : 1}, os.path.join(ws, loc, 'refrules.txt'))
 
-    gref = rcls_rst(gref, refrules, f'rcls_{gref}', api="pygrass")
+    gref = grs_rcls(gref, refrules, f'rcls_{gref}', as_cmd=True)
 
     grsvar = [grsrstcalc(f"{r} * {gref}", f"{r}_san") for r in grsvar]
 
@@ -336,7 +336,7 @@ def grs_infovalue(movs, _var, refrst, out):
             vi[r], os.path.join(ws, loc, f'vi_{r}.txt')
         )
 
-        virst = rcls_rst(r, rules, f'vi_{r}', api="pygrass")
+        virst = grs_rcls(r, rules, f'vi_{r}', as_cmd=True)
     
         vivar.append(virst)
 

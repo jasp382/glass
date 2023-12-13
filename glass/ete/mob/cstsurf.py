@@ -88,14 +88,14 @@ def mk_costsuf(dem, lulc, lucol, rdv, kph, barr, out):
     # Import GRASS GIS Modules
     from glass.it.shp     import shp_to_grs
     from glass.it.rst     import rst_to_grs, grs_to_rst
-    from glass.rst.surf   import slope
-    from glass.rst.rcls   import interval_rules, rcls_rst, category_rules
+    from glass.rst.surf.grs import slope
+    from glass.rst.rcls.grs import interval_rules, grs_rcls, category_rules
     from glass.gp.ovl.grs import grsunion
     from glass.gp.gen     import dissolve
     from glass.tbl.grs    import add_table, cols_calc
     from glass.tbl.col    import add_fields
     from glass.dtt.torst  import grsshp_to_grsrst
-    from glass.rst.rcls   import set_null
+    from glass.rst.rcls.grs import set_null
     from glass.rst.mos    import rsts_to_mosaic
     from glass.rst.local  import combine
     from glass.prop.rst   import raster_report
@@ -109,7 +109,7 @@ def mk_costsuf(dem, lulc, lucol, rdv, kph, barr, out):
     dclvrules = interval_rules(slope_rules, os.path.join(
         ws, 'sloperules.txt'
     ))
-    rcls_slope = rcls_rst(rslope, dclvrules, 'rcls_dclv', api="pygrass")
+    rcls_slope = grs_rcls(rslope, dclvrules, 'rcls_dclv', as_cmd=True)
 
     # LULC - Dissolve, union with barriers and conversion to raster
     glulc = shp_to_grs(lulc, fprop(lulc, 'fn'))
@@ -171,8 +171,8 @@ def mk_costsuf(dem, lulc, lucol, rdv, kph, barr, out):
     for l in otxt.readlines():
         try:
             if c >= 4:
-                pl = l.split('|')
-                cat = pl[2].split('; ')
+                pl   = l.split('|')
+                cat  = pl[2].split('; ')
                 cat1 = cat[0].split(' ')
                 cat2 = cat[1].split(' ')
 

@@ -418,6 +418,8 @@ def shp_to_psql(dbname, shps, api="pandas", tnames=None,
                 f'-lco GEOMETRY_NAME=geom'
             )
 
+            print(cmd)
+
             ocmd = execmd(cmd)
         
         else:

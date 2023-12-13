@@ -113,7 +113,7 @@ def joinLines_by_spatial_rel_raster(mainLines, mainId, joinLines,
     )
     
     boundRst = shp_to_rst(boundary, None, 5, -99, os.path.join(
-        workspace, "rst_base.tif"), epsg=epsg, api='gdal')
+        workspace, "rst_base.tif"), epsg=epsg, api='pygdal')
     
     # Start GRASS GIS Session
     gbase = run_grass(workspace, location="grs_loc", srs=boundRst)

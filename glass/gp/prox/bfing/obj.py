@@ -177,10 +177,7 @@ def ogr_buffer(geom, radius, out_file, srs=None):
             buffer_shp.Destroy()
             inShp.Destroy()
             
-            if srs:
-                def_prj(out_file, epsg=srs)
-            else:
-                def_prj(out_file, template=geom)
+            def_prj(out_file, epsg=srs if srs else geom)
             
         else:
             raise ValueError('The given path does not exist')

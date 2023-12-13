@@ -42,6 +42,28 @@ def rst_geoprop(rst):
     return left, cellx, top, celly
 
 
+def rst_fullprop(rst):
+    """
+    Return all geometric properties of a raster file
+    """
+
+    img = gdal.Open(rst)
+
+    lnhs = int(img.RasterYSize)
+    cols = int(img.RasterXSize)
+
+    left, cellx, z, top, c, celly = img.GetGeoTransform()
+
+    right  = left + (cols * cellx)
+    bottom = top  - (lnhs * abs(celly))
+
+    extent   = (left, right, bottom, top)
+    cellsize = (cellx, celly)
+    shape    = (lnhs, cols)
+
+    return extent, cellsize, shape
+
+
 def rst_ext(rst):
     """
     Return a array with the extent of one raster dataset

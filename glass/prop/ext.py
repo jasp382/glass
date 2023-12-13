@@ -2,8 +2,10 @@
 Extent related
 """
 
+import os
 
-def get_ext(ingeo, oepsg=None):
+
+def get_ext(ingeo, oepsg=None, geolyr=None):
     """
     Get Extent of any GIS Data
     
@@ -16,19 +18,36 @@ def get_ext(ingeo, oepsg=None):
     
     if irst and not ishp:
         from glass.prop.rst import rst_ext as gext
+
+        isrc = ingeo
     
     elif not irst and ishp:
         from glass.prop.shp import get_ext as gext
+
+        isrc = ingeo
         
     else:
-        return None
+        # Probabily, we have a geodatabase
+        if '.gdb' in ingeo and not geolyr:
+            from glass.prop.shp import get_ext as gext
+
+            isrc  = os.path.dirname(ingeo)
+            geolyr = os.path.basename(ingeo)
+
+            if isrc[-4:] != '.gdb':
+                isrc = os.path.dirname(isrc)
+            
+            ishp = True
+        
+        else: return None
     
-    ext = gext(ingeo)
+    ext = gext(isrc) if not ishp else \
+        gext(isrc, lyrname=geolyr)
     
     if oepsg:
         from glass.prop.prj import get_epsg
         
-        iepsg = get_epsg(ingeo)
+        iepsg = get_epsg(isrc, lyrname=geolyr)
         
         if not iepsg:
             raise ValueError('cannot get EPSG of input file')

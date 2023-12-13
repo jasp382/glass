@@ -1,2 +1,0 @@
-Fire Location Assessment Module:
-====================

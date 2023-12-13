@@ -281,8 +281,8 @@ def num_assign_builds(osmdb, pntTbl, polTbl, folder, cells, srscode, rstT,
         time_x = dt.datetime.now().replace(microsecond=0)
         rstbuild = shp_to_rst(
             buildShp, None, cells, 0,
-            os.path.join(folder, 'rst_build_{}.tif'.format(cls)),
-            srscode, rstT, api='gdal'
+            os.path.join(folder, f'rst_build_{cls}.tif'),
+            srscode, rstT, api='pygdal'
         )
         time_y = dt.datetime.now().replace(microsecond=0)
         
@@ -322,16 +322,16 @@ def num_assign_builds(osmdb, pntTbl, polTbl, folder, cells, srscode, rstT,
             # To RST
             brst = shp_to_rst(
                 shpB, None, cells, 0,
-                os.path.join(folder, 'nrst_build_{}.tif'.format(lulc_cls)),
-                srscode, rstT, api='gdal'
+                os.path.join(folder, f'nrst_build_{lulc_cls}.tif'),
+                srscode, rstT, api='pygdal'
             )
             time_o = dt.datetime.now().replace(microsecond=0)
             
             resLyr[int(lulc_cls)] = [brst]
             
-            timeGasto[int(lulc_cls)] = ('to_shp_{}'.format(str(lulc_cls)), time_n - time_m)
+            timeGasto[int(lulc_cls)] = (f'to_shp_{str(lulc_cls)}', time_n - time_m)
             timeGasto[int(lulc_cls) + 1] = (
-                'to_rst_n_{}'.format(str(lulc_cls)), time_o - time_n
+                f'to_rst_n_{str(lulc_cls)}', time_o - time_n
             )
     
     thrds = [

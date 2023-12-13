@@ -63,7 +63,18 @@ def match_cellsize_and_clip(rstBands, refRaster, outFolder,
 
         # Add clipgeo to GRASS
         if not clip_is_rst:
-            grs_clip = shp_to_grs(clipgeo, fprop(clipgeo, 'fn'), asCMD=True)
+            if '.gdb' in clipgeo:
+                lyr = os.path.basename(clipgeo)
+
+                clipgeo = os.path.dirname(clipgeo)
+
+                if clipgeo[-4:] != '.gdb':
+                    clipgeo = os.path.dirname(clipgeo)
+            
+            else:
+                lyr = None
+            
+            grs_clip = shp_to_grs(clipgeo, asCMD=True, lyrname=lyr)
 
             # SHP to Raster
             rst_clip = shp_to_rst(
@@ -83,7 +94,7 @@ def match_cellsize_and_clip(rstBands, refRaster, outFolder,
     # Export bands
     return [grs_to_rst(
         i, os.path.join(outFolder, i + '.tif'),
-        is_int=int if isint else float
+        rtype=int if isint else float
     ) for i in grs_bands]
 
 

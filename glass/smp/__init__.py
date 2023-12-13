@@ -2,20 +2,24 @@
 Tools for sampling
 """
 
+import os
+import numpy as np
+
+from osgeo import gdal
+
+from glass.prop.img import rst_epsg
+from glass.wt.rst   import obj_to_rst
+
+
 
 """
 Get values for sample from raster
 """
 
-def pnt_val_on_rst(pntX, pntY, raster, geotransform=None,
-                               rstShape=None):
+def pnt_val_on_rst(pntX, pntY, raster, geotransform=None, rstShape=None):
     """
     Extract, for a given point, the value of a cell with the same location
     """
-    
-    import os
-    import numpy
-    from osgeo import gdal
     
     if type(raster) == str:
         if os.path.isfile(raster):
@@ -24,7 +28,7 @@ def pnt_val_on_rst(pntX, pntY, raster, geotransform=None,
             band = img.GetRasterBand(1)
         
             if not rstShape:
-                tmpArray = numpy.array(band.ReadAsArray())
+                tmpArray = np.array(band.ReadAsArray())
                 nrLnh, nrCols = tmpArray.shape
         
             else:
@@ -40,7 +44,7 @@ def pnt_val_on_rst(pntX, pntY, raster, geotransform=None,
                 'If raster is not a file, geotransform must be specified')
         
         if not rstShape:
-            tmpArray = numpy.array(raster.ReadAsArray())
+            tmpArray = np.array(raster.ReadAsArray())
             nrLnh, nrCols = tmpArray.shape
         
         else:
@@ -65,15 +69,13 @@ def pnt_val_on_rst(pntX, pntY, raster, geotransform=None,
 
 
 def gdal_valuesList_to_pointsList(raster, points_xy):
-    import numpy
-    from osgeo import gdal
     
     img = gdal.Open(raster)
     
     geo_transform = img.GetGeoTransform()
     band = img.GetRasterBand(1)
     
-    array = numpy.array(band.ReadAsArray())
+    array = np.array(band.ReadAsArray())
     lnh, col = array.shape
     
     values = []
@@ -108,7 +110,7 @@ def rst_val_to_points(pnt, rst):
     }
     """
     
-    from osgeo         import ogr, gdal
+    from osgeo         import ogr
     from glass.prop.df import drv_name
     
     values_by_point = {}
@@ -132,7 +134,7 @@ def rst_val_to_points(pnt, rst):
     return values_by_point
 
 
-def rst_val_to_points2(pntShp, listRasters):
+def rst_val_to_points2(pnt, listRasters):
     """
     Pick raster value for each point in pntShp
     """
@@ -144,7 +146,7 @@ def rst_val_to_points2(pntShp, listRasters):
     listRasters = obj_to_lst(listRasters)
     
     shp = ogr.GetDriverByName(
-        drv_name(pntShp)).Open(pnt, 0)
+        drv_name(pnt)).Open(pnt, 0)
     
     lyr = shp.GetLayer()
     
@@ -185,7 +187,6 @@ def extract_random_features(inshp, nfeat, outshp, is_percentage=None):
     and save them in a new file
     """
 
-    import numpy as np
     from glass.rd.shp   import shp_to_obj
     from glass.wt.shp   import obj_to_shp
     from glass.prop.prj import shp_epsg
@@ -223,11 +224,6 @@ def proprndcells_to_rst(inrst, class_proportion, out_rst,
     The number of cells extracted for each class are based on the values
     in class_proportion object
     """
-
-    from osgeo        import gdal
-    import numpy      as np
-    from glass.prop.img import rst_epsg
-    from glass.wt.rst   import obj_to_rst
 
     img = gdal.Open(inrst, gdal.GA_ReadOnly)
 
@@ -315,3 +311,67 @@ def proprndcells_to_rst(inrst, class_proportion, out_rst,
     obj_to_rst(res, out_rst, img.GetGeoTransform(), rst_epsg(img), noData=nd_val)
 
     return out_rst
+
+
+def random_cells_extract(irst, ncells, orst):
+    """
+    Extract some cells from one raster and save them into a new raster
+
+    The cells are extracted in a random way for each value in inrst.
+    The number of cells extracted for each value will be defined by
+    the ncells objet
+    """
+
+    img = gdal.Open(irst, gdal.GA_ReadOnly)
+
+    nd = img.GetRasterBand(1).GetNoDataValue()
+
+    num = img.GetRasterBand(1).ReadAsArray()
+
+    # Reshape
+    onum = num.reshape(num.shape[0] * num.shape[1])
+
+    # Get values
+    idval = list(np.unique(onum))
+
+    # Remove NoData
+    if nd in idval:
+        idval.remove(nd)
+    
+    # Get absolute frequencies of inrst
+    # Exclude no data values
+    ref_sem_nd = onum[onum != nd]
+    freq = np.bincount(ref_sem_nd)
+    freq = freq[freq != 0]
+    
+    # Get index array
+    idx_ref = np.arange(onum.size)
+
+    # Get indexes for cells of each class
+    idx_cls = [idx_ref[onum == c] for c in idval]
+
+    # Get indexes to be selected for each class
+    sel_val = [np.random.choice(
+        idx_cls[e], size=ncells if ncells < freq[e] else freq[e],
+        replace=False
+    ) for e in range(len(idval))]
+
+    # Create result
+    res = np.zeros(onum.shape, dtype=onum.dtype)
+
+    # Place selected cells in result array
+    for c in range(len(idval)):
+        res[sel_val[c]] = idval[c]
+
+    # Place nodata
+    np.place(res, onum == nd, nd)
+    np.place(res, res == 0, nd)
+
+    # Reshape
+    res = res.reshape(num.shape)
+
+    # Save result
+    obj_to_rst(res, orst, img.GetGeoTransform(), rst_epsg(img), noData=nd)
+
+    return orst
+

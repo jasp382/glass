@@ -49,8 +49,9 @@ def shp_sref(shp, lyrn=None):
         c = 0
     
     else:
-        data = ogr.GetDriverByName(
-            drv_name(shp)).Open(shp)
+        drv = 'OpenFileGDB' if '.gdb' in shp else drv_name(shp)
+
+        data = ogr.GetDriverByName(drv).Open(shp, 0)
         
         lyr = data.GetLayer() if not lyrn \
             else data.GetLayer(lyrn)
@@ -167,7 +168,7 @@ def rst_epsg(rst, returnIsProj=None):
 Generic Methods
 """
 
-def get_epsg(inFile, is_proj=None):
+def get_epsg(inFile, is_proj=None, lyrname=None):
     """
     Get EPSG of any GIS File
     """
@@ -180,10 +181,22 @@ def get_epsg(inFile, is_proj=None):
         return rst_epsg(inFile, returnIsProj=is_proj)
     
     elif not irst and ishp:
-        return shp_epsg(inFile, returnIsProj=is_proj)
+        return shp_epsg(
+            inFile,
+            returnIsProj=is_proj,
+            lyrname=lyrname
+        )
     
     else:
-        return None
+        # Assuming we have a geodatabase
+        if inFile[-4:] != '.gdb':
+            lyrname = os.path.basename(inFile)
+            inFile = os.path.dirname(inFile)
+
+            if inFile[-4:] != '.gdb':
+                inFile = os.path.dirname(inFile)
+            
+        return shp_epsg(inFile, returnIsProj=is_proj, lyrname=lyrname)
 
 
 def get_srs(in_file):

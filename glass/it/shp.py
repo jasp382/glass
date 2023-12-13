@@ -6,7 +6,7 @@ import os
 
 from glass.pys import execmd
 
-def shp_to_shp(inshp, outshp, gapi='ogr', spatialite=None):
+def shp_to_shp(inshp, outshp, gapi='ogr', spatialite=None, lyrname=None):
     """
     Convert a vectorial file to another with other file format
     
@@ -27,8 +27,10 @@ def shp_to_shp(inshp, outshp, gapi='ogr', spatialite=None):
             splite = ' -dsco "SPATIALITE=YES"'
         else:
             splite = ''
+
+        lstr = "" if not lyrname else f' {lyrname}'
     
-        cmd = f'ogr2ogr -f "{drv}" {outshp} {inshp}{splite}'
+        cmd = f'ogr2ogr -f "{drv}" {outshp} {inshp}{lstr}{splite}'
     
         # Run command
         cmdout = execmd(cmd)
@@ -117,10 +119,10 @@ def tblpnt_to_shp(tbl, shp, xcol, ycol, epsg, outepsg=None,
     Regular table with points to Feature Class
     """
 
-    from glass.rd     import tbl_to_obj
-    from glass.it.pd  import pnt_dfwxy_to_geodf
-    from glass.prj    import df_prj
-    from glass.wt.shp import df_to_shp
+    from glass.rd      import tbl_to_obj
+    from glass.it.pd   import pnt_dfwxy_to_geodf
+    from glass.prj.obj import df_prj
+    from glass.wt.shp  import df_to_shp
 
     df = tbl_to_obj(
         tbl, _delimiter=delimiter,
@@ -262,6 +264,7 @@ def dbtbl_to_shp(db, tbl, geom_col, outShp, where=None, inDB='psql',
     * sqlite
     * pgsql2shp
     * grass
+    * ogr2ogr
     
     if outShpIsGRASS if true, the method assumes that outShp is
     a GRASS Vector. That implies that a GRASS Session was been
@@ -404,7 +407,7 @@ def db_to_gpkg(db, itbl, gpkg, otbl=None):
 
     otbl = itbl if not otbl else otbl
 
-    up = f" -update -append" if os.path.exists(gpkg) \
+    up = " -update -append" if os.path.exists(gpkg) \
         else ""
 
     cmd = (
@@ -415,6 +418,28 @@ def db_to_gpkg(db, itbl, gpkg, otbl=None):
     )
 
     ocmd = execmd(cmd)
+
+    return gpkg
+
+
+def gdb_to_gpkg(gdb, layers, gpkg):
+    """
+    GeoDatabase Feature Classes to a new GeoPackage
+    """
+
+    from glass.pys import obj_to_lst
+
+    lyrs = obj_to_lst(layers)
+
+    for i in range(len(lyrs)):
+        up = " -update -append" if i else ""
+
+        cmd = (
+            f"ogr2ogr{up} -f \"GPKG\" {gpkg} -nln \"{lyrs[i]}\" "
+            f"{gdb} -dialect sqlite -sql \"SELECT * FROM {lyrs[i]}\""
+        )
+
+        rcmd = execmd(cmd)
 
     return gpkg
 

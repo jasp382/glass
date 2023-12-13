@@ -48,7 +48,7 @@ def grs_rst_roads(osmdb, lineTbl, polyTbl, LULC_CLS):
     
     if NB:
         from glass.rst.alg  import grsrstcalc
-        from glass.rst.rcls import set_null, null_to_value
+        from glass.rst.rcls.grs import set_null, null_to_value
         
         buildsShp = dbtbl_to_shp(
             osmdb, polyTbl, "geom", "all_builds",
@@ -70,7 +70,7 @@ def grs_rst_roads(osmdb, lineTbl, polyTbl, LULC_CLS):
         
         # Do the math: roads + builds | if builds and roads at the same cell
         # cell will be null in the road layer
-        roadsRes = rstcalc(f"{roadRst} + {buildsRst}", "cls_roads")
+        roadsRes = grsrstcalc(f"{roadRst} + {buildsRst}", "cls_roads")
         time_l = dt.datetime.now().replace(microsecond=0)
         
         return {LULC_CLS : roadsRes}, {
@@ -333,7 +333,7 @@ def num_roads(osmdata, nom, lineTbl, polyTbl, folder, cellsize, srs, rstTemplate
         distRst = shp_to_rst(
             roadFile, None, cellsize, -1,
             os.path.join(folder, 'rst_roads.tif'),
-            epsg=srs, rst_template=rstTemplate, api="gdal"
+            epsg=srs, rst_template=rstTemplate, api="pygdal"
         )
         time_d = dt.datetime.now().replace(microsecond=0)
         
@@ -367,7 +367,7 @@ def num_roads(osmdata, nom, lineTbl, polyTbl, folder, cellsize, srs, rstTemplate
         bRst = shp_to_rst(
             bShp, None, cellsize, -1,
             os.path.join(folder, 'road_builds.tif'),
-            epsg=srs, rst_template=rstTemplate, api='gdal'
+            epsg=srs, rst_template=rstTemplate, api='pygdal'
         )
         time_g = dt.datetime.now().replace(microsecond=0)
         
@@ -471,7 +471,7 @@ def pg_num_roads(osmdb, nom, lnhTbl, polyTbl, folder, cellsize, srs, rstT):
     roadsRst = shp_to_rst(
         bufferShp, None, cellsize, 0,
         os.path.join(folder, "rst_roads.tif"), epsg=srs, rst_template=rstT,
-        api='gdal'
+        api='pygdal'
     )
     time_g = datetime.datetime.now().replace(microsecond=0)
     
