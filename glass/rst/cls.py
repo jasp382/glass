@@ -104,7 +104,7 @@ def img_clustering(imgs, out, method="k-means", n_cls=8):
 
 
 def train_to_mdl(train_rst, imgs, outmdl, ntrees=1000, fileformat='.tif',
-                 method='RandomForest'):
+                 method='RandomForest', mxsamples=None):
     """
     Train a model for classification and save the model in a file
 
@@ -197,7 +197,8 @@ def train_to_mdl(train_rst, imgs, outmdl, ntrees=1000, fileformat='.tif',
     # Fit model
     if method == 'RandomForest':
         m = RandomForestClassifier(
-            n_estimators=ntrees, random_state=0, n_jobs=-1
+            n_estimators=ntrees, random_state=0, n_jobs=-1,
+            max_samples=mxsamples
         )
     
     elif method == 'NaiveBayes':
