@@ -15,8 +15,8 @@ def nrsts_fm_rst(rst, rows, cols, out_fld, bname):
     rasters could have.
     """
 
-    from glass.prop.img import rst_epsg
-    from glass.wt.rst   import ext_to_rst
+    from glass.prop.img      import rst_epsg
+    from glass.dtt.rst.torst import ext_to_rst
 
     # Open Raster
     img = gdal.Open(rst, gdal.GA_ReadOnly)

@@ -17,7 +17,7 @@ def resample_s2img(imgzip, ref, ofolder, reflyr=None,
     from glass.pys.tm import now_as_str
     from glass.prop.ext import get_ext
     from glass.prop.prj import get_epsg
-    from glass.wt.shp import coords_to_boundshp
+    from glass.dtt.toshp import coords_to_boundshp
     from glass.wenv.grs import run_grass
 
     bandsww = bands if bands else get_lwibands()
@@ -69,7 +69,7 @@ def resample_s2img(imgzip, ref, ofolder, reflyr=None,
     from glass.it.shp    import shp_to_grs
     from glass.wenv.grs  import shp_to_region, align_region, rst_to_region
     from glass.rst.rcls.grs  import set_null
-    from glass.dtt.torst import grsshp_to_grsrst as shp_to_rst
+    from glass.dtt.rst.torst import grsshp_to_grsrst as shp_to_rst
 
     # Import all bands we want
     bands_ = {bmap[b] : _bands[b] for b in _bands}

@@ -43,13 +43,13 @@ def osm_vs_imd(osmshp, imdrst, outshp, outrst=None):
     gsetup.init(gb, ws, loc, 'PERMANENT')
 
     # GRASS GIS Modules
-    from glass.it.shp     import shp_to_grs, grs_to_shp
-    from glass.it.rst     import rst_to_grs, grs_to_rst
-    from glass.gp.gen     import dissolve
-    from glass.tbl.col    import add_fields, cols_calc
-    from glass.gp.ovl.grs import grsintersection
-    from glass.smp        import sample_to_points
-    from glass.dtt.torst  import grsshp_to_grsrst
+    from glass.it.shp        import shp_to_grs, grs_to_shp
+    from glass.it.rst        import rst_to_grs, grs_to_rst
+    from glass.gp.gen        import dissolve
+    from glass.tbl.col       import add_fields, cols_calc
+    from glass.gp.ovl.grs    import grsintersection
+    from glass.smp.pnt       import sample_to_points
+    from glass.dtt.rst.torst import grsshp_to_grsrst
 
     # Import data
     osmgrs = shp_to_grs(osmshp, fprop(osmshp, 'fn'), filterByReg=True)

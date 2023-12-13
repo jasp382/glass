@@ -46,7 +46,7 @@ import numpy as np
 from glass.it.osm import osm_to_psql
 from glass.it.shp import dbtbl_to_shp
 from glass.wenv.grs import run_grass
-from glass.dp.torst import shp_to_rst
+from glass.dtt.rst.torst import shp_to_rst
 from glass.rd.shp import shp_to_obj
 from glass.wt.shp import df_to_shp
 

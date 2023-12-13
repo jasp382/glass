@@ -104,7 +104,7 @@ def img_clustering(imgs, out, method="k-means", n_cls=8):
 
 
 def train_to_mdl(train_rst, imgs, outmdl, ntrees=1000, fileformat='.tif',
-                 method='RandomForest', mxsamples=None):
+                 method='RandomForest', mxsamples=None, randomtrain=None, sample_dim=100000):
     """
     Train a model for classification and save the model in a file
 
@@ -113,6 +113,8 @@ def train_to_mdl(train_rst, imgs, outmdl, ntrees=1000, fileformat='.tif',
     * NaiveBayes;
     * LinearSupportVectorMachine;
     * LogisticRegression.
+
+    if randomtrain, Extract random pixels from train file
     """
 
     from sklearn.ensemble     import RandomForestClassifier
@@ -193,6 +195,57 @@ def train_to_mdl(train_rst, imgs, outmdl, ntrees=1000, fileformat='.tif',
             X[:, f] = a
 
             f += 1
+    
+    # if random train
+    if randomtrain:
+        # Produce Random Samples for each class in Y
+        # Mantain class proportion in random samples
+        val = list(np.unique(Y)) # Get Classes
+        freq = np.bincount(Y) # Get classes absolute frequencies
+        freq = freq[freq != 0]
+
+        # Get classes relative frequencies
+        ncells = freq.sum()
+        perc = [i / ncells * 100 for i in freq]
+
+        # Get Number of random cells for each class in the random sample
+        # The goal is to mantain class proportion in random sample
+        ncells_by_class = [int(round(c * sample_dim / 100, 0)) for c in perc]
+
+        # Get Y sub-array for each class
+        ny = [Y[Y == v] for v in val]
+        # Get indices to use in the training process
+        # Select indices randomly
+        ry = [np.random.choice(
+            np.arange(ny[i].size), size=ncells_by_class[i],
+            replace=False
+        ) for i in range(len(ncells_by_class))]
+
+        # Place 0 in ny array's... 0 cells will be used for training
+        for i in range(len(ry)):
+            ny[i][ry[i]] = 0
+
+        # Get X values for ny array's
+        nx = [X[Y == v] for v in val]
+
+        # Get Y array's only with cells for training
+        # Put there original class ID
+        sy = [i[i == 0] for i in ny]
+        for i in range(len(sy)):
+            sy[i][:] = val[i]
+    
+        # Select random X cells
+        rx = [nx[v][ny[v] == 0] for v in range(len(val))]
+
+        # Put every class array into only one
+        # Do it for X and Y
+        new_y = sy[0]
+        new_x = rx[0]
+        for i in range(1, len(sy)):
+            new_y = np.concatenate((new_y, sy[i]), axis=0)
+            new_x = np.concatenate((new_x, rx[i]), axis=0)
+        
+        X, Y = new_x, new_y
 
     # Fit model
     if method == 'RandomForest':

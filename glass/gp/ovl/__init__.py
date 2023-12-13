@@ -206,7 +206,7 @@ def optimized_union_anls(lyr_a, lyr_b, outShp, ref_boundary,
     from glass.wenv.grs  import run_grass
     from glass.dtt.split import eachfeat_to_newshp
     from glass.dtt.mge   import shps_to_shp
-    from glass.wt.rst    import shpext_to_rst
+    from glass.dtt.rst.torst import shpext_to_rst
     from glass.prop.ext  import get_ext
     
     if workspace:

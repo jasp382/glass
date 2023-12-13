@@ -15,17 +15,17 @@ def rm_mixed_pixels(osmlulc, osmlyr, lulc_col, refimg, out):
     Remove mixed pixels in OSM2LULC results
     """
 
-    from glass.dtt.cg.sql import polyg_to_lines
-    from glass.dtt.split  import split_shp_by_attr
-    from glass.dtt.torst  import shp_to_rst, grsshp_to_grsrst
-    from glass.it.db      import shp_to_psql
-    from glass.it.shp     import shp_to_grs
-    from glass.prj        import proj
-    from glass.prop.prj   import get_epsg, shp_epsg
-    from glass.pys.tm     import now_as_str
-    from glass.rst.mos    import rsts_to_mosaic
-    from glass.rst.rcls.grs import null_to_value, set_null
-    from glass.sql.db     import create_pgdb
+    from glass.dtt.cg.sql    import polyg_to_lines
+    from glass.dtt.split     import split_shp_by_attr
+    from glass.dtt.rst.torst import shp_to_rst, grsshp_to_grsrst
+    from glass.it.db         import shp_to_psql
+    from glass.it.shp        import shp_to_grs
+    from glass.prj           import proj
+    from glass.prop.prj      import get_epsg, shp_epsg
+    from glass.pys.tm        import now_as_str
+    from glass.rst.mos       import rsts_to_mosaic
+    from glass.rst.rcls.grs  import null_to_value, set_null
+    from glass.sql.db        import create_pgdb
 
     # Setup workspace and GRASS GIS Session
     # Check if outfolder exists
@@ -54,9 +54,12 @@ def rm_mixed_pixels(osmlulc, osmlyr, lulc_col, refimg, out):
     oepsg = get_epsg(refimg)
 
     if iepsg != oepsg:
+        _ilyr = osmlyr if osmlyr else None
+        osmlyr = osmlyr if osmlyr else fprop(osmlyr, 'fn')
         osmlulc = proj(
             osmlulc, tmpgpkg, oepsg, inEPSG=iepsg,
-            api="ogr2ogr", ilyr=osmlyr, olyr=osmlyr
+            api="ogr2ogr",
+            ilyr=_ilyr, olyr=osmlyr
         )
     
     # Create DB
@@ -65,7 +68,7 @@ def rm_mixed_pixels(osmlulc, osmlyr, lulc_col, refimg, out):
     # Send data to the database
     geotbl = shp_to_psql(
         db, osmlulc, api='ogr2ogr',
-        lyrname={osmlulc: osmlyr}
+        lyrname={osmlulc: osmlyr} if osmlyr else None
     )
 
     # Transform polygons into lines
@@ -302,7 +305,7 @@ def apply_idxfilter(lulc_rst, idxrst, idx_rules, fraster, watercls=None):
 
         exp = (
             f"if({lulc_grs} == {watercls} && {rfnl} == 0, "
-            f"99, {rfnl})"
+            f"{str(watercls)}, {rfnl})"
         )
         rfnl = grsrstcalc(exp, f"{rfnl}_watercorr", ascmd=True)
 

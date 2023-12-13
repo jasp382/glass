@@ -13,7 +13,7 @@ from glass.gp.gen   import dissolve
 
 
 def lulc_by_cell(tid, boundary, lulc_shps, fishnet, result, workspace):
-    from glass.dtt.torst import shp_to_rst
+    from glass.dtt.rst.torst import shp_to_rst
 
     bname = fprop(boundary, 'fn')
     # Boundary to Raster
@@ -137,13 +137,13 @@ def osmlulc_to_s2grid(ref_raster, osmtolulc, lucol, tmp_folder, results):
     OSM LULC to Sentinel-2 GRID
     """
 
-    from glass.smp           import nfishnet_fm_rst
-    from glass.pys.oss       import lst_ff, cpu_cores
-    from glass.wt            import obj_to_tbl
-    from glass.pd.split      import df_split
-    from glass.rd.shp        import shp_to_obj
-    from glass.wt.shp        import df_to_shp
-    from glass.wt.shp import shpext_to_boundshp
+    from glass.smp.fish  import nfishnet_fm_rst
+    from glass.pys.oss   import lst_ff, cpu_cores
+    from glass.wt        import obj_to_tbl
+    from glass.pd.split  import df_split
+    from glass.rd.shp    import shp_to_obj
+    from glass.wt.shp    import df_to_shp
+    from glass.dtt.toshp import shpext_to_boundshp
 
     # Create Fishnets
     fishnets = mkdir(os.path.join(tmp_folder, 'fishnets_shp'))

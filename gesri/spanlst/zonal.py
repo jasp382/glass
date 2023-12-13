@@ -48,11 +48,11 @@ def mean_rst_by_polygon(polygons, raster, work, resultShp):
         fid = str(l.getValue("FID"))
         selection = select_by_attr(
             lyrShp,
-            "FID={c}".format(c=fid),
-            "poly_{c}.shp".format(c=fid)
+            f"FID={fid}",
+            f"poly_{fid}.shp"
         )
         sel_rst = clip_raster(
-            lyrRst, selection, "clip_rst_{c}.img".format(c=fid))
+            lyrRst, selection, f"clip_rst_{fid}.img")
         
         mean = rst_stats(sel_rst, api='arcpy')["MEAN"]
         l.setValue(fld_name, mean)

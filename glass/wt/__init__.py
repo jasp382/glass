@@ -78,24 +78,35 @@ def obj_to_tbl(pyObj, outTbl, delimiter=None, wIndex=None,
         import pysal
         import dbf
 
-        dbf.Table()
-        
         type2spec = {
             int        : ('N', 20, 0),
+            np.int32   : ('N', 20, 0),
             np.int64   : ('N', 20, 0),
             float      : ('N', 36, 15),
+            np.float32 : ('N', 36, 15),
             np.float64 : ('N', 36, 15),
             str        : ('C', 14, 0)
         }
-        
+
+        cols = pyObj.columns.values
+
         types = [type(pyObj[i].iloc[0]) for i in pyObj.columns]
+
         specs = [type2spec[t] for t in types]
-        
-        with pysal.open(outTbl, 'w') as db:
-            db.header = list(pyObj.columns)
-            db.field_spec = specs
-            for i, row in pyObj.T.iteritems():
-                db.write(row)
+        specs_str = "; ".join([
+            f"{cols[i]} {specs[i][0]}({specs[i][1]},{specs[i][2]})" \
+                for i in range(len(cols))
+        ])
+
+        ntbl = dbf.Table(
+            filename=outTbl,
+            field_specs=specs_str,
+            on_disk=True
+        )
+
+        with ntbl:
+            for row in pyObj.itertuples(index=False):
+                ntbl.append(tuple(row))
     
     else:
         raise ValueError(f'{ff} is not a valid table format!')
@@ -108,11 +119,11 @@ def fext_to_geof(inF, outF, ocellsize=10, epsg=None, oepsg=None):
     Extent of a File to Raster or Shapefile
     """
     
-    from glass.wt.shp   import coords_to_boundshp
-    from glass.wt.rst   import ext_to_rst
-    from glass.prop.ext import get_ext
-    from glass.prop.df  import is_shp, is_rst
-    from glass.prop.prj import get_epsg
+    from glass.dtt.toshp import coords_to_boundshp
+    from glass.dtt.rst.torst import ext_to_rst
+    from glass.prop.ext  import get_ext
+    from glass.prop.df   import is_shp, is_rst
+    from glass.prop.prj  import get_epsg
     
     # Get extent
     left, right, bottom, top = get_ext(inF)
