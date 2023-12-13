@@ -18,30 +18,6 @@ def geom_to_buffer(geometry, buf_distance):
     return geometry[0] if len(geometry) == 1 else geometry
 
 
-def _buffer(inShp, radius, outShp, dissolve=None):
-    """
-    Buffering on Shapefile
-    """
-    
-    diss = "NONE" if not dissolve else "LIST" if dissolve != "ALL" and \
-        dissolve != "NONE" else dissolve
-    
-    dissolveCols = None if dissolve != "LIST" else dissolve
-    
-    arcpy.Buffer_analysis(
-        in_features=inShp,
-        out_feature_class=outShp,
-        buffer_distance_or_field=radius,
-        line_side="FULL",
-        line_end_type="ROUND",
-        dissolve_option=diss,
-        dissolve_field=dissolveCols,
-        method="PLANAR"
-    )
-    
-    return outShp
-
-
 def dist_bet_same_points_different_featcls(pntA, pntB, attrA, attrB,
                                            distField='distance'):
     """
