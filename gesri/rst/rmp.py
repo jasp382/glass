@@ -43,7 +43,7 @@ def warp_rst(rst, outrst, srcpnt, tgpnt, rst_format='.tif'):
         if type(outrst) != list:
             if len(rsts) > 1:
                 outrsts = [os.path.join(
-                    os.path.dirname(outrst), 'warp_{}'.format(os.path.basename(r))
+                    os.path.dirname(outrst), f'warp_{os.path.basename(r)}'
                 ) for r in rsts]
             
             else:
