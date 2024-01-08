@@ -62,7 +62,7 @@ def new_view(sqliteDb, newView, q):
     conn = sqlite3.connect(sqliteDb)
     cs = conn.cursor()
     
-    cs.execute("CREATE VIEW {} AS {}".format(newView, q))
+    cs.execute(f"CREATE VIEW {newView} AS {q}")
     
     conn.commit()
     cs.close()
@@ -87,7 +87,7 @@ def rename_tbl(db, tblNames):
     new_names =[]
     for k in tblNames:
         cursor.execute(
-            "ALTER TABLE {} RENAME TO {}".format(k, tblNames[k])
+            f"ALTER TABLE {k} RENAME TO {tblNames[k]}"
         )
         new_names.append(tblNames[k])
     
@@ -149,11 +149,11 @@ def drop_tbldata(db, table, where=None, dbset='default'):
     
     con = sqlcon(db, dbset=dbset)
     
-    cursor = con.cursor()    
+    cursor = con.cursor()  
+
+    whr = "" if not where else f" WHERE {where}"
     
-    cursor.execute("DELETE FROM {}{};".format(
-        table, "" if not where else " WHERE {}".format(where)
-    ))
+    cursor.execute(f"DELETE FROM {table}{whr};")
     
     con.commit()
     cursor.close()
@@ -171,7 +171,7 @@ def drop_where_cols_are_same(db, table, colA, colB):
     
     cursor = con.cursor()
     
-    cursor.execute('DELETE FROM {} WHERE {}={}'.format(table, colA, colB))
+    cursor.execute(f'DELETE FROM {table} WHERE {colA}={colB}')
     
     con.commit()
     cursor.close()
@@ -213,11 +213,11 @@ def update_table(db, pg_table, dic_new_values, dic_ref_values=None,
         whrLst = []
         for x in dic_ref_values:
             if dic_ref_values[x] == 'NULL':
-                whrLst.append('{} IS NULL'.format(x))
+                whrLst.append(f'{x} IS NULL')
             else:
-                whrLst.append('{}={}'.format(x, dic_ref_values[x]))
+                whrLst.append(f'{x}={dic_ref_values[x]}')
         
-        whr = " WHERE {}".format(__logic_operator.join(whrLst))
+        whr = f" WHERE {__logic_operator.join(whrLst)}"
     
     else:
         whr = ""

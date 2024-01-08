@@ -3,7 +3,7 @@ Deal with DBMS Databases
 """
 
 def create_pgdb(newdb, overwrite=True, use_template=True, dbset='default',
-    geosupport=None):
+    geosupport=None, schema={}):
     """
     Create Relational Database
     """
