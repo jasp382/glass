@@ -139,7 +139,7 @@ if __name__ == '__main__':
     # Send data to database
     df_to_db(
         db, main_df, grid_tbl, append=True, api='psql',
-        epsg=epsg, geomType="Polygon", colGeom='geom',
+        epsg=epsg, geom_type="Polygon", col_geom='geom',
         dbset=setdb
     )
 

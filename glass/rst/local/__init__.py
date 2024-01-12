@@ -35,7 +35,7 @@ def combine(rsts, orst, api="grass"):
         cmbtxt = os.path.join(ws, loc, f'{cmb}.txt')
         ct = combine_table(cmb, grst, os.path.join(
             ws, f'{cmb}.xlsx'
-        ), otxt=cmbtxt)
+        ), out_txt=cmbtxt)
 
         # Export Raster
         grs_to_rst(

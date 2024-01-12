@@ -6,6 +6,16 @@ import os
 from osgeo import gdal, osr, ogr
 
 
+def df_epsg(df, geom_col):
+    """
+    Return df EPSG
+    """
+
+    epsg = df[geom_col].crs.to_epsg()
+
+    return epsg
+
+
 def trans_param(in_epsg, out_epsg, export_all=None):
     """
     Return transformation parameters for two Spatial Reference Systems

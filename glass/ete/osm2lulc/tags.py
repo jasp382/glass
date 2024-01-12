@@ -10,7 +10,7 @@ def get_not_used_tags(OSM_FILE, OUT_TBL):
     
     import os
     from glass.wt        import obj_to_tbl
-    from glass.tbl.filter import sel_by_attr
+    from glass.dtt.filter import sel_by_attr
     from glass.sql.q     import q_to_obj
     from glass.pd.split  import df_split
     from glass.pys.oss      import fprop
@@ -35,11 +35,10 @@ def get_not_used_tags(OSM_FILE, OUT_TBL):
     
     # Get Features we are considering
     ourOSMFeatures = q_to_obj(OSM_TAG_MAP["DB"], (
-        "SELECT {key} AS key_y, {value} AS value_y, {geom} AS geom_y "
-        "FROM {tbl}"
-    ).format(
-        key=OSM_TAG_MAP["KEY_COL"], value=OSM_TAG_MAP["VALUE_COL"],
-        geom=OSM_TAG_MAP["GEOM_COL"], tbl=OSM_TAG_MAP["OSM_FEAT"]
+        f"SELECT {OSM_TAG_MAP['KEY_COL']} AS key_y, "
+        f"{OSM_TAG_MAP['VALUE_COL']} AS value_y, "
+        f"{OSM_TAG_MAP['GEOM_COL']} AS geom_y "
+        f"FROM {OSM_TAG_MAP['OSM_FEAT']}"
     ), db_api='sqlite')
     
     # Get Features in File
@@ -57,20 +56,19 @@ def get_not_used_tags(OSM_FILE, OUT_TBL):
     
     Qs = [
         " UNION ALL ".join([(
-            "SELECT '{keycol}' AS key, {keycol} AS value, "
-            "'{geomtype}' AS geom FROM {tbl} WHERE "
-            "{keycol} IS NOT NULL"
-        ).format(
-            keycol=c, geomtype='Point' if table == 'points' else 'Line' \
-                if table == 'lines' else 'Polygon',
-            tbl=table
+            f"SELECT '{c}' AS key, {c} AS value, "
+            f"'{'Point' if table == 'points' else 'Line' if table == 'lines' else 'Polygon'}' "
+            f"AS geom FROM {table} WHERE "
+            f"{c} IS NOT NULL"
         ) for c in TABLES_TAGS[table]]) for table in TABLES_TAGS
     ]
     
     fileOSMFeatures = q_to_obj(sqdb, (
-        "SELECT key, value, geom FROM ({}) AS foo "
+        "SELECT key, value, geom FROM ("
+            f"{' UNION ALL '.join(Qs)}"
+        ") AS foo "
         "GROUP BY key, value, geom"
-    ).format(" UNION ALL ".join(Qs)), db_api='sqlite')
+    ), db_api='sqlite')
     
     _fileOSMFeatures = fileOSMFeatures.merge(
         ourOSMFeatures, how='outer',
@@ -110,14 +108,13 @@ def get_not_used_tags(OSM_FILE, OUT_TBL):
         else:
             dfs = [filterDf]
         
-        Q = "SELECT * FROM {} WHERE {}".format(
-            t, filterDf.whr.str.cat(sep=" OR "))
+        _whr = filterDf.whr.str.cat(sep=" OR ")
+        Q = f"SELECT * FROM {t} WHERE {_whr}"
         
         i = 1
         for df in dfs:
-            fn = t + '.shp' if len(dfs) == 1 else '{}_{}.shp'.format(
-                t, str(i)
-            )
+            fn = t + '.shp' if len(dfs) == 1 else f'{t}_{str(i)}.shp'
+            
             try:
                 shp = sel_by_attr(sqdb, Q.format(
                     t, df.whr.str.cat(sep=" OR ")

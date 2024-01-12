@@ -409,8 +409,8 @@ def psql_to_djgdb(sql_dumps, db_name, djg_proj=None, mapTbl=None, userDjgAPI=Non
                         setattr(__mdl, col, related_obj)
                 __mdl.save()
     else:
-        import pandas as pd
-        from glass.sql.q import q_to_obj
+        import pandas     as pd
+        from glass.sql.q  import q_to_obj
         from glass.wt.sql import df_to_db
         
         for tbl in orderned_table:

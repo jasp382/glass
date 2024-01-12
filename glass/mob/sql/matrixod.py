@@ -160,7 +160,7 @@ def trip_chain_meth(conParam, TABLES_SCHEMA, output, FILTER_DAY=None,
     ).format(
         routeF = TABLES_SCHEMA["VALIDATIONS"]["ROUTE"],
         stopF  = TABLES_SCHEMA["VALIDATIONS"]["STOP"],
-        whr    = "" if not whereTime else "WHERE {} ".format(whereTime)
+        whr    = "" if not whereTime else f"WHERE {whereTime} "
     )
     
     q_to_ntbl(conParam, "p_matrix_od_gp", compact_Query)

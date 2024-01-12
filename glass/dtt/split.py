@@ -13,7 +13,7 @@ def splitShp_by_range(shp, nrFeat, outFolder):
     """
     
     from glass.prop.feat  import feat_count, lst_fld
-    from glass.tbl.filter import sel_by_attr
+    from glass.dtt.filter import sel_by_attr
     
     rowsN = feat_count(shp, gisApi='ogr')
     

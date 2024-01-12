@@ -51,7 +51,7 @@ def osm_vs_imd(osmxlsx, osmxml, imd, outfishnet, outshp):
     import numpy as np
     import glob
 
-    from glass.it.osm import osm_to_psql
+    from glass.it.db import osm_to_psql
     from glass.it.shp import dbtbl_to_shp
     from glass.wenv.grs import run_grass
     from glass.dtt.rst.torst import shp_to_rst

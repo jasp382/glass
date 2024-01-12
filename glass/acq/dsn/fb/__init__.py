@@ -43,9 +43,10 @@ def get_location(facebook_id):
     
     from glass.pys.web import http_to_json
     
-    url = '{grph}{__id}?fields=location&access_token={t_id}|{scret}'.format(
-        grph=FACEBOOK_GRAPH_URL, __id=str(facebook_id),
-        t_id=FACEBOOK_TOKEN['APP_ID'], scret=FACEBOOK_TOKEN['APP_SECRET']
+    url = (
+        f"{FACEBOOK_GRAPH_URL}{str(facebook_id)}?fields=location&"
+        f"access_token={FACEBOOK_TOKEN['APP_ID']}|"
+        f"{FACEBOOK_TOKEN['APP_SECRET']}"
     )
     
     data = http_to_json(url)['location']
@@ -60,10 +61,11 @@ def get_all_fields_by_id(facebook_id, data_type):
     
     from glass.pys.web import http_to_json
     
-    url = '{base}{_id_}/?fields={fld}&access_token={t_id}|{scret}'.format(
-        base=FACEBOOK_GRAPH_URL, _id_=str(facebook_id),
-        fld=','.join(FACEBOOK_NODE_FIELDS[data_type]),
-        t_id=FACEBOOK_TOKEN['APP_ID'], scret=FACEBOOK_TOKEN['APP_SECRET']
+    url = (
+        f"{FACEBOOK_GRAPH_URL}{str(facebook_id)}/?"
+        f"fields={','.join(FACEBOOK_NODE_FIELDS[data_type])}&"
+        f"access_token={FACEBOOK_TOKEN['APP_ID']}|"
+        f"{FACEBOOK_TOKEN['APP_SECRET']}"
     )
     
     data = http_to_json(url)

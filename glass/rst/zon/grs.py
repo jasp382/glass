@@ -83,7 +83,7 @@ def grs_rst_stats_by_feat(vec, rst, ncol, method, as_cmd=True):
     return vec
 
 
-def rstatszonal(base, cover, method, output, api='grass'):
+def rstatszonal(base, cover, method, output, as_cmd=True):
     """
     Zonal Raster Statistics (overlay input as Raster)
 
@@ -93,7 +93,7 @@ def rstatszonal(base, cover, method, output, api='grass'):
 
     """
 
-    if api == 'grass':
+    if as_cmd:
         rcmd = execmd((
             f"r.stats.zonal base={base} cover={cover} "
             f"method={method} output={output} "
@@ -101,7 +101,15 @@ def rstatszonal(base, cover, method, output, api='grass'):
         ))
 
     else:
-        raise ValueError(f"{api} is not available!")
+        from grass.pygrass.modules import Module
+
+        m = Module(
+            'r.stats.zonal', base=base, cover=cover,
+            method=method, output=output,
+            overwrite=True, quiet=True, run_=False
+        )
+
+        m()
 
     return output
 

@@ -89,7 +89,7 @@ def dem_from_tin(
         from glass.gt.prop.prj import get_prj_web
     
         prj = get_prj_web(prj, os.path.join(
-            w, 'prj_{}.prj'.format(str(prj))
+            w, f'prj_{str(prj)}.prj'
         ))
     
     else:

@@ -12,8 +12,6 @@ The objectiv is:
 def osm_vs_imd(osmxlsx, osmxml, imd, outfishnet, outshp):  
     
     #Create a fishnet use raster file
-
-    from glass.smp.fish import nfishnet_fm_rst
     #fishnet = nfishnet_fm_rst(imd, 500, 500, outfishnet)
 
     osm_ref_tags = {
@@ -51,7 +49,7 @@ def osm_vs_imd(osmxlsx, osmxml, imd, outfishnet, outshp):
     import numpy as np
     import glob
 
-    from glass.it.osm import osm_to_psql
+    from glass.it.db import osm_to_psql
     from glass.it.shp import dbtbl_to_shp
     from glass.wenv.grs import run_grass
     from glass.rd.shp import shp_to_obj

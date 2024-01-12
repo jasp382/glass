@@ -256,9 +256,9 @@ def gdb_to_shp(workspace, outworkspace):
             for fc in dic_gdb[gdb][dt]:
                 copy_feat(
                     os.path.join(gdb, dt, fc),
-                    os.path.join(outworkspace, "{}_{}.shp".format(
-                        os.path.splitext(os.path.basename(gdb))[0],
-                        fc
-                    )), gisApi='arcpy'
+                    os.path.join(
+                        outworkspace,
+                        f"{os.path.splitext(os.path.basename(gdb))[0]}_{fc}.shp"
+                    ), gisApi='arcpy'
                 )
 

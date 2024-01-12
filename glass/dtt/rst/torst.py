@@ -141,10 +141,20 @@ def shp_to_rst(shp, inSource, cellsize, nodata, outRaster, epsg=None,
         from glass.pys      import execmd
         from glass.prop.df  import drv_name
         from glass.prop.ext import get_ext
+        from glass.prop.rst import rst_fullprop
 
-        left, right, bottom, top = get_ext(
-            shp, geolyr=lyrname
-        ) if not rst_template else get_ext(rst_template)
+        if rst_template:
+            ext, csize, _ = rst_fullprop(rst_template)
+
+            left, right, bottom, top = ext
+
+            cwidth, cheight = csize[0] if not cellsize else cellsize, \
+                csize[1] if not cellsize else cellsize 
+        
+        else:
+            left, right, bottom, top = get_ext(shp, geolyr=lyrname)
+
+            cwidth, cheight = cellsize, cellsize
 
         __use = f"-a {inSource}" if type(inSource) == str else \
             f"-burn {str(inSource)}" if type(inSource) == float \
@@ -170,7 +180,7 @@ def shp_to_rst(shp, inSource, cellsize, nodata, outRaster, epsg=None,
             f"gdal_rasterize -of {drv_name(outRaster)} "
             f"-a_nodata {str(nodata)}{lyr} {__use} "
             f"-te {str(left)} {str(bottom)} {str(right)} {str(top)} "
-            f"-tr {str(cellsize)} {str(cellsize)} "
+            f"-tr {str(cwidth)} {str(cheight)} "
             f"{shp} {outRaster} {opt}{ot}"
         )
 
@@ -290,7 +300,11 @@ def ext_to_rst(topLeft, btRight, outRst,
     Extent to Raster
     """
     
-    from glass.prop.df import drv_name
+    from osgeo import gdal_array
+
+    from glass.prop.df  import drv_name
+    from glass.prop.rst import compress_option
+    from glass.prop.prj import epsg_to_wkt
     
     left, top     = topLeft
     right, bottom = btRight
@@ -311,44 +325,63 @@ def ext_to_rst(topLeft, btRight, outRst,
         
         left, right, bottom, top = extGeom.GetEnvelope()
     
+    if outEpsg and not epsg:
+        epsg = outEpsg
+    
     # Get row and cols number
     rows = (float(top) - float(bottom)) / cellsize
     cols = (float(right) - float(left)) / cellsize
     
     rows = int(rows) if rows == int(rows) else int(rows) + 1
     cols = int(cols) if cols == int(cols) else int(cols) + 1
+
+    # Get np.dtype
+    if type(rstvalue) == int and rstvalue <= 1:
+        _dtype = np.byte
+    else:
+        _dtype = None
     
     if not invalidResultAsNull:
         if not rstvalue:
-            NEW_RST_ARRAY = np.zeros((rows, cols))
+            narray = np.zeros((rows, cols), dtype=np.byte)
         
         else:
-            NEW_RST_ARRAY = np.full((rows, cols), rstvalue)
+            narray = np.full((rows, cols), rstvalue, dtype=_dtype)
     else:
         try:
             if not rstvalue:
-                NEW_RST_ARRAY = np.zeros((rows, cols))
+                narray = np.zeros((rows, cols), dtype=np.byte)
             
             else:
-                NEW_RST_ARRAY = np.full((rows, cols), rstvalue)
+                narray = np.full((rows, cols), rstvalue, dtype=_dtype)
         except:
             return None
     
     # Create new Raster
-    img = gdal.GetDriverByName(drv_name(outRst)).Create(
-        outRst, cols, rows, 1, gdal.GDT_Byte
-    )
+    drv  = drv_name(outRst)
+    copt = compress_option(drv)
+
+    if copt:
+        img = gdal.GetDriverByName(drv).Create(
+            outRst, cols, rows, 1,
+            gdal_array.NumericTypeCodeToGDALTypeCode(narray.dtype),
+            options=[copt]
+        )
+    
+    else:
+        img = gdal.GetDriverByName(drv).Create(
+            outRst, cols, rows, 1,
+            gdal_array.NumericTypeCodeToGDALTypeCode(narray.dtype)
+        )
     
     img.SetGeoTransform((left, cellsize, 0, top, 0, -cellsize))
     
     band = img.GetRasterBand(1)
     
-    band.WriteArray(NEW_RST_ARRAY)
+    band.WriteArray(narray)
     
     if epsg:
-        rstSrs = osr.SpatialReference()
-        rstSrs.ImportFromEPSG(epsg)
-        img.SetProjection(rstSrs.ExportToWkt())
+        img.SetProjection(epsg_to_wkt(epsg))
     
     band.FlushCache()
     

@@ -154,12 +154,9 @@ def osmvsimd_multiproc(imdfolder, osmfolder, ofolder):
     """
 
 
-    import multiprocessing as mp
     import datetime as dt
 
-    from glass.pys.oss  import cpu_cores, lst_ff
-    from glass.pd.split import df_split
-    from glass.wt       import dict_to_json
+    from glass.pys.oss  import lst_ff
 
     now    = dt.datetime.utcnow().replace(microsecond=0)
     nowstr = now.strftime('%Y%m%d%H%M%S')

@@ -501,8 +501,6 @@ def identify_groups(folder, splitStr, groupPos, outFolder):
                     a=filename[0], b=splitStr, c=group,
                     d=filename[1]
                 )),
-                os.path.join(group_folder, '{a}{b}'.format(
-                    a=filename[0], b=filename[1]
-                ))
+                os.path.join(group_folder, f'{filename[0]}{filename[1]}')
             )
 

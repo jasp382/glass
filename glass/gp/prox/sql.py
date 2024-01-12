@@ -77,7 +77,7 @@ def st_near(db, intbl, ingeom, neartbl, neargeom, output=None,
         )
 
         if output and outIsFile:
-            from glass.tbl.filter import sel_by_attr
+            from glass.dtt.filter import sel_by_attr
 
             sel_by_attr(db, Q, output, api_gis='ogr')
 

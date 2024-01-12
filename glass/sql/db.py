@@ -3,7 +3,7 @@ Deal with DBMS Databases
 """
 
 def create_pgdb(newdb, overwrite=True, use_template=True, dbset='default',
-    geosupport=None, schema={}):
+    geosupport=None, schema=None):
     """
     Create Relational Database
     """
@@ -37,6 +37,11 @@ def create_pgdb(newdb, overwrite=True, use_template=True, dbset='default',
     
     cs.close()
     con.close()
+
+    if schema:
+        from glass.sql.tbl import create_tbl
+
+        create_tbl(newdb, schema, api='psql')
     
     return newdb
 
@@ -270,8 +275,7 @@ def merge_dbs(destinationDb, dbs,
             tbls   = tbls_to_merge
         
         # Rename Tables
-        newTbls = rename_tbl(DB_NAME, {tbl : "{}_{}".format(
-            tbl, str(i)) for tbl in tbls})
+        newTbls = rename_tbl(DB_NAME, {tbl : f"{tbl}_{str(i)}" for tbl in tbls})
         
         for t in range(len(tbls)):
             tn = f"{tbls[t]}_{str(i)}"
