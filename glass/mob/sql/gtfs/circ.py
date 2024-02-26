@@ -495,7 +495,7 @@ def relate_busEntrances_circ(conGTFS_DB, conOTHER_DB, GTFS_SCHEMA,
     )
     
     OTHER_SCHEMA["ENTRANCES"]["TNAME"] = q_to_ntbl(
-        newConParam, "{}_san".format(OTHER_SCHEMA["ENTRANCES"]["TNAME"]),
+        newConParam, f'{OTHER_SCHEMA["ENTRANCES"]["TNAME"]}_san',
         q
     )
     

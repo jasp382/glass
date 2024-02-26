@@ -76,7 +76,7 @@ def extract_by_page(face_page, data_type='posts', nposts=100, returnNext=None,
         _id    = KEY_ID,
         secret = KEY_SECRET,
         dt     = data_type,
-        flds   = '' if not FIELDS else '&fields={}'.format(",".join(FIELDS))
+        flds   = '' if not FIELDS else f'&fields={",".join(FIELDS)}'
     )
     
     try:

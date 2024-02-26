@@ -365,19 +365,22 @@ def viewshed_by_feat_class(inRaster, observerDataset, feat_class_folder,
     fclasses = arcpy.ListFeatureClasses()
     
     for fc in fclasses:
+        bname  = os.path.basename(fc)
+        _bname = os.path.splitext(bname)[0]
+
         # Create Buffer
         fcBuffer = _buffer(
             fc, visibilityRadius,
-            os.path.join(wTmp, os.path.basename(fc)),
+            os.path.join(wTmp, bname),
             api='arcpy'
         )
         # Clip inRaster
         clipInRst = clip_raster(
             inRaster, fcBuffer,
-            os.path.join(wTmp, 'inrst_{}{}'.format(
-                os.path.splitext(os.path.basename(fc))[0],
-                os.path.splitext(inRaster)[1]
-            )), 
+            os.path.join(
+                wTmp,
+                f'inrst_{_bname}{os.path.splitext(inRaster)[1]}'
+            ), 
             snap=snapRst, clipGeom=True
         )
         
@@ -386,20 +389,20 @@ def viewshed_by_feat_class(inRaster, observerDataset, feat_class_folder,
         if observerFormat in VECTOR_FORMATS:
             clipObs = clip(
                 observerDataset, fcBuffer,
-                os.path.join(wTmp, 'obs_{}{}'.format(
-                    os.path.splitext(os.path.basename(fc))[0],
-                    os.path.splitext(observerDataset)[1]
-                ))
+                os.path.join(
+                    wTmp,
+                    f'obs_{_bname}{os.path.splitext(observerDataset)[1]}'
+                )
             )
         
         elif observerFormat in RASTER_FORMATS:
             # Clip raster
             clipTmp = clip_raster(
                 observerDataset, fcBuffer,
-                os.path.join(wTmp, 'obs_{}{}'.format(
-                    os.path.splitext(os.path.basename(fc))[0],
-                    os.path.splitext(observerDataset)[1]
-                )), 
+                os.path.join(
+                    wTmp,
+                    f'obs_{_bname}{os.path.splitext(observerDataset)[1]}'
+                ), 
                 snap=snapRst, clipGeom=None
             )
             
@@ -416,7 +419,7 @@ def viewshed_by_feat_class(inRaster, observerDataset, feat_class_folder,
                 
                 clipTmp = reclassify(
                     clipTmp, 'Value', rules,
-                    os.path.join(wTmp, 'r_{}'.format(os.path.basename(clipTmp))),
+                    os.path.join(wTmp, f'r_{os.path.basename(clipTmp)}'),
                     template=clipTmp
                 )
             
@@ -426,12 +429,8 @@ def viewshed_by_feat_class(inRaster, observerDataset, feat_class_folder,
                 
                 # 1) Create fishnet REF_CELLSIZE
                 fishNet = fishnet(
-                    os.path.join(
-                        wTmp, 'fish_{}'.format(
-                            os.path.basename(fc)
-                        )
-                    ), clipTmp,
-                    cellWidth=REF_CELLSIZE, 
+                    os.path.join(wTmp, f'fish_{bname}'),
+                    clipTmp, cellWidth=REF_CELLSIZE, 
                     cellHeight=REF_CELLSIZE
                 )
                 
@@ -439,42 +438,38 @@ def viewshed_by_feat_class(inRaster, observerDataset, feat_class_folder,
                 # - Raster to shp
                 cls_intPolygon = rst_to_polyg(
                     clipTmp, os.path.join(
-                        wTmp, f'cls_int_{os.path.basename(fc)}'
+                        wTmp, f'cls_int_{bname}'
                     ), api='arcpy'
                 )
                 
                 # - Erase areas of the fishnet that agrees with nodata values in the raster
                 tmpErase = erase(
                     fishNet, cls_intPolygon,
-                    os.path.join(wTmp, f'nozones_{os.path.basename(fc)}')
+                    os.path.join(wTmp, f'nozones_{bname}')
                 )
                 trueErase = erase(
                     fishNet, tmpErase,
-                    os.path.join(wTmp, f'fishint_{os.path.basename(fc)}')
+                    os.path.join(wTmp, f'fishint_{bname}')
                 )
                 
                 # 3) Convert erased fishnet to points
                 clipObs = feat_to_pnt(
                     trueErase,
-                    os.path.join(wTmp, f'obs_{os.path.basename(fc)}'),
+                    os.path.join(wTmp, f'obs_{bname}'),
                     pnt_position="INSIDE"
                 )
             
             # Else - simple conversion to points
             else:
                 clipObs = rst_to_pnt(clipTmp, os.path.join(
-                    wTmp,
-                    f'obs_{os.path.basename(fc)}'
+                    wTmp, f'obs_{bname}'
                 ))
         
         # Run viewshed
-        viewshed(
-            clipInRst, clipObs,
-            os.path.join(output_folder, 'vis_{}{}'.format(
-                os.path.splitext(os.path.basename(fc))[0],
-                os.path.splitext(clipInRst)[1]
-            ))
-        )
+        viewshed(clipInRst, clipObs, os.path.join(
+            output_folder,
+            f'vis_{_bname}{os.path.splitext(clipInRst)[1]}'
+        ))
 
 
 def viewshed_by_feat_class2(inRaster, observerDataset, feat_class_folder,

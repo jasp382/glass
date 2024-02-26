@@ -208,7 +208,7 @@ def split_whr_attrIsTrue(osm_fc, outputfolder, fields=None, sel_fields=None,
 
     import os
     from glass.prop.feat import lst_fld
-    from glass.tbl.filter      import sel_by_attr
+    from glass.dtt.filter      import sel_by_attr
 
     # List table fields
     tbl_fields = fields if fields else lst_fld(osm_fc)

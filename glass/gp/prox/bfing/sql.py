@@ -89,7 +89,7 @@ def splite_buffer(db, table, dist, geomField, outTbl,
     )
     
     if outTblIsFile:
-        from glass.tbl.filter import sel_by_attr
+        from glass.dtt.filter import sel_by_attr
         
         sel_by_attr(db, sql, outTbl, api_gis='ogr')
     

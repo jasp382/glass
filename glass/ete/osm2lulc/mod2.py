@@ -302,7 +302,7 @@ def num_roads(osmdata, nom, lineTbl, polyTbl, folder, cellsize, srs, rstTemplate
     import numpy                 as np
     from threading               import Thread
     from glass.rd.rst            import rst_to_array
-    from glass.tbl.filter        import sel_by_attr
+    from glass.dtt.filter        import sel_by_attr
     from glass.gp.prox.bfing.sql import splite_buffer
     from glass.dtt.rst.torst         import shp_to_rst
     from glass.prop.rst          import rst_geoprop

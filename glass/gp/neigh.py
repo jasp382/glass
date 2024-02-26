@@ -67,12 +67,12 @@ def find_neighbords_cells(grid, otbl):
     # Send data to database
     grid_tbl = df_to_db(
         db, grid_df, 'grid', api='psql',
-        epsg=epsg, geomType='Polygon',
-        colGeom='geometry'
+        epsg=epsg, geom_type='Polygon',
+        col_geom='geometry'
     )
     neig_tbl = df_to_db(
         db, neighbor_grid, 'cells_box', api='psql', epsg=epsg,
-        geomType='Polygon', colGeom='geometry'
+        geom_type='Polygon', col_geom='geometry'
     )
 
     neighbor_tbl = q_to_obj(db, (

@@ -230,7 +230,7 @@ def num_assign_builds(osmdb, pntTbl, polTbl, folder, cells, srscode, rstT,
     import datetime         as dt
     from threading          import Thread
     if apidb == 'SQLITE':
-        from glass.tbl.filter import sel_by_attr
+        from glass.dtt.filter import sel_by_attr
     else:
         from glass.it.shp import dbtbl_to_shp as sel_by_attr
     from glass.gp.ovl.sql import feat_within, feat_not_within

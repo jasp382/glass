@@ -193,7 +193,7 @@ def cols_name(dbname, table, sanitizeSpecialWords=True, api='psql', dbset='defau
         
         con = sqlite3.connect(dbname)
         
-        cursor = con.execute("SELECT * FROM {} LIMIT 1".format(table))
+        cursor = con.execute(f"SELECT * FROM {table} LIMIT 1")
         
         colnames = list(map(lambda x: x[0], cursor.description))
     
@@ -201,12 +201,12 @@ def cols_name(dbname, table, sanitizeSpecialWords=True, api='psql', dbset='defau
         from glass.sql.q import q_to_obj
         
         data = q_to_obj(
-            dbname, "SELECT * FROM {} LIMIT 1".format(table), db_api='mysql')
+            dbname, f"SELECT * FROM {table} LIMIT 1", db_api='mysql')
         
         colnames = data.columns.values
     
     else:
-        raise ValueError('API {} is not available'.format(api))
+        raise ValueError(f'API {api} is not available')
     
     return colnames
 
@@ -221,7 +221,7 @@ def cols_type(dbname, table, sanitizeColName=True, pyType=True):
     c = sqlcon(dbname)
     
     cursor = c.cursor()
-    cursor.execute("SELECT * FROM {} LIMIT 50;".format(table))
+    cursor.execute(f"SELECT * FROM {table} LIMIT 1;")
     coltypes = {
         desc[0]: map_psqltypes(
             desc[1], python=pyType) for desc in cursor.description
@@ -230,7 +230,7 @@ def cols_type(dbname, table, sanitizeColName=True, pyType=True):
     if sanitizeColName:
         for name in coltypes:
             if name in PG_SPECIAL_WORDS:
-                n = '"{}"'.format(name)
+                n = f'"{name}"'
                 coltypes[n] = coltypes[name]
                 del coltypes[name]
     
@@ -250,7 +250,7 @@ def check_last_id(db, pk, table):
     
     from glass.sql.q import q_to_obj
     
-    q = "SELECT MAX({}) AS fid FROM {}".format(pk, table)
+    q = f"SELECT MAX({pk}) AS fid FROM {table}"
     d = q_to_obj(db, q, db_api='psql').fid.tolist()
     
     if not d[0]:

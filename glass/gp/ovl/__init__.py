@@ -631,7 +631,7 @@ def check_shape_diff(SHAPES_TO_COMPARE, OUT_FOLDER, REPORT, DB,
     for i in range(len(SHPS)):
         for e in range(i + 1, len(SHPS)):
             # Optimized Union
-            print("Union between {} and {}".format(SHPS[i], SHPS[e]))
+            print(f"Union between {SHPS[i]} and {SHPS[e]}")
             time_a = datetime.datetime.now().replace(microsecond=0)
             __unShp = optimized_union_anls(
                 SHPS[i], SHPS[e],
@@ -704,11 +704,11 @@ def check_shape_diff(SHAPES_TO_COMPARE, OUT_FOLDER, REPORT, DB,
     # Create table with % of agreement between each pair of maps
     mapsNames = q_to_obj(DB, (
         "SELECT lulc FROM ("
-            "SELECT lulc_1 AS lulc FROM {tbl} GROUP BY lulc_1 "
+            f"SELECT lulc_1 AS lulc FROM {total_table} GROUP BY lulc_1 "
             "UNION ALL "
-            "SELECT lulc_2 AS lulc FROM {tbl} GROUP BY lulc_2"
+            f"SELECT lulc_2 AS lulc FROM {total_table} GROUP BY lulc_2"
         ") AS lu GROUP BY lulc ORDER BY lulc"
-    ).format(tbl=total_table), db_api='psql').lulc.tolist()
+    ), db_api='psql').lulc.tolist()
     
     FLDS_TO_PIVOT = ["agree_percentage", "total_area"]
     
@@ -743,21 +743,18 @@ def check_shape_diff(SHAPES_TO_COMPARE, OUT_FOLDER, REPORT, DB,
         ")"
     )
     
-    TOTAL_AGREE_TABLE = None
-    TOTAL_AREA_TABLE  = None
+    TOTAL_AGREE_TABLE, TOTAL_AREA_TABLE = None, None
     for f in FLDS_TO_PIVOT:
         if not TOTAL_AGREE_TABLE:
             TOTAL_AGREE_TABLE = q_to_ntbl(DB, "agreement_table", Q.format(
                 tbl = total_table, valCol=f,
-                crossCols = ", ".join([
-                    "{} numeric".format(map_) for map_ in mapsNames])
+                crossCols = ", ".join([f"{map_} numeric" for map_ in mapsNames])
             ), api='psql')
         
         else:
             TOTAL_AREA_TABLE = q_to_ntbl(DB, "area_table", Q.format(
                 tbl = total_table, valCol=f,
-                crossCols = ", ".join([
-                    "{} numeric".format(map_) for map_ in mapsNames])
+                crossCols = ", ".join([f"{map_} numeric" for map_ in mapsNames])
             ), api='psql')
     
     # Union Mapping
@@ -774,13 +771,11 @@ def check_shape_diff(SHAPES_TO_COMPARE, OUT_FOLDER, REPORT, DB,
     ]
     
     SHEETS = ["union_map", "agreement_percentage", "area_with_data_km"] + [
-        "{}_{}".format(
-            fprop(x[0], 'fn')[:15], fprop(x[1], 'fn')[:15]
-        ) for x in SYNTH_TBL
+        f"{fprop(x[0], 'fn')[:15]}_{fprop(x[1], 'fn')[:15]}" for x in SYNTH_TBL
     ]
     
     db_to_tbl(
-        DB, ["SELECT * FROM {}".format(x) for x in TABLES],
+        DB, [f"SELECT * FROM {x}" for x in TABLES],
         REPORT, sheetsNames=SHEETS, dbAPI='psql'
     )
     

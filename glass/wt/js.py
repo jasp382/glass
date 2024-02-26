@@ -15,3 +15,16 @@ def dict_to_json(d, outjson):
 
     return outjson
 
+
+def df_to_json(df, outjson):
+    """
+    Write DataFrame in JSON
+    """
+
+    df.to_json(
+        path_or_buf=outjson,
+        orient='records'
+    )
+
+    return outjson
+

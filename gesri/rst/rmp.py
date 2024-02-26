@@ -36,7 +36,7 @@ def warp_rst(rst, outrst, srcpnt, tgpnt, rst_format='.tif'):
     
     if os.path.isdir(outrst):
         outrsts = [os.path.join(
-            outrst, 'warp_{}'.format(os.path.basename(r))
+            outrst, f'warp_{os.path.basename(r)}'
         ) for r in rsts]
     
     else:

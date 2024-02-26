@@ -33,9 +33,7 @@ def split_shp_by_two_attr(s, f1, f2, w):
             """
             TODO: DECODE V1 AND V2 and DEL SPACES
             """
-            nova_layer = '{f_1}_{v_1}_{f_2}_{v_2}.shp'.format(
-                f_1=f1, f_2=f2, v_1=str(v1), v_2=str(v2)
-            )
+            nova_layer = f'{f1}_{str(v1)}_{f2}_{str(v2)}.shp'
             
             """
             TODO: Define SQL based on the type of the fields f1 and f2
@@ -79,22 +77,18 @@ def split_shp_based_on_comparation(shp, f1, f2, inEpsg, outWork):
     
     # Create outputs
     inGeom = get_gtype(shp)
-    equalShp = create_feat_class(
-        os.path.join(outWork, '{}_equal{}'.format(
-            os.path.splitext(os.path.basename(shp))[0],
-            os.path.splitext(shp)[1]
-        )),
-        inGeom, inEpsg
-    )
+    equalShp = create_feat_class(os.path.join(
+        outWork,
+        f'{os.path.splitext(os.path.basename(shp))[0]}_equal{os.path.splitext(shp)[1]}'
+    ), inGeom, inEpsg)
+
     equalLyr = shp_to_lyr(equalShp)
     
-    difShp = create_feat_class(
-        os.path.join(outWork, '{}_dif{}'.format(
-            os.path.splitext(os.path.basename(shp))[0],
-            os.path.splitext(shp)[1]
-        )),
-        inGeom, inEpsg
-    )
+    difShp = create_feat_class(os.path.join(
+        outWork,
+        f'{os.path.splitext(os.path.basename(shp))[0]}_dif{os.path.splitext(shp)[1]}'
+    ), inGeom, inEpsg)
+    
     difLyr = shp_to_lyr(difShp)
     
     # Copy Fields

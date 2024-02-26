@@ -11,9 +11,9 @@ def exp_by_group_relfeat(shp, group_col, relfeat, relfeat_id,
     """
 
     import os
-    import pandas as pd
-    from glass.rd      import tbl_to_obj
-    from glass.wt      import obj_to_tbl
+    import pandas       as pd
+    from glass.rd       import tbl_to_obj
+    from glass.wt       import obj_to_tbl
     from glass.rd.shp   import shp_to_obj
     from glass.wt.shp   import obj_to_shp
     from glass.prop.prj import shp_epsg
@@ -49,10 +49,10 @@ def exp_by_group_relfeat(shp, group_col, relfeat, relfeat_id,
 
         # Export
         shp_i = obj_to_shp(new_shp, 'geometry', epsg, os.path.join(
-            out_folder, 'lyr_{}.shp'.format(row[group_col])
+            out_folder, f'lyr_{row[group_col]}.shp'
         ))
         rel_i = obj_to_shp(new_relf, 'geometry', epsg, os.path.join(
-            out_folder, 'rel_{}.shp'.format(row[group_col])
+            out_folder, f'rel_{row[group_col]}.shp'
         ))
 
         ntbls.append([row[group_col], shp_i, rel_i])

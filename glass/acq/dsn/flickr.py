@@ -136,7 +136,7 @@ def photos_location(buffer_shp, epsg_in, keyword=None, epsg_out=4326,
     gdata.drop(delCols, axis=1, inplace=True)
     
     if epsg_out != 4326:
-        gdata = gdata.to_crs('EPSG:{}'.format(str(epsg_out)))
+        gdata = gdata.to_crs(f'EPSG:{str(epsg_out)}')
     
     return gdata
 

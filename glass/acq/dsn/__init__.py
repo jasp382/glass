@@ -39,10 +39,10 @@ def dsn_data_collection_by_multibuffer(inBuffers, workspace, db, datasource,
     """
     
     import os
-    from osgeo      import ogr
-    from glass.pys             import obj_to_lst
-    from glass.sql.db       import create_pgdb
-    from glass.sql.q        import q_to_ntbl
+    from osgeo               import ogr
+    from glass.pys           import obj_to_lst
+    from glass.sql.db        import create_pgdb
+    from glass.sql.q         import q_to_ntbl
     from glass.wt.sql        import df_to_db
     from glass.it.db         import shp_to_psql
     from glass.it.shp        import dbtbl_to_shp
@@ -83,7 +83,7 @@ def dsn_data_collection_by_multibuffer(inBuffers, workspace, db, datasource,
         )
         
         # Smaller Buffers to File
-        multiBuffer = os.path.join(workspace, 'buffers_{}.shp'.format(city))
+        multiBuffer = os.path.join(workspace, f'buffers_{city}.shp')
         dic_buffer_array_to_shp(
             inBuffers[city]["list_buffer"], multiBuffer,
             inBuffers[city]['epsg'], fields={'cardeal' : ogr.OFTString}
@@ -112,9 +112,7 @@ def dsn_data_collection_by_multibuffer(inBuffers, workspace, db, datasource,
                     )
                 
                 if type(tmpData) == int:
-                    print("NoData finded for buffer '{}' and keyword '{}'".format(
-                        bf['cardeal'], k
-                    ))
+                    print(f"NoData finded for buffer '{bf['cardeal']}' and keyword '{k}'")
                     
                     continue
                 
@@ -143,17 +141,18 @@ def dsn_data_collection_by_multibuffer(inBuffers, workspace, db, datasource,
         else:
             cgeom = 'geom'
         
-        inBuffers[city]["table"] = 'tbldata_{}'.format(city)
+        inBuffers[city]["table"] = f'tbldata_{city}'
         
         df_to_db(
             db, inBuffers[city]["data"],
             inBuffers[city]["table"], api='psql',
-            epsg=inBuffers[city]["epsg"], geomType='POINT', colGeom=cgeom
+            epsg=inBuffers[city]["epsg"],
+            geom_type='POINT', col_geom=cgeom
         )
         
         # Send Buffers data to PostgreSQL
         inBuffers[city]["pg_buffer"] = shp_to_psql(
-            db, multiBuffer, api="shp2pgsql"
+            db, multiBuffer, api="shp2pgsql",
             tnames={multiBuffer : f'buffers_{city}'},
             srs=inBuffers[city]["epsg"]
         )
@@ -223,7 +222,7 @@ def dsn_data_collection_by_multibuffer(inBuffers, workspace, db, datasource,
         foram obtidos como buffer
         """
         inBuffers[city]["pg_buffer"] = q_to_ntbl(
-            db, "dt_{}".format(inBuffers[city]["pg_buffer"]), (
+            db, f"dt_{inBuffers[city]['pg_buffer']}", (
                 "SELECT main.*, get_obtidos.pnt_obtidos, "
                 "obtidos_fora.pnt_obtidos_fora, intersecting.pnt_intersect, "
                 "int_not_obtained.pnt_intersect_non_obtain "
@@ -278,7 +277,7 @@ def dsn_data_collection_by_multibuffer(inBuffers, workspace, db, datasource,
         de se intersectar com o buffer
         """
         inBuffers[city]["table"] = q_to_ntbl(
-            db, "info_{}".format(city), (
+            db, f"info_{city}", (
                 "SELECT {cols}, dt.keyword, dt.geom, "
                 "CAST(dt.extracted_buffer AS text) AS extracted_buffer, "
                 "CAST(dt.intersect_buffer AS text) AS intersect_buffer, "
@@ -300,7 +299,7 @@ def dsn_data_collection_by_multibuffer(inBuffers, workspace, db, datasource,
             ).format(
                 dt_table = inBuffers[city]["table"],
                 bf_table = inBuffers[city]["pg_buffer"],
-                cols     = ", ".join(["dt.{}".format(x) for x in dataColumns])
+                cols     = ", ".join([f"dt.{x}" for x in dataColumns])
             ), api='psql'
         )
         
@@ -385,9 +384,11 @@ def dsnsearch_by_cell(GRID_PNT, EPSG, RADIUS, DATA_SOURCE, db, OUTPUT_TABLE):
     ] + ["geom"]
     
     GRP_BY_TBL = q_to_ntbl(db, f"{DATA_SOURCE}_grpby", (
-        "SELECT {cols}, CAST(array_agg(grid_id) AS text) AS grid_id "
-        "FROM {dtsrc}_data GROUP BY {cols}"
-    ).format(cols=", ".join(COLS), dtsrc=DATA_SOURCE), api='psql')
+        f"SELECT {', '.join(COLS)}, "
+        "CAST(array_agg(grid_id) AS text) AS grid_id "
+        f"FROM {DATA_SOURCE}_data "
+        f"GROUP BY {', '.join(COLS)}"
+    ), api='psql')
     
     dbtbl_to_shp(
         db, GRP_BY_TBL, "geom", OUTPUT_TABLE,

@@ -43,8 +43,9 @@ def unsecure(pdfs, out_res):
         pdfs = obj_to_lst(pdfs)
     
     for pdf in pdfs:
-        execmd("qpdf --decrypt {} {}".format(pdf, os.path.join(
+        of = os.path.join(
             out_res, os.path.basename(pdf)
-        )))
+        )
+        execmd(f"qpdf --decrypt {pdf} {of}")
     
     return out_res

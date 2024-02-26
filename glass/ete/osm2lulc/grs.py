@@ -67,7 +67,7 @@ def raster_based(osmdata, nomenclature, refRaster, lulcRst,
         if overwrite:
             mkdir(workspace)
         else:
-            raise ValueError('Path {} already exists'.format(workspace))
+            raise ValueError(f'Path {workspace} already exists')
     else:
         mkdir(workspace)
     
@@ -280,7 +280,8 @@ def raster_based(osmdata, nomenclature, refRaster, lulcRst,
         
         else:
             mergeOut[cls] = rsts_to_mosaic(
-                mergeOut[cls], 'mosaic_{}'.format(str(cls)), api="grass"
+                mergeOut[cls], f'mosaic_{str(cls)}',
+                api="grass"
             )
     
     time_o = dt.datetime.now().replace(microsecond=0)

@@ -359,7 +359,7 @@ def thrd_viewshed_v2(dbname, dem, pnt_obs, obs_id):
         # Points to Database
         pnt_tbl = df_to_db(
             new_db, obs, 'pnt_tbl', api='psql', 
-            epsg=srs, geomType='Point', colGeom='geometry')
+            epsg=srs, geom_type='POINT', col_geom='geometry')
 
         # Create GRASS GIS Session
         workspace = mkdir(os.path.join(
@@ -435,7 +435,7 @@ def thrd_viewshed_v2(dbname, dem, pnt_obs, obs_id):
             # Create Visibility table
             df_to_db(
                 new_db, visdf, vis_basename,
-                api='psql', colGeom=None,
+                api='psql', col_geom=None,
                 append=None if not idx else True
             )
             

@@ -2,7 +2,7 @@
 Manage DBMS Tables
 """
 
-def create_tbl(db, tbl, colsorder=None, api='psql'):
+def create_tbl(db, tbl, api='psql'):
     """
     Create Table in Database
     
@@ -10,24 +10,55 @@ def create_tbl(db, tbl, colsorder=None, api='psql'):
     * psql;
     * sqlite;
 
-    tbl = {
-        table_name : {col1_name : col_type, col2_name : col_type ...}
-    }
 
-    colsorder = {
-        table_name : [col1, col2],
-        other_table : [col1, col2]
-    }
+    tbl = [{
+        'TABLE' : 'gthruth_fishnet',
+        'COLUMNS' : [
+            'cid INT PRIMARY KEY',
+            'geom geometry(POLYGON, 32629) NOT NULL'
+        ],
+        "IDXS" : {
+            'cellgeom_idx' : 'gist (geom)'
+        }
+    }, {
+        'TABLE' : 'pxclasses',
+        'COLUMNS' : [
+            'pxid INT',
+            'clsid INT',
+            'garea numeric'
+        ],
+        "CONSTRAINTS" : [
+            'PRIMARY KEY (pxid, clsid)',
+            'FOREIGN KEY (pxid) REFERENCES gthruth_fishnet (cid),
+            'FOREIGN KEY (clsid) REFERENCES mapclasses (classid)
+        ]
+    }, ...]
     """
 
-    qs = []
-    for t in tbl:
-        ocols = list(tbl[t].keys()) if not colsorder or \
-            t not in colsorder else colsorder[t]
-        
-        cols_str = ", ".join([f'{c} {tbl[t][c]}' for c in ocols])
+    from glass.pys import obj_to_lst
 
-        qs.append(f"CREATE TABLE {t} ({cols_str})")
+    _tbl = obj_to_lst(tbl)
+
+    qs = []
+    for t in _tbl:
+        tname = t["TABLE"]
+        cols  = ", ".join(t["COLUMNS"])
+
+        if "CONSTRAINTS" not in t:
+            cts = ""
+        else:
+            t["CONSTRAINTS"] = obj_to_lst(t["CONSTRAINTS"])
+
+            cts = f", {', '.join(t['CONSTRAINTS'])}"
+
+        qs.append(f"CREATE TABLE {tname} ({cols}{cts})")
+
+        if "IDXS" in t:
+            for k in t["IDXS"]:
+                qs.append((
+                    f"CREATE INDEX {k} ON {t['TABLE']} "
+                    f"USING {t['IDXS'][k]}"
+                ))
     
     if api == 'psql':
         from glass.sql.c import sqlcon

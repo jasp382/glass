@@ -34,15 +34,13 @@ def aspect(dem, aspect, reclass=None):
     """
     
     import os
+
+    n, f = os.path.splitext(os.path.basename(aspect))
     
-    outAspect = aspect if not reclass else \
-        os.path.join(
-            os.path.dirname(aspect),
-            '{n}_original{f}'.format(
-                n=os.path.splitext(os.path.basename(aspect))[0],
-                f=os.path.splitext(os.path.basename(aspect))[1]
-            )
-        )
+    outAspect = aspect if not reclass else os.path.join(
+        os.path.dirname(aspect),
+        f'{n}_original{f}'
+    )
     
     arcpy.gp.Aspect_sa(dem, outAspect)
     
@@ -147,7 +145,7 @@ def vertente_profile(dem, outrst, reclass=None):
 
 def inverso_topografico(dem, outrst):
     """
-    Inverso do �ndice Topogr�fico
+    Inverso do indice Topografico
     """
     
     import arcpy, os, shutil

@@ -56,28 +56,26 @@ def get_nearStopTable(db, stopsTable, stopsId, stopsGeom, stopsRoute, outT):
     
     q = (
         "SELECT * FROM ("
-            "SELECT {routeF}, stop_b, "
+            f"SELECT {stopsRoute}, stop_b, "
             "CASE WHEN distance = MIN(distance) OVER("
-                "PARTITION BY {routeF}, stop_b) "
+                f"PARTITION BY {stopsRoute}, stop_b) "
                 "THEN stop_a ELSE NULL END AS stop_a, "
             "CASE WHEN distance = MIN(distance) OVER("
-                "PARTITION BY {routeF}, stop_b) "
+                f"PARTITION BY {stopsRoute}, stop_b) "
                 "THEN distance ELSE NULL END AS distance "
             "FROM ("
-                "SELECT {routeF}, stop_a, stop_a_geom, stop_b, stop_b_geom, "
+                f"SELECT {stopsRoute}, stop_a, stop_a_geom, stop_b, stop_b_geom, "
                 "ST_Distance(stop_a_geom, stop_b_geom) AS distance "
                 "FROM ("
-                    "SELECT {routeF}, {stopF} AS stop_a, {stopG} AS stop_a_geom "
-                    "FROM {t} GROUP BY {routeF}, {stopF}, {stopG}"
+                    f"SELECT {stopsRoute}, {stopsId} AS stop_a, {stopsGeom} AS stop_a_geom "
+                    f"FROM {stopsTable} GROUP BY {stopsRoute}, {stopsId}, {stopsGeom}"
                 ") AS stops1, ("
-                    "SELECT {stopF} AS stop_b, {stopG} AS stop_b_geom "
-                    "FROM {t} GROUP BY {stopF}, {stopG}"
+                    f"SELECT {stopsId} AS stop_b, {stopsGeom} AS stop_b_geom "
+                    f"FROM {stopsTable} GROUP BY {stopsId}, {stopsGeom}"
                 ") AS stops2"
             ") AS foo"
         ") AS foo2 "
         "WHERE stop_a IS NOT NULL"
-    ).format(
-        routeF=stopsRoute, t=stopsTable, stopF=stopsId, stopG=stopsGeom
     )
     
     q_to_ntbl(db, outT, q)

@@ -59,7 +59,7 @@ def places_by_query(bfShp, epsgIn, keyword=None, epsgOut=4326,
         c for c in data.columns.values if type(c) == int
     ]
     __int_cols = {
-        x : "col_{}".format(str(x)) for x in _int_cols
+        x : f"col_{str(x)}" for x in _int_cols
     }
     data.rename(columns=__int_cols, inplace=True)
     data.rename(columns={"id" : "id_1", "name" : "name_1"}, inplace=True)
@@ -116,7 +116,7 @@ def places_by_query(bfShp, epsgIn, keyword=None, epsgOut=4326,
     gdata.drop(DROP_COLS, axis=1, inplace=True)
     
     if epsgOut != 4326:
-        gdata = gdata.to_crs('EPSG:{}'.format(str(epsgOut)))
+        gdata = gdata.to_crs(f'EPSG:{str(epsgOut)}')
     
     return gdata
 

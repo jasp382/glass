@@ -38,14 +38,12 @@ def by_query(search_type,
         graph=FACEBOOK_GRAPH_URL,
         _id  = FACEBOOK_TOKEN['APP_ID'],
         scrt = FACEBOOK_TOKEN['APP_SECRET'],
-        _q   = '' if not keyword else '&q={}'.format(keyword),
-        typ  = '&type={}'.format(search_type),
-        cnt  = '' if not x_center and not y_center else '&center={},{}'.format(
-            y_center, x_center
-        ),
-        dst  = '' if not dist else '&distance={}'.format(dist),
-        lmt  = '' if not limit else '&limit={}'.format(str(limit)),
-        flds = '' if not face_fields else '&fields={}'.format(','.join(face_fields))
+        _q   = '' if not keyword else f'&q={keyword}',
+        typ  = f'&type={search_type}',
+        cnt  = '' if not x_center and not y_center else f'&center={y_center},{x_center}',
+        dst  = '' if not dist else f'&distance={dist}',
+        lmt  = '' if not limit else f'&limit={str(limit)}',
+        flds = '' if not face_fields else f"&fields={','.join(face_fields)}"
     )
     
     face_table = pandas.DataFrame(http_to_json(URL)['data'])
