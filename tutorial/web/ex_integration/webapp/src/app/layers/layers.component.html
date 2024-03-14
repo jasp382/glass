@@ -1,0 +1,159 @@
+<h1>Layers</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <td>ID</td>
+            <td>Alias</td>
+            <td>Name</td>
+            <td>GeoServer Layer</td>
+            <td>SLD Style</td>
+            <td></td>
+            <td></td>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let row of layers">
+            <td>{{ row.id }}</td>
+            <td>{{ row.alias }}</td>
+            <td>{{ row.design }}</td>
+            <td>
+                <button *ngIf="!row.islayer" class="btn btn-primary" type="button"
+                    (click)="geoserverLayer(row.id)">
+                    Create GeoServer Layer
+                </button>
+
+                <button *ngIf="row.islayer" class="btn btn-primary"
+                    type="button">
+                    Remove GeoServer Layer
+                </button>
+            </td>
+            <td>
+                <button *ngIf="!row.style" class="btn btn-primary" type="button"
+                    (click)="toggleAddStyle(row.id)">
+                    Add Style
+                </button>
+
+                <button *ngIf="row.style" class="btn btn-primary"
+                    type="button" (click)="toggleAddStyle(row.id)">
+                    Update Style
+                </button>
+            </td>
+            <td>
+                <button class="btn btn-primary" type="button"
+                    >
+                    Edit
+                </button>
+            </td>
+            <td>
+                <button class="btn btn-primary" type="button"
+                    (click)="delLayer(row.id)">
+                    Delete
+                </button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<hr><hr>
+
+<div *ngIf="!addStyleActive">
+<h3>Add new Layer</h3>
+
+<form id="addLayerForm" #f="ngForm" (ngSubmit)="addLayer()">
+    <div class="col-6">
+        <label>Id</label>
+        <input id="id" name="id" [(ngModel)]="newLayer.id" 
+            class="form-control" type="text">
+    </div>
+
+    <div class="col-6">
+        <label>Alias</label>
+        <input id="alias" name="alias" [(ngModel)]="newLayer.alias" 
+            class="form-control" type="text">
+    </div>
+
+    <div class="col-6">
+        <label>Name</label>
+        <input id="name" name="name" [(ngModel)]="newLayer.design" 
+            class="form-control" type="text">
+    </div>
+
+    <br>
+
+    <div class="col-6">
+        <button type="submit" class="btn btn-primary">Add Layer</button>
+    </div>
+</form>
+</div>
+
+<div *ngIf="addStyleActive && layer">
+    <h3>Define layer style</h3>
+
+    <form id="addStyleForm" #e="ngForm" (ngSubmit)="addStyle(e)">
+        <div *ngFor="let cls of layer.classes; let z = index" class="row">
+            <div class="col-3">
+                <label>Classe</label>
+                <input id="class_{{z}}" name="class_{{z}}" value="{{cls}}"
+                    class="form-control" type="text">
+            </div>
+            <div class="col-3">
+                <label>Red</label>
+                <input id="red_{{z}}" name="red_{{z}}"
+                    class="form-control" type="text" ngModel required>
+            </div>
+            <div class="col-3">
+                <label>Green</label>
+                <input id="green_{{z}}" name="green_{{z}}"
+                    class="form-control" type="text" ngModel required>
+            </div>
+            <div class="col-3">
+                <label>Blue</label>
+                <input id="blue_{{z}}" name="blue_{{z}}"
+                    class="form-control" type="text" ngModel required>
+            </div>
+        </div>
+    
+        <br>
+    
+        <div class="col-6">
+            <button type="submit" class="btn btn-primary">Add Style</button>
+        </div>
+    </form>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" *ngIf="layer">
+                <form id="MyForm" #f="ngForm">
+                    <div class="col-6">
+                        <label>Id</label>
+                        <input id="id" name="id" [(ngModel)]="layer.id" 
+                            class="form-control" type="text">
+                    </div>
+
+                    <div class="col-6">
+                        <label>Alias</label>
+                        <input id="alias" name="alias" [(ngModel)]="layer.alias" 
+                            class="form-control" type="text">
+                    </div>
+                
+                    <div class="col-6">
+                        <label>Name</label>
+                        <input id="name" name="name" [(ngModel)]="layer.design" 
+                            class="form-control" type="text">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

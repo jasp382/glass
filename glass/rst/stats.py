@@ -42,10 +42,13 @@ def rst_mean(rsts, out_rst):
 
 
 
-def count_region_in_shape(folder, ref, out):
+def count_region_in_shape(folder, ref, out, returnprob=None, nprob=None):
     """
     Count how many times a region appears in a set
     of ESRI Shapefiles
+
+    if returnprob:
+        return probability n_time_burned/n_years if one shape by year
 
     e.g. Count how many times an area was burned
     """
@@ -53,6 +56,7 @@ def count_region_in_shape(folder, ref, out):
     import os
 
     from glass.pys.oss  import lst_ff, fprop
+    from glass.pys.tm   import now_as_str
     from glass.wenv.grs import run_grass
 
     # List burn areas shapes
@@ -60,8 +64,7 @@ def count_region_in_shape(folder, ref, out):
 
     # Start GRASS GIS Session
     orst_name = fprop(out, 'fn')
-    ws = os.path.dirname(out)
-    loc = f'locprod_{orst_name}'
+    ws, loc = os.path.dirname(out), now_as_str()
 
     gb = run_grass(ws, location=loc, srs=ref)
 
@@ -69,9 +72,9 @@ def count_region_in_shape(folder, ref, out):
 
     gsetup.init(gb, ws, loc, 'PERMANENT')
 
-    from glass.it.shp    import shp_to_grs
-    from glass.it.rst    import grs_to_rst
-    from glass.rst.alg   import grsrstcalc
+    from glass.it.shp        import shp_to_grs
+    from glass.it.rst        import grs_to_rst
+    from glass.rst.alg       import grsrstcalc
     from glass.rst.rcls.grs  import null_to_value
     from glass.dtt.rst.torst import grsshp_to_grsrst
 
@@ -90,7 +93,10 @@ def count_region_in_shape(folder, ref, out):
         rsts.append(rshp)
     
     # Sum all rasters
-    frst = grsrstcalc(" + ".join(rsts), orst_name)
+    exp = " + ".join(rsts) if not returnprob else \
+        f"{' + '.join(rsts)} / {str(len(shps)) if not nprob else str(nprob)}.0"
+    
+    frst = grsrstcalc(exp, orst_name)
 
     # Export final raster
     grs_to_rst(frst, out, rtype=int)

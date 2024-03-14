@@ -127,11 +127,11 @@ def rstcalc(expression, output, api='saga', grids=None):
     elif api == 'grass' or api == "pygrass":
         from glass.wenv.grs import run_grass
         from glass.pys      import obj_to_lst
+        from glass.pys.tm import now_as_str
         
         or_name = fprop(output, 'fn')
 
-        ws = os.path.dirname(output)
-        loc = f"loc_{or_name}"
+        ws, loc = os.path.dirname(output), now_as_str()
 
         rsts = obj_to_lst(grids)
 
@@ -144,7 +144,7 @@ def rstcalc(expression, output, api='saga', grids=None):
         from glass.it.rst import rst_to_grs, grs_to_rst
 
         # Import rsts
-        grsts = [rst_to_grs(r, fprop(r, 'fn')) for r in rsts]
+        grsts = [rst_to_grs(r) for r in rsts]
 
         # Do the math
         out = grsrstcalc(

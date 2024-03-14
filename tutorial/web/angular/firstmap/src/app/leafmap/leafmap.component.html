@@ -1,0 +1,23 @@
+<div class="layers-container">
+    <h1>Layers</h1>
+
+    <div *ngFor="let l of geomLayers">
+        <mat-checkbox [checked]="l.active" [(ngModel)]="l.active"
+            (change)="changeGeomLayer(l)"></mat-checkbox>
+        {{l.layer}}
+    </div>
+
+    <h1>Basemaps available:</h1>
+
+    <div *ngFor="let bm of someBasemaps">
+        <mat-checkbox [checked]="bm.active" [(ngModel)]="bm.active"
+            (change)="changeLayer(bm)"></mat-checkbox>
+        {{bm.ref}}
+    </div>
+</div>
+
+<div class="map-container">
+    <div class="map-frame">
+        <div id="map"></div>
+    </div>
+</div>

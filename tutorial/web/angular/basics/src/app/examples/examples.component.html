@@ -1,0 +1,94 @@
+<h1>Hello World</h1>
+
+<br><br>
+
+<h2>{{texto}}</h2>
+
+<br><br>
+
+<h5>O meu nome é {{intexto}}</h5>
+
+<input name="teste" [(ngModel)]="intexto" matInput>
+
+
+<br><br>
+
+<h5>
+    <input type="text" [(ngModel)]="soma1" (change)="soma()"> + 
+    <input type="text" [(ngModel)]="soma2" (change)="soma()"> =
+    {{somar}}
+</h5>
+
+<br><br>
+
+<h5>
+    <input type="text" [(ngModel)]="elm1" (change)="calcexp()">
+    <input type="text" [(ngModel)]="operator" (change)="calcexp()">
+    <input type="text" [(ngModel)]="elm2" (change)="calcexp()"> =
+    {{result}}
+</h5>
+
+<br><br>
+
+<p>
+    <button (click)="contador('menos')">Menos</button>
+    {{conta}}
+    <button (click)="contador('mais')">Mais</button>
+</p>
+
+
+<br><br>
+
+<h1 *ngIf="mostra">Cabeçalho</h1>
+
+<button (click)="toogleh1()">Esconde/mostra</button>
+
+<br><br>
+
+<h1 *ngIf="mostra2">Cabeçalho</h1>
+
+<mat-checkbox [checked]="mostra2" [(ngModel)]="mostra2"></mat-checkbox>
+
+<br><br>
+
+<h1 [ngClass]="{'blue-text': isblue, 'red-text' : !isblue}">Cabeçalho</h1>
+
+<mat-checkbox [checked]="isblue" [(ngModel)]="isblue"></mat-checkbox>
+
+<br><br>
+
+<form #f="ngForm" (ngSubmit)="addForm(f)">
+    <mat-form-field>
+        <mat-label>Number of elements:</mat-label>
+        <input name="nelm" ngModel matInput required>
+    </mat-form-field>
+
+    <mat-form-field>
+        <mat-label>Interval:</mat-label>
+        <input name="interval" ngModel matInput required>
+    </mat-form-field>
+
+    <button type="submit">Submit</button>
+</form>
+
+<ul *ngIf="tstarray.length">
+    <li *ngFor="let e of tstarray">{{e}}</li>
+</ul>
+
+
+<br><br>
+
+<table class="table">
+    <thead>
+        <tr>
+            <td><b>Nome</b></td>
+            <td><b>Numero</b></td>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let row of egint">
+            <td [ngClass]="{'blue-text': row.boleano, 'red-text' : !row.boleano}">{{ row.texto }}</td>
+            <td>{{ row.numero }}</td>
+        </tr>
+    </tbody>
+</table>
