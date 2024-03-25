@@ -1,0 +1,16 @@
+<div id="products">
+    <h1>Products available!</h1>
+
+    <mat-form-field appearance="fill">
+        <mat-label>Select products category:</mat-label>
+        <mat-select>
+            <mat-option *ngFor="let pt of productsTypes" [value]="pt">
+                {{ pt }}
+            </mat-option>
+        </mat-select>
+    </mat-form-field>
+</div>
+
+<div id="cart">
+    <h1>Cart:</h1>
+</div>
