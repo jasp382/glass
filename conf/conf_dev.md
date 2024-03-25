@@ -30,7 +30,7 @@ pip install pygdal=="`gdal-config --version`.*"
 
 OR 
 
-ln -s /usr/lib/python3/dist-packages/osgeo* ~/.virtualenvs/genv/lib/python3.10/site-packages
+ln -s /usr/lib/python3/dist-packages/osgeo* ~/.virtualenvs/gs/lib/python3.10/site-packages
 
 pv=$(/usr/bin/python3 --version)
 IFS=' '
@@ -42,7 +42,11 @@ read -a pvva <<< "$pvv"
 pone="${pvva[0]}"
 ptwo="${pvva[1]}"
 
-echo "/home/$USER/glass" | sudo tee ~/.virtualenvs/genv/lib/python$pone.$ptwo/site-packages/glass.pth
+echo "/home/$USER/glass" | sudo tee ~/.virtualenvs/gs/lib/python$pone.$ptwo/site-packages/glass.pth
+
+# Setup QGIS Python dependencies
+ln -s /usr/lib/python3/dist-packages/qgis* ~/.virtualenvs/gs/lib/python3.10/site-packages
+ln -s /usr/lib/python3/dist-packages/PyQt5* ~/.virtualenvs/gs/lib/python3.10/site-packages
 ```
 
 

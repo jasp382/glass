@@ -155,11 +155,10 @@ def txt_cols_to_col(db, inTable, columns, strSep, newCol, outTable=None):
     coalesce = ""
     for i in range(len(mergeCols)):
         if not i:
-            coalesce += "COALESCE({}, '')".format(mergeCols[i])
+            coalesce += f"COALESCE({mergeCols[i]}, '')"
         
         else:
-            coalesce += " || '{}' || COALESCE({}, '')".format(
-                strSep, mergeCols[i])
+            coalesce += f" || '{strSep}' || COALESCE({mergeCols[i]}, '')"
     
     
     if outTable:
@@ -170,11 +169,10 @@ def txt_cols_to_col(db, inTable, columns, strSep, newCol, outTable=None):
             sel = coalesce + " AS {}".format(newCol)
         else:
             sel = "{}, {}".format(
-                ", ".join(colsToSelect), coalesce + " AS {}".format(newCol)
+                ", ".join(colsToSelect), coalesce + f" AS {newCol}"
             )
         
-        q_to_ntbl(db, outTable, "SELECT {} FROM {}".format(
-            sel, inTable), api='psql')
+        q_to_ntbl(db, outTable, f"SELECT {sel} FROM {inTable}", api='psql')
         
         return outTable
     
@@ -260,7 +258,7 @@ def trim_char_in_col(db, pgtable, cols, trim_str, outTable,
         )
     
     q_to_ntbl(db, outTable,
-        "SELECT {} FROM {}".format(colsToSelect, pgtable), api='psql'
+        f"SELECT {colsToSelect} FROM {pgtable}", api='psql'
     )
 
 
@@ -281,7 +279,7 @@ def replace_char_in_col(db, pgtable, cols, match_str, replace_str, outTable):
     
     for col in cols:
         if colsTypes[col] != 'text' and colsTypes[col] != 'varchar':
-            raise ValueError('{} should be of type text'.format(col))
+            raise ValueError(f'{col} should be of type text')
     
     colsToSelect = [_c for _c in colsTypes if _c not in cols]
     
@@ -292,7 +290,7 @@ def replace_char_in_col(db, pgtable, cols, match_str, replace_str, outTable):
     ]
     
     if not colsToSelect:
-        cols_to_select = "{}".format(", ".join(colsReplace))
+        cols_to_select = f"{', '.join(colsReplace)}"
     else:
         cols_to_select = "{}, {}".format(
             ", ".join(colsToSelect), ", ".join(colsReplace))
@@ -317,11 +315,9 @@ def substr_to_newcol(db, table, field, newCol,
     
     # Update table
     exec_write_q(db, (
-        "UPDATE {tbl} SET {nf} = substring({f} from {frm} for {to}) "
-        "WHERE {nf} IS NULL"
-    ).format(
-        tbl=table, nf=newCol, f=field, frm=idxFrom,
-        to=idxTo
+        f"UPDATE {table,} SET {newCol} = "
+        f"substring({field} from {idxFrom} for {idxTo}) "
+        f"WHERE {newCol} IS NULL"
     ), api='psql')
     
     return table
@@ -337,9 +333,11 @@ def add_geomtype_to_col(db, table, newCol, geomCol):
     # Add new field to table
     add_field(db, table, {newCol : "text"})
     
-    exec_write_q(db, "UPDATE {} SET {} = ST_GeometryType({})".format(
-        table, newCol, geomCol
-    ), api='psql')
+    exec_write_q(
+        db,
+        f"UPDATE {table} SET {newCol} = ST_GeometryType({geomCol})",
+        api='psql'
+    )
     
     return table
 

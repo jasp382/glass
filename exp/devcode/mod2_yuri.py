@@ -98,7 +98,7 @@ def roads_fmdb(osmdb, lnhTbl, plTbl, apidb='SQLITE', asRst=None):
     time_g = dt.datetime.now().replace(microsecond=0)
     
     if asRst:
-        from glass.dp.torst import grsshp_to_grsrst as shp_to_rst
+        from glass.dtt.rst.torst import grsshp_to_grsrst as shp_to_rst
         
         roadsGrs = shp_to_rst(
             roadsGrs, int(asRst), "rst_roads", cmd=True

@@ -44,7 +44,7 @@ def idxdist_by_class(shp, lulc_col, idxs_folder, ofolder):
 
     from glass.it.shp    import shp_to_grs
     from glass.it.rst    import rst_to_grs, grs_to_rst
-    from glass.dtt.torst import grsshp_to_grsrst
+    from glass.dtt.rst.torst import grsshp_to_grsrst
     from glass.rst.alg   import grsrstcalc
 
     for c in shps:

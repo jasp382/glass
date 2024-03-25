@@ -49,7 +49,7 @@ def record_time_consumed(timeData, outXls):
                 })
         
         else:
-            print('timeData object with key {} is not valid'.format(i))
+            print(f'timeData object with key {i} is not valid')
     
     # Export tables to excel
     dfs = [pandas.DataFrame(main), pandas.DataFrame(timeInsideRule)]
@@ -85,7 +85,7 @@ def osm_project(osmDb, srs_epsg, api='SQLITE', isGlobeLand=None):
             ).format(
                 "" if isGlobeLand else "buildings, ",
                 geomColTrans=GEOM_COL if api != 'POSTGIS' else \
-                    "ST_Transform({}, {})".format(GEOM_COL, srs_epsg),
+                    f"ST_Transform({GEOM_COL}, {srs_epsg})",
                 geomCol=GEOM_COL, epsg=srs_epsg,
                 t=osmTableData[table], geom_area=GEOM_AREA
             ) if not isGlobeLand else (
@@ -93,7 +93,7 @@ def osm_project(osmDb, srs_epsg, api='SQLITE', isGlobeLand=None):
                 "{t} WHERE selection IS NOT NULL"
             ).format(
                 geomColTrans=GEOM_COL if api != 'POSTGIS' else \
-                    "ST_Transform({}, {})".format(GEOM_COL, srs_epsg),
+                    f"ST_Transform({GEOM_COL}, {srs_epsg})",
                     t=osmTableData[table]
             )
         

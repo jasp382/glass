@@ -11,7 +11,8 @@ Terrain
 """
 
 
-def slope_aspect(dem, slope_rst=None, aspect_rst=None, api="grass", slope_units="degrees"):
+def slope_aspect(dem, slope_rst=None, aspect_rst=None, api="grass",
+                slope_units="degrees", aspe_fromnorth=True, ws=None):
     """
     Generate Slope and Aspect Rasters from
     Digital Elevation Model
@@ -26,10 +27,12 @@ def slope_aspect(dem, slope_rst=None, aspect_rst=None, api="grass", slope_units=
         aspect_rst = os.path.join(os.path.dirname(dem), f'{bname}_aspect.tif')
     
     # Create GRASS GIS session
-    gws, loc = mkdir(os.path.join(
+    gws = mkdir(os.path.join(
         os.path.dirname(dem),
         now_as_str(utc=True)
-    )), 'surface_loc'
+    )) if not ws else ws
+    
+    loc = 'surface_loc' if not ws else now_as_str(utc=True)
 
     # Create GRASS GIS Location
     gb = run_grass(gws, location=loc, srs=dem)
@@ -53,7 +56,8 @@ def slope_aspect(dem, slope_rst=None, aspect_rst=None, api="grass", slope_units=
 
     grs_aspec = None if not aspect_rst else aspect(
         grs_dem, fprop(aspect_rst, 'fn'),
-        from_north=True, api=api
+        from_north=True if aspe_fromnorth else None,
+        api=api
     )
 
     oslope = None if not grs_slope else grs_to_rst(
@@ -359,7 +363,7 @@ def thrd_viewshed_v2(dbname, dem, pnt_obs, obs_id):
         # Points to Database
         pnt_tbl = df_to_db(
             new_db, obs, 'pnt_tbl', api='psql', 
-            epsg=srs, geomType='Point', colGeom='geometry')
+            epsg=srs, geom_type='POINT', col_geom='geometry')
 
         # Create GRASS GIS Session
         workspace = mkdir(os.path.join(
@@ -435,7 +439,7 @@ def thrd_viewshed_v2(dbname, dem, pnt_obs, obs_id):
             # Create Visibility table
             df_to_db(
                 new_db, visdf, vis_basename,
-                api='psql', colGeom=None,
+                api='psql', col_geom=None,
                 append=None if not idx else True
             )
             

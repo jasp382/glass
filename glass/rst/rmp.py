@@ -49,7 +49,7 @@ def match_cellsize_and_clip(rstBands, refRaster, outFolder,
     from glass.it.rst    import rst_to_grs, grs_to_rst, grs_to_mask
     from glass.wenv.grs  import rst_to_region
     from glass.it.shp    import shp_to_grs
-    from glass.dtt.torst import grsshp_to_grsrst as shp_to_rst
+    from glass.dtt.rst.torst import grsshp_to_grsrst as shp_to_rst
     
     # Send Ref Raster to GRASS GIS and set region
     extRst = rst_to_grs(refRaster, 'ext_rst')

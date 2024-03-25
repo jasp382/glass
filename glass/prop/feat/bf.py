@@ -61,7 +61,7 @@ def bf_prop(buffer_shp, epsg_in, isFile=None):
     from glass.prop.feat import get_cntr_bnd
     
     if isFile:
-        from glass.tbl.filter import geom_by_idx
+        from glass.dtt.filter import geom_by_idx
         
         BUFFER_GEOM = ogr.CreateGeometryFromWkt(
             geom_by_idx(buffer_shp, 0)
@@ -109,7 +109,7 @@ def getBufferParam(inArea, inAreaSRS, outSRS=4326):
         # Check if exists
         if os.path.exists(inArea):
             if os.path.isfile(inArea):
-                from glass.tbl.filter import geom_by_idx
+                from glass.dtt.filter import geom_by_idx
                 
                 # Get Geometry object
                 BUFFER_GEOM = geom_by_idx(inArea, 0)

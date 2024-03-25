@@ -142,7 +142,7 @@ def rn_cols(inShp, columns, api="ogr2ogr"):
         import os
         from glass.pys.oss    import fprop
         from glass.pys.oss    import del_file, lst_ff
-        from glass.tbl.filter import sel_by_attr
+        from glass.dtt.filter import sel_by_attr
         from glass.prop.col   import lst_cols
         
         # List Columns

@@ -385,7 +385,7 @@ def cost_od(shpOrigins, shpDestinations, epsgOrigins, epsgDestinations,
     i= 1
     for df in origensByKey:
         thrds.append(Thread(
-            name="tk{}".format(str(i)), target=get_matrix,
+            name=f"tk{str(i)}", target=get_matrix,
             args=(df, lst_keys[i - 1])
         ))
         i += 1

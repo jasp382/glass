@@ -1,0 +1,30 @@
+<div class="layers-container">
+    <h1>Layers:</h1>
+
+    <div *ngFor="let lyr of layers">
+        <mat-checkbox [checked]="lyr.active"
+            [(ngModel)]="lyr.active"
+            (change)="activeLayer(lyr)">
+        </mat-checkbox>
+        {{ lyr.name }}
+    </div>
+</div>
+
+<div class="map-container">
+    <div class="map-frame">
+        <div id="map"></div>
+    </div>
+</div>
+
+<div class="legend-container">
+    <h1>Legend:</h1>
+
+    <div *ngFor="let _lyr of wmsLayers">
+        <div *ngIf="_lyr.leg">
+            <h5>{{_lyr.layer}}</h5>
+            <div *ngFor="let leg of _lyr.leg">
+                <i style="background-color: {{ leg.color }};"></i>{{leg.label}} || {{leg.color}}
+            </div>
+        </div>
+    </div>
+</div>

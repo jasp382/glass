@@ -35,20 +35,20 @@ def grs_combine(inRst, outRst, api="pygrass"):
 
 
 
-def combine_table(crst, cols_name, otbl, otxt=None):
+def combine_report_to_df(crst, cols_name, otxt=None):
     """
-    Produce combine table
+    Produce combine table and return it in DataFrame
     """
 
     import pandas as pd
     from glass.prop.rst import raster_report
-    from glass.wt import obj_to_tbl
+    
 
     # Get Raster Report
     report = raster_report(
         crst,
         otxt if otxt else os.path.join(
-            os.path.dirname(otbl),
+            os.path.dirname(os.path.abspath(__file__)),
             f'{crst}_report.txt'
         )
     )
@@ -86,7 +86,19 @@ def combine_table(crst, cols_name, otbl, otxt=None):
     
     odf = pd.DataFrame(tbl, columns=['value'] + cols_name)
 
-    obj_to_tbl(odf, otbl)
+    return odf
+
+
+def combine_table(cmbrst, cols, otbl, out_txt=None):
+    """
+    Produce combine raster table and save it in a xlsx file
+    """
+
+    from glass.wt import obj_to_tbl
+
+    df = combine_report_to_df(cmbrst, cols, otxt=out_txt)
+
+    obj_to_tbl(df, otbl)
 
     return otbl
 

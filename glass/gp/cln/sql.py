@@ -64,7 +64,7 @@ def rm_deadend(db, in_tbl, out_tbl):
     i = 1
     while run_:
         # Get Table with Points of lines to delete
-        delpnt = q_to_ntbl(db, "del_pnt_{}".format(str(i)), (
+        delpnt = q_to_ntbl(db, f"del_pnt_{str(i)}", (
             "SELECT ROW_NUMBER() OVER (ORDER BY txtgeom) AS idx, "
             "txtgeom FROM ("
                 "SELECT txtgeom, COUNT(txtgeom) AS npnt FROM ("
@@ -93,7 +93,7 @@ def rm_deadend(db, in_tbl, out_tbl):
             "end_tbl.txtgeom IS NULL"
         ).format(cls=cols, mtbl=_t, ptbl=delpnt)
         
-        _t = q_to_ntbl(db, "rows_{}".format(str(i)), Q)
+        _t = q_to_ntbl(db, f"rows_{str(i)}", Q)
         
         i += 1
     

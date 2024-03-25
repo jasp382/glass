@@ -12,7 +12,7 @@ def prod_matrix(origins, destinations, networkGrs, speedLimitCol, onewayCol,
     """
     
     from glass.tbl             import category
-    from glass.tbl.filter      import sel_by_attr
+    from glass.dtt.filter      import sel_by_attr
     from glass.tbl.col         import add_fields
     from glass.tbl.grs         import add_table, cols_calc
     from glass.mob.grstbx.vnet import pnts_to_net
@@ -29,21 +29,21 @@ def prod_matrix(origins, destinations, networkGrs, speedLimitCol, onewayCol,
     
     ORIGINS_DESTINATIONS = shps_to_shp(
         [origins, destinations], os.path.join(
-            os.path.dirname(origins), "points_od_{}.shp".format(thrdId)
+            os.path.dirname(origins), f"points_od_{thrdId}.shp"
         ), api='pandas'
     )
     
     pointsGrs  = shp_to_grs(
-        ORIGINS_DESTINATIONS, "points_od_{}".format(thrdId), asCMD=asCmd)
+        ORIGINS_DESTINATIONS, f"points_od_{thrdId}", asCMD=asCmd)
     
     # Connect Points to Network
     newNetwork = pnts_to_net(
-        networkGrs, pointsGrs, "rdv_points_{}".format(thrdId), asCMD=asCmd
+        networkGrs, pointsGrs, f"rdv_points_{thrdId}", asCMD=asCmd
     )
     
     # Sanitize Network Table and Cost Columns
     newNetwork = category(
-        newNetwork, "rdv_points_time_{}".format(thrdId), "add",
+        newNetwork, f"rdv_points_time_{thrdId}", "add",
         LyrN="3", geomType="line", asCMD=asCmd
     )
     
@@ -84,7 +84,7 @@ def prod_matrix(origins, destinations, networkGrs, speedLimitCol, onewayCol,
     # Produce matrix
     matrix = run_allpairs(
         newNetwork, "ft_minutes", "tf_minutes",
-        'result_{}'.format(thrdId), arcLyr=3, nodeLyr=2, asCMD=asCmd
+        f'result_{thrdId}', arcLyr=3, nodeLyr=2, asCMD=asCmd
     )
     
     # Exclude unwanted OD Pairs
@@ -98,7 +98,7 @@ def prod_matrix(origins, destinations, networkGrs, speedLimitCol, onewayCol,
     )
     
     matrix_sel = sel_by_attr(
-        matrix, q, "sel_{}".format(matrix),
+        matrix, q, f"sel_{matrix}",
         geomType="line", lyrN=3, asCMD=asCmd
     )
     
@@ -111,7 +111,7 @@ def prod_matrix(origins, destinations, networkGrs, speedLimitCol, onewayCol,
     )
     cols_calc(
         matrix_sel, "to_fid", 
-        "to_cat - {} - 1".format(str(ORIGINS_NFEAT)),
+        f"to_cat - {str(ORIGINS_NFEAT)} - 1",
         "to_fid IS NULL", lyrN=3, ascmd=asCmd
     )
     

@@ -13,7 +13,6 @@ def osm_vs_imd(osmxlsx, osmxml, imd, outfishnet, outshp):
     
     #Create a fishnet use raster file
 
-    from glass.smp.fish import nfishnet_fm_rst
     #fishnet = nfishnet_fm_rst(imd, 500, 500, outfishnet)
 
     osm_ref_tags = {
@@ -51,7 +50,7 @@ def osm_vs_imd(osmxlsx, osmxml, imd, outfishnet, outshp):
     import numpy as np
     import glob
 
-    from glass.it.osm import osm_to_psql
+    from glass.it.db import osm_to_psql
     from glass.it.shp import dbtbl_to_shp
     from glass.wenv.grs import run_grass
     from glass.rd.shp import shp_to_obj
@@ -147,7 +146,8 @@ def osm_vs_imd(osmxlsx, osmxml, imd, outfishnet, outshp):
     from glass.it.shp import shp_to_grs, grs_to_shp
     from glass.it.rst import rst_to_grs
     from glass.gp.gen import dissolve
-    from glass.tbl.col import add_fields, cols_calc
+    from glass.tbl.col import add_fields
+    from glass.tbl.grs import cols_calc
     from glass.gp.ovl.grs import grsintersection
     from glass.smp.pnt import sample_to_points
 
@@ -257,7 +257,7 @@ def osm_vs_imd(osmxlsx, osmxml, imd, outfishnet, outshp):
         fishdf = fishdf.merge(pdf, how='left', left_on="cellid", right_on="pid")
         fishdf.drop(["a_cat", "pid"], axis=1, inplace=True)
         # Export result
-        if not os.path.exists(os.path.join(os.path.dirname(outshp), f'grswork{z}'))
+        #if not os.path.exists(os.path.join(os.path.dirname(outshp), f'grswork{z}'))
         df_to_shp(fishdf, os.path.join(outshp,f'omsvsimd{e}.shp'))
         
         e = e+1

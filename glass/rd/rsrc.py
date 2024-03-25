@@ -20,7 +20,7 @@ def imgsrc_to_num(img, flatten=None, with_nodata=True):
 
         return np.delete(values, np.where(values==no_val), None)
     else:
-        bnd = img.GetRasterBand(1)
+        bnd    = img.GetRasterBand(1)
         no_val = bnd.GetNoDataValue()
         values = img.ReadAsArray()
 

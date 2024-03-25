@@ -6,7 +6,7 @@ from glass.sql.c import alchemy_engine
 
 
 def df_to_db(db, df, table, append=None, api='psql',
-             epsg=None, geomType=None, colGeom='geometry', dbset='default'):
+             epsg=None, geom_type=None, col_geom=None, dbset='default'):
     """
     Pandas Dataframe/GeoDataFrame to PGSQL table
     
@@ -14,32 +14,45 @@ def df_to_db(db, df, table, append=None, api='psql',
     * psql;
     * sqlite
     """
+
+    from geoalchemy2 import Geometry, WKTElement
+
+    from glass.prop.feat import get_gtype
+    from glass.pd.geom   import force_multipart
+    from glass.prop.prj  import df_epsg
     
     if api != 'psql' and api != 'sqlite':
         raise ValueError(f'API {api} is not available')
     
-    pgengine = alchemy_engine(db, api=api, dbset=dbset)
+    if col_geom:
+        epsg = df_epsg(df, col_geom) if not epsg else epsg
     
-    if epsg and geomType:
-        from geoalchemy2 import Geometry, WKTElement
+        # For geometry if necessary
+        gtype = get_gtype(
+            df, name=True, geomCol=col_geom,
+            py_cls=False, gisApi='pandas'
+        ) if not geom_type else geom_type
 
-        newdf = df.copy()
-        
-        newdf["geom"] = newdf[colGeom].apply(
+        df = force_multipart(df, col_geom, epsg, gtype=gtype)
+
+    
+    pgengine = alchemy_engine(db, api=api, dbset=dbset)
+
+    newdf = df.copy()
+    
+    if col_geom:
+        newdf[col_geom] = newdf[col_geom].apply(
             lambda x : WKTElement(x.wkt, srid=epsg)
         )
-        
-        if colGeom != 'geom':
-            newdf.drop(colGeom, axis=1, inplace=True)
         
         newdf.to_sql(
             table, pgengine,
             if_exists='replace' if not append else 'append',
-            index=False, dtype={"geom" : Geometry(geomType, srid=epsg)}
+            index=False, dtype={col_geom : Geometry(gtype.upper(), srid=epsg)}
         )
     
     else:
-        df.to_sql(
+        newdf.to_sql(
             table, pgengine,
             if_exists='replace' if not append else 'append',
             index=False

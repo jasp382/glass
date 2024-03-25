@@ -28,9 +28,8 @@ def osm_countries(out_shp):
             ff = get_file(
                 url.format(c, _c) if c != 'russia' else url_russia,
                 os.path.join(
-                    os.path.dirname(out_shp), "{}_{}.poly".format(
-                        c, _c.replace('/', '_')
-                    ) if c != 'russia' else "russia.poly"
+                    os.path.dirname(out_shp),
+                    f"{c}_{_c.replace('/', '_')}.poly" if c != 'russia' else "russia.poly"
                 )
             )
 

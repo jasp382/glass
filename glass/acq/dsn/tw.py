@@ -70,9 +70,7 @@ def search_tweets(lat=None, lng=None, radius=None, keyword=None,
         ).items(NR_ITEMS)]
     
     else:
-        __geostr = '{_lat},{_lng},{r}km'.format(
-            _lat=str(lat), _lng=str(lng), r=str(radius)
-        )
+        __geostr = f'{str(lat)},{str(lng)},{str(radius)}km'
         
         data = [i._json for i in tweepy.Cursor(
             api.search, q=keyword, geocode=__geostr, lang=__lang,
@@ -298,7 +296,7 @@ def geotweets_location(inGeom, epsg_in, keyword=None, epsg_out=4326,
     gdata.drop("tst_geom", axis=1, inplace=True)
     
     if epsg_out != 4326:
-        gdata = gdata.to_crs('EPSG:{}'.format(str(epsg_out)))
+        gdata = gdata.to_crs(f'EPSG:{str(epsg_out)}')
     
     return gdata
 

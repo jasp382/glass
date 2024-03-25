@@ -141,7 +141,7 @@ def download_by_boundary(input_boundary, folder_out, osm_name, epsg,
         if len(EXTENTS) == 1:
             outOsm = os.path.join(folder_out, osm_name + '.xml')
         else:
-            outOsm = os.path.join(folder_out, "{}_{}.xml".format(osm_name, str(e)))
+            outOsm = os.path.join(folder_out, f"{osm_name}_{str(e)}.xml")
         
         osm_file = get_file(
             url.format(bbox_str), outOsm,
@@ -180,7 +180,7 @@ def osm_from_geofabrik(out_folder):
         for _c in osm_files[c]:
             get_file(main_url.format(c, _c), os.path.join(
                 cf, 
-                "{}-latest.osm.pbf".format(_c.replace('/', '_'))
+                f"{_c.replace('/', '_')}-latest.osm.pbf"
             ), useWget=True)
 
     return out_folder

@@ -116,6 +116,21 @@ def rcls_rst(inrst, rclsRules, outrst, api='gdal', maintain_ext=True):
     return outrst
 
 
+def rcls_rasters(rules):
+    """
+    Reclassify several rasters
+
+    rules = [{
+        "RASTER" : input,
+        "RULES"  : reclassify rules,
+        "OUT"    : output
+    }, ...]
+    """
+
+    for i in rules:
+        rcls_rst(i["RASTER"], i["RULES"], i["OUT"], api="grass")
+
+
 """
 Other tools
 """

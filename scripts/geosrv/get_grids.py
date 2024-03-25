@@ -9,7 +9,7 @@ import geopandas as gp
 from glass.smp.obj  import fishnet
 from glass.rd.shp   import shp_to_obj
 from glass.wt.shp   import obj_to_shp
-from glass.dtt.torst import shp_to_rst
+from glass.dtt.rst.torst import shp_to_rst
 from glass.wenv.grs import run_grass
 from glass.pys.oss    import mkdir
 from glass.pd.cols  import del_cols_notin_ref
@@ -139,7 +139,7 @@ if __name__ == '__main__':
     # Send data to database
     df_to_db(
         db, main_df, grid_tbl, append=True, api='psql',
-        epsg=epsg, geomType="Polygon", colGeom='geom',
+        epsg=epsg, geom_type="Polygon", col_geom='geom',
         dbset=setdb
     )
 

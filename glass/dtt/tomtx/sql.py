@@ -80,7 +80,7 @@ def tbl_to_area_mtx(db, tbl, cola, colb, result):
         ")"
     ).format(
         crossCols = ", ".join([
-            "cls_{} numeric".format(c) for c in ref_val
+            f"cls_{c} numeric" for c in ref_val
         ]), tbl = tbl,
         map1_cls = cola, map2_cls = colb
     ), api='psql')

@@ -185,7 +185,7 @@ def fx_rst(topleft, shape, cellsize, pnt, errod, direction, dmax, fxrst, epsg):
     # Import GRASS GIS modules
     from glass.it.rst     import grs_to_rst
     from glass.it.shp     import shp_to_grs
-    from glass.dtt.torst  import grsshp_to_grsrst
+    from glass.dtt.rst.torst  import grsshp_to_grsrst
     from glass.rst.alg    import grsrstcalc
     from glass.rst.direct import grs_bearing_from_pnt
     from glass.rst.dst    import grow_distance

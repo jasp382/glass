@@ -1,0 +1,90 @@
+<h1>Geometries</h1>
+
+<hr>
+<br>
+
+<mat-form-field appearance="fill">
+    <mat-label>Select one layer:</mat-label>
+
+    <mat-select (selectionChange)="selectLayer($event.value)">
+        <mat-option *ngFor="let lyr of layers" [value]="lyr">
+            {{ lyr.design }}
+        </mat-option>
+    </mat-select>
+</mat-form-field>
+
+<br>
+
+<button *ngIf="layer" class="btn btn-primary" (click)="delGeoms(layer.id)">
+    Delete data
+</button>
+
+<br>
+
+<div class="table-wrapper-scroll-y my-custom-scrollbar">
+<table class="table table-bordered table-striped mb-0">
+  <thead>
+      <tr>
+          <td>ID</td>
+          <td>Code</td>
+          <td>Class</td>
+          <td>Geometry</td>
+      </tr>
+  </thead>
+  <tbody>
+      <tr *ngFor="let row of geoms">
+          <td>{{ row.id }}</td>
+          <td>{{ row.code }}</td>
+          <td>{{ row.name }}</td>
+          <td>{{ row.geom }}</td>
+      </tr>
+  </tbody>
+</table>
+</div>
+
+<hr><hr>
+
+<div *ngIf="layer">
+
+<h3>Add Geospatial data</h3>
+
+<br>
+
+
+<form id="addGeomForm" #f="ngForm" (ngSubmit)="addGeos()">
+    <div class="row">
+
+        <div class="col-6">
+            <label>Code column name</label>
+            <input id="code" name="code" [(ngModel)]="shapeCols.code" 
+                class="form-control" type="text">
+        </div>
+
+        <div class="col-6">
+            <label>Class column name</label>
+            <input id="classname" name="classname" [(ngModel)]="shapeCols.classn" 
+                class="form-control" type="text">
+        </div>
+    </div>
+
+    <input type="file" class="file-input" multiple
+        (change)="onFileSelected($event)" #fileUpload>
+
+    <div class="row mt-3 file-upload">
+        <label>{{fileName || "No file uploaded yet."}}</label>
+
+        <button class="btn btn-primary" (click)="fileUpload.click()">
+            Upload Shapefile
+        </button>
+    </div>
+
+    <br>
+
+    <div class="col-6">
+        <button type="submit" class="btn btn-primary">Add Geospatial file</button>
+    </div>
+</form>
+</div>
+
+<br>
+

@@ -10,7 +10,7 @@ from glass.pys    import execmd
 
 
 def tbl_to_db(tblFile, db, sqlTbl, delimiter=None, encoding_='utf-8',
-              sheet=None, isAppend=None, api_db='psql', colsMap=None):
+              sheet=None, isAppend=None, api_db='psql', colsMap=None, mantain_map_cols=None):
     """
     Table file to Database Table
     
@@ -69,11 +69,18 @@ def tbl_to_db(tblFile, db, sqlTbl, delimiter=None, encoding_='utf-8',
             raise ValueError(f'{ff} is not a valid table format!')
         
         if colsMap:
+            if mantain_map_cols:
+                data.drop(
+                    [c for c in data.columns.values if c not in colsMap],
+                    axis=1, inplace=True
+                )
+            
             data.rename(columns=colsMap, inplace=True)
     
         # Send data to database
         out_tbl = fn if not outSQLTbl else outSQLTbl[i] \
             if i+1 <= len(tbls) else fn
+        
         _rtbl = df_to_db(
             db, data, out_tbl,
             append=isAppend, api=api_db
@@ -217,7 +224,7 @@ def apndtbl_in_otherdb(db_a, db_b, tblA, tblB, mapCols,
         
         df_to_db(
             db_b, df, tblB, append=True, api='psql', epsg=srsEpsg,
-            geomType=gType, colGeom=geomCol, dbset=con_b
+            geom_type=gType, col_geom=geomCol, dbset=con_b
         )
     
     else:
@@ -269,7 +276,8 @@ GeoSpatial Data to GeoSpatial Database
 
 def shp_to_psql(dbname, shps, api="pandas", tnames=None,
                 map_cols=None, srs=None, encoding="UTF-8",
-                dbset='default', to_srs=None, fformat=None, lyrname=None):
+                dbset='default', to_srs=None, fformat=None, lyrname=None,
+                mantain_map_cols=None):
     """
     Send Shapefile to PostgreSQL
     
@@ -288,9 +296,7 @@ def shp_to_psql(dbname, shps, api="pandas", tnames=None,
     """
     
     from glass.cons.psql import con_psql
-    from glass.pd.geom   import force_multipart
     from glass.prj.obj   import df_prj
-    from glass.prop.feat import get_gtype
     from glass.prop.prj  import shp_epsg
     from glass.prop.sql  import lst_db
     from glass.pys       import obj_to_lst
@@ -365,10 +371,19 @@ def shp_to_psql(dbname, shps, api="pandas", tnames=None,
                 rname = {x : x.lower() for x in df.columns.values}
                 
             else:
-                rname = {
-                    x : map_cols[x].lower() if x in map_cols else \
-                    x.lower() for x in df.columns.values
-                }
+                if not mantain_map_cols:
+                    rname = {
+                        x : map_cols[x].lower() if x in map_cols else \
+                        x.lower() for x in df.columns.values
+                    }
+                
+                else:
+                    rname= map_cols
+
+                    df.drop(
+                        [c for c in df.columns.values if c not in map_cols],
+                        axis=1, inplace=True
+                    )
 
             df.rename(columns=rname, inplace=True)
             
@@ -389,17 +404,10 @@ def shp_to_psql(dbname, shps, api="pandas", tnames=None,
             else:
                 tepsg = s['epsg']
             
-            # Force multi-geometry if necessary
-            gtype = get_gtype(
-                df, name=True,
-                py_cls=False, gisApi='pandas'
-            )
-            df = force_multipart(df, gcol, tepsg, gtype=gtype)
-            
             # GeoDataFrame to PSQL
             df_to_db(
                 dbname, df, s['tbl'], append=True, api='psql',
-                epsg=tepsg, colGeom=gcol, geomType=gtype.upper()
+                epsg=tepsg, col_geom=gcol
             )
         
         elif api == 'ogr2ogr':
@@ -417,8 +425,6 @@ def shp_to_psql(dbname, shps, api="pandas", tnames=None,
                 f'-nln {s["tbl"]} {shp}{lstr}{ssrs} -unsetFid '
                 f'-lco GEOMETRY_NAME=geom'
             )
-
-            print(cmd)
 
             ocmd = execmd(cmd)
         

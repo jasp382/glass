@@ -35,12 +35,12 @@ def otp_closest_facility(incidents, facilities, hourday, date, output):
         with open(os.path.join(os.path.dirname(output), fprop(output, 'fn') + '_log.txt'), 'w') as txt:
             for i in logs:
                 txt.write((
-                    "Incident_id: {}\n"
-                    "Facility_id: {}\n"
+                    f"Incident_id: {str(i[0])}\n"
+                    f"Facility_id: {str(i[1])}\n"
                     "ERROR message:\n"
-                    "{}\n"
+                    f"{str(i[2])}\n"
                     "\n\n\n\n\n\n"
-                ).format(str(i[0]), str(i[1]), str(i[2])))
+                ))
 
 
     return output
@@ -122,12 +122,12 @@ def otp_cf_based_on_rel(incidents, group_incidents_col,
         with open(os.path.join(os.path.dirname(output), fprop(output, 'fn') + '_log.txt'), 'w') as txt:
             for i in logs:
                 txt.write((
-                    "Incident_id: {}\n"
-                    "Facility_id: {}\n"
+                    f"Incident_id: {str(i[0])}\n"
+                    f"Facility_id: {str(i[1])}\n"
                     "ERROR message:\n"
-                    "{}\n"
+                    f"{str(i[2])}\n"
                     "\n\n\n\n\n\n"
-                ).format(str(i[0]), str(i[1]), str(i[2])))
+                ))
 
     return output
 
@@ -208,11 +208,11 @@ def otp_servarea(facilities, hourday, date, breaks, output, vel=None):
         with open(os.path.join(os.path.dirname(output), fprop(output, 'fn') + '.log.txt'), 'w') as txt:
             for i in error_logs:
                 txt.write((
-                    "Facility_id: {}\n"
+                    f"Facility_id: {str(i[0])}\n"
                     "ERROR message:\n"
-                    "{}\n"
+                    f"{i[1]}\n"
                     "\n\n\n\n\n\n"
-                ).format(str(i[0]), i[1]))
+                ))
 
     return output
 

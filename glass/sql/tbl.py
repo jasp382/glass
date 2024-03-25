@@ -2,7 +2,7 @@
 Manage DBMS Tables
 """
 
-def create_tbl(db, tbl, colsorder=None, api='psql'):
+def create_tbl(db, tbl, api='psql'):
     """
     Create Table in Database
     
@@ -10,24 +10,55 @@ def create_tbl(db, tbl, colsorder=None, api='psql'):
     * psql;
     * sqlite;
 
-    tbl = {
-        table_name : {col1_name : col_type, col2_name : col_type ...}
-    }
 
-    colsorder = {
-        table_name : [col1, col2],
-        other_table : [col1, col2]
-    }
+    tbl = [{
+        'TABLE' : 'gthruth_fishnet',
+        'COLUMNS' : [
+            'cid INT PRIMARY KEY',
+            'geom geometry(POLYGON, 32629) NOT NULL'
+        ],
+        "IDXS" : {
+            'cellgeom_idx' : 'gist (geom)'
+        }
+    }, {
+        'TABLE' : 'pxclasses',
+        'COLUMNS' : [
+            'pxid INT',
+            'clsid INT',
+            'garea numeric'
+        ],
+        "CONSTRAINTS" : [
+            'PRIMARY KEY (pxid, clsid)',
+            'FOREIGN KEY (pxid) REFERENCES gthruth_fishnet (cid),
+            'FOREIGN KEY (clsid) REFERENCES mapclasses (classid)
+        ]
+    }, ...]
     """
 
-    qs = []
-    for t in tbl:
-        ocols = list(tbl[t].keys()) if not colsorder or \
-            t not in colsorder else colsorder[t]
-        
-        cols_str = ", ".join([f'{c} {tbl[t][c]}' for c in ocols])
+    from glass.pys import obj_to_lst
 
-        qs.append(f"CREATE TABLE {t} ({cols_str})")
+    _tbl = obj_to_lst(tbl)
+
+    qs = []
+    for t in _tbl:
+        tname = t["TABLE"]
+        cols  = ", ".join(t["COLUMNS"])
+
+        if "CONSTRAINTS" not in t:
+            cts = ""
+        else:
+            t["CONSTRAINTS"] = obj_to_lst(t["CONSTRAINTS"])
+
+            cts = f", {', '.join(t['CONSTRAINTS'])}"
+
+        qs.append(f"CREATE TABLE {tname} ({cols}{cts})")
+
+        if "IDXS" in t:
+            for k in t["IDXS"]:
+                qs.append((
+                    f"CREATE INDEX {k} ON {t['TABLE']} "
+                    f"USING {t['IDXS'][k]}"
+                ))
     
     if api == 'psql':
         from glass.sql.c import sqlcon
@@ -62,7 +93,7 @@ def new_view(sqliteDb, newView, q):
     conn = sqlite3.connect(sqliteDb)
     cs = conn.cursor()
     
-    cs.execute("CREATE VIEW {} AS {}".format(newView, q))
+    cs.execute(f"CREATE VIEW {newView} AS {q}")
     
     conn.commit()
     cs.close()
@@ -87,7 +118,7 @@ def rename_tbl(db, tblNames):
     new_names =[]
     for k in tblNames:
         cursor.execute(
-            "ALTER TABLE {} RENAME TO {}".format(k, tblNames[k])
+            f"ALTER TABLE {k} RENAME TO {tblNames[k]}"
         )
         new_names.append(tblNames[k])
     
@@ -149,11 +180,11 @@ def drop_tbldata(db, table, where=None, dbset='default'):
     
     con = sqlcon(db, dbset=dbset)
     
-    cursor = con.cursor()    
+    cursor = con.cursor()  
+
+    whr = "" if not where else f" WHERE {where}"
     
-    cursor.execute("DELETE FROM {}{};".format(
-        table, "" if not where else " WHERE {}".format(where)
-    ))
+    cursor.execute(f"DELETE FROM {table}{whr};")
     
     con.commit()
     cursor.close()
@@ -171,7 +202,7 @@ def drop_where_cols_are_same(db, table, colA, colB):
     
     cursor = con.cursor()
     
-    cursor.execute('DELETE FROM {} WHERE {}={}'.format(table, colA, colB))
+    cursor.execute(f'DELETE FROM {table} WHERE {colA}={colB}')
     
     con.commit()
     cursor.close()
@@ -213,11 +244,11 @@ def update_table(db, pg_table, dic_new_values, dic_ref_values=None,
         whrLst = []
         for x in dic_ref_values:
             if dic_ref_values[x] == 'NULL':
-                whrLst.append('{} IS NULL'.format(x))
+                whrLst.append(f'{x} IS NULL')
             else:
-                whrLst.append('{}={}'.format(x, dic_ref_values[x]))
+                whrLst.append(f'{x}={dic_ref_values[x]}')
         
-        whr = " WHERE {}".format(__logic_operator.join(whrLst))
+        whr = f" WHERE {__logic_operator.join(whrLst)}"
     
     else:
         whr = ""

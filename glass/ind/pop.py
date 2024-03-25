@@ -19,7 +19,7 @@ def pop_within_area(mapunits, mapunits_id, outcol, subunits,
 
     import os
     from glass.rd.shp     import shp_to_obj
-    from glass.wt.rst     import shpext_to_rst
+    from glass.dtt.rst.torst import shpext_to_rst
     from glass.wt.shp     import obj_to_shp
     from glass.pys.oss    import mkdir, fprop
     from glass.gp.ovl.grs import grsintersection
@@ -275,7 +275,7 @@ def shparea_by_mapunitpopulation(polygons, mapunits, units_id, outcol, output,
     import os
     import geopandas as gp
 
-    from glass.wt.rst     import shpext_to_rst
+    from glass.dtt.rst.torst import shpext_to_rst
     from glass.pys.oss    import mkdir, fprop
     from glass.gp.ovl.grs import grsintersection
     from glass.prop.prj   import get_epsg

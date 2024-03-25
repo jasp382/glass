@@ -24,7 +24,7 @@ def ob_ref_rst(ref, folder, cellsize=None):
         else:
             # We have a shapefile
             # Convert it to Raster
-            from glass.dtt.torst import shp_to_rst
+            from glass.dtt.rst.torst import shp_to_rst
 
             ref_rst = shp_to_rst(
                 ref, None, 10 if not cellsize else cellsize,
@@ -57,7 +57,8 @@ def make_dem(data, field, output, hardclip,
     from glass.prop.df  import is_rst, is_shp
     from glass.prop.rst import rst_fullprop
     from glass.prop.shp import get_ext
-    from glass.wt.rst   import shpext_to_rst, rst_from_origin
+    from glass.dtt.rst.torst   import shpext_to_rst
+    from glass.wt.rst import rst_from_origin
 
     gws, loc = mkdir(os.path.join(
         os.path.dirname(output),
@@ -168,8 +169,8 @@ def make_dem(data, field, output, hardclip,
         outRst = surfrst(elev_pnt, field, oname, lyrN=1, ascmd=True)
     
     elif method == "CONTOUR":
-        from glass.dtt.torst   import grsshp_to_grsrst as shp_to_rst
-        from glass.rst.itp.grs import surfcontour
+        from glass.dtt.rst.torst import grsshp_to_grsrst as shp_to_rst
+        from glass.rst.itp.grs   import surfcontour
         
         # Apply mask if mask
         if mask:
@@ -185,9 +186,9 @@ def make_dem(data, field, output, hardclip,
         outRst = surfcontour(elevRst, oname, ascmd=True)
     
     elif method == "IDW":
-        from glass.rst.itp  import ridw
-        from glass.rst.alg  import grsrstcalc
-        from glass.dtt.torst import grsshp_to_grsrst
+        from glass.rst.itp.grs   import ridw
+        from glass.rst.alg       import grsrstcalc
+        from glass.dtt.rst.torst import grsshp_to_grsrst
         
         # Elevation (GRASS Vector) to Raster
         elevRst = grsshp_to_grsrst(elv, field, 'rst_elevation')

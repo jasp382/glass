@@ -42,7 +42,7 @@ def st_dissolve(db, table, geomcol, outTable, whrClause=None,
     
     if outTblIsFile:
         if api == 'sqlite':
-            from glass.tbl.filter import sel_by_attr
+            from glass.dtt.filter import sel_by_attr
             
             sel_by_attr(db, sql, outTable, api_gis='ogr')
         

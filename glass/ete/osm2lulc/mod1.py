@@ -13,7 +13,7 @@ def grs_rst(db, polyTbl, api='SQLITE'):
 
     from glass.sql.q     import q_to_obj
     from glass.it.shp    import dbtbl_to_shp as db_to_grs
-    from glass.dtt.torst import grsshp_to_grsrst as shp_to_rst
+    from glass.dtt.rst.torst import grsshp_to_grsrst as shp_to_rst
     
     # Get Classes 
     time_a = dt.datetime.now().replace(microsecond=0)
@@ -100,11 +100,11 @@ def num_selection(osmdb, polyTbl, folder,
     import datetime;       import os
     from threading         import Thread
     if api == 'SQLITE':
-        from glass.tbl.filter import sel_by_attr
+        from glass.dtt.filter import sel_by_attr
     else:
         from glass.it.shp import dbtbl_to_shp as sel_by_attr
     from glass.sql.q     import q_to_obj
-    from glass.dtt.torst   import shp_to_rst
+    from glass.dtt.rst.torst   import shp_to_rst
     
     # Get classes in data
     time_a = datetime.datetime.now().replace(microsecond=0)

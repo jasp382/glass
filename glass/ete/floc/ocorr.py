@@ -95,7 +95,7 @@ def ctbs_to_obslocal(ctbs, output, tmax=30*60,
     from glass.pys.oss  import fprop
     from glass.wenv.grs import run_grass
     from glass.prop.rst import rst_ext
-    from glass.wt.rst   import ext_to_rst
+    from glass.dtt.rst.torst import ext_to_rst
 
     ws = os.path.dirname(output)
     oname = fprop(output, 'fn')

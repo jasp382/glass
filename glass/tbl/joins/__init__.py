@@ -94,8 +94,8 @@ def joinLines_by_spatial_rel_raster(mainLines, mainId, joinLines,
     An raster based approach
     """
     
-    from glass.wt.shp    import shpext_to_boundshp
-    from glass.dtt.torst import shp_to_rst
+    from glass.dtt.toshp import shpext_to_boundshp
+    from glass.dtt.rst.torst import shp_to_rst
     from glass.it.pd     import df_to_geodf
     from glass.wenv.grs  import run_grass
     from glass.pd.joins  import join_dfs
@@ -125,7 +125,7 @@ def joinLines_by_spatial_rel_raster(mainLines, mainId, joinLines,
     from glass.rst.local import combine
     from glass.prop.rst  import get_rst_report_data
     from glass.it.shp    import shp_to_grs, grs_to_shp
-    from glass.dtt.torst import grsshp_to_grsrst as shp_to_rst
+    from glass.dtt.rst.torst import grsshp_to_grsrst as shp_to_rst
     
     # Add data to GRASS GIS
     mainVector = shp_to_grs(

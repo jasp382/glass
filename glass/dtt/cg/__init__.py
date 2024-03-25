@@ -355,8 +355,9 @@ def boundary_to_areas(inShp, outShp, useCMD=None):
         from glass.pys  import execmd
         
         rcmd = execmd((
-            "v.centroids input={} output={} --overwrite --quiet"
-        ).format(inShp, outShp))
+            f"v.centroids input={inShp} output={outShp} "
+            "--overwrite --quiet"
+        ))
     
     return outShp
 
@@ -382,9 +383,10 @@ def geomtype_to_geomtype(inShp, outShp, fm_type, to_type, cmd=None):
         from glass.pys  import execmd
         
         rcmd = execmd((
-            "v.type input={} output={} from_type={} to_type={} "
+            f"v.type input={inShp} output={outShp} "
+            f"from_type={fm_type} to_type={to_type} "
             "--overwrite --quiet"
-        ).format(inShp, outShp, fm_type, to_type))
+        ))
     
     return outShp
 
@@ -434,9 +436,9 @@ def line_to_polyline(inShp, outShp, asCmd=None):
         from glass.pys  import execmd
         
         rcmd = execmd((
-            "v.build.polylines input={} output={} cats='same' "
+            f"v.build.polylines input={inShp} output={outShp} cats='same' "
             "--overwrite --quiet"
-        ).format(inShp, outShp))
+        ))
     
     return outShp
 

@@ -57,7 +57,7 @@ def tin_to_raster(tin, cs, out, template=None, snapRst=None):
         arcpy.env.snapRaster = snapRst
     
     arcpy.TinRaster_3d(
-        tin, out, "FLOAT", "LINEAR", "CELLSIZE {}".format(str(cs)), "1"
+        tin, out, "FLOAT", "LINEAR", f"CELLSIZE {str(cs)}", "1"
     )
     
     if template:
