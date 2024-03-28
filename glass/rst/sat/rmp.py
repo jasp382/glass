@@ -65,9 +65,9 @@ def resample_s2img(imgzip, ref, ofolder, reflyr=None,
     """
     Import packages related with GRASS GIS
     """
-    from glass.it.rst    import rst_to_grs, grs_to_rst, grs_to_mask
-    from glass.it.shp    import shp_to_grs
-    from glass.wenv.grs  import shp_to_region, align_region, rst_to_region
+    from glass.it.rst        import rst_to_grs, grs_to_rst, grs_to_mask
+    from glass.it.shp        import shp_to_grs
+    from glass.wenv.grs      import shp_to_region, align_region, rst_to_region
     from glass.rst.rcls.grs  import set_null
     from glass.dtt.rst.torst import grsshp_to_grsrst as shp_to_rst
 

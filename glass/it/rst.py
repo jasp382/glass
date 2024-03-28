@@ -319,8 +319,8 @@ def rst_to_grs(rst, grst=None, lmtExt=None, as_cmd=None):
     return grst
 
 
-def grs_to_rst(grsRst, rst, as_cmd=None, allBands=None,
-                rtype=None, dtype=None, nodata=None):
+def grs_to_rst(grsRst:str, rst:str, as_cmd:None|bool=None,
+               allBands:None|bool=None, rtype:None|type=None, dtype=None, nodata=None) -> str:
     """
     GRASS Raster to Raster
     """
