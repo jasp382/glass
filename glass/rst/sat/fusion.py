@@ -123,3 +123,76 @@ def month_representative(img_folder, refimg, ofolder, bname, fformat='.tif'):
 
     return ofolder
 
+
+
+def month_median(months_folder, refrst, ofolder, fformat='.tif'):
+    """
+    Get representatives bands for each month in folder
+    the representative value for each band is the median
+
+    The bands of all images for a month should be in the 
+    same folder
+    """
+
+    from glass.pys.oss import lst_ff, lst_fld, fprop
+    from glass.pys.tm   import now_as_str
+    from glass.wenv.grs import run_grass
+
+    # Create GRASS GIS Session
+    ws, loc = ofolder, now_as_str(utc=True)
+
+    gb = run_grass(ws, location=loc, srs=refrst)
+
+    import grass.script.setup as gsetup
+
+    gsetup.init(gb, ws, loc, 'PERMANENT')
+
+    # GRASS GIS Methods
+    from glass.it.rst  import rst_to_grs, grs_to_rst
+    from glass.rst.mos import rseries
+
+    # List folders of each month
+    mfolders = lst_fld(months_folder)
+
+    # for each folder, list images
+    # Get median for each month
+    results = {}
+    for mfld in mfolders:
+        # List images
+        imgs = lst_ff(mfld, file_format=fformat)
+
+        # Organize images by band
+        ibyband = {}
+        for img in imgs:
+            # Add image to GRASS GIS
+            gimg = rst_to_grs(img)
+
+            band = gimg.split('_')[0]
+
+            if band not in ibyband:
+                ibyband[band] = [gimg]
+            
+            else:
+                ibyband[band].append(gimg)
+        
+        # For each band, get median
+        # Export result
+        month_k = os.path.basename(mfld)
+        results[month_k] = []
+        for band in ibyband:
+            bmonth = rseries(
+                ibyband[band], f'{band}_{month_k}',
+                'median', as_cmd=True
+            )
+
+            _bmonth = grs_to_rst(
+                bmonth,
+                os.path.join(ofolder, f'{bmonth}.tif'),
+                as_cmd=True, rtype=int, dtype='UInt16',
+                nodata=0
+            )
+
+            results[month_k].append(_bmonth)
+
+    return results
+

@@ -58,3 +58,31 @@ def join_table_with_tables(table, idTable, join_tables, join_fields=None):
         )
 
 
+
+def spatial_join(inShp, joinShp, outShp, attr=None):
+    """
+    Join two tables based in spatial relation
+    """
+    
+    import os
+    from glass.pys import obj_to_lst
+    
+    attr = obj_to_lst(attr)
+    
+    if attr:
+        _shp = os.path.splitext(os.path.basename(joinShp))[0]
+        ATTR = [(
+            f"{x} \"{x}\" true true false 30 Text 0 0 ,"
+            f"First,#,{_shp},{x},-1,-1"
+        ) for x in attr]
+    
+    else:
+        ATTR = ""
+    
+    arcpy.SpatialJoin_analysis(
+        inShp, joinShp, outShp, "JOIN_ONE_TO_ONE", "KEEP_ALL",
+        ";".join(ATTR), "INTERSECT", "", ""
+    )
+    
+    return outShp
+
