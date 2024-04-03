@@ -13,11 +13,12 @@ def prj_ogrgeom(geom, in_epsg, out_epsg, api='ogr'):
 
     from osgeo import ogr
     
+    _geom = geom if type(geom) == str else geom.ExportToWkt()
 
     if api == 'ogr':
         from glass.prop.prj import trans_param
 
-        newg = ogr.CreateGeometryFromWkt(geom.ExportToWkt())
+        newg = ogr.CreateGeometryFromWkt(_geom)
 
         newg.Transform(trans_param(in_epsg, out_epsg))
     
@@ -26,7 +27,7 @@ def prj_ogrgeom(geom, in_epsg, out_epsg, api='ogr'):
         from shapely.ops import transform
         from shapely.wkt import loads
 
-        shpgeom = loads(geom.ExportToWkt())
+        shpgeom = loads(_geom)
 
         srs_in = pyproj.Proj(f'epsg:{str(in_epsg)}')
         srs_ou = pyproj.Proj(f'epsg:{str(out_epsg)}')

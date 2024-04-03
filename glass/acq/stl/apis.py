@@ -41,12 +41,10 @@ class APISentinel:
         url = (
             "https://catalogue.dataspace.copernicus.eu/odata/v1/Products?"
             f"$filter=Collection/Name eq '{collection}' and OData.CSC."
-            f"Intersects(area=geography'SRID=4326;{aoi}) and ContentDate/"
+            f"Intersects(area=geography'SRID=4326;{aoi}') and ContentDate/"
             f"Start gt {startdate}T00:00:00.000Z and ContentDate/Start lt {enddate}"
             "T00:00:00.000Z"
         )
-
-        print(url)
 
         json = requests.get(url).json()
 
