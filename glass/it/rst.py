@@ -369,14 +369,11 @@ def grs_to_rst(grsRst:str, rst:str, as_cmd:None|bool=None,
             '-f', '--overwrite', '--quiet'
         ]
         _flags = ' '.join(flags)
-
-        _type = "" if not dtype else f" type={dtype}"
         
         rcmd = execmd((
             f"r.out.gdal input={grsRst} output={rst} "
             f"{'' if not dtype else f'type={dtype} '}"
             f"{f'nodata={str(nodata)} ' if nodata != None else ''}"
-            f"{_type}"
             f"format={rstDrv[rstExt]} {opt} {_flags}"
         ))
     

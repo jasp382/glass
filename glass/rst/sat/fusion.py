@@ -188,7 +188,8 @@ def month_median(months_folder, refrst, ofolder, fformat='.tif'):
             _bmonth = grs_to_rst(
                 bmonth,
                 os.path.join(ofolder, f'{bmonth}.tif'),
-                as_cmd=True, rtype=int
+                as_cmd=True, rtype=int, dtype='UInt16',
+                nodata=0
             )
 
             results[month_k].append(_bmonth)
