@@ -107,10 +107,10 @@ glass.egg-info
 
 
 # Configuration json
-core/glass/cons/*.json
-!core/glass/cons/con-postgresql_sample.json
-!core/glass/cons/api-keys-sample.json
-!core/glass/cons/sentinel-ex.json
+glass/cons/*.json
+!glass/cons/con-postgresql_sample.json
+!glass/cons/api-keys-sample.json
+!glass/cons/sentinel-ex.json
 
 settings.json
 
