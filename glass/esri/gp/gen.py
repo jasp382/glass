@@ -15,8 +15,9 @@ def dissolve(inShp, outShp, fld, statistics=None, geomMultiPart=True):
     nlyr = arcpy.management.Dissolve(
         in_features=inShp, out_feature_class=outShp,
         dissolve_field=fld,
-        statistics_fields=statistics
-    )
+        statistics_fields=statistics,
+        multi_part=MULTIPART
+    )[0]
     
-    return nlyr
+    return outShp, nlyr
 

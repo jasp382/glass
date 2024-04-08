@@ -91,8 +91,8 @@ def clsep_matrix(ref, var, out, fileformat=None):
 
     import os
     
-    import pandas    as pd
-    from osgeo       import gdal, gdal_array
+    import pandas as pd
+    from osgeo    import gdal, gdal_array
     from glass.wt import obj_to_tbl
 
     # Open data

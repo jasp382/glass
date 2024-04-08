@@ -2,6 +2,10 @@
 Tools for Geometric Generalization
 """
 
+import os
+from glass.prop.df import drv_name
+
+
 def df_dissolve(df, field):
     """
     Dissolve using GeoPandas
@@ -40,8 +44,8 @@ def dissolve(inShp, outShp, fld,
         This algorithm doesn't allow self intersections
         """
         
-        from glass.pys import execmd
-        from glass.prop.feat import get_gtype
+        from glass.pys      import execmd
+        from glass.prop.shp import get_gtype
 
         gt = get_gtype(inShp, gisApi='pandas')
 
@@ -69,8 +73,6 @@ def dissolve(inShp, outShp, fld,
         TODO: DISSOLVE WITHOUT FIELD
         """
         
-        import os
-        from glass.prop.df import drv_name
         from glass.pys     import execmd
         from glass.pys.oss import fprop
 
@@ -137,4 +139,150 @@ def dissolve(inShp, outShp, fld,
         raise ValueError(f'The api {api} is not available')
     
     return outShp
+
+
+
+def diss_adjacent(shp, col, value, dissolve_type, out):
+    """
+    Dissolve adjancent polygons
+
+    dissolve_type options:
+    0 - Largest adjacent polygon;
+    1 - Smallest adjacent polygon;
+    2 - Largest common boundary'
+
+    Dependencies:
+    * QGIS
+    """
+
+    from qgis import processing
+
+    from glass.rd.shp import shp_to_qgslyr
+
+    doptions = [0, 1, 2]
+
+    dtype = 0 if dissolve_type not in doptions else dissolve_type
+
+    ilyr = shp_to_qgslyr(shp)
+
+    # Select by attributes
+    sp = {
+        "FIELD"    : col,
+        "INPUT"    : ilyr,
+        'METHOD'   : 0,
+        "OPERATOR" : 5,
+        "VALUE"    : value
+    }
+
+    sel_lyr = processing.run('qgis:selectbyattribute', sp)
+
+    # Dissolve
+    dp = {
+        'INPUT'  : sel_lyr['OUTPUT'],
+        'MODE'   : dtype,
+        'OUTPUT' : out
+    }
+
+    processing.run('qgis:eliminateselectedpolygons', dp)
+
+    return out
+
+
+def remove_vertex_based_on_pairwise_dist(ishp, oshp, threshold=0.5):
+    """
+    Compare pairs of vertex, remove second element if distance
+    is lower than the threshold
+    """
+
+    from osgeo import ogr
+    import math
+    from glass.prop.prj import shp_sref
+
+    # Open Input DataSource 
+    # And create Output DataSource
+
+    isrc = ogr.GetDriverByName(drv_name(ishp)).Open(ishp)
+    ilyr = isrc.GetLayer()
+    srs  = shp_sref(ilyr)
+
+    osrc = ogr.GetDriverByName(
+        drv_name(oshp)).CreateDataSource(oshp)
+    olyr = osrc.CreateLayer(
+        os.path.splitext(os.path.basename(oshp))[0],
+        srs, geom_type=ogr.wkbMultiPolygon
+    )
+
+    # Copy fields from input to output
+    idefn = ilyr.GetLayerDefn()
+
+    fnames = []
+    for i in range(0, idefn.GetFieldCount()):
+        fdefn = idefn.GetFieldDefn(i)
+        name  = fdefn.name
+
+        olyr.CreateField(fdefn)
+        fnames.append(name)
+    
+    # Iterate over Input Layer
+    # And retrieve geometries
+    for fid, feat in enumerate(ilyr):
+        geom = feat.GetGeometryRef()
+        gtype = geom.GetGeometryName().upper()
+
+        if gtype == 'POLYGON':
+            geoms = [geom]
+
+        elif gtype == 'MULTIPOLYGON':
+            geoms = [geom.GetGeometryRef(i) for i in range(geom.GetGeometryCount())]
+
+        else:
+            continue # ignore other types
+        
+        new_geom = ogr.Geometry(ogr.wkbMultiPolygon)
+        for idx, poly in enumerate(geoms):
+            new_poly = ogr.Geometry(ogr.wkbPolygon)
+            for ringidx in range(poly.GetGeometryCount()):
+                ring = poly.GetGeometryRef(ringidx)
+                new_ring = ogr.Geometry(ogr.wkbLinearRing)
+                coords_ring = []
+
+                _i = 0
+                for i in range(ring.GetPointCount()):
+                    x, y, _ = ring.GetPoint(i)
+
+                    if not i or i+1 == ring.GetPointCount():
+                        new_ring.AddPoint(x, y)
+                        coords_ring.append((x, y))
+                        continue
+
+                    # Get previous point coordinates
+                    px, py = coords_ring[_i][0], coords_ring[_i][1]
+
+                    dist = math.sqrt((px - x)**2 + (py - y)**2)
+                    if dist < threshold:
+                        continue
+
+                    new_ring.AddPoint(x, y)
+                    coords_ring.append((x, y))
+                    _i += 1
+                
+                # Add ring to new polygon
+                new_poly.AddGeometry(new_ring)
+            
+            # Add New polygon to Geometry
+            new_geom.AddGeometry(new_poly)
+        
+        # Create new feature
+        feat_defn = olyr.GetLayerDefn()
+        new_feat = ogr.Feature(feat_defn)
+        new_feat.SetGeometry(new_geom)
+
+        for f in fnames:
+            new_feat.SetField(f, feat.GetField(f))
+        
+        olyr.CreateFeature(new_feat)
+    
+    osrc.Destroy()
+
+    return oshp
 

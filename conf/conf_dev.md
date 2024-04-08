@@ -12,6 +12,7 @@ git clone https://github.com/jasp382/glass ~/glass
 ## Install dependencies
 
 * [Ubuntu 22.04](dep/ub22.md);
+* [Ubuntu 24.04](dep/ub24.md);
 
 ## Setup Python virtual environment
 
@@ -19,14 +20,22 @@ git clone https://github.com/jasp382/glass ~/glass
 # Create new virtual env
 mkvirtualenv gs
 
+# OR for ubuntu 24 
+
+mkvirtualenv gs --system-site-packages
+
 workon gs
 
 # Install GLASS
 pip install --upgrade pip
 
-cd ~/glass && pip install -r requirements.txt
+cd ~/code/glass && pip install -r requirements.txt
 
 pip install pygdal=="`gdal-config --version`.*"
+
+OR
+
+pip install GDAL=="`gdal-config --version`.*"
 
 OR 
 
@@ -42,11 +51,12 @@ read -a pvva <<< "$pvv"
 pone="${pvva[0]}"
 ptwo="${pvva[1]}"
 
-echo "/home/$USER/glass" | sudo tee ~/.virtualenvs/gs/lib/python$pone.$ptwo/site-packages/glass.pth
+echo "/home/$USER/code/glass" | sudo tee ~/.virtualenvs/gs/lib/python$pone.$ptwo/site-packages/glass.pth
 
 # Setup QGIS Python dependencies
-ln -s /usr/lib/python3/dist-packages/qgis* ~/.virtualenvs/gs/lib/python3.10/site-packages
-ln -s /usr/lib/python3/dist-packages/PyQt5* ~/.virtualenvs/gs/lib/python3.10/site-packages
+ln -s /usr/lib/python3/dist-packages/qgis* ~/.virtualenvs/gs/lib/python$pone.$ptwo/site-packages
+ln -s /usr/lib/python3/dist-packages/PyQt5* ~/.virtualenvs/gs/lib/python$pone.$ptwo/site-packages
+ln -s /usr/share/qgis/python/plugins/processing* ~/.virtualenvs/gs/lib/python$pone.$ptwo/site-packages
 ```
 
 
@@ -63,6 +73,8 @@ source ~/.bashrc
 
 ```Bash
 sudo rm /usr/share/gdal/osmconf.ini
+sudo rm /home/$USER/OTB_install/share/gdal/osmconf.ini
 
-sudo cp ~/glass/conf/osmconf-gdal.ini /usr/share/gdal/osmconf.ini
+sudo cp ~/code/glass/conf/osmconf-gdal.ini /usr/share/gdal/osmconf.ini
+sudo cp ~/code/glass/conf/osmconf-gdal.ini /home/$USER/OTB_install/share/gdal/osmconf.ini
 ```

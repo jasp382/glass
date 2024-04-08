@@ -10,20 +10,16 @@ def combine(rsts, orst, api="grass"):
     """
 
     if api == "grass" or api == "pygrass":
-        from glass.pys.oss import fprop
-        from glass.pys.tm import now_as_str
-        from glass.wenv.grs import run_grass
+        from glass.pys.oss  import fprop
+        from glass.pys.tm   import now_as_str
+        from glass.wenv.grs import grass_session
 
         # Create GRASS GIS Session
         ws, loc = os.path.dirname(orst), now_as_str(utc=True)
 
-        gb = run_grass(ws, location=loc, srs=rsts[0])
+        gb = grass_session(ws, loc=loc, srs=rsts[0])
 
-        import grass.script.setup as gsetup
-
-        gsetup.init(gb, ws, loc, 'PERMANENT')
-
-        from glass.it.rst import grs_to_rst, rst_to_grs
+        from glass.it.rst        import grs_to_rst, rst_to_grs
         from glass.rst.local.grs import grs_combine, combine_table
 
         grst = [rst_to_grs(r) for r in rsts]
@@ -39,7 +35,7 @@ def combine(rsts, orst, api="grass"):
 
         # Export Raster
         grs_to_rst(
-            cmb, orst, rtype=int,
+            cmb, orst, dtype="Int32",
             as_cmd=True if api == 'grass' else None
         )
     

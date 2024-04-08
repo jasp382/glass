@@ -39,7 +39,7 @@ def cols_calc(table, fld, expression, newcols=None, code=None):
         expression=expression,
         expression_type="PYTHON3",
         code_block=code
-    )
+    )[0]
 
     return nlyr
 

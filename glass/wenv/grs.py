@@ -5,6 +5,7 @@ Start GIS Sessions
 
 import os
 import sys
+import subprocess
 from glass.pys     import execmd
 from glass.pys.oss import del_folder
 
@@ -234,11 +235,31 @@ def run_grass(workspace, grassBIN=GRASS_BIN, location=None, srs=None):
         )
     
     if not base:
-        raise ValueError((
-            'Could not identify operating system'
-        ))
+        raise ValueError('Could not identify operating system')
     
     return base
+
+
+def grass_session(ws, loc=None, srs=None):
+    """
+    Create new GRASS GIS Project and start a new session
+    """
+
+    sys.path.append(
+        subprocess.check_output(["grass", "--config", "python_path"], text=True).strip()
+    )
+
+    import grass.script as gs
+
+    gs.create_project(
+        ws, name=loc,
+        epsg=str(srs) if type(srs) == int else None,
+        filename=srs if type(srs) == str else None
+    )
+
+    newproj = gs.setup.init(ws, loc, 'PERMANENT')
+
+    return newproj
 
 
 """

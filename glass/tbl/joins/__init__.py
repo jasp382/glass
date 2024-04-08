@@ -13,19 +13,125 @@ from glass.wt.shp   import df_to_shp, obj_to_shp
 from glass.prop.prj import get_epsg
 
 
-def join_table(shp, jshp, shpid, joinfk):
-    """
-    Join Tables using GRASS GIS
-    """
-    
-    from glass.pys import execmd
-    
-    rcmd = execmd((
-        f"v.db.join map={shp} column={shpid} "
-        f"other_table={jshp} other_column={joinfk}"
-    ))
 
-    return shp
+def join_fields(tleft, pk_left, right_tbls, out, leftSheet=None, leftDelimiter=';',
+                _how='inner', norelval=None, oepsg=None):
+    """
+    Join tables
+
+    right_sample = {
+        '/table/path' : {
+            'fk' : 'fk_col',
+            'cols' : ['col_a', 'col_b'],
+            'sheet' : None,
+            'delimiter' : None,
+            'isbgri' : None,
+            'newnames' : ['col_d', 'col_c'],
+            'forcenum' : True
+        }
+    }
+    """
+
+    from glass.prop.df import is_shp
+    from glass.pys import obj_to_lst
+    from glass.pys.oss import fprop
+    from glass.prop.prj import df_epsg
+
+    ioshp = is_shp(out)
+
+    # Read main table
+    ishp = is_shp(tleft)
+
+    mdf = shp_to_obj(tleft) if ishp else tbl_to_obj(
+        tleft, _delimiter=leftDelimiter,
+        encoding_='utf-8', sheet=leftSheet
+    )
+
+    if not oepsg and ishp:
+        oepsg = df_epsg(ishp)
+
+    if pk_left == "index":
+        mdf['fidpk'] = mdf.index + 1
+        pk_left = 'fidpk'
+    
+    # Force PK to String
+    mdf[pk_left] = mdf[pk_left].astype(str)
+
+    # Open Right tables
+    for f in right_tbls:
+        rname = fprop(f, 'fn')
+        ris_shp = is_shp(f)
+
+        fk = right_tbls[f]['fk']
+
+        dlm = ';' if "delimiter" not in right_tbls[f] else \
+            right_tbls[f]["delimiter"]
+        
+        sht = None if "sheet" not in right_tbls[f] else \
+            right_tbls[f]["sheet"]
+        
+        ibgri = None if "isbgri" not in right_tbls[f] else \
+            right_tbls[f]["isbgri"]
+        
+        fnum = None if "forcenum" not in right_tbls[f] else \
+            right_tbls[f]["forcenum"]
+        
+        newnam = None if "newnames" not in right_tbls[f] else \
+            obj_to_lst(right_tbls[f]["newnames"])
+
+        rdf = shp_to_obj(f) if ris_shp else tbl_to_obj(
+            f, _delimiter=dlm, encoding_='utf-8',
+            sheet=sht
+        )
+
+        if not oepsg and ris_shp and ioshp:
+            oepsg = df_epsg(rdf, "geometry")
+
+        rdf[fk] = rdf[fk].astype(str)
+
+        if ibgri:
+            rdf[fk] = rdf[fk].str.replace("'", "")
+
+        if "cols" in right_tbls[f]:
+            rcols = obj_to_lst(right_tbls[f]["cols"])
+
+            dc = [c for c in rdf.columns.values if c not in rcols and c != fk]
+
+            rdf.drop(dc, axis=1, inplace=True)
+
+            if newnam and len(newnam) == len(rcols):
+                rncols = {rcols[i] : newnam[i] for i in range(len(rcols))}
+
+                rdf.rename(columns=rncols, inplace=True)
+
+        rdf.rename(columns={fk : f"{rname}_fk"}, inplace=True)
+
+        # Force numeric columns to be numeric
+        if fnum:
+            for c in rdf.columns.values:
+                if c == f"{rname}_fk":
+                    continue
+
+                rdf[c] = pd.to_numeric(rdf[c], errors='ignore')
+
+        mdf = mdf.merge(
+            rdf, how=_how, left_on=pk_left,
+            right_on=f"{rname}_fk"
+        )
+
+        # Replace Nan if necessary
+        if norelval != None:
+            for c in rdf.columns.values:
+                mdf[c] = mdf[c].fillna(norelval)
+
+        mdf.drop([f"{rname}_fk"], axis=1, inplace=True)
+
+    obj_to_shp(mdf, 'geometry', oepsg, out) if ioshp else \
+        obj_to_tbl(mdf, out)
+
+    return out
+
+
 
 
 def join_attr_by_distance(mainTable, joinTable, workGrass, epsg_code,
@@ -37,15 +143,12 @@ def join_attr_by_distance(mainTable, joinTable, workGrass, epsg_code,
     Uses GRASS GIS to find near lines.
     """
     
-    from glass.wenv.grs import run_grass
+    from glass.wenv.grs import grass_session
     from glass.it.pd    import df_to_geodf
     from glass.pys.oss  import fprop
     
     # Create GRASS GIS Location
-    grassBase = run_grass(workGrass, location='join_loc', srs=epsg_code)
-    
-    import grass.script.setup as gsetup
-    gsetup.init(grassBase, workGrass, 'join_loc', 'PERMANENT')
+    grassBase = grass_session(workGrass, loc='join_loc', srs=epsg_code)
     
     # Import some GRASS GIS tools
     from glass.gp.prox import grs_near as near
@@ -97,7 +200,7 @@ def joinLines_by_spatial_rel_raster(mainLines, mainId, joinLines,
     from glass.dtt.toshp import shpext_to_boundshp
     from glass.dtt.rst.torst import shp_to_rst
     from glass.it.pd     import df_to_geodf
-    from glass.wenv.grs  import run_grass
+    from glass.wenv.grs  import grass_session
     from glass.pd.joins  import join_dfs
     from glass.pd.agg    import df_groupBy
     from glass.pys.oss   import fprop, mkdir
@@ -116,15 +219,11 @@ def joinLines_by_spatial_rel_raster(mainLines, mainId, joinLines,
         workspace, "rst_base.tif"), epsg=epsg, api='pygdal')
     
     # Start GRASS GIS Session
-    gbase = run_grass(workspace, location="grs_loc", srs=boundRst)
+    gbase = grass_session(workspace, loc="grs_loc", srs=boundRst)
     
-    import grass.script.setup as gsetup
-    
-    gsetup.init(gbase, workspace, "grs_loc", "PERMANENT")
-    
-    from glass.rst.local import combine
-    from glass.prop.rst  import get_rst_report_data
-    from glass.it.shp    import shp_to_grs, grs_to_shp
+    from glass.rst.local     import combine
+    from glass.prop.rst      import san_report_combine
+    from glass.it.shp        import shp_to_grs, grs_to_shp
     from glass.dtt.rst.torst import grsshp_to_grsrst as shp_to_rst
     
     # Add data to GRASS GIS
@@ -138,7 +237,7 @@ def joinLines_by_spatial_rel_raster(mainLines, mainId, joinLines,
     
     combRst = combine(mainRst, joinRst, "combine_rst", api="pygrass")
     
-    combine_data = get_rst_report_data(combRst, UNITS="c")
+    combine_data = san_report_combine(combRst, UNITS="c")
     
     combDf = pd.DataFrame(combine_data, columns=[
         "comb_cat", "rst_1", "rst_2", "ncells"
@@ -179,73 +278,6 @@ def joinLines_by_spatial_rel_raster(mainLines, mainId, joinLines,
 Do Joins and stuff with excel tables
 """
 
-def join_shp_with_tbl(shp, shp_pk, tbl, tbl_fk, outShp,
-                        joinFieldsMantain=None,
-                        newNames=None, csv_delimiter=';', isbgri=None,
-                        sheet=None, _how='inner', norelval=None):
-    """
-    Join BGRI ESRI Shapefile with table in xlsx or csv formats
-    """
-    
-    from glass.pys import obj_to_lst
-    
-    # Read main_table
-    mainDf = shp_to_obj(shp)
-    
-    # Read join table
-    joinDf = tbl_to_obj(
-        tbl, _delimiter=csv_delimiter,
-        encoding_='utf-8', sheet=sheet
-    )
-
-    # Check if shp_pk is index
-    if shp_pk == "index":
-        mainDf["shp_pk"] = mainDf.index + 1
-        shp_pk = "shp_pk"
-
-    # Force ids to strings
-    mainDf[shp_pk] = mainDf[shp_pk].astype(str)
-    joinDf[tbl_fk] = joinDf[tbl_fk].astype(str)
-    
-    # Sanitize GEO_COD of bgriCsv
-    if isbgri:
-        joinDf[tbl_fk] = joinDf[tbl_fk].str.replace("'", "")
-    
-    if joinFieldsMantain:
-        joinFieldsMantain = obj_to_lst(joinFieldsMantain)
-        
-        dropCols = []
-        for col in joinDf.columns.values:
-            if col not in [shp_pk] + joinFieldsMantain:
-                dropCols.append(col)
-        
-        joinDf.drop(dropCols, axis=1, inplace=True)
-    
-    # Force numeric columns to be numeric
-    for c in joinDf.columns.values:
-        if c != tbl_fk:
-            joinDf[c] = pd.to_numeric(joinDf[c], errors='ignore')
-    
-    resultDf = mainDf.merge(
-        joinDf, how=_how, left_on=shp_pk, right_on=tbl_fk
-    )
-
-    if newNames:
-        newNames = obj_to_lst(newNames)
-        renDict = {
-            joinFieldsMantain[n] : newNames[n] for n in range(len(joinFieldsMantain))
-        }
-        
-        resultDf.rename(columns=renDict, inplace=True)
-    
-    # Replace Nan
-    if norelval != None:
-        resultDf[tbl_fk] = resultDf[tbl_fk].fillna(norelval)
-    
-    df_to_shp(resultDf, outShp)
-    
-    return outShp
-
 
 def loop_join_shp_tbl(mfolder, shpname, tblname, shp_pk, tbl_fk, oname):
     """
@@ -258,10 +290,12 @@ def loop_join_shp_tbl(mfolder, shpname, tblname, shp_pk, tbl_fk, oname):
     folders = lst_fld(mfolder)
 
     for f in folders:
-        join_shp_with_tbl(
+        right_ = {
+            os.path.join(f, tblname) : {'fk' : tbl_fk}
+        }
+        join_fields(
             os.path.join(f, shpname), shp_pk,
-            os.path.join(f, tblname), tbl_fk,
-            os.path.join(f, oname),
+            right_, os.path.join(f, oname),
             _how="left", norelval=-1
         )
 
@@ -305,9 +339,12 @@ def loop_join_shp_tbl_sameid(fa, fb, of, apk, bfk, oname, tbff='.dbf'):
     # Join tables
     ot = []
     for i, r in jt.iterrows():
-        outt = join_shp_with_tbl(
+        right_ = {
+            os.path.join(fb, r.btbl) : {'fk' : bfk}
+        }
+        outt = join_fields(
             os.path.join(fa, r.atbl), apk,
-            os.path.join(fb, r.btbl), bfk,
+            right_,
             os.path.join(of, f"{oname}_{str(r.aid)}.shp"),
             _how="left", norelval=-1
         )
@@ -379,130 +416,6 @@ def calc_mean_samecol_sevshp(intbls, pk, meancol, output, tformat='.shp'):
     obj_to_tbl(main_df, output)
 
     return output
-
-
-def join_xls_table(main_table, fid_main, join_table, fid_join, copy_fields, out_table,
-                   main_sheet=None, join_sheet=None):
-    """
-    Join tables using a commum attribute
-    
-    Relations:
-    - 1 to 1
-    - N to 1
-    
-    TODO: Use Pandas Instead
-    """
-    
-    import xlwt
-    from glass.tbl.xls.fld import col_name
-    
-    copy_fields = [copy_fields] if type(copy_fields) == str else \
-        copy_fields if type(copy_fields) == list else None
-    
-    if not copy_fields:
-        raise ValueError(
-            'copy_fields should be a list or a string'
-        )
-    
-    # main_table to dict
-    mainData = tbl_to_obj(
-        main_table, sheet=main_sheet, useFirstColAsIndex=True, output='dict'
-    )
-    
-    # join table to dict
-    joinData = tbl_to_obj(
-        join_table, sheet=join_sheet, useFirstColAsIndex=True, output='dict'
-    )
-    
-    # write output data
-    out_sheet_name = 'data' if not main_sheet and not join_sheet else join_sheet \
-        if join_sheet and not main_sheet else main_sheet
-    
-    out_xls = xlwt.Workbook()
-    new_sheet = out_xls.add_sheet(out_sheet_name)
-    
-    # Write tiles
-    COLUMNS_ORDER = col_name(main_table, sheet_name=main_sheet)
-    
-    TITLES = COLUMNS_ORDER + copy_fields
-    for i in range(len(TITLES)):
-        new_sheet.write(0, i, TITLES[i])
-    
-    # parse data
-    l = 1
-    for fid in mainData:
-        new_sheet.write(l, 0, fid)
-        
-        c = 1
-        for col in COLUMNS_ORDER[1:]:
-            new_sheet.write(l, c, mainData[fid][col])
-            c+=1
-        
-        for col in copy_fields:
-            if fid in joinData:
-                new_sheet.write(l, c, joinData[fid][col])
-            c+=1
-        
-        l += 1
-    
-    out_xls.save(out_table)
-
-
-def join_tables_in_table(mainTable, mainIdField, joinTables, outTable):
-    """
-    Join one table with all tables in a folder
-    
-    joinTables = {
-        r'D:\TRENMO_JASP\CARRIS\valid_by_para\period_16_17h59\sabado\fvalidacoes_v6_2018-01-06.xlsx' : {
-            "JOIN_FIELD"    : 'paragem',
-            "COLS_TO_JOIN"  : {'n_validacao' : 'dia_6'}
-        },
-        r'D:\TRENMO_JASP\CARRIS\valid_by_para\period_16_17h59\sabado\fvalidacoes_v6_2018-01-13.xlsx' : {
-            "JOIN_FIELD"    : 'paragem',
-            "COLS_TO_JOIN"  : {'n_validacao' : 'dia_13'}
-        },
-        r'D:\TRENMO_JASP\CARRIS\valid_by_para\period_16_17h59\sabado\fvalidacoes_v6_2018-01-20.xlsx' : {
-            "JOIN_FIELD"    : 'paragem',
-            "COLS_TO_JOIN"  : {'n_validacao' : 'dia_20'}
-        },
-        r'D:\TRENMO_JASP\CARRIS\valid_by_para\period_16_17h59\sabado\fvalidacoes_v6_2018-01-27.xlsx' : {
-            "JOIN_FIELD"    : 'paragem',
-            "COLS_TO_JOIN"  : {'n_validacao' : 'dia_27'}
-        }
-    }
-    
-    #TODO: only works with xlsx tables as join TABLES
-    """
-    
-    # Get table format
-    tableType = os.path.splitext(mainTable)[1]
-    
-    tableDf = tbl_to_obj(mainTable)
-    
-    for table in joinTables:
-        xlsDf = tbl_to_obj(table)
-        
-        join_field = 'id_entity' if joinTables[table]["JOIN_FIELD"] == mainIdField \
-            else joinTables[table]["JOIN_FIELD"]
-        
-        if joinTables[table]["JOIN_FIELD"] == mainIdField:
-            xlsDf.rename(columns={mainIdField : join_field}, inplace=True)
-        
-        xlsDf.rename(columns=joinTables[table]["COLS_TO_JOIN"], inplace=True)
-        
-        tableDf = tableDf.merge(
-            xlsDf, how='outer', left_on=mainIdField,
-            right_on=join_field
-        )
-        
-        tableDf.fillna(0, inplace=True)
-        tableDf[mainIdField].replace(0, tableDf[join_field], inplace=True)
-        
-        tableDf.drop(join_field, axis=1, inplace=True)
-    
-    obj_to_tbl(tableDf, outTable)
-    
-    return outTable
 
 
 def field_sum_two_tables(tableOne, tableTwo,
@@ -614,30 +527,19 @@ def copy_fields_based_on_table(shp, jshp, pk, fk, auxtbl, auxsheet,
     based on another table
     """
 
-    shpdf = shp_to_obj(shp)
-
-    jshpdf = shp_to_obj(jshp)
-
     xlsdf = tbl_to_obj(auxtbl, sheet=auxsheet)
 
-    jshpcols = list(jshpdf.columns.values)
+    cols = xlsdf[old_names].tolist()
+    new  = xlsdf[new_names].tolist()
 
-    rdf = {fk: 'jtblfid'}
-    jcols = ['jtblfid']
+    right_ = {
+        jshp : {'fk' : fk, 'cols' : cols, 'newnames' : new}
+    }
 
-    for i, r in xlsdf.iterrows():
-        if r[old_names] in jshpcols:
-            rdf[r[old_names]] = r[new_names]
-        
-            jcols.append(r[new_names])
-
-    jshpdf.rename(columns=rdf, inplace=True)
-    dcols = [c for c in jshpdf.columns.values if c not in jcols]
-    jshpdf.drop(dcols, axis=1, inplace=True)
-
-    shpdf = shpdf.merge(jshpdf, how='left', left_on=pk, right_on='jtblfid')
-
-    df_to_shp(shpdf, oshp)
+    join_fields(
+        shp, pk, right_,
+        oshp, _how='left'
+    )
 
     return oshp
 

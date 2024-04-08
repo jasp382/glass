@@ -62,7 +62,7 @@ def data_from_post(url, postdata, head='application/json',
 Get Files from the Internet
 """
 
-def get_file(url, output, useWget=None):
+def get_file(url, output, useWget=None, quiet=None, token=None):
     """
     Save content of url
     """
@@ -77,8 +77,18 @@ def get_file(url, output, useWget=None):
         """ On Linux Use WGET """
         
         from glass.pys import execmd
+
+        _quiet = "" if not quiet else " --quiet"
+        header = "" if not token else f" --header \"Authorization: Bearer {token}\""
         
-        outcmd = execmd(f"wget -O {output} {url}")
+        outcmd = execmd((
+            "wget"
+            f"{_quiet}{header}"
+            f" -O {output} '{url}'"
+        ), raiseError=None)
+
+        if outcmd == None:
+            return None
     
     return output
 

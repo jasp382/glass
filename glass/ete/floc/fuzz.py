@@ -153,7 +153,7 @@ def fx_rst(topleft, shape, cellsize, pnt, errod, direction, dmax, fxrst, epsg):
     from glass.it.pd    import pnt_dfwxy_to_geodf
     from glass.pys.oss  import fprop, copy_file
     from glass.pys.tm   import now_as_str
-    from glass.wenv.grs import run_grass
+    from glass.wenv.grs import grass_session
     from glass.wt.rst   import rst_from_origin
     from glass.wt.shp   import df_to_shp
 
@@ -174,10 +174,7 @@ def fx_rst(topleft, shape, cellsize, pnt, errod, direction, dmax, fxrst, epsg):
     )
 
     # Start GRASS GIS Session
-    gb = run_grass(ws, grassBIN='grass78', location=loc, srs=refrst)
-
-    import grass.script.setup as gsetup
-    gsetup.init(gb, ws, loc, 'PERMANENT')
+    gb = grass_session(ws, loc=loc, srs=refrst)
 
     # Move ref raster
     refrst = copy_file(refrst, os.path.join(ws, loc, 'refrst.tif'), move=True)
@@ -375,7 +372,7 @@ def fx_rst(topleft, shape, cellsize, pnt, errod, direction, dmax, fxrst, epsg):
 
     set_null(_fxrst, 0, ascmd=True)
 
-    grs_to_rst(_fxrst, fxrst, rtype=float, dtype="Float32", nodata=0)
+    grs_to_rst(_fxrst, fxrst, dtype="Float32", nodata=0)
 
     return fxrst
 
@@ -555,7 +552,7 @@ def fx_to_geom(rst, reduce_raster=None):
 
     from glass.pys.oss  import fprop
     from glass.pys.tm   import now_as_str
-    from glass.wenv.grs import run_grass
+    from glass.wenv.grs import grass_session
     from glass.rd.shp   import shp_to_obj
     from glass.prop.rst import get_cellsize
 
@@ -563,10 +560,7 @@ def fx_to_geom(rst, reduce_raster=None):
     ws, loc = os.path.dirname(rst), f"fxgeom_{now_as_str()}"
 
     # Start GRASS GIS Session
-    gb = run_grass(ws, grassBIN='grass78', location=loc, srs=rst)
-
-    import grass.script.setup as gsetup
-    gsetup.init(gb, ws, loc, 'PERMANENT')
+    gb = grass_session(ws, loc=loc, srs=rst)
 
     # Import GRASS GIS modules
     from glass.it.rst        import rst_to_grs, grs_to_mask, grs_to_rst
@@ -613,7 +607,7 @@ def fx_to_geom(rst, reduce_raster=None):
 
         grs_to_rst(
             fx, reduce_raster,
-            rtype=float, dtype="Float32", nodata=0
+            dtype="Float32", nodata=0
         )
 
         return geom, reduce_raster

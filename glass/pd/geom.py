@@ -2,6 +2,7 @@
 Do things with GeoPandas Geometries
 """
 
+#import geopandas as gp
 from geoalchemy2 import WKTElement
 from shapely.geometry.multipoint import MultiPoint
 from shapely.geometry.multilinestring import MultiLineString
@@ -13,7 +14,7 @@ def force_multipart(df, geomcol, epsg, gtype=None, r_wkt=True):
     Force geometry to MultiPart
     """
 
-    from glass.prop.feat import get_gtype
+    from glass.prop.shp import get_gtype
 
     def sanitize_geom(geom, GeomClass, epsg):
         if geom.geom_type.startswith('Multi') and r_wkt:
@@ -37,5 +38,7 @@ def force_multipart(df, geomcol, epsg, gtype=None, r_wkt=True):
             MultiLineString if geom_type == 'MultiLineString' else MultiPoint
         
         df[geomcol] = df[geomcol].apply(lambda x: sanitize_geom(x, MultiClass, epsg))
+    
+    #df = gp.GeoDataFrame(df, geometry=geomcol, crs=epsg)
     
     return df

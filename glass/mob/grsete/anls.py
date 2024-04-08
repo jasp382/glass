@@ -5,7 +5,7 @@ Network Analysis
 import os
 
 from glass.pys.oss  import fprop
-from glass.wenv.grs import run_grass
+from glass.wenv.grs import grass_session
 
 
 def run_close_facility(rdv, incidents, facilities, kph, oneway, output):
@@ -17,11 +17,7 @@ def run_close_facility(rdv, incidents, facilities, kph, oneway, output):
     ws = os.path.dirname(output)
     loc = f"loc_{fprop(output, 'fn')}"
 
-    gb = run_grass(ws, location=loc, srs=rdv)
-
-    import grass.script.setup as gsetup
-
-    gsetup.init(gb, ws, loc, 'PERMANENT')
+    gb = grass_session(ws, loc=loc, srs=rdv)
 
     from glass.it.shp          import shp_to_grs, grs_to_shp
     from glass.mob.grstbx.vnet import pnts_to_net

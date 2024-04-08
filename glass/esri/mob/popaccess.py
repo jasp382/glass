@@ -23,13 +23,13 @@ def arcg_mean_time_WByPop2(netDt, rdv, infraestruturas, unidades, conjuntos,
     import arcpy
     import os
     from glass.esri.rd.shp       import shp_to_lyr
-    from glass.cpu.arcg.mng.feat  import feat_to_pnt
+    from glass.esri.dp.cg  import feat_to_pnt
     from glass.esri.tbl.col   import add_col, cols_calc
-    from glass.cpu.arcg.mng.joins import join_table
+    from glass.esri.tbl.joins import join_table
     from glass.mng.genze          import dissolve
-    from glass.esri.dp            import copy_feat
+    from glass.esri.it           import copy_feat
     from glass.mob.arctbx.closest import closest_facility
-    from glass.dct                import tbl_to_obj
+    from glass.rd import tbl_to_obj
     
     def get_freg_denominator(shp, groups, population, fld_time="Total_Minu"):
         cursor = arcpy.SearchCursor(shp)
@@ -126,7 +126,7 @@ def mean_time_by_influence_area(netDt, rdv, infraestruturas,
     
     import arcpy; import os
     from glass.esri.rd.shp             import shp_to_lyr
-    from glass.cpu.arcg.mng.feat         import feat_to_pnt
+    from glass.esri.dp.cg         import feat_to_pnt
     from glass.cpu.arcg.mng.gen          import merge
     from glass.esri.dp                   import copy_feat
     from glass.mng.genze                 import dissolve
@@ -134,7 +134,7 @@ def mean_time_by_influence_area(netDt, rdv, infraestruturas,
     from glass.esri.tbl.col          import cols_calc
     from glass.cpu.arcg.mng.fld          import field_statistics
     from glass.esri.prop.cols  import type_fields
-    from glass.cpu.arcg.mng.joins        import join_table
+    from glass.esri.tbl.joins import join_table
     from glass.cpu.arcg.anls.exct        import select_by_attr
     from glass.cpu.arcg.netanlst.closest import closest_facility
     

@@ -70,7 +70,7 @@ def fprop(__file, prop, forceLower=None, fs_unit=None):
         return result
 
 
-def lst_ff(w:str, file_format:None|str=None, filename:None|bool=None,
+def lst_ff(w:str, file_format:None|str=None, filename:None|str=None,
            fnpart:None|str=None, rfilename:None|bool=None) -> list[str]:
     """
     List the abs path of all files with a specific extension on a folder
@@ -150,7 +150,7 @@ def lst_ff(w:str, file_format:None|str=None, filename:None|bool=None,
         return _t
 
 
-def lst_fld(w:str, name:None|bool=None, namepart:None|str|list[str]=None) -> list[str]:
+def lst_fld(w:str, name=None, namepart=None, ignore_gdb=None) -> list[str]:
     """
     List folders path or name in one folder
     """
@@ -160,9 +160,6 @@ def lst_fld(w:str, name:None|bool=None, namepart:None|str|list[str]=None) -> lis
         foldersname.extend(dirsname)
         break
     
-    if name and not namepart:
-        return foldersname
-    
     if namepart:
         fnp = obj_to_lst(namepart)
         l = []
@@ -170,13 +167,25 @@ def lst_fld(w:str, name:None|bool=None, namepart:None|str|list[str]=None) -> lis
         for fld in foldersname:
             for _f in fnp:
                 if _f in fld:
-                    l.append(fld if name else os.path.join(w, fld))
+                    l.append(fld)
 
                     break
         
-        return l
+    else:
+        l = foldersname
     
-    return foldersname if name else [os.path.join(w, fld) for fld in foldersname]
+    if ignore_gdb:
+        _l = []
+
+        for f in l:
+            if f[-4:] == '.gdb':
+                continue
+            _l.append(f)
+    
+    else:
+        _l = l
+    
+    return _l if name else [os.path.join(w, fld) for fld in _l]
 
 
 def list_folders_files(w, name=None):

@@ -87,10 +87,10 @@ def proj(inShp, outShp, outEPSG, inEPSG=None,
         Using ogr Python API
         """
         
-        from osgeo           import ogr
-        from glass.lyr.fld   import copy_flds
-        from glass.prop.feat import get_gtype
-        from glass.prop.prj  import sref_from_epsg, trans_param, shp_sref
+        from osgeo          import ogr
+        from glass.lyr.fld  import copy_flds
+        from glass.prop.shp import get_gtype
+        from glass.prop.prj import sref_from_epsg, trans_param, shp_sref
         
         def copyShp(out, outDefn, lyr_in, trans):
             for f in lyr_in:
@@ -226,7 +226,7 @@ def proj(inShp, outShp, outEPSG, inEPSG=None,
                 create_pgdb(db_name)
 
         # Import Data
-        inTbl = shp_to_psql(db_name, inShp, api='shp2pgsql', encoding="LATIN1")
+        inTbl = shp_to_psql(db_name, inShp, api='ogr2ogr')
 
         # Transform
         oTbl = sql_proj(

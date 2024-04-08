@@ -4,7 +4,7 @@ Interpolation Tools
 
 import os
 
-from glass.wenv.grs import run_grass
+from glass.wenv.grs import grass_session
 
 
 def surf_rst(ishp, col, orst, ws=None, cellsize=10):
@@ -27,11 +27,7 @@ def surf_rst(ishp, col, orst, ws=None, cellsize=10):
 
     locn = now_as_str()
 
-    gb = run_grass(ws, location=locn, srs=rref)
-
-    import grass.script.setup as gsetup
-
-    gsetup.init(gb, ws, locn, "PERMANENT")
+    gb = grass_session(ws, loc=locn, srs=rref)
 
     from glass.it.rst      import grs_to_rst
     from glass.it.shp      import shp_to_grs
@@ -44,7 +40,7 @@ def surf_rst(ishp, col, orst, ws=None, cellsize=10):
     out_grsrst = surfrst(grs_shp, col, fprop(orst, 'fn'), lyrN=1, ascmd=True)
 
     # Export result
-    grs_to_rst(out_grsrst, orst, rtype=float)
+    grs_to_rst(out_grsrst, orst, dtype="Float32")
 
     return orst
 

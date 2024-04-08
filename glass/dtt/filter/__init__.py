@@ -60,6 +60,21 @@ def sel_by_attr(inShp, sql, outShp, geomType="area", lyrN=1, api_gis='ogr',
             f"where={sql} output={outShp} --overwrite --quiet"
         ))
     
+    elif api_gis == 'qgis':
+        """
+        Use native:extractbyexpression available on QGIS
+        """
+
+        from qgis import processing
+
+        params = {
+            'INPUT'      : inShp,
+            'EXPRESSION' : sql,
+            'OUTPUT'     : outShp
+        }
+
+        processing.run("native:extractbyexpression", params)
+    
     else:
         raise ValueError(f'API {api_gis} is not available')
     
@@ -75,12 +90,12 @@ def sel_by_loc(shp, boundary_filter, filtered_output):
     Writes the filter on a new shp
     """
     
-    from osgeo           import ogr
-    from glass.prop.df   import drv_name
-    from glass.prop.feat import get_gtype
-    from glass.lyr.fld   import copy_flds
-    from glass.dtt.cp    import copy_feat
-    from glass.pys.oss   import fprop
+    from osgeo          import ogr
+    from glass.prop.df  import drv_name
+    from glass.prop.shp import get_gtype
+    from glass.lyr.fld  import copy_flds
+    from glass.dtt.cp   import copy_feat
+    from glass.pys.oss  import fprop
     
     # Open main data
     dtSrc = ogr.GetDriverByName(drv_name(shp)).Open(shp, 0)
@@ -207,11 +222,11 @@ def split_whr_attrIsTrue(osm_fc, outputfolder, fields=None, sel_fields=None,
     """
 
     import os
-    from glass.prop.feat import lst_fld
-    from glass.dtt.filter      import sel_by_attr
+    from glass.prop.shp   import lst_shpcols
+    from glass.dtt.filter import sel_by_attr
 
     # List table fields
-    tbl_fields = fields if fields else lst_fld(osm_fc)
+    tbl_fields = fields if fields else lst_shpcols(osm_fc)
 
     if type(tbl_fields) == str:
         tbl_fields = [tbl_fields]

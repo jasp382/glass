@@ -16,7 +16,7 @@ def generalize_obs_points(rst, ref_cellsize, output, workspace=None):
     
     import os
     from glass.esri.dp.cg    import feat_to_pnt
-    from glass.esri.ovl      import erase
+    from glass.esri.gp.ovl      import erase
     from glass.esri.sample   import fishnet
     from glass.pys.oss       import fprop, mkdir
     from glass.prop.rst      import get_cellsize
@@ -325,7 +325,7 @@ def viewshed_by_feat_class(inRaster, observerDataset, feat_class_folder,
     observerFormat = os.path.splitext(observerDataset)[1]
     
     if observerFormat in VECTOR_FORMATS:
-        from glass.esri.ovl import clip
+        from glass.esri.gp.ovl import clip
     
     elif observerFormat in RASTER_FORMATS:
         from glass.to.shp.arcg import rst_to_pnt
@@ -336,8 +336,8 @@ def viewshed_by_feat_class(inRaster, observerDataset, feat_class_folder,
         REF_CELLSIZE = 500
         
         from glass.esri.sample import fishnet
-        from glass.esri.ovl import erase
-        from glass.cpu.arcg.mng.feat   import feat_to_pnt
+        from glass.esri.gp.ovl import erase
+        from glass.esri.dp.cg   import feat_to_pnt
     
     else:
         raise ValueError(('Could not identify if observerDataset '
@@ -526,8 +526,8 @@ def viewshed_by_feat_class2(inRaster, observerDataset, feat_class_folder,
         REF_CELLSIZE = 500
         
         from glass.esri.sample import fishnet
-        from glass.esri.ovl import erase
-        from glass.cpu.arcg.mng.feat   import feat_to_pnt
+        from glass.esri.gp.ovl import erase
+        from glass.esri.dp.cg  import feat_to_pnt
     
     else:
         raise ValueError((
@@ -556,21 +556,23 @@ def viewshed_by_feat_class2(inRaster, observerDataset, feat_class_folder,
     # List feature classes
     arcpy.env.workspace = feat_class_folder
     fclasses = arcpy.ListFeatureClasses()
+    rfmt = os.path.splitext(inRaster)[1]
+    obsfm = os.path.splitext(observerDataset)[1]
     
     for fc in fclasses:
+        fcnam = os.path.splitext(os.path.basename(fc))[0]
+        bname = os.path.basename(fc)
+
         # Create Buffer
         fcBuffer = _buffer(
             fc, visibilityRadius,
-            os.path.join(wTmp, os.path.basename(fc)),
+            os.path.join(wTmp, bname),
         )
         
         # Clip inRaster
         clipInRst = clip_raster(
             inRaster, fcBuffer,
-            os.path.join(wTmp, 'dem_{}{}'.format(
-                os.path.splitext(os.path.basename(fc))[0],
-                os.path.splitext(inRaster)[1]
-            )),
+            os.path.join(wTmp, f'dem_{fcnam}{rfmt}'),
             snap=snapRst, clipGeom=True
         )
         
@@ -579,20 +581,14 @@ def viewshed_by_feat_class2(inRaster, observerDataset, feat_class_folder,
         if observerDataset in VECTOR_FORMATS:
             clipObs = clip(
                 observerDataset, fcBuffer,
-                os.path.join(wTmp, 'obs_{}{}'.format(
-                    os.path.splitext(os.path.basename(fc))[0],
-                    os.path.splitext(observerDataset)[1]
-                ))
+                os.path.join(wTmp, f'obs_{fcnam}{obsfm}')
             )
         
         elif observerFormat in RASTER_FORMATS:
             # Clip Raster
             clipTmp = clip_raster(
                 observerDataset, fcBuffer,
-                os.path.join(wTmp, 'obs_{}{}'.format(
-                    os.path.splitext(os.path.basename(fc))[0],
-                    os.path.splitext(observerDataset)[1]
-                )),
+                os.path.join(wTmp, f'obs_{fcnam}{obsfm}'),
                 snap=snapRst, clipGeom=True
             )
             
@@ -609,9 +605,7 @@ def viewshed_by_feat_class2(inRaster, observerDataset, feat_class_folder,
                 
                 clipTmp = reclassify(
                     clipTmp, 'Value', rules,
-                    os.path.join(wTmp, 'r_{}'.format(
-                        os.path.basename(clipTmp)
-                    )),
+                    os.path.join(wTmp, f'r_{os.path.basename(clipTmp)}'),
                     template=clipTmp
                 )
             
@@ -621,9 +615,8 @@ def viewshed_by_feat_class2(inRaster, observerDataset, feat_class_folder,
                 
                 # 1) Create fishnet REF_CELLSIZE
                 fishNet = fishnet(
-                    os.path.join(
-                        wTmp, 'fish_{}'.format(os.path.basename(fc))
-                    ), clipTmp,
+                    os.path.join(wTmp, f'fish_{bname}'),
+                    clipTmp,
                     cellWidth=REF_CELLSIZE,
                     cellHeight=REF_CELLSIZE
                 )
@@ -631,51 +624,41 @@ def viewshed_by_feat_class2(inRaster, observerDataset, feat_class_folder,
                 # 2) Erase areas with NoData Values
                 # Raster to shp
                 cls_intPolygon = rst_to_polyg(
-                    clipTmp, os.path.join(
-                        wTmp, 'cls_int_{}'.format(os.path.basename(fc))
-                    ), api='arcpy'
+                    clipTmp,
+                    os.path.join(wTmp, f'cls_int_{bname}'),
+                    api='arcpy'
                 )
                 
                 # - Erase areas of the fishnet that have nodata values
                 # in the raster
                 tmpErase = erase(
                     fishNet, cls_intPolygon,
-                    os.path.join(wTmp, 'nozones_{}'.format(
-                        os.path.basename(fc)
-                    ))
+                    os.path.join(wTmp, f'nozones_{bname}')
                 )
                 
                 trueErase = erase(
                     fishNet, tmpErase,
-                    os.path.join(wTmp, 'fishint_{}'.format(
-                        os.path.basename(fc))
-                    )
+                    os.path.join(wTmp, f'fishint_{bname}')
                 )
                 
                 # 3) Convert erased fishnet to points
                 clipObs = feat_to_pnt(
                     trueErase,
-                    os.path.join(wTmp, 'obs_{}'.format(
-                        os.path.basename(fc)
-                    )),
+                    os.path.join(wTmp, f'obs_{bname}'),
                     pnt_position="INSIDE"
                 )
             
             else:
                 clipObs = rst_to_pnt(
-                    clipTmp, os.path.join(wTmp, 'obs_{}'.format(
-                        os.path.basename(fc)
-                    ))
+                    clipTmp, os.path.join(wTmp, f'obs_{bname}')
                 )
         
         # Calculate visibility
         # Boundary to raster
         boundRst = shp_to_raster(
             fc, 'FID', CELLSIZE, None,
-            os.path.join(wTmp, '{}_{}'.format(
-                os.path.splitext(os.path.basename(fc))[0],
-                os.path.splitext(observerDataset)[1]
-            )), snap=clipInRst, api='arcpy'
+            os.path.join(wTmp, f'{fcnam}_{obsfm}'),
+            snap=clipInRst, api='arcpy'
         )
         
         noDataVal = get_nodata(boundRst, gisApi='arcpy')

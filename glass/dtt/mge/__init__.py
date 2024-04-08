@@ -4,13 +4,13 @@ Multi-Files to Single File
 
 import os
 
+from glass.pys import execmd
+
 
 def vpatch(shps, outshp):
     """
     GRASS GIS tool to merge shapes
     """
-
-    from glass.pys import execmd
 
     rcmd = execmd((
         f"v.patch input={','.join(shps)} output={outshp} "
@@ -40,6 +40,9 @@ def shps_to_shp(shps, outShp, api="ogr2ogr", fformat='.shp',
     outShp GeoPackage
     """
 
+    from glass.prop.df import drv_name
+    from glass.pys.oss import fprop
+
     if type(shps) != list and api != 'gpkg_to_gpkg':
         # Check if is dir
         if os.path.isdir(shps):
@@ -55,27 +58,45 @@ def shps_to_shp(shps, outShp, api="ogr2ogr", fformat='.shp',
 
     
     if api == "ogr2ogr":
-        from glass.pys     import execmd
-        from glass.prop.df import drv_name
         
         out_drv = drv_name(outShp)
+
+        if out_drv == 'GPKG':
+            olyr = olyrname if olyrname else fprop(outShp, 'fn')
+
+            cmd = (
+                f'ogr2ogr -f "{out_drv}" {outShp} -nln {olyr} '
+                f'{shps[0]}'
+            )
+        
+        else:
+            olyr = ''
+            cmd = f'ogr2ogr -f "{out_drv}" {outShp} {shps[0]}'
         
         # Create output and copy some features of one layer (first in shps)
-        cmdout = execmd(f'ogr2ogr -f "{out_drv}" {outShp} {shps[0]}')
+        cmdout = execmd(cmd)
         
         # Append remaining layers
-        lcmd = [execmd(
-            f'ogr2ogr -f "{out_drv}" -update -append {outShp} {shps[i]}'
-        ) for i in range(1, len(shps))]
+        lcmd = []
+        for i in range(1, len(shps)):
+            if out_drv == 'GPKG':
+                cmd = (
+                    f'ogr2ogr -f "{out_drv}" -update -append {outShp} '
+                    f'-nln {olyr} {shps[i]}'
+                )
+            
+            else:
+                cmd = f'ogr2ogr -f "{out_drv}" -update -append {outShp} {shps[i]}'
+            
+            ocmd = execmd(cmd)
+
+            lcmd.append(ocmd)
     
     elif api == 'gpkg_to_gpkg':
-        from glass.pys       import execmd
-        from glass.pys.oss   import fprop
-        from glass.prop.gpkg import lst_gpkg_layers
-        from glass.prop.df   import drv_name
+        from glass.prop.df import lst_layers
 
         # List GeoPackage layers
-        layers = lst_gpkg_layers(shps) if not gpkglyrs else \
+        layers = lst_layers(shps) if not gpkglyrs else \
             gpkglyrs
 
         # Get out Drive 
@@ -121,10 +142,9 @@ def shps_to_shp(shps, outShp, api="ogr2ogr", fformat='.shp',
 
             create_pgdb(dbname)
 
-        pg_tbls = shp_to_psql(dbname, shps, api="shp2pgsql")
+        pg_tbls = shp_to_psql(dbname, shps, api="ogr2ogr")
 
         if os.path.isfile(outShp):
-            from glass.pys.oss import fprop
             outbl = fprop(outShp, 'fn')
         
         else:
@@ -143,8 +163,8 @@ def shps_to_shp(shps, outShp, api="ogr2ogr", fformat='.shp',
         del_tables(dbname, pg_tbls)
     
     elif api == 'grass':
-        from glass.wenv.grs import run_grass
-        from glass.pys.oss  import fprop, lst_ff
+        from glass.wenv.grs import grass_session
+        from glass.pys.oss  import lst_ff
         from glass.prop.prj import shp_epsg
 
         lshps = lst_ff(shps, file_format='.shp')
@@ -154,10 +174,7 @@ def shps_to_shp(shps, outShp, api="ogr2ogr", fformat='.shp',
         gwork = os.path.dirname(outShp)
         outshpname = fprop(outShp, "fn")
         loc   = f'loc_{outshpname}'
-        gbase = run_grass(gwork, loc=loc, srs=epsg)
-
-        import grass.script.setup as gsetup
-        gsetup.init(gbase, gwork, loc, 'PERMANENT')
+        gbase = grass_session(gwork, loc=loc, srs=epsg)
 
         from glass.it.shp import shp_to_grs, grs_to_shp
 

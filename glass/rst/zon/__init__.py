@@ -57,7 +57,7 @@ def rst_stats_eachfeat(vec, rst, col, meth, outvec):
     """
 
     from glass.pys.oss  import fprop
-    from glass.wenv.grs import run_grass
+    from glass.wenv.grs import grass_session
     from glass.tbl.col  import rn_cols
 
     # Create GRASS GIS Session
@@ -65,14 +65,10 @@ def rst_stats_eachfeat(vec, rst, col, meth, outvec):
     vname = fprop(vec, 'fn')
     lc = 'l_' + vname
 
-    gbase = run_grass(gw, location=lc, srs=rst)
+    gbase = grass_session(gw, loc=lc, srs=rst)
 
-    import grass.script.setup as gsetup
-
-    gsetup.init(gbase, gw, lc, 'PERMANENT')
-
-    from glass.it.shp import shp_to_grs, grs_to_shp
-    from glass.it.rst import rst_to_grs
+    from glass.it.shp      import shp_to_grs, grs_to_shp
+    from glass.it.rst      import rst_to_grs
     from glass.rst.zon.grs import grs_rst_stats_by_feat
 
     # Import data

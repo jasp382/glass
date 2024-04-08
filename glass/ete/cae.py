@@ -12,14 +12,14 @@ def cae_vs_polygon(caeshp, polyshp, lulccls_col, refshp, oshp, source, polycae=N
     Carta Áreas Edificadas from DGT
     """
 
-    import pandas      as pd
-    import numpy       as np
-    from glass.pys.oss   import fprop
-    from glass.dtt.rst.torst  import shp_to_rst
-    from glass.wenv.grs  import run_grass
-    from glass.rd.shp    import shp_to_obj
-    from glass.wt.shp    import df_to_shp
-    from glass.prop.feat import feat_count
+    import pandas            as pd
+    import numpy             as np
+    from glass.pys.oss       import fprop
+    from glass.dtt.rst.torst import shp_to_rst
+    from glass.wenv.grs      import grass_session
+    from glass.rd.shp        import shp_to_obj
+    from glass.wt.shp        import df_to_shp
+    from glass.prop.shp      import feat_count
 
     # Check number of features in each shape
     npoly = feat_count(polyshp, gisApi="ogr")
@@ -42,11 +42,7 @@ def cae_vs_polygon(caeshp, polyshp, lulccls_col, refshp, oshp, source, polycae=N
         ws, f'rst{bname}.tif'
     ), api='pygdal')
 
-    gb = run_grass(ws, location=loc, srs=refrst, grassBIN="grass78")
-
-    import grass.script.setup as gsetup
-
-    gsetup.init(gb, ws, loc, 'PERMANENT')
+    gb = grass_session(ws, loc=loc, srs=refrst)
 
     # GRASS GIS Modules
     from glass.it.shp  import shp_to_grs, grs_to_shp

@@ -9,7 +9,9 @@ from osgeo import gdal
 
 from glass.prop.img import rst_epsg
 from glass.wt.rst   import obj_to_rst
-
+from glass.rd.shp   import shp_to_obj
+from glass.wt.shp   import obj_to_shp
+from glass.prop.prj import shp_epsg
 
 
 """
@@ -187,10 +189,6 @@ def extract_random_features(inshp, nfeat, outshp, is_percentage=None):
     and save them in a new file
     """
 
-    from glass.rd.shp   import shp_to_obj
-    from glass.wt.shp   import obj_to_shp
-    from glass.prop.prj import shp_epsg
-
     # Open data
     df = shp_to_obj(inshp)
 
@@ -209,6 +207,48 @@ def extract_random_features(inshp, nfeat, outshp, is_percentage=None):
     # Save result
     epsg = shp_epsg(inshp)
     return obj_to_shp(rnd_df, 'geometry', epsg, outshp)
+
+
+def extract_random_features_by_val(ishp, refcol, percentage, out, out_false=None):
+    """
+    Extract random features by value according
+    a certain percentage
+    """
+
+    from glass.dtt.mge.pd import merge_df
+    
+
+    df   = shp_to_obj(ishp)
+    epsg = shp_epsg(ishp)
+
+    colvalues = df[refcol].unique()
+
+    dfs = [df[df[refcol] == v] for v in colvalues]
+
+    trains, vals = [], []
+    for _df in dfs:
+        _df.reset_index(inplace=True)
+        _df['idx'] = _df.index
+
+        nfeat = int(round(percentage * _df.shape[0]/ 100.0))
+
+        rnd = np.random.choice(_df.idx, nfeat, replace=False)
+
+        train = _df[_df.idx.isin(rnd)]
+        val   = _df[~_df.idx.isin(rnd)]
+
+        trains.append(train)
+        vals.append(val)
+
+    otrain = merge_df(trains)
+    oval   = merge_df(vals)
+
+    obj_to_shp(otrain, 'geometry', epsg, out)
+
+    if out_false:
+        obj_to_shp(oval, 'geometry', epsg, out_false)
+
+    return out, out_false
 
 
 """
@@ -376,76 +416,24 @@ def random_cells_extract(irst, ncells, orst):
     return orst
 
 
-def split_rst_radomly(inrst, proportion, random_rst, other_rst, min_sample=None):
+def split_rst_radomly(inrst, proportion, random_rst, other_rst, min_sample=None, absbycls=None):
     """
     Extract some cells of one raster and save them into a new raster
 
     The cells not selected for extraction will be exported to other raster.
     """
 
-    from glass.rd.rst import rst_to_refarray
+    from glass.rd.rst       import rst_to_refarray
+    from glass.pys.sampling import split_binparray_randomly
 
     img = gdal.Open(inrst, gdal.GA_ReadOnly)
 
     rnum, nd, rshp = rst_to_refarray(inrst, rshp='flatten', rmnd=None)
 
-    # Produce random samples for each value in inrst
-    # Proportion of cells to select will be equal to proportion input
-
-    # Get values
-    val = np.unique(rnum)
-
-    # Remove NoData
-    if nd in val:
-        val = val[val != nd]
-
-    # Get absolute frequencies of all values in inrst
-    rst_no_nd = rnum[rnum != nd]
-    freq = np.bincount(rst_no_nd)
-    freq = freq[freq != 0]
-
-    if min_sample:
-        val  = val[freq > min_sample]
-        freq = freq[freq > min_sample]
-
-    # Get number of cells to be selected for each value
-    # Mantain indicated proportion
-    ncells_byval = [int(round(v * proportion / 100.0, 0)) for v in freq]
-
-    # Get index array
-    idxref = np.arange(rnum.size)
-
-    # Get array for each value
-    # The values of new array will be the index
-    vidx = [idxref[rnum == v] for v in val]
-
-    # Get indicies of the cells to be extracted
-    # Do it randomly
-    rnd_num = [np.random.choice(
-        vidx[i], size=ncells_byval[i],
-        replace=False
-    ) for i in range(len(ncells_byval))]
-
-    # Create result
-    res  = np.zeros(rnum.shape, dtype=rnum.dtype)
-    nres = np.zeros(rnum.shape, dtype=rnum.dtype)
-
-    # Place selected cells in the result array
-    for v in range(val.shape[0]):
-        np.place(res, np.isin(idxref, rnd_num[v]), val[v])
-    
-    # Get not selected cells
-    np.copyto(nres, rnum, where=res == 0)
-
-    # Place NoData
-    np.place(res, rnum == nd, nd)
-    np.place(res, res == 0, nd)
-    np.place(nres, rnum == nd, nd)
-    np.place(nres, nres == 0, nd)
-
-    # Reshape
-    res  = res.reshape(rshp)
-    nres = nres.reshape(rshp)
+    res, nres = split_binparray_randomly(
+        rnum, nd, rshp, proportion, min_sample=min_sample,
+        absvals=absbycls
+    )
 
     # Save results
     obj_to_rst(res, random_rst, img.GetGeoTransform(), rst_epsg(img), noData=nd)

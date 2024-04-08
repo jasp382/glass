@@ -288,7 +288,7 @@ wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.39.2/install.sh | 
 
 source ~/.profile
 
-nvm install 20.9.0
+nvm install 22.11.0
 
 npm install -g @angular/cli
 ```

@@ -5,22 +5,24 @@ Local Tools
 import arcpy
 
 
-def combine_rst(rsts, orst, ref):
+def combine_rst(rsts, orst, ref=None):
     """
     Run Combine Rasters tool
     """
 
     from arcpy.sa import Combine
-    
-    arcpy.env.extent = ref
-    arcpy.env.snapRaster = ref
+
+    if ref: 
+        arcpy.env.extent = ref
+        arcpy.env.snapRaster = ref
 
     ocmb = Combine(rsts)
 
     ocmb.save(orst)
 
-    arcpy.env.extent = None
-    arcpy.env.snapRaster = None
+    if ref:
+        arcpy.env.extent = None
+        arcpy.env.snapRaster = None
 
     return orst, ocmb
 

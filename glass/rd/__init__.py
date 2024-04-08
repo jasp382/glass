@@ -2,9 +2,13 @@
 Read data from File
 """
 
+import pandas as pd
+from glass.pys.oss import fprop
+from glass.pys  import obj_to_lst
+
 def tbl_to_obj(tblFile, sheet=None, useFirstColAsIndex=None,
               _delimiter=None, encoding_='utf8', output='df',
-              fields=None, colsAsArray=None, csvheader=True):
+              fields=None, colsAsArray=None, csvheader=True, fformat=None):
     """
     Table File to Pandas DataFrame
     
@@ -14,10 +18,9 @@ def tbl_to_obj(tblFile, sheet=None, useFirstColAsIndex=None,
     - array;
     """
     
-    import pandas as pd
-    from glass.pys.oss import fprop
     
-    fFormat = fprop(tblFile, 'ff')
+    fFormat = fprop(tblFile, 'ff') if not fformat else \
+        fformat
     
     if fFormat == '.dbf':
         """
@@ -57,6 +60,7 @@ def tbl_to_obj(tblFile, sheet=None, useFirstColAsIndex=None,
         
         tableDf = pd.read_excel(
             tblFile, sheet, index_col=indexCol,
+            engine="openpyxl",
             dtype='object',
             usecols=obj_to_lst(fields) if fields != "ALL" else None
         )
@@ -86,7 +90,6 @@ def tbl_to_obj(tblFile, sheet=None, useFirstColAsIndex=None,
         raise ValueError(f'{fFormat} is not a valid table format!')
     
     if fields:
-        from glass.pys  import obj_to_lst
         
         fields = obj_to_lst(fields)
         if fields:

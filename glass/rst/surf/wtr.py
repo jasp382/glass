@@ -33,3 +33,31 @@ def flow_accum(elevrst, flowacc, dir_rst=None, ascmd=None):
     
     return flowacc, dir_rst
 
+
+def twi(elevrst, twi, ascmd=None):
+    """
+    Produce Topographic Wetness index using GRASS GIS
+    """
+
+    if ascmd:
+        from glass.pys import execmd
+
+        rcmd = execmd((
+            f"r.watershed -sa elevation={elevrst} "
+            f"tci={twi} "
+            f"--overwrite --quiet"
+        ))
+    
+    else:
+        from grass.pygrass.modules import Module
+
+        gm = Module(
+            "r.watershed", elevation=elevrst,
+            tci=twi,
+            flags='sa', run_=False, quiet=True
+        )
+
+        gm()
+    
+    return twi
+

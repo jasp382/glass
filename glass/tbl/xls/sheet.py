@@ -18,18 +18,6 @@ def get_sheet_obj(xls_obj, name=None, index=None):
         return xls_obj.sheet_by_index(0)
 
 
-def list_sheets(xlsPath):
-    """
-    Return sheets name in one XLS file
-    """
-    
-    xlsFile = xlrd.open_workbook(xlsPath)
-    
-    sheets = [sheet.name for sheet in xlsFile.sheets()]
-    
-    return sheets
-
-
 def get_sheet_position(xlsObj, sheetNames):
     """
     Return sheet position by name
@@ -53,54 +41,12 @@ def get_sheetname_by_idx(xlsPath, idx):
     """
     Return sheet name using sheet position
     """
+
+    from glass.prop.xls import list_sheets
     
     sheetsN = list_sheets(xlsPath)
     
     return sheetsN[idx]
-
-
-def copy_sheet_to_file(srcFile, destFile, sheets, newNames=None):
-    """
-    Copy sheets from one file to another
-    """
-    
-    import os
-    import xlrd
-    from win32com.client import Dispatch
-    
-    # Get sheets position
-    xlsFile    = xlrd.open_workbook(srcFile)
-    sheets_pos = get_sheet_position(xlsFile, sheets)
-    del xlsFile
-    
-    # Check if destFile exists
-    # Create it if not exists
-    if not os.path.exists(destFile):
-        from glass.tbl.xls import create_empty_file
-        destFile = create_empty_file(destFile, engine="openpyxl")
-    
-    excelApp = Dispatch("Excel.Application")
-    excelApp.Visible = 0
-    excelApp.DisplayAlerts = False
-    
-    wbInXls  = excelApp.Workbooks.Open(Filename=srcFile)
-    wbOutXls = excelApp.Workbooks.Open(Filename=destFile)
-    
-    n_sheet = 1
-    for sheet in sheets_pos:
-        worksheet = wbInXls.Worksheets(sheets_pos[sheet] + 1)
-        
-        worksheet.Copy(Before=wbOutXls.Worksheets(n_sheet))
-        
-        if newNames:
-            wbOutXls.Sheets[n_sheet-1].Name = newNames[sheet]
-        
-        n_sheet += 1
-    
-    wbInXls.Close(SaveChanges=False)
-    wbOutXls.Close(SaveChanges=True)
-    
-    excelApp.Quit()
 
 
 def rename_sheets_replacing(table, tobeReplaced, replacement):

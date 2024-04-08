@@ -33,9 +33,9 @@ def rm_anyclouds(folder, bands, scl, ff, ofolder, noclouds_raster):
     se uma imagem de 12-12 tiver nuvens)
     """
 
-    from glass.pys.oss  import lst_ff, fprop
-    from glass.pys.tm   import now_as_str
-    from glass.wenv.grs import run_grass
+    from glass.pys.oss      import lst_ff, fprop
+    from glass.pys.tm       import now_as_str
+    from glass.wenv.grs     import grass_session
     from glass.rst.rcls.grs import rcls_rules
 
     # list bands
@@ -47,15 +47,11 @@ def rm_anyclouds(folder, bands, scl, ff, ofolder, noclouds_raster):
     # Create GRASS GIS Session
     ws, loc = ofolder, f"loc_{now_as_str()}"
 
-    grsb = run_grass(ws, location=loc, srs=imgs[0])
-    
-    import grass.script.setup as gsetup
-    
-    gsetup.init(grsb, ws, loc, 'PERMANENT')
+    grsb = grass_session(ws, loc=loc, srs=imgs[0])
 
-    from glass.it.rst   import rst_to_grs, grs_to_rst
+    from glass.it.rst       import rst_to_grs, grs_to_rst
     from glass.rst.rcls.grs import grs_rcls
-    from glass.rst.alg  import grsrstcalc
+    from glass.rst.alg      import grsrstcalc
 
     cldrules = rcls_rules({
         0  : 0, 1 : 0,
@@ -81,7 +77,7 @@ def rm_anyclouds(folder, bands, scl, ff, ofolder, noclouds_raster):
     cloud_rst = grsrstcalc(" + ".join(rscl), 'no_clouds')
 
     # Export clouds
-    rcld = grs_to_rst(cloud_rst, noclouds_raster, rtype=int)
+    rcld = grs_to_rst(cloud_rst, noclouds_raster, dtype="Int32")
 
     return ofolder
 

@@ -16,7 +16,7 @@ def idxdist_by_class(shp, lulc_col, idxs_folder, ofolder):
     from glass.pys.oss   import lst_folders_subfiles, mkdir
     from glass.pys.tm    import now_as_str
     from glass.dtt.split import split_shp_by_attr
-    from glass.wenv.grs  import run_grass
+    from glass.wenv.grs  import grass_session
 
     # List images folder
     imgs = lst_folders_subfiles(idxs_folder, files_format='.tif')
@@ -37,15 +37,12 @@ def idxdist_by_class(shp, lulc_col, idxs_folder, ofolder):
     # Create GRASS GIS Session
     loc = 'loc_histo'
 
-    gs = run_grass(ws, location=loc, srs=refrst)
+    gs = grass_session(ws, loc=loc, srs=refrst)
 
-    import grass.script.setup as gsetup
-    gsetup.init(gs, ws, loc, 'PERMANENT')
-
-    from glass.it.shp    import shp_to_grs
-    from glass.it.rst    import rst_to_grs, grs_to_rst
+    from glass.it.shp        import shp_to_grs
+    from glass.it.rst        import rst_to_grs, grs_to_rst
     from glass.dtt.rst.torst import grsshp_to_grsrst
-    from glass.rst.alg   import grsrstcalc
+    from glass.rst.alg       import grsrstcalc
 
     for c in shps:
         shp_to_grs(gpkg, lyrname=shps[c], asCMD=True)
@@ -67,7 +64,7 @@ def idxdist_by_class(shp, lulc_col, idxs_folder, ofolder):
                 frst = grsrstcalc(f"{shps[cls]} * {r}", f"c{str(cls)}_{r}")
                 tifrst = grs_to_rst(frst, os.path.join(
                     ofolder, f'{frst}.tif'
-                ), as_cmd=True, rtype=float)
+                ), as_cmd=True, dtype="Float32")
 
                 out[cls][day].append(tifrst)
     

@@ -7,7 +7,7 @@ import os
 from glass.it.rst   import rst_to_grs, grs_to_rst
 from glass.pys.oss  import fprop, mkdir
 from glass.rst.alg  import grsrstcalc
-from glass.wenv.grs import run_grass
+from glass.wenv.grs import grass_session
 
 
 def rm_mixed_pixels(osmlulc, osmlyr, lulc_col, refimg, out):
@@ -15,7 +15,7 @@ def rm_mixed_pixels(osmlulc, osmlyr, lulc_col, refimg, out):
     Remove mixed pixels in OSM2LULC results
     """
 
-    from glass.dtt.cg.sql    import polyg_to_lines
+    from glass.gp.cnv.sql    import polyg_to_lines
     from glass.dtt.split     import split_shp_by_attr
     from glass.dtt.rst.torst import shp_to_rst, grsshp_to_grsrst
     from glass.it.db         import shp_to_psql
@@ -37,14 +37,7 @@ def rm_mixed_pixels(osmlulc, osmlyr, lulc_col, refimg, out):
     Start GRASS GIS Session
     """
     loc = f'loc_{now_as_str()}'
-    grsb = run_grass(
-        ws, grassBIN='grass78', location=loc,
-        srs=refimg
-    )
-
-    import grass.script.setup as gsetup
-    
-    gsetup.init(grsb, ws, loc, 'PERMANENT')
+    grsb = grass_session(ws, loc=loc, srs=refimg)
 
     # Temp Geopackage
     tmpgpkg = os.path.join(ws, loc, 'tmpdata.gpkg')
@@ -140,7 +133,7 @@ def rm_mixed_pixels(osmlulc, osmlyr, lulc_col, refimg, out):
 
     # Export final result
     grs_to_rst(
-        frst, out, as_cmd=False, rtype=int,
+        frst, out, as_cmd=False,
         dtype='UInt16', nodata=0
     )
 
@@ -193,14 +186,7 @@ def apply_idxfilter(lulc_rst, idxrst, idx_rules, fraster, watercls=None):
     Start GRASS GIS Session
     """
     loc = f'loc_{now_as_str()}'
-    grsb = run_grass(
-        ws, grassBIN='grass78', location=loc,
-        srs=lulc_rst
-    )
-
-    import grass.script.setup as gsetup
-    
-    gsetup.init(grsb, ws, loc, 'PERMANENT')
+    grsb = grass_session(ws, loc=loc, srs=lulc_rst)
 
     # Identificar classes existentes no raster com as classes de LULC
     lulc_img = rst_to_array(lulc_rst)
@@ -242,7 +228,7 @@ def apply_idxfilter(lulc_rst, idxrst, idx_rules, fraster, watercls=None):
                 grs_to_rst(outmask, os.path.join(
                     ws, loc,
                     f'{outmask}.tif'
-                ), rtype=int)
+                ), dtype="UInt16")
     
     # Para cada classe e índice, criar um ficheiro que 
     # indica se o pixel deve ser incluído no treino (1) 
@@ -311,7 +297,7 @@ def apply_idxfilter(lulc_rst, idxrst, idx_rules, fraster, watercls=None):
 
     grs_to_rst(
         rfnl, fraster, as_cmd=True,
-        rtype=int, nodata=0
+        dtype='Uint16', nodata=0
     )
 
     return fraster
