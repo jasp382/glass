@@ -5,6 +5,7 @@ Download Sentinel Data
 import os
 
 from sentinelsat    import SentinelAPI, geojson_to_wkt
+from glass.acq.stl.apis import APISentinel
 from glass.cons.sat import con_datahub
 from glass.pys      import obj_to_lst
 from glass.rd.shp   import shp_to_obj
@@ -261,6 +262,32 @@ def lst_prod_bytile(stime, etime, tiles, platname="Sentinel-2", procLevel="Level
     return p
 
 
+def lst_prod24(geofilter, start_time, end_time, platname, prodtype=None,
+               outshp=None, max_cloud_cover=None):
+    """
+    List Sentinel Products for one specific area
+    """
+
+    api = APISentinel()
+
+    products = api.products_query(
+        geofilter, (start_time, end_time), platname,
+        cloud_cover=max_cloud_cover, prodtype=prodtype
+    )
+
+    if not outshp:
+        out = api.to_geodf(products)
+    
+    else:
+        out = api.to_shp(products, outshp)
+
+    return out
+
+
+#################################################################
+#################################################################
+
+
 def down_img(imgid, out_folder):
     """
     Download one image by id
@@ -277,33 +304,27 @@ def down_img(imgid, out_folder):
     return out_folder
 
 
-def down_imgs(inTbl, imgIDcol, outFolder=None):
+def down_imgs(inshp, imgid_col, img_name_col, outfolder):
     """
-    Download Images in Table
+    Download Images in ESRI Shapefile or equivalent
     """
-    
-    of = outFolder if outFolder else os.path.dirname(inTbl)
 
-    # Get global vars
-    gvar = con_datahub()
-    user, passw, url = gvar["USER"], gvar["PASSWORD"], gvar["URL"]
+    # API Instance
+    api = APISentinel()
     
     # Tbl to df
-    df_img = shp_to_obj(inTbl)
-    
-    # API Instance
-    api = SentinelAPI(user, passw, url)
+    df_img = shp_to_obj(inshp)
     
     # Download Images
     for idx, row in df_img.iterrows():
         # Check if file already exists
-        outFile = os.path.join(of, row.identifier + '.zip')
+        outimg= os.path.join(outfolder, row[img_name_col] + '.zip')
         
-        if os.path.exists(outFile):
-            print('IMG already exists')
+        if os.path.exists(outimg):
+            print(f'IMG {row[img_name_col]} already exists')
             continue
         else:
-            api.download(row[imgIDcol], directory_path=of)
+            api.download(row[imgid_col], row[img_name_col], outfolder)
 
 
 def down_imgs_v2(itbl, idcol, ofolder=None):
