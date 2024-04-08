@@ -23,32 +23,39 @@ def acumulated_cost(cst_surface, dest_pnt, cst_dist):
     # Convert to minutes
     grsrstcalc('cst_dist / 60.0', 'CstDistMin')
     # Export result
-    grs_to_rst('CstDistMin', cst_dist)
+    grs_to_rst('CstDistMin', cst_dist, dtype="Float32")
     
     return cst_dist
 
 
-def mk_costsuf(dem, lulc, lucol, rdv, kph, barr, out):
+def mk_costsuf(dem, lulc, luw_col, rdv, kph, barr, out, dissolve_lu=None):
     """
     Tool for make a cost surface based on the roads, slope, land use and
     physical barriers. each cell has a value that represents the resistance to
     the movement.
+
+    Default Land Use weight:
+    lu_w = {
+        # Agriculture
+        1 : 18,
+        # Forests, schrubs, incultos
+        2 : 15,
+        # Wetlands
+        #3: 23,
+        # Urban fabric
+        4: 9,
+        # Soil without cover
+        5: 12
+    }
     """
 
     import os
 
-    from glass.pys.oss  import mkdir, fprop
-    from glass.wenv.grs import run_grass
+    from glass.pys.oss  import fprop
+    from glass.pys.tm   import now_as_str
+    from glass.wenv.grs import grass_session
     from glass.prop.rst import rst_cellsize
 
-    _slope_rules = {
-        (0, 10)      : 1,
-        (10, 30)     : 1.5,
-        (30, 50)     : 2,
-        (50, 70)     : 3,
-        (70, 100)    : 4,
-        (100, 10000) : 5
-    }
     slope_w = {
         1 : {'rdv' : 1, 'lu' : 1},
         2 : {'rdv' : 1.5, 'lu' : 1},
@@ -66,40 +73,31 @@ def mk_costsuf(dem, lulc, lucol, rdv, kph, barr, out):
         (70, 100)    : 5,
         (100, 10000) : 6
     }
-
-    lu_w = {
-        1 : 18, 2 : 15, 3: 23, 4: 9, 5: 12
-    }
+    
 
     # Get cellsize
     csize = rst_cellsize(dem)
 
     # Setup GRASS GIS env
-    ws, loc = mkdir(os.path.join(
-        os.path.dirname(out), f"cstsuff_{fprop(out, 'fn')}"
-    ), overwrite=True), f'loc_rstsuf'
+    ws, loc = os.path.dirname(out), now_as_str(utc=True)
 
-    gb = run_grass(ws, location=loc, srs=dem)
-
-    import grass.script.setup as gsetup
-
-    gsetup.init(gb, ws, loc, 'PERMANENT')
+    gb = grass_session(ws, loc=loc, srs=dem)
 
     # Import GRASS GIS Modules
-    from glass.it.shp     import shp_to_grs
-    from glass.it.rst     import rst_to_grs, grs_to_rst
-    from glass.rst.surf.grs import slope
-    from glass.rst.rcls.grs import interval_rules, grs_rcls, category_rules
-    from glass.gp.ovl.grs import grsunion
-    from glass.gp.gen     import dissolve
-    from glass.tbl.grs    import add_table, cols_calc
-    from glass.tbl.col    import add_fields
-    from glass.dtt.rst.torst  import grsshp_to_grsrst
-    from glass.rst.rcls.grs import set_null
-    from glass.rst.mos    import rsts_to_mosaic
-    from glass.rst.local  import combine
-    from glass.prop.rst   import raster_report
-    from glass.rst.alg    import grsrstcalc
+    from glass.it.shp        import shp_to_grs
+    from glass.it.rst        import rst_to_grs, grs_to_rst
+    from glass.rst.surf.grs  import slope
+    from glass.rst.rcls.grs  import interval_rules, grs_rcls, category_rules
+    from glass.gp.ovl.grs    import grsunion
+    from glass.gp.gen        import dissolve
+    from glass.tbl.grs       import add_table, cols_calc
+    from glass.tbl.col       import add_fields
+    from glass.dtt.rst.torst import grsshp_to_grsrst
+    from glass.rst.rcls.grs  import set_null
+    from glass.rst.mos       import rsts_to_mosaic
+    from glass.rst.local     import combine
+    from glass.prop.rst      import raster_report
+    from glass.rst.alg       import grsrstcalc
 
     # Generate slope raster
     grsdem = rst_to_grs(dem, fprop(dem, 'fn'))
@@ -112,30 +110,40 @@ def mk_costsuf(dem, lulc, lucol, rdv, kph, barr, out):
     rcls_slope = grs_rcls(rslope, dclvrules, 'rcls_dclv', as_cmd=True)
 
     # LULC - Dissolve, union with barriers and conversion to raster
-    glulc = shp_to_grs(lulc, fprop(lulc, 'fn'))
-    gbarr = shp_to_grs(barr, fprop(barr, 'fn'))
+    glulc, gbarr = shp_to_grs(lulc), shp_to_grs(barr)
 
-    dlulc = dissolve(glulc, 'lulc_diss', lucol, api='grass')
-    add_table(dlulc, None, lyrN=1, asCMD=True)
+    if dissolve_lu:
+        dlulc = dissolve(glulc, 'lulc_diss', luw_col, api='grass')
+        add_table(dlulc, None, lyrN=1, asCMD=True)
+        lu_ref_col = 'a_cat'
+    else:
+        dlulc, lu_ref_col = glulc, f'a_{luw_col}'
 
     barrlulc = grsunion(dlulc, gbarr, 'barrlu', cmd=True)
 
-    cols_calc(barrlulc, 'a_cat', 99, 'b_cat is not null')
+    cols_calc(barrlulc, lu_ref_col, 0, 'b_cat is not null')
+    # Multiply minutes of each LUC class by 60
+    # To distinguish from KPH values (ranging from 1 to 120)
+    cols_calc(
+        barrlulc, luw_col, f'{lu_ref_col}*60',
+        f'{lu_ref_col} is not null'
+    )
 
     rst_blu = grsshp_to_grsrst(
-        barrlulc, 'a_cat', 'rst_blu',
+        barrlulc, lu_ref_col, 'rst_blu',
         cmd=True
     )
 
     # Reclassify BARR-LULC raster
-    set_null(rst_blu, 99, ascmd=True)
+    set_null(rst_blu, 0, ascmd=True)
+
 
     # Add roads
-    grdv = shp_to_grs(rdv, fprop(rdv, 'fn'))
+    grdv = shp_to_grs(rdv)
 
-    if kph == 'pedestrian':
+    if kph == 'pedestrian' or kph == None:
         add_fields(grdv, {'foot' : 'INT'}, api='pygrass')
-        cols_calc(grdv, 'foot', 50, 'foot IS NULL')
+        cols_calc(grdv, 'foot', 5, 'foot IS NULL')
 
         kph = 'foot'
 
@@ -153,7 +161,7 @@ def mk_costsuf(dem, lulc, lucol, rdv, kph, barr, out):
     The order of the rasters on the following list has to be the same of
     GRASS Combine
     """
-    rsttxt = raster_report(cmb, os.path.join(ws, 'cmb_report.txt'))
+    rsttxt = raster_report(cmb, os.path.join(ws, loc, 'cmb_report.txt'))
 
     # Get min slope value and min BARR/COS/RDV
     #minval = []
@@ -190,25 +198,24 @@ def mk_costsuf(dem, lulc, lucol, rdv, kph, barr, out):
         if not cslp or not lurdv:
             continue
 
-        if lurdv >= 10:
+        if lurdv <= 120:
             sw = slope_w[cslp]['rdv']
             
-            vel = 5 if kph == 'foot' else lurdv
-            wother = (3600.0 * csize) / (vel * 1000.0)
+            wother = (3600.0 * csize) / (lurdv * 1000.0)
         
         else:
             sw = slope_w[cslp]['lu']
-            wother = lu_w[lurdv]
+            wother = (lurdv * csize) / 1000.0
         
         dcost[k] = round((sw * wother) * 10000000.0, 0)
     
     # Reclassify combine raster
-    frules = category_rules(dcost, os.path.join(ws, 'tsurface.txt'))
-    pfinal = rcls_rst(cmb, frules, 'rcls_cmb', api="pygrass")
+    frules = category_rules(dcost, os.path.join(ws, loc, 'tsurface.txt'))
+    pfinal = grs_rcls(cmb, frules, 'rcls_cmb', as_cmd=True)
 
     res = grsrstcalc(f'{pfinal} / 10000000.0', fprop(out, 'fn'))
 
-    grs_to_rst(res, out, as_cmd=True)
+    grs_to_rst(res, out, as_cmd=True, dtype="Float32")
 
     return out
 

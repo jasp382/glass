@@ -65,7 +65,7 @@ def connect_lines_to_near_lines(inLines, nearLines, outLines,
     from osgeo                   import ogr
     from glass.pys.oss           import fprop
     from glass.prop.df           import drv_name
-    from glass.prop.feat         import get_gtype
+    from glass.prop.shp          import get_gtype
     from glass.gp.prox.bfing.obj import draw_buffer
 
     # Check Geometries
@@ -171,7 +171,7 @@ def connect_points_to_near_line_vertex(inPnt, nearLines, outLines,
 
     from osgeo                   import ogr
     from glass.prop.df           import drv_name
-    from glass.prop.feat         import get_gtype
+    from glass.prop.shp          import get_gtype
     from glass.pys.oss           import fprop
     from glass.gp.prox.bfing.obj import draw_buffer
 
@@ -272,7 +272,7 @@ def connect_points_to_near_line(inPnt, nearLines, outLines,
     from osgeo                   import ogr
     from shapely.geometry        import LineString, Point
     from glass.prop.df           import drv_name
-    from glass.prop.feat         import get_gtype
+    from glass.prop.shp          import get_gtype
     from glass.pys.oss           import fprop
     from glass.gp.prox.bfing.obj import draw_buffer
 

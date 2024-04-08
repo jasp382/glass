@@ -12,13 +12,13 @@ R_URL = (
 )
 
 SA_URL = (
-    'https://route.arcgis.com/arcgis/rest/services'
+    'https://route-api.arcgis.com/arcgis/rest/services'
     '/World/ServiceAreas/NAServer/ServiceArea_World/'
     'solveServiceArea?'
 )
 
 CF_URL = (
-    'https://route.arcgis.com/arcgis/rest/services/World/'
+    'https://route-api.arcgis.com/arcgis/rest/services/World/'
     'ClosestFacility/NAServer/ClosestFacility_World/'
     'solveClosestFacility?'
 )

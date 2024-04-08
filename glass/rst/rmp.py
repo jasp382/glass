@@ -18,7 +18,7 @@ def match_cellsize_and_clip(rstBands, refRaster, outFolder,
     import os
     from glass.prop.df  import is_rst
     from glass.prop.prj import rst_epsg
-    from glass.wenv.grs import run_grass
+    from glass.wenv.grs import grass_session
     from glass.pys.oss  import fprop, mkdir
     from glass.pys.tm   import now_as_str
     
@@ -34,21 +34,14 @@ def match_cellsize_and_clip(rstBands, refRaster, outFolder,
     """
     ws = mkdir(os.path.join(outFolder, now_as_str())) \
         if not ws else ws
-    grsb = run_grass(
-        ws, grassBIN='grass78', location='resample',
-        srs=epsg
-    )
-    
-    import grass.script.setup as gsetup
-    
-    gsetup.init(grsb, ws, 'resample', 'PERMANENT')
+    grsb = grass_session(ws, loc='resample', srs=epsg)
     
     """
     Import packages related with GRASS GIS
     """
-    from glass.it.rst    import rst_to_grs, grs_to_rst, grs_to_mask
-    from glass.wenv.grs  import rst_to_region
-    from glass.it.shp    import shp_to_grs
+    from glass.it.rst        import rst_to_grs, grs_to_rst, grs_to_mask
+    from glass.wenv.grs      import rst_to_region
+    from glass.it.shp        import shp_to_grs
     from glass.dtt.rst.torst import grsshp_to_grsrst as shp_to_rst
     
     # Send Ref Raster to GRASS GIS and set region
@@ -94,7 +87,7 @@ def match_cellsize_and_clip(rstBands, refRaster, outFolder,
     # Export bands
     return [grs_to_rst(
         i, os.path.join(outFolder, i + '.tif'),
-        rtype=int if isint else float
+        dtype="Int32" if isint else "Float32"
     ) for i in grs_bands]
 
 

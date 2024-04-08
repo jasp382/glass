@@ -248,7 +248,7 @@ def cheese_buffer(inshp, dist, angles_int, outshp,
     from glass.gobj              import create_polygon
     from glass.rd.shp            import shp_to_obj
     from glass.wt.shp            import df_to_shp
-    from glass.pd.dagg           import col_listwlist_to_row
+    from glass.dtt.pd.dagg       import col_listwlist_to_row
     from glass.dtt.mge.pd        import merge_df
     from glass.it.pd             import df_to_geodf
 

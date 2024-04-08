@@ -10,9 +10,9 @@ def water_fm_s2_osm(waterlines: str, green:str, nir_swir:str, waterpoly:str):
     Find water bodies from OSM Lines and Sentinel-2 data
     """
 
-    from glass.pys.oss import mkdir, fprop
-    from glass.pys.tm import now_as_str
-    from glass.wenv.grs import run_grass
+    from glass.pys.oss  import mkdir, fprop
+    from glass.pys.tm   import now_as_str
+    from glass.wenv.grs import grass_session
 
     # Setup grass GIS session
     ws, loc = mkdir(os.path.join(
@@ -20,11 +20,7 @@ def water_fm_s2_osm(waterlines: str, green:str, nir_swir:str, waterpoly:str):
         fprop(waterpoly, 'fn')
     ), overwrite=True), now_as_str()
     
-    gb = run_grass(ws, location=loc, srs=green)
-
-    import grass.script.setup as gsetup
-
-    gsetup.init(gb, ws, loc, 'PERMANENT')
+    gb = grass_session(ws, loc=loc, srs=green)
 
     from glass.it.shp        import shp_to_grs, grs_to_shp
     from glass.it.rst        import rst_to_grs

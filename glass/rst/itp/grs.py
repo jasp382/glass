@@ -178,7 +178,7 @@ def surfcontour(inContour, outDEM, ascmd=None):
     else:
         from glass.pys import execmd
         
-        tcmd = "r.surf.contour input={} output={}".format(inContour, outDEM)
+        tcmd = f"r.surf.contour input={inContour} output={outDEM}"
         
         rcmd = execmd(tcmd)
     

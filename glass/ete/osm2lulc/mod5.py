@@ -157,8 +157,8 @@ def osmwater_vs_ndwi(water, ndwi, oshp):
 
     import os
 
-    from glass.wenv.grs import run_grass
-    from glass.pys.oss import mkdir, fprop
+    from glass.wenv.grs import grass_session
+    from glass.pys.oss import mkdir
     from glass.pys.tm import now_as_str
 
     # Prepare workspace
@@ -168,11 +168,7 @@ def osmwater_vs_ndwi(water, ndwi, oshp):
     ), overwrite=True), 'locwork'
 
     # Start GRASS GIS Session
-    gb = run_grass(ws, location=loc, srs=ndwi)
-
-    import grass.script.setup as gsetup
-
-    gsetup.init(gb, ws, loc, 'PERMANENT')
+    gb = grass_session(ws, loc=loc, srs=ndwi)
 
     # GRASS GIS Modules
     from glass.it.shp import shp_to_grs, grs_to_shp

@@ -53,7 +53,7 @@ def clip(inFeat, clipFeat, outFeat, api_gis="grass", clip_by_region=None):
     """
     
     if api_gis == "pygrass" or api_gis == "grass":
-        from glass.wenv.grs import run_grass
+        from glass.wenv.grs import grass_session
         from glass.prop.prj import get_epsg
 
         epsg = get_epsg(inFeat)
@@ -62,11 +62,7 @@ def clip(inFeat, clipFeat, outFeat, api_gis="grass", clip_by_region=None):
         refname = fprop(outFeat, 'fn')
         loc = f"loc_{refname}"
 
-        grsbase = run_grass(work, location=loc, srs=epsg)
-
-        import grass.script.setup as gsetup
-
-        gsetup.init(grsbase, work, loc, 'PERMANENT')
+        grsbase = grass_session(work, loc=loc, srs=epsg)
 
         from glass.it.shp import shp_to_grs, grs_to_shp
 
@@ -122,7 +118,7 @@ def clipshp_shpinfolder(ishp, clipshps, ofolder, bname=None):
 
     from glass.pys.oss  import lst_ff
     from glass.prop.prj import get_epsg
-    from glass.wenv.grs import run_grass
+    from glass.wenv.grs import grass_session
 
     ishpname = fprop(ishp, 'fn')
     bname = ishpname if not bname else bname
@@ -142,11 +138,7 @@ def clipshp_shpinfolder(ishp, clipshps, ofolder, bname=None):
 
     # Start GRASS GIS Session
     loc = f'loc_{os.path.basename(ofolder).replace("_", "")}'
-    gb = run_grass(ofolder, location=loc, srs=get_epsg(ishp))
-
-    import grass.script.setup as gs
-
-    gs.init(gb, ofolder, loc, 'PERMANENT')
+    gb = grass_session(ofolder, loc=loc, srs=get_epsg(ishp))
 
     from glass.it.shp   import shp_to_grs, grs_to_shp
     from glass.wenv.grs import shp_to_region

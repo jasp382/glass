@@ -17,9 +17,9 @@ def df_to_db(db, df, table, append=None, api='psql',
 
     from geoalchemy2 import Geometry, WKTElement
 
-    from glass.prop.feat import get_gtype
-    from glass.pd.geom   import force_multipart
-    from glass.prop.prj  import df_epsg
+    from glass.prop.shp import get_gtype
+    from glass.pd.geom  import force_multipart
+    from glass.prop.prj import df_epsg
     
     if api != 'psql' and api != 'sqlite':
         raise ValueError(f'API {api} is not available')

@@ -152,7 +152,7 @@ def dsn_data_collection_by_multibuffer(inBuffers, workspace, db, datasource,
         
         # Send Buffers data to PostgreSQL
         inBuffers[city]["pg_buffer"] = shp_to_psql(
-            db, multiBuffer, api="shp2pgsql",
+            db, multiBuffer, api="ogr2ogr",
             tnames={multiBuffer : f'buffers_{city}'},
             srs=inBuffers[city]["epsg"]
         )

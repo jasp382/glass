@@ -98,3 +98,42 @@ def grs_select(ashp, bshp, oshp, operator, cmd=True):
     
     return oshp
 
+
+
+def grs_erase(ishp, eraseshp, out, as_cmd=None, not_tbl=None):
+    """
+    v.overlay for erase operations
+    """
+
+    if not as_cmd:
+        """
+        Use pygrass
+        """
+        
+        from grass.pygrass.modules import Module
+        
+        erase = Module(
+            "v.overlay", ainput=ishp, atype="area",
+            binput=eraseshp, btype="area", operator="not",
+            output=out, overwrite=True, run_=False, quiet=True,
+            flags='t' if not_tbl else ''
+        )
+    
+        erase()
+    
+    else:
+        """
+        Use GRASS GIS tool via command line
+        """
+
+        istbl = "" if not not_tbl else "-t "
+        
+        rcmd = execmd((
+            f"v.overlay ainput={ishp} atype=area "
+            f"binput={eraseshp} btype=area "
+            f"operator=not output={out} {istbl}"
+            "--overwrite --quiet"
+        ))
+
+    return out
+

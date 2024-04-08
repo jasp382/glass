@@ -2,7 +2,13 @@
 Get Raster properties
 """
 
+import os
 from osgeo import gdal, gdal_array
+
+from glass.pys.char import random_str
+from glass.pys.oss  import del_file
+from glass.rd       import tbl_to_obj
+from glass.pd.cols  import splitcol_to_newcols
 
 
 def compress_option(drv):
@@ -35,11 +41,11 @@ def rst_geoprop(rst):
     Return Geometric properties of a raster file
     """
 
+    from glass.prop.img import img_geoprop
+
     img = gdal.Open(rst)
 
-    left, cellx, z, top, c, celly = img.GetGeoTransform()
-
-    return left, cellx, top, celly
+    return img_geoprop(img)
 
 
 def rst_fullprop(rst):
@@ -424,7 +430,7 @@ def adjust_ext_to_snap(outExt, snapRst):
         isShp = is_shp(outExt)
         
         if isShp:
-            from glass.prop.feat import get_ext
+            from glass.prop.shp import get_ext
             
             shpAExt = get_ext(outExt)
         
@@ -562,42 +568,15 @@ def raster_report(rst, rel, _units=None, ascmd=None):
     return rel
 
 
-def sanitize_report(report):
+def san_report_combine(rst, UNITS=None):
     """
-    Retrieve data from Report of a Raster
+    Execute r.report and get reported data
     """
-    
-    import codecs
-    
-    with codecs.open(report, 'r') as txt:
-        rows = [lnh for lnh in txt]
-        __rows = []
-        l = [" ", "category", "."]
-        
-        c = 1
-        for r in rows:
-            if c <= 4:
-                c += 1
-                continue
-            
-            _r =  r.strip("\n")
-            _r = _r.strip("|")
-            
-            for i in l:
-                _r = _r.replace(i, "")
-            
-            _r = _r.replace(";", "|")
-            
-            __rows.append(_r.split("|"))
-        
-        __rows[0] = ['0', '1', '1'] + __rows[0][3:]
-        
-        return __rows[:-4]
 
-
-def san_report_combine(report):
-    from glass.rd     import tbl_to_obj
-    from glass.pd.cols import splitcol_to_newcols
+    report = raster_report(rst, os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        f"{random_str(6)}.txt"
+    ), _units=UNITS)
     
     repdata = tbl_to_obj(report, _delimiter="z")
     
@@ -618,27 +597,8 @@ def san_report_combine(report):
         0 : "new_value", 1 : "first_raster_val",
         2 : "second_raster_val", 3 : "n_cells"
     })
+
+    del_file(report)
     
     return repdata
-
-
-def get_rst_report_data(rst, UNITS=None):
-    """
-    Execute r.report and get reported data
-    """
-    
-    import os
-    from glass.pys.char import random_str
-    from glass.pys.oss  import del_file
-    
-    REPORT_PATH = raster_report(rst, os.path.join(
-        os.path.dirname(os.path.abspath(__file__)),
-        f"{random_str(6)}.txt"
-    ), _units=UNITS)
-    
-    report_data = sanitize_report(REPORT_PATH)
-    
-    del_file(REPORT_PATH)
-    
-    return report_data
 

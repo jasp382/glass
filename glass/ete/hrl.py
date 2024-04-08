@@ -17,7 +17,7 @@ def osm_vs_imd(osmshp, imdrst, outshp, outrst=None):
     """
 
     from glass.pys.oss  import mkdir, fprop
-    from glass.wenv.grs import run_grass
+    from glass.wenv.grs import grass_session
     from glass.smp.fish import nfishnet_fm_rst
     from glass.rd.shp   import shp_to_obj
     from glass.wt.shp   import df_to_shp
@@ -36,11 +36,7 @@ def osm_vs_imd(osmshp, imdrst, outshp, outrst=None):
     # Start GRASS GIS Session
     loc = f"loc_{obname}"
 
-    gb = run_grass(ws, location=loc, srs=imdrst)
-
-    import grass.script.setup as gsetup
-
-    gsetup.init(gb, ws, loc, 'PERMANENT')
+    gb = grass_session(ws, loc=loc, srs=imdrst)
 
     # GRASS GIS Modules
     from glass.it.shp        import shp_to_grs, grs_to_shp

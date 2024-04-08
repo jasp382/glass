@@ -6,7 +6,7 @@ import os
 
 from glass.pys      import execmd
 from glass.pys.oss  import fprop
-from glass.wenv.grs import run_grass
+from glass.wenv.grs import grass_session
 
 """
 Intersection in the same Feature Class/Table
@@ -36,7 +36,7 @@ def line_intersect_to_pnt(inShp, outShp, db=None):
             create_pgdb(db)
     
     # Send data to DB
-    inTbl = shp_to_psql(db, inShp, api="shp2pgsql")
+    inTbl = shp_to_psql(db, inShp, api="ogr2ogr")
     
     # Get result
     outTbl = line_intersection_pnt(db, inTbl, fprop(
@@ -73,18 +73,14 @@ def union(lyrA, lyrB, outShp, api_gis="grass"):
         ))
     
     elif api_gis == "pygrass" or api_gis == "grass":
-        from glass.prop.prj import get_epsg
+        from glass.prop.prj   import get_epsg
         from glass.gp.ovl.grs import grsunion
 
         ws = os.path.dirname(outShp)
         refname = fprop(outShp)
         loc = f"loc_{refname}"
 
-        gbase = run_grass(ws, location=loc, srs=get_epsg(lyrA))
-
-        import grass.script.setup as gs
-
-        gs.init(gbase, ws, loc, 'PERMANENT')
+        gbase = grass_session(ws, loc=loc, srs=get_epsg(lyrA))
 
         # Import data
         from glass.it.shp import shp_to_grs, grs_to_shp
@@ -112,6 +108,7 @@ def union_all(shp_folder, ref, out):
     """
 
     from glass.pys.oss import lst_ff
+    from glass.gp.ovl.grs import grsunion
 
     shps = lst_ff(shp_folder, file_format='.shp')
 
@@ -119,11 +116,7 @@ def union_all(shp_folder, ref, out):
     ws = os.path.dirname(out)
     loc = f'locprod_{fprop(out, "fn")}'
 
-    gb = run_grass(ws, location=loc, srs=ref)
-
-    import grass.script.setup as gsetup
-
-    gsetup.init(gb, ws, loc, 'PERMANENT')
+    gb = grass_session(ws, loc=loc, srs=ref)
 
     from glass.it.shp  import shp_to_grs, grs_to_shp
     from glass.tbl.grs import reset_table
@@ -201,13 +194,13 @@ def optimized_union_anls(lyr_a, lyr_b, outShp, ref_boundary,
     
     import multiprocessing as mp
 
-    from glass.pys.oss   import mkdir, fprop, lst_ff, cpu_cores
-    from glass.smp.fish  import create_fishnet
-    from glass.wenv.grs  import run_grass
-    from glass.dtt.split import eachfeat_to_newshp
-    from glass.dtt.mge   import shps_to_shp
+    from glass.pys.oss       import mkdir, fprop, lst_ff, cpu_cores
+    from glass.smp.fish      import create_fishnet
+    from glass.wenv.grs      import grass_session
+    from glass.dtt.split     import eachfeat_to_newshp
+    from glass.dtt.mge       import shps_to_shp
     from glass.dtt.rst.torst import shpext_to_rst
-    from glass.prop.ext  import get_ext
+    from glass.prop.ext      import get_ext
     
     if workspace:
         if not os.path.exists(workspace):
@@ -243,16 +236,12 @@ def optimized_union_anls(lyr_a, lyr_b, outShp, ref_boundary,
     
     if not multiProcess:
         # INIT GRASS GIS Session
-        grsbase = run_grass(workspace, location="grs_loc", srs=ref_boundary)
-        
-        import grass.script.setup as gsetup
-        
-        gsetup.init(grsbase, workspace, "grs_loc", 'PERMANENT')
+        grsbase = grass_session(workspace, loc="grs_loc", srs=ref_boundary)
         
         # Add data to GRASS GIS
-        from glass.it.shp import shp_to_grs
+        from glass.it.shp       import shp_to_grs
         from glass.gp.ovl.clipp import grsclip
-        from glass.gp.ovl.grs import grsunion
+        from glass.gp.ovl.grs   import grsunion
         
         cellsShp   = [shp_to_grs(
             shp, fprop(shp, 'fn'), asCMD=True
@@ -289,13 +278,11 @@ def optimized_union_anls(lyr_a, lyr_b, outShp, ref_boundary,
 
             # Start GRASS GIS Session
             loc = "proc_" + str(proc)
-            grsbase = run_grass(work, location=loc, srs=ref_rst)
-            import grass.script.setup as gsetup
-            gsetup.init(grsbase, work, loc, 'PERMANENT')
+            grsbase = grass_session(work, loc=loc, srs=ref_rst)
             
             # Import GRASS GIS modules
-            from glass.it.shp import shp_to_grs, grs_to_shp
-            from glass.prop.feat import feat_count
+            from glass.it.shp     import shp_to_grs, grs_to_shp
+            from glass.prop.shp   import feat_count
             from glass.gp.ovl.grs import grsunion
             
             # Add data to GRASS
@@ -358,6 +345,197 @@ def optimized_union_anls(lyr_a, lyr_b, outShp, ref_boundary,
     return MERGED_SHP
 
 
+def multi_thrd_union(indata, epsg, outfolder):
+    """
+    Run Union using Multiprocessing
+
+    indata = [
+        (shp_a, shp_b),
+        (shp_aa, shp_bb), ...
+    ]
+    """
+
+    def multi_run(ti, df, ofolder, _epsg):
+        if not df.shape[0]: return
+    
+        loc_name = f'loc_{str(ti)}'
+        grsbase = grass_session(ofolder, loc=loc_name, srs=_epsg)
+    
+        from glass.it.shp     import shp_to_grs, grs_to_shp
+        from glass.gp.ovl.grs import grsunion
+    
+        for idx, row in df.iterrows():
+            # Import data into GRASS GIS
+            lyr_a = shp_to_grs(row.shp_a, fprop(row.shp_a, 'fn'), asCMD=True)
+            lyr_b = shp_to_grs(row.shp_b, fprop(row.shp_b, 'fn'), asCMD=True)
+        
+            # Run Union
+            shpUnion = grsunion(
+                lyr_a, lyr_b, f"{lyr_a[:10]}_{lyr_b[:10]}",
+                cmd=True
+            )
+        
+            # Export data
+            result = grs_to_shp(shpUnion, os.path.join(ofolder, shpUnion + '.shp'), "area")
+
+    import multiprocessing as mp
+    import pandas as pd
+
+    from glass.pys.oss import cpu_cores
+    from glass.pd.split import df_split
+
+
+    ncpu = cpu_cores() / 2
+
+    df_shp = pd.DataFrame(indata, columns=["shp_a", "shp_b"])
+
+    dfs = df_split(df_shp, ncpu)
+
+    thrds = [mp.Process(
+        target=multi_run, name=f'th-{str(i+1)}',
+        args=(i+1, dfs[i], outfolder, epsg)
+    ) for i in range(len(dfs))]
+
+    for t in thrds:
+        t.start()
+    
+    for t in thrds:
+        t.stop()
+    
+    return outfolder
+
+
+class ExcIntersection:
+    """
+    Run Intersection using an specific API
+    
+    'API's Available:
+    * pd (geopandas)
+    * saga;
+    * pygrass;
+    * grass;
+    * psql
+    """
+
+    apis = ["pd", "saga", "pygrass", "grass", "psql"]
+
+    def __init__(self, api: str):
+        if api not in self.apis:
+            raise ValueError("API value is not valid - options are: grass and pygdal")
+        
+        self.api = api
+    
+    def gp_intersection(self, ishp:str, intshp: str, oshp:str):
+        """
+        GeoPandas Intersection
+        """
+
+        import geopandas
+    
+        from glass.rd.shp import shp_to_obj
+        from glass.wt.shp import df_to_shp
+    
+        dfShp       = shp_to_obj(ishp)
+        dfIntersect = shp_to_obj(intshp)
+    
+        res_interse = geopandas.overlay(dfShp, dfIntersect, how='intersection')
+    
+        df_to_shp(res_interse, oshp)
+
+        return oshp
+    
+    def saga_intersection(self, ishp:str, intshp:str, oshp:str):
+        cmdout = execmd((
+            f"saga_cmd shapes_polygons 14 -A {ishp} "
+            f"-B {intshp} -RESULT {oshp} -SPLIT 1"
+        ))
+
+        return oshp
+    
+    def grs_intersection(self, ishp:str, intshp:str, oshp:str):
+        """
+        Intersect using grass gis
+        """
+
+        from glass.prop.prj import get_epsg
+        from glass.gp.ovl.grs import grsintersection
+        from glass.pys.tm import now_as_str
+
+        epsg = get_epsg(ishp)
+
+        w   = os.path.dirname(oshp)
+        loc = f"loc_{now_as_str()}"
+
+        grsbase = grass_session(w, loc=loc, srs=epsg)
+
+        from glass.it.shp import shp_to_grs, grs_to_shp
+
+        shpa = shp_to_grs(ishp)
+        shpb = shp_to_grs(intshp)
+
+        # Intersection
+        resshp = grsintersection(shpa, shpb, fprop(oshp, 'fn'),
+            True if self.api == 'grass' else None
+        )
+
+        # Export
+        r = grs_to_shp(intshp, oshp, 'area')
+
+        return r
+    
+    def psql_intersection(self, ishp:str, intshp: str, oshp:str):
+        """
+        Use PostGIS to run the intersection operation
+        """
+
+        from glass.sql.db import create_pgdb
+        from glass.it.db import shp_to_psql
+        from glass.gp.ovl.sql import st_pgintersection
+        from glass.prop.shp import get_gtype
+
+        gtype = get_gtype(ishp)
+
+        _gtype = 'polygon' if gtype == 'MultiPolygon' or \
+            gtype == 'Polygon' else 'line' if gtype=='MultiLineString' \
+            or gtype == 'LineString' else 'point'
+
+        # Create Database
+        db = create_pgdb(fprop(oshp, 'fn'), overwrite=True)
+
+        # Import data
+        tbl_a, tbl_b = shp_to_psql(db, [ishp, intshp], api="ogr2ogr")
+
+        # Run Intersection
+        st_pgintersection(
+            db, tbl_a, tbl_b, 'ogc_fid', "geom", "geom",
+            _gtype, output=oshp, outisfile=True
+        )
+
+        return oshp
+    
+    def run_tool(self, shp_a, shp_b, shp_o):
+        """
+        Run tool
+        """
+
+        if self.api == 'pd':
+            res = self.gp_intersection(shp_a, shp_b, shp_o)
+        
+        elif self.api == 'saga':
+            res = self.saga_intersection(shp_a, shp_b, shp_o)
+        
+        elif self.api == 'grass' or self.api == 'pygrass':
+            res = self.grs_intersection(shp_a, shp_b, shp_o)
+        
+        elif self.api == 'psql':
+            res = self.psql_intersection(shp_a, shp_b, shp_o)
+
+        else:
+            raise ValueError("API value is not valid - options are: grass and pygdal")
+        
+        return res
+
+
 def intersection(inShp, intersectShp, outShp, api='geopandas'):
     """
     Intersection between ESRI Shapefile
@@ -399,11 +577,7 @@ def intersection(inShp, intersectShp, outShp, api='geopandas'):
         refname = fprop(outShp, 'fn')
         loc = f"loc_{refname}"
 
-        grsbase = run_grass(w, location=loc, srs=epsg)
-
-        import grass.script.setup as gsetup
-
-        gsetup.init(grsbase, w, loc, 'PERMANENT')
+        grsbase = grass_session(w, loc=loc, srs=epsg)
 
         from glass.it.shp import shp_to_grs, grs_to_shp
 
@@ -562,16 +736,10 @@ def check_shape_diff(SHAPES_TO_COMPARE, OUT_FOLDER, REPORT, DB,
     else:
         raise ValueError(f'{OUT_FOLDER} already exists!')
         
-    from glass.wenv.grs import run_grass
-        
-    gbase = run_grass(
-        OUT_FOLDER, grassBIN='grass78', location='shpdif',
+    gbase = grass_session(
+        OUT_FOLDER, loc='shpdif',
         srs=GRASS_REGION_TEMPLATE
     )
-    
-    import grass.script.setup as gsetup
-        
-    gsetup.init(gbase, OUT_FOLDER, 'shpdif', 'PERMANENT')
         
     from glass.it.shp  import shp_to_grs, grs_to_shp
     from glass.it.rst  import rst_to_grs
@@ -656,7 +824,7 @@ def check_shape_diff(SHAPES_TO_COMPARE, OUT_FOLDER, REPORT, DB,
     
     for uShp in UNION_SHAPE:
         # Send data to PostgreSQL
-        union_tbl = shp_to_psql(DB, UNION_SHAPE[uShp], api='shp2pgsql')
+        union_tbl = shp_to_psql(DB, UNION_SHAPE[uShp], api='ogr2ogr')
         
         # Produce table with % of area equal in both maps
         areaMapTbl = q_to_ntbl(DB, f"{union_tbl}_syn", (
@@ -801,14 +969,7 @@ def shp_diff_fm_ref(refshp, refcol, shps, out_folder,
         mkdir (out_folder)
     
     # Start GRASS GIS Session
-    gbase = run_grass(
-        out_folder, grassBIN='grass78', location='shpdif',
-        srs=refrst
-    )
-
-    import grass.script.setup as gsetup
-
-    gsetup.init(gbase, out_folder, 'shpdif', 'PERMANENT')
+    gbase = grass_session(out_folder, loc='shpdif', srs=refrst)
 
     from glass.it.shp        import shp_to_grs, grs_to_shp
     from glass.it.rst        import rst_to_grs

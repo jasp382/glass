@@ -93,14 +93,34 @@ GRASS GIS Drivers
 
 def grs_shp_drv():
     return {
-        '.shp' : 'ESRI_Shapefile',
-        '.gml' : 'GML'
+        '.shp'  : 'ESRI_Shapefile',
+        '.gml'  : 'GML',
+        '.gpkg' : 'GPKG'
     }
 
 
 def grs_rst_drv():
     return {
-        '.tif': 'GTiff',
-        '.img': 'HFA'
+        '.tif'  : 'GTiff',
+        '.img'  : 'HFA',
+        '.gpkg' : 'GPKG'
     }
+
+
+
+"""
+Layers Properties
+"""
+
+def lst_layers(src):
+    """
+    Return a list with all layers in a 
+    GeoPackage or File GeoDatabase
+    """
+
+    import fiona
+
+    layers = fiona.listlayers(src)
+
+    return layers
 

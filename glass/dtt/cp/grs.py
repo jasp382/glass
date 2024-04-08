@@ -5,7 +5,7 @@ GRASS Tools
 
 def copy_insame_vector(inShp, colToBePopulated, srcColumn, destinyLayer,
                        geomType="point,line,boundary,centroid",
-                       asCMD=None):
+                       asCMD=None, query_layer=1):
     """
     Copy Field values from one layer to another in the same GRASS Vector
     """
@@ -16,7 +16,8 @@ def copy_insame_vector(inShp, colToBePopulated, srcColumn, destinyLayer,
         vtodb = Module(
             "v.to.db", map=inShp, layer=destinyLayer, type=geomType,
             option="query", columns=colToBePopulated,
-            query_column=srcColumn, run_=False, quiet=True,
+            query_column=srcColumn, query_layer=query_layer,
+            run_=False, quiet=True,
             overwrite=True
         )
     
@@ -28,6 +29,7 @@ def copy_insame_vector(inShp, colToBePopulated, srcColumn, destinyLayer,
         rcmd = execmd((
             f"v.to.db map={inShp} layer={destinyLayer} "
             f"type={geomType} option=query columns={colToBePopulated} "
-            f"query_column={srcColumn} --quiet --overwrite"
+            f"query_column={srcColumn} query_layer={str(query_layer)} "
+            "--quiet --overwrite"
         ))
 

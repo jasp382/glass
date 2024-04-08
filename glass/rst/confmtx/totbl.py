@@ -2,7 +2,8 @@
 Confusion matrix from Raster to Table file
 """
 
-from glass.rst.confmtx import confmtx_fmrst
+from glass.rst.confmtx import confmtx_fmrst, bin_confmxt_fmrst
+from glass.wt import obj_to_tbl
 
 
 def confmtx_twrst(ref_rst, cls_rst, out_tbl, classes=None):
@@ -10,13 +11,23 @@ def confmtx_twrst(ref_rst, cls_rst, out_tbl, classes=None):
     Confusion matrix for two raster
     """
 
-    from glass.wt import obj_to_tbl
-
     out_df = confmtx_fmrst(ref_rst, cls_rst, class_labels=classes)
 
     obj_to_tbl(out_df, out_tbl)
 
     return out_tbl
+
+
+def bin_confmtx_twrst(refrst, clsrst, otbl):
+    """
+    Binary classification confusion matrix
+    """
+
+    mtx_df, emeas = bin_confmxt_fmrst(refrst, clsrst)
+
+    obj_to_tbl([mtx_df, emeas], otbl)
+
+    return otbl
 
 
 def confmtx_fm_pntsample(pnt, idcol, refcol, rst, clscol, out_mtx):

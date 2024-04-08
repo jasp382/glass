@@ -60,3 +60,24 @@ def unzip(zipf, destination):
 
     return destination
 
+
+
+def pyunzip(zipf, destination):
+    """
+    Unzip file using zipfile package
+    """
+
+    import os
+    from zipfile import ZipFile
+
+    ff = []
+    with ZipFile(zipf, 'r') as zipo:
+        zipff = zipo.namelist()
+
+        for f in zipff:
+            zipo.extract(f, destination, pwd=None)
+
+            ff.append(os.path.join(destination, f))
+
+    return ff
+

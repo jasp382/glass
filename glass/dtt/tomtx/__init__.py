@@ -104,7 +104,7 @@ def tbl_to_areamtx(inShp, col_a, col_b, outXls, db=None, with_metrics=None):
             create_pgdb(db, api='psql')
 
         # Add data to database
-        tbl = shp_to_psql(db, inShp, api='shp2pgsql')
+        tbl = shp_to_psql(db, inShp, api='ogr2ogr')
 
         # Create matrix
         mtx = tbl_to_area_mtx(db, tbl, col_a, col_b, fprop(outXls, 'fn'))

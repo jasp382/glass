@@ -15,17 +15,13 @@ def random_select_from_ref(train_ref, class_col, class_proportion,
     from glass.pys.oss  import fprop
     from glass.pys.tm   import now_as_str
     from glass.smp      import proprndcells_to_rst
-    from glass.wenv.grs import run_grass
+    from glass.wenv.grs import grass_session
     from glass.prop     import is_shp
 
     # Create GRASS GIS Session
     ws, loc = os.path.dirname(orst), f"loc_{now_as_str()}"
 
-    grsb = run_grass(ws, location=loc, srs=ref_rst)
-    
-    import grass.script.setup as gsetup
-    
-    gsetup.init(grsb, ws, loc, 'PERMANENT')
+    grsb = grass_session(ws, loc=loc, srs=ref_rst)
 
     from glass.it.shp import shp_to_grs
     from glass.it.rst   import rst_to_grs, grs_to_rst
@@ -55,7 +51,7 @@ def random_select_from_ref(train_ref, class_col, class_proportion,
     tres = grs_to_rst(train_rst, os.path.join(
         ws, loc,
         f"tmp_{fprop(orst, 'fn')}.tif"
-    ), rtype=int)
+    ), dtype='UInt16')
 
     # Select random sample
     proprndcells_to_rst(

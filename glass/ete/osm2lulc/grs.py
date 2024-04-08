@@ -23,7 +23,7 @@ def raster_based(osmdata, nomenclature, refRaster, lulcRst,
     # ************************************************************************ #
     from glass.pys.oss               import mkdir, fprop
     from glass.prop.df               import is_rst
-    from glass.wenv.grs              import run_grass
+    from glass.wenv.grs              import grass_session
     if roadsAPI == 'POSTGIS':
         from glass.sql.db            import create_pgdb
         from glass.it.db             import osm_to_psql 
@@ -107,11 +107,7 @@ def raster_based(osmdata, nomenclature, refRaster, lulcRst,
     # ************************************************************************ #
     # Start a GRASS GIS Session #
     # ************************************************************************ #
-    grass_base = run_grass(
-        workspace, grassBIN='grass78', location='grloc', srs=epsg)
-    
-    import grass.script.setup as gsetup
-    gsetup.init(grass_base, workspace, 'grloc', 'PERMANENT')
+    grass_base = grass_session(workspace, loc='grloc', srs=epsg)
     
     # ************************************************************************ #
     # IMPORT SOME glass MODULES FOR GRASS GIS #
@@ -312,7 +308,7 @@ def raster_based(osmdata, nomenclature, refRaster, lulcRst,
             fprop(lulcRst, 'fn') + '.tif'
         )
     
-    grs_to_rst(outGrs, lulcRst, as_cmd=True)
+    grs_to_rst(outGrs, lulcRst, as_cmd=True, dtype="UInt16")
     osmlulc_rsttbl(nomenclature, os.path.join(
         os.path.dirname(lulcRst), os.path.basename(lulcRst) + '.vat.dbf'
     ))
@@ -378,10 +374,10 @@ def osm_to_lulc(osm, nomenclature, ref, lulc, overwrite=None, savedb=None, tmpfl
     from glass.ete.osm2lulc.utilsv15 import nomenclature_id, lulc_to_osmfeat, osm_project, get_legend
     from glass.prj                   import def_prj
     from glass.prop.prj import get_epsg
-    from glass.prop.feat import feat_count
+    from glass.prop.shp import feat_count
     from glass.pys.oss import mkdir, fprop
     from glass.pys.tm import now_as_str
-    from glass.wenv.grs import run_grass
+    from glass.wenv.grs import grass_session
     # ************************************************************************ #
     # Global Settings #
     # ************************************************************************ #
@@ -461,10 +457,7 @@ def osm_to_lulc(osm, nomenclature, ref, lulc, overwrite=None, savedb=None, tmpfl
     # Start a GRASS GIS Session #
     # ************************************************************************ #
     loc = 'osmtolulc'
-    gb = run_grass(ws, location=loc, srs=refrst)
-
-    import grass.script.setup as gsetup
-    gsetup.init(gb, ws, loc, 'PERMANENT')
+    gb = grass_session(ws, loc=loc, srs=refrst)
 
     time_f = dt.datetime.now().replace(microsecond=0)
     # ************************************************************************ #

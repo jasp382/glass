@@ -10,10 +10,11 @@ def conditional_dependence(movs, indp):
     Estimate conditional dependence between several rasters
     """
     
-    import math; from decimal import Decimal
-    from glass.prop.feat   import feat_count
-    from glass.prop.rst    import rst_cellsize, count_cells
-    from glass.prop.rst    import frequencies
+    import math
+    from decimal import Decimal
+    from glass.prop.shp import feat_count
+    from glass.prop.rst import rst_cellsize, count_cells
+    from glass.prop.rst import frequencies
     
     def foundPredT(dic):
         PredT = 0.0

@@ -55,7 +55,7 @@ def ctb_lstpnt_to_point(dfs, ignore=None):
     Contributions multipoints to points
     """
 
-    from glass.pd.dagg import col_list_val_to_row
+    from glass.dtt.pd.dagg import col_list_val_to_row
     from glass.pd.cols import dictval_to_cols
 
     for k in dfs:
