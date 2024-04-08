@@ -3,11 +3,17 @@ Download Sentinel Data
 """
 
 import os
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from sentinelsat    import SentinelAPI, geojson_to_wkt
 from glass.cons.sat import con_datahub
 from glass.pys      import obj_to_lst
+from glass.pys.oss  import mkdir
+from glass.pys.web  import get_file
 from glass.rd.shp   import shp_to_obj
+
+from glass.acq.stl.apis import TokenManager
 
 
 def lst_prod(shpext, start_time, end_time,
@@ -261,113 +267,73 @@ def lst_prod_bytile(stime, etime, tiles, platname="Sentinel-2", procLevel="Level
     return p
 
 
-def down_img(imgid, out_folder):
+
+#################################################################
+#################################################################
+
+
+
+def download_sentinel_products(imglist:str, img_id:str, downcol:str, outfolder:str, MAX_WORKERS:int=4) -> str:
     """
-    Download one image by id
+    Download Sentinel Products from Copernicus Data Ecosystem
+
+    Download all products listed in imglist to outfolder
     """
 
-    v = con_datahub()
+    # Open imglist file
+    imgdf = shp_to_obj(imglist)
 
-    api = SentinelAPI(
-        v["USER"], v["PASSWORD"], v["URL"]
-    )
+    # Create column with tile id
+    imgdf['tile'] = imgdf[img_id].str.split('_').str[-2]
 
-    api.download(imgid, out_folder)
+    # Get Token
+    token_mgr = TokenManager()
+    token_mgr.get_token()
 
-    return out_folder
-
-
-def down_imgs(inTbl, imgIDcol, outFolder=None):
-    """
-    Download Images in Table
-    """
+    # Create output folder if not exists
+    if not os.path.exists(outfolder):
+        mkdir(outfolder)
     
-    of = outFolder if outFolder else os.path.dirname(inTbl)
+    def download_scene(row):
+        tilefolder = os.path.join(outfolder, row["tile"])
 
-    # Get global vars
-    gvar = con_datahub()
-    user, passw, url = gvar["USER"], gvar["PASSWORD"], gvar["URL"]
+        if not os.path.exists(tilefolder):
+            mkdir(tilefolder)
     
-    # Tbl to df
-    df_img = shp_to_obj(inTbl)
-    
-    # API Instance
-    api = SentinelAPI(user, passw, url)
-    
-    # Download Images
-    for idx, row in df_img.iterrows():
-        # Check if file already exists
-        outFile = os.path.join(of, row.identifier + '.zip')
-        
-        if os.path.exists(outFile):
-            print('IMG already exists')
-            continue
+        scene_id = row[img_id]
+        url = row[downcol]
+
+        out = os.path.join(tilefolder, f"{scene_id}.zip")
+
+        token = token_mgr.get_token()
+
+        imgzip = get_file(url, out, useWget=True, quiet=True, token=token)
+
+        if not imgzip:
+            return scene_id, "Error"
         else:
-            api.download(row[imgIDcol], directory_path=of)
+            return scene_id, "Sucesso"
 
+    # DOwnload images with multiprocessing
+    results = []
 
-def down_imgs_v2(itbl, idcol, ofolder=None):
-    """
-    Download images in shapefile
+    start = time.time()
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        futures = {
+            executor.submit(download_scene, row): idx
+            for idx, row in imgdf.iterrows()
+        }
 
-    Download also offline products
-    """
+        for fut in as_completed(futures):
+            scene_id, status = fut.result()
 
-    import time
+            print(f"[{scene_id}] {status}")
+            results.append((scene_id, status))
 
-    ofolder = ofolder if ofolder else os.path.dirname(itbl)
+        elapsed = time.time() - start
+        print(f"Downloads concluídos em {elapsed/60:.1f} min")
 
-    # Get global vars
-    gvar = con_datahub()
-    user, passw, url = gvar["USER"], gvar["PASSWORD"], gvar["URL"]
+    token_mgr.close()
 
-    # Tbl to df
-    df_img = shp_to_obj(itbl)
-
-    df_img["isd"] = 0
-    df_img["ist"] = 0
-
-    # API Instance
-    api = SentinelAPI(user, passw, url)
-
-    def download(row):
-        pinfo = api.get_product_odata(row[idcol])
-    
-        is_on = pinfo["Online"]
-    
-        if is_on:
-            try:
-                api.download(row[idcol], directory_path=ofolder)
-        
-                row["isd"] = 1
-
-                print(f'download imagem {row[idcol]}')
-            except:
-                print(f'erro download {row[idcol]}')
-                time.sleep(60 * 30)
-    
-        else:
-            if not row.ist:
-                try:
-                    api.trigger_offline_retrieval(row[idcol])
-            
-                    row["ist"] = 1
-                
-                except:
-                    print(f'erro imagem {row[idcol]}')
-                    time.sleep(60 * 40)
-    
-        return row
-    
-    all_download = 0
-
-    while not all_download:
-        df_img = df_img.apply(lambda x: download(x), axis=1)
-    
-        dstatus = df_img.isd.tolist()
-    
-        if 0 not in dstatus:
-            all_download = 1
-    
-    return 1
+    return outfolder
 

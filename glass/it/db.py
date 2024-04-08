@@ -3,10 +3,15 @@ Data to a Relational Database
 """
 
 import os
-from glass.pys    import obj_to_lst
+from multiprocessing import Pool, cpu_count
+from tqdm import tqdm
+
+
+from glass.pys    import obj_to_lst, execmd
 from glass.rd     import tbl_to_obj
 from glass.wt.sql import df_to_db
-from glass.pys    import execmd
+from glass.pys.oss import fprop
+from glass.sql.c import alchemy_engine
 
 
 def tbl_to_db(tblFile, db, sqlTbl, delimiter=None, encoding_='utf-8',
@@ -89,6 +94,55 @@ def tbl_to_db(tblFile, db, sqlTbl, delimiter=None, encoding_='utf-8',
         RTBL.append(_rtbl)
     
     return RTBL[0] if len(RTBL) == 1 else RTBL
+
+
+def import_excel(_t, _db, otbl, _cols=None, chunksize=5000):
+    try:
+        pgengine = alchemy_engine(_db, api='psql', dbset='default')
+
+        df = tbl_to_obj(_t, fields=_cols)
+
+        df.to_sql(
+            otbl, con=pgengine,
+            if_exists="append",
+            index=False,
+            method='multi',
+            chunksize=chunksize
+        )
+
+        return f"✅ {fprop(_t, 'fn')} importado ({df.shape[0]} linhas)"
+        
+    except Exception as e:
+        raise ValueError(e)
+
+
+def multixlsx_to_onetable(tbls:list[str], db:str, otbl:str, cols=None, chunks=5000):
+    """
+    Thousands of xlsx. files to a database
+    """
+
+    workers = max(1, int(cpu_count() / 2))
+
+    if not len(tbls):
+        return []
+
+    pgcon = alchemy_engine(db, api='psql', dbset='default')
+    _df = tbl_to_obj(tbls[0], fields=cols)
+
+    _df.to_sql(
+        otbl, con=pgcon,
+        if_exists="replace",
+        index=False,
+        method='multi',
+        chunksize=chunks
+    )
+
+    args = [(t, db, otbl, cols, chunks) for t in tbls[1:]]
+
+    with Pool(workers) as pool:
+        results = list(tqdm(pool.starmap(import_excel, args), total=len(tbls)-1))
+    
+    return results
 
 
 def xlsx_to_db(xls, db, sheets, apidb='psql'):
@@ -218,7 +272,7 @@ def apndtbl_in_otherdb(db_a, db_b, tblA, tblB, mapCols,
     # Get Geom Type
     # Send data to other database
     if geomCol and srsEpsg:
-        from glass.prop.feat import get_gtype
+        from glass.prop.shp import get_gtype
         
         gType = get_gtype(df, geomCol=geomCol, gisApi='pandas')
         
@@ -275,14 +329,13 @@ GeoSpatial Data to GeoSpatial Database
 """
 
 def shp_to_psql(dbname, shps, api="pandas", tnames=None,
-                map_cols=None, srs=None, encoding="UTF-8",
+                map_cols=None, srs=None,
                 dbset='default', to_srs=None, fformat=None, lyrname=None,
-                mantain_map_cols=None):
+                mantain_map_cols=None, whr=None, import_all_layers=None):
     """
     Send Shapefile to PostgreSQL
     
     if api == "pandas" - GeoPandas API will be used;
-    if api == "shp2pgsql" - shp2pgsql tool will be used.
     if api == ogr2ogr - ogr2ogr from GDAL will be used
 
     shp could be a folder with geofiles
@@ -300,13 +353,13 @@ def shp_to_psql(dbname, shps, api="pandas", tnames=None,
     from glass.prop.prj  import shp_epsg
     from glass.prop.sql  import lst_db
     from glass.pys       import obj_to_lst
-    from glass.pys.oss   import lst_ff, fprop, del_file
+    from glass.pys.oss   import lst_ff, fprop
     from glass.rd.shp    import shp_to_obj
-    from glass.sql       import psql_cmd
     from glass.sql.db    import create_pgdb
     from glass.wt.sql    import df_to_db
+    from glass.prop.df   import lst_layers
     
-    apis = ["pandas", "shp2pgsql", "ogr2ogr"]
+    apis = ["pandas", "ogr2ogr"]
 
     # If defined, srsEpsgCode must be a integer value
     if srs and type(srs) != int:
@@ -324,11 +377,15 @@ def shp_to_psql(dbname, shps, api="pandas", tnames=None,
         create_pgdb(dbname, overwrite=None, use_template=True)
     
     # Check if shp is folder
-    if os.path.isdir(shps):
-        shps = lst_ff(shps, file_format=fformat)
-    
+    if type(shps) == list:
+        pass
     else:
-        shps = obj_to_lst(shps)
+        if os.path.isdir(shps) and '.gdb' not in shps:
+            shps = lst_ff(shps, file_format=fformat)
+
+    
+        else:
+            shps = obj_to_lst(shps)
     
     # Relate each file with a layer and epsg
     d = []
@@ -337,27 +394,50 @@ def shp_to_psql(dbname, shps, api="pandas", tnames=None,
             else obj_to_lst(lyrname[shp])
         
         if not len(lyrs):
-            tn = tnames[shp] if tnames and shp in tnames \
-                else fprop(shp, 'fn')
+            lyr_in_shp = lst_layers(shp)
+            lyrs = [lyr_in_shp[0]] if not import_all_layers else \
+                lyr_in_shp
+        
+        for i, l in enumerate(lyrs):
+            if not tnames:
+                tn = l
             
+            else:
+                if (shp, l) in tnames:
+                    tn = tnames[(shp, l)]
+                
+                else:
+                    if shp in tnames:
+                        tn = tnames[shp] if len(lyrs) == 1 else \
+                            f'{tnames[shp]}_{str(i)}'
+                    
+                    else:
+                        tn = l
+            
+            if type(whr) == dict:
+                if (shp, l) in whr:
+                    _whr = whr[(shp, l)]
+                
+                else:
+                    if shp in whr:
+                        _whr = whr[shp]
+                    
+                    else:
+                        _whr = None
+            
+            elif type(whr) == str:
+                _whr = whr
+            
+            else:
+                _whr = None
+                
             d.append({
                 'src'  : shp,
-                'lyr'  : None,
-                'epsg' : shp_epsg(shp) if not srs else srs,
-                'tbl'  : tn
+                'lyr'  : l,
+                'epsg' : shp_epsg(shp, lyrname=l) if not srs else srs,
+                'tbl'  : tn,
+                'whr'  : _whr
             })
-        
-        else:
-            for l in lyrs:
-                tn = tnames[(shp, l)] if tnames and (shp, l) \
-                    in tnames else l
-                
-                d.append({
-                    'src'  : shp,
-                    'lyr'  : l,
-                    'epsg' : shp_epsg(shp, lyrname=l) if not srs else srs,
-                    'tbl'  : tn
-                })
     
     # Import data
     tables = []
@@ -417,33 +497,28 @@ def shp_to_psql(dbname, shps, api="pandas", tnames=None,
 
             ssrs = "" if not to_srs or to_srs == s["epsg"] \
                 else f" -s_srs EPSG:{str(s['epsg'])} -t_srs EPSG:{str(to_srs)}"
+            
+            _whr = "" if not s["whr"] else f' -where "{s["whr"]}"'
 
             cmd = (
-                'ogr2ogr -f PostgreSQL "PG:dbname='
+                'ogr2ogr -f "PostgreSQL" "PG:dbname='
                 f'\'{dbname}\' host=\'{con["HOST"]}\' port=\'{con["PORT"]}\' '
                 f'user=\'{con["USER"]}\' password=\'{con["PASSWORD"]}\'" '
-                f'-nln {s["tbl"]} {shp}{lstr}{ssrs} -unsetFid '
-                f'-lco GEOMETRY_NAME=geom'
+                f'-nln {s["tbl"]} {s["src"]}{lstr}{ssrs}{_whr} -unsetFid '
+                f'-lco GEOMETRY_NAME=geom -nlt PROMOTE_TO_MULTI -dim 2'
             )
 
             ocmd = execmd(cmd)
+
+            rep = os.path.join(os.path.dirname(s["src"]), 'psqlimport.txt')
+
+            with open(rep, 'w') as _rep:
+                _rep.write(cmd)
+                _rep.write('\n\n\n=======================\n\n\n\n')
+
+                _rep.write(ocmd)
         
-        else:
-            ss = os.path.join(
-                os.path.dirname(s['src']),
-                f'{s["tbl"]}.sql'
-            )
-            
-            cmd = (
-                f'shp2pgsql -I -s {s["epsg"]} -W {encoding} '
-                f'{s["src"]} public.{s["tbl"]} > {ss}'
-            )
-            
-            outcmd = execmd(cmd)
-            
-            psql_cmd(dbname, ss, dbcon=dbset)
-            
-            del_file(ss)
+        else: continue
         
         tables.append(s['tbl'])
     
@@ -472,13 +547,14 @@ def rst_to_psql(rst, srs, dbname, sql_script=None):
     return rst_name
 
 
-def osm_to_psql(osmXml, osmdb, dbsetup='default'):
+def osm_to_psql(osmXml, osmdb, dbsetup='default', schema=None):
     """
     Use GDAL to import osmfile into PostGIS database
     """
     
     from glass.cons.psql import con_psql
     from glass.prop.sql  import db_exists
+    from glass.sql.q import exec_write_q
 
     is_db = db_exists(osmdb, dbset=dbsetup)
 
@@ -488,12 +564,20 @@ def osm_to_psql(osmXml, osmdb, dbsetup='default'):
         create_pgdb(osmdb, dbset=dbsetup)
 
     con = con_psql(db_set=dbsetup)
+
+    #_schema  = '' if not schema else f' active_schema={schema}'
+    schema_  = '' if not schema else f'-lco SCHEMA={schema} '
+
+    if schema:
+        exec_write_q(osmdb, f"CREATE SCHEMA IF NOT EXISTS {schema}")
     
     cmd = (
         f"ogr2ogr -f PostgreSQL \"PG:dbname="
         f"'{osmdb}' host='{con['HOST']}' port='{con['PORT']}' "
-        f"user='{con['USER']}' password='{con['PASSWORD']}'\" {osmXml} "
-        "-lco COLUM_TYPES=other_tags=hstore"
+        f"user='{con['USER']}' password='{con['PASSWORD']}'\" "
+        #f"{_schema}\" "
+        f"{osmXml} {schema_}"
+        "-lco COLUMN_TYPES=other_tags=hstore"
     )
     
     cmdout = execmd(cmd)
@@ -507,7 +591,7 @@ def gpkg_lyr_attr_to_psql(gpkg, lyr, col, db, tbl_bname=None):
     GeoPackage layer to PostgreSQL tables
 
     For a given layer in a GeoPackage, the values in a given column
-    will be listen, for each value, the rows with that value
+    will be listed, for each value, the rows with that value
     will be selected and sended to the database
     """
 

@@ -5,7 +5,7 @@ Shape To some Python Object
 import os
 
 def shp_to_obj(shp, geom_col=None, fields=None, output='df', srs_to=None,
-    colsAsArray=None, geom_as_wkt=None, lyr=None, outgeom=None):
+    colsAsArray=None, geom_as_wkt=None, lyr=None, outgeom=None, force2D=None):
     """
     Feature Class to Python Object
 
@@ -16,6 +16,7 @@ def shp_to_obj(shp, geom_col=None, fields=None, output='df', srs_to=None,
     """
 
     import geopandas as gp
+    from glass.prop.prj import df_epsg
 
     if '.gdb' in shp and not lyr:
         lyr = os.path.basename(shp)
@@ -35,6 +36,11 @@ def shp_to_obj(shp, geom_col=None, fields=None, output='df', srs_to=None,
                 geom_col = c
                 break
     
+    if force2D:
+        df[geom_col] = df[geom_col].force_2d()
+    
+    epsg = df_epsg(df, geom_col) if srs_to else None
+    
     # Get Fields to Mantain
     if fields:
         from glass.pd.cols import del_cols_notin_ref
@@ -42,7 +48,7 @@ def shp_to_obj(shp, geom_col=None, fields=None, output='df', srs_to=None,
         df = del_cols_notin_ref(df, fields, geomCol=geom_col)
     
     # Project if necessary
-    if srs_to and type(srs_to) == int:
+    if srs_to != epsg and type(srs_to) == int:
         from glass.prj.obj import df_prj
 
         df = df_prj(df, srs_to)
@@ -64,6 +70,9 @@ def shp_to_obj(shp, geom_col=None, fields=None, output='df', srs_to=None,
             df["FID"] = df.index
 
             orientation = "records"
+        
+        else:
+            orientation = 'dict'
         
         data = df.to_dict(orient=orientation)
 
@@ -114,4 +123,19 @@ def points_to_list(pntShp, listVal='tuple', inEpsg=None, outEpsg=None):
         )
     
     return coords
+
+
+
+def shp_to_qgslyr(shp, name=None):
+    """
+    OGR Compilant file to QGIS Vector Layer
+    """
+
+    from qgis.core import QgsVectorLayer
+
+    from glass.pys.oss import fprop
+
+    lyr = QgsVectorLayer(shp, name if name else fprop(shp, 'fn'), 'ogr')
+
+    return lyr
 

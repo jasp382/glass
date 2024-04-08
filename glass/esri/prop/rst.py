@@ -5,6 +5,20 @@ Get Raster properties
 import arcpy
 import os
 
+def rst_geoprop(raster):
+    """
+    Return lowerLeft and cellsize
+    """
+
+    irst = arcpy.Raster(raster)
+
+    lwleft = arcpy.Point(irst.extent.XMin, irst.extent.YMin)
+
+    csize = irst.meanCellWidth
+
+    return lwleft, csize
+
+
 def checkIfRstIsLayer(obj):
     """
     Check if an object is a Raster Layer
@@ -144,7 +158,7 @@ def get_nodata(rst):
 Cells Positions and Values
 """
 
-def get_cell_value(rstLyr, x, y, xmin, ymin, cellwidth, cellheight):
+def get_cell_value(rst, x, y, xmin, ymin, cellwidth, cellheight):
     """
     Return the cell value in a raster with the x, y coordinates
     """

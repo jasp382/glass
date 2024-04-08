@@ -262,9 +262,11 @@ def module_2(tags, osmdb, epsg, gpkg, layer):
     
     # Execute buffer
     bf_roads = st_buffer(
-        osmdb, qroads, bfcol, OTOL_GEOM, output=gpkg,
-        outTblIsFile=True, cols_select=OTOL_LULC, dissolve="SEL",
-        olyr=layer
+        osmdb, qroads, bfcol, OTOL_GEOM,
+        output=gpkg if gpkg else layer,
+        outTblIsFile=True if gpkg else None,
+        cols_select=OTOL_LULC, dissolve="SEL",
+        olyr=layer if gpkg else None
     )
     time_f = dt.datetime.now().replace(microsecond=0)
 
@@ -595,7 +597,7 @@ def module_6(tags, osmdb, epsg, gpkg, layer):
     }
 
 
-def priority_rule(gpkg, lyr, rst, col, osm_db):
+def priority_rule(gpkg, nomid, lyr, epsg, col, osm_db, olyr, tmpfiles=None):
     """
     Apply priority rule v1.5
     """
@@ -603,19 +605,16 @@ def priority_rule(gpkg, lyr, rst, col, osm_db):
     import datetime as dt
     import copy
 
-    from glass.cons.otol  import OTOL_GEOM, classes_priority
-    from glass.gp.ovl.sql import st_erase_opt
+    from glass.cons.otol  import classes_priority
+    from glass.gp.ovl.sql import st_pgerase
     from glass.gp.seg.sql import geomseg_to_newtbl
+    from glass.gp.gen.sql import st_dissolve
     from glass.it.db      import gpkg_lyr_attr_to_psql
-    from glass.prop.prj   import get_epsg
     from glass.prop.sql   import row_num
-    from glass.sql.q      import exec_write_q
-
-    # Get EPSG
-    epsg = get_epsg(rst)
+    from glass.it.shp     import db_to_gpkg
 
     # Get Classes Priority
-    order_cls = classes_priority(2)
+    order_cls = classes_priority(nomid)
 
     # Import data into the database
     table_cls = gpkg_lyr_attr_to_psql(gpkg, lyr, col, osm_db, 'tblcls')
@@ -650,7 +649,7 @@ def priority_rule(gpkg, lyr, rst, col, osm_db):
 
             time_a = dt.datetime.now().replace(microsecond=0)
 
-            table_cls[order_cls[i]['fid']] = st_erase_opt(
+            table_cls[order_cls[i]['fid']] = st_pgerase(
                 osm_db,
                 table_cls[order_cls[i]['fid']], 'fid',
                 table_cls[order_cls[e]['fid']],
@@ -671,18 +670,172 @@ def priority_rule(gpkg, lyr, rst, col, osm_db):
             if not nrows:
                 del table_cls[order_cls[i]['fid']]
                 continue
+    
+    # Export all tables to the existing geopackage
+    if tmpfiles:
+        db_to_gpkg(osm_db, gpkg, tbls=list(table_cls.values()))
+    
+    # Merge All tables into one and dissolve
+    sqs = [(
+        "SELECT lulc, leg, geom "
+        f"FROM {table_cls[c]}"
+    ) for c in table_cls]
 
-            # Create Geometry index for the new table
-            qs = [(
-                f"ALTER TABLE {table_cls[order_cls[i]['fid']]} ADD CONSTRAINT "
-                f"{table_cls[order_cls[i]['fid']]}_pk PRIMARY KEY "
-                f"({order_cls[i]['pk']})"
-            ), (
-                f"CREATE INDEX {table_cls[order_cls[i]['fid']]}_geom_idx ON "
-                f"{table_cls[order_cls[i]['fid']]} "
-                f"USING gist (geom)"
-            )]
+    unionq = " UNION ALL ".join(sqs)
 
-            exec_write_q(osm_db, qs, api='psql')
+    ftbl = st_dissolve(
+        osm_db, f"({unionq}) AS foo", "geom", gpkg,
+        diss_cols=["lulc, leg"], outTblIsFile=True,
+        olyr=olyr, api='psql', multipart=None
+    )
 
-    return 1
+    return ftbl
+
+
+def osmlines_buffer(osmdb, tags, epsg, gpkg, layer):
+    """
+    Calculate buffer for all roads, waterways and railways in OSM
+    """
+
+    from glass.wt.sql import df_to_db
+    from glass.gp.prox.sql import st_near
+    from glass.sql.q       import exec_write_q
+
+    time_a = dt.datetime.now().replace(microsecond=0)
+
+    # Send tags information to the database
+    tags_tbl = df_to_db(osmdb, tags, 'lines_bfdist', api='psql')
+
+    # Global stuff
+    bfcol = 'bfdist'
+    geom_col = f"ST_Transform({OSM_GEOM}, {epsg}) AS {OTOL_GEOM}"
+
+    geom_ply = (
+        "CASE "
+            f"WHEN ST_IsValid(ST_Transform({OSM_GEOM}, {epsg})) "
+            f"THEN ST_Transform({OSM_GEOM}, {epsg}) "
+            f"ELSE ST_MakeValid(ST_Transform({OSM_GEOM}, {epsg})) "
+        f"END AS {OTOL_GEOM}"
+    )
+
+    # Building's table
+    build_tbl = (
+        f"SELECT building, {geom_ply} "
+        f"FROM {OSM_TABLES['polygons']} "
+        "WHERE building IS NOT NULL "
+        f"AND ST_Area(ST_MakeValid({OSM_GEOM})) > 0"
+    )
+
+    # New tables to be created
+    tlines, tbuild = 'tbl_lines', 'tbl_build'
+
+    # Get all lines to be buffered
+    okeys = ['highway', 'railway', 'waterway']
+    kq = [(
+        f"SELECT '{k}' AS osmk, {k} AS osmv, "
+        f"width, lanes, {geom_col} "
+        f"FROM {OSM_TABLES['lines']} "
+        f"WHERE {k} IS NOT NULL"
+    ) for k in okeys]
+
+    unionq = " UNION ALL ".join(kq)
+
+    q = (
+        "SELECT ROW_NUMBER() OVER(ORDER BY bfdist.bfdist) AS osm_id, "
+        "CASE "
+            "WHEN osmkeyval.width IS NOT NULL AND osmkeyval.width ~ '^[0-9]+$' AND "
+            "CAST(osmkeyval.width AS numeric) < 20 "
+            "THEN CAST(round(CAST(osmkeyval.width AS numeric), 0) AS integer) "
+            "ELSE CASE "
+                "WHEN osmkeyval.lanes IS NOT NULL AND osmkeyval.lanes ~ '^[0-9]+$' "
+                "THEN CAST(round((CAST(osmkeyval.lanes AS integer) * 3), 0) AS integer) "
+                "ELSE CASE "
+                    "WHEN bfdist.bfdist IS NULL "
+                    "THEN 1 ELSE CAST(ROUND(bfdist.bfdist / 2) AS integer) "
+                "END "
+            "END "
+        f"END {bfcol}, osmkeyval.osmk, osmkeyval.osmv, osmkeyval.{OTOL_GEOM} "
+        f"FROM ({unionq}) AS osmkeyval "
+        f"LEFT JOIN {tags_tbl}  AS bfdist "
+        "ON osmkeyval.osmk = bfdist.osm_key AND "
+        "osmkeyval.osmv = bfdist.osm_value"
+    )
+
+    # Count number of roads
+    n_roads = row_num(osmdb, q, api='psql')
+
+    time_b = dt.datetime.now().replace(microsecond=0)
+
+    if not n_roads:
+        return None, {
+            0 : ('count_rows_roads', time_b - time_a)
+        }
+
+    # Create a new table only with the roads 
+    # - Create Primary Key and add a index to geometry
+    # to make the procedure faster
+    qs = [(
+        f"CREATE TABLE {tlines} AS {q}"
+    ), (
+        f"ALTER TABLE {tlines} ADD CONSTRAINT "
+        f"{tlines}_pk PRIMARY KEY (osm_id)"
+    ), (
+        f"CREATE INDEX {tlines}_geom_idx ON {tlines} "
+        f"USING gist ({OTOL_GEOM})"
+    )]
+
+    # Check if there are buildings or not
+    n_build = row_num(osmdb, build_tbl, api='psql')
+    time_c = dt.datetime.now().replace(microsecond=0)
+
+    # If we have buildings, create also a table
+    # with all the buildings
+    if n_build:
+        qs.extend([
+            f"CREATE TABLE {tbuild} AS {build_tbl}",
+            f"CREATE INDEX {tbuild}_geom_idx ON {tbuild} USING gist ({OTOL_GEOM})"
+        ])
+    
+    exec_write_q(osmdb, qs, api='psql')
+    time_d = dt.datetime.now().replace(microsecond=0)
+
+    # If we have buildings, lets find buffer distance
+    # based on the distance between lines and buildings
+    if n_build:
+        qlines = st_near(
+            osmdb, tlines, OTOL_GEOM,
+            tbuild, OTOL_GEOM,
+            intbl_pk="osm_id",
+            until_dist="12", near_col="dist_near"
+        )
+
+        qlines = (
+            f"(SELECT osm_id, 1 AS {OTOL_LULC}, {OTOL_GEOM}, "
+            "CASE "
+                "WHEN dist_near >= 1 AND dist_near <= 12 "
+                "THEN CAST(round(CAST(dist_near AS numeric), 0) AS integer) "
+                f"ELSE {bfcol} "
+            f"END AS {bfcol} "
+            f"FROM ({qlines}) AS ffroads)"
+        )
+    
+    else:
+        qlines = tlines
+    
+    # Execute buffer
+    bf_roads = st_buffer(
+        osmdb, qlines, bfcol, OTOL_GEOM,
+        output=gpkg if gpkg else layer,
+        outTblIsFile=True if gpkg else None,
+        cols_select=OTOL_LULC, dissolve="SEL",
+        olyr=layer if gpkg else None
+    )
+    time_e = dt.datetime.now().replace(microsecond=0)
+
+    return layer, {
+        0 : ('count_rows_roads', time_b - time_a),
+        1 : ('count_rows_build', time_c - time_b),
+        2 : ('create_roads_build_tables', time_d - time_c),
+        3 : ('near_and_buffer', time_e - time_d)
+    }
+

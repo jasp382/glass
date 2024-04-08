@@ -158,7 +158,7 @@ def row_num(db, table, where=None, api='psql', dbset='default'):
     if not table.startswith('SELECT '):
         Q = f"SELECT COUNT(*) AS nrows FROM {table}{whr}"
     else:
-        Q = f"SELECT COUNT(*) AS nrows FROM ({table}) AS foo"
+        Q = f"SELECT COUNT(*) AS nrows FROM ({table}) AS foo{whr}"
     
     d = q_to_obj(db, Q, db_api=api, dbset=dbset)
     
@@ -176,9 +176,12 @@ def cols_name(dbname, table, sanitizeSpecialWords=True, api='psql', dbset='defau
     
     if api == 'psql':
         c = sqlcon(dbname, sqlAPI='psql', dbset=dbset)
+
+        tbl_d = table if not table.startswith('SELECT ') \
+            else f"({table}) AS fooo"
     
         cursor = c.cursor()
-        cursor.execute(f"SELECT * FROM {table} LIMIT 1;")
+        cursor.execute(f"SELECT * FROM {tbl_d} LIMIT 1;")
         colnames = [desc[0] for desc in cursor.description]
     
         if sanitizeSpecialWords:
@@ -235,6 +238,28 @@ def cols_type(dbname, table, sanitizeColName=True, pyType=True):
                 del coltypes[name]
     
     return coltypes
+
+
+def cols_type2(db, tbl):
+    """
+    Return types of columns in a PostgreSQL table
+    """
+
+    c = sqlcon(db)
+
+    cursor = c.cursor()
+
+    sql = """
+    SELECT column_name, udt_name 
+    FROM information_schema.columns
+    WHERE table_name = %s
+    ORDER BY ordinal_position;
+    """
+
+    cursor.execute(sql, (tbl,))
+    cols = cursor.fetchall()
+
+    return {t[0] : t[1] for t in cols}
 
 
 """

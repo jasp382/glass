@@ -16,11 +16,13 @@ def pnt_dfwxy_to_geodf(df, colX, colY, epsg):
     from shapely.geometry import Point
     
     geoms = [Point(xy) for xy in zip(df[colX], df[colY])]
-    df.drop([colX, colY], axis=1, inplace=True)
+    
     gdata = GeoDataFrame(
         df, crs=f'EPSG:{str(epsg)}',
         geometry=geoms
     )
+
+    gdata.drop([colX, colY], axis=1, inplace=True)
     
     return gdata
 

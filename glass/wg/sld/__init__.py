@@ -2,6 +2,8 @@
 Write SLD with Python
 """
 
+from glass.pys.Xml      import write_xml_tree
+
 
 def write_sld(attr_name, attr_colors, mapAttrKeys, sld_path,
               geometry=None, DATA='CATEGORICAL'):
@@ -67,7 +69,6 @@ def write_sld(attr_name, attr_colors, mapAttrKeys, sld_path,
     """
 
     import os
-    from glass.pys.Xml      import write_xml_tree
     from glass.pys.oss      import fprop
     from glass.wg.sld.rules import get_categorical_rules
     from glass.wg.sld.rules import get_quantitative_rules
@@ -281,4 +282,102 @@ def write_raster_sld(attrProp, outSld, dataType="CATEGORICAL"):
     write_xml_tree(sldTree, outSld, nodes_order=sldOrder)
     
     return outSld
+
+
+def write_composite_sld(red, green, blue, outSld):
+    """
+    Write an SLD for a raster that allows to combine bands
+    """
+
+    # SLD Basic Structure
+    sldRoot = (
+        "sld:StyledLayerDescriptor",
+        "xmlns", "http://www.opengis.net/sld",
+        "xmlns:sld", "http://www.opengis.net/sld",
+        "xmlns:gml", "http://www.opengis.net/gml",
+        "xmlns:ogc", "http://www.opengis.net/ogc",
+        "version", "1.0.0",
+    )
+
+    # Create SLD Tree
+    sldTree = {
+        sldRoot: {
+            "sld:NamedLayer": {
+                "sld:Name": "Default Styler",
+                "sld:UserStyle": {
+                    "sld:Name": "Default Styler",
+                    "sld:IsDefault": "1",
+                    "sld:FeatureTypeStyle": {
+                        "sld:Rule": {
+                            "sld:RasterSymbolizer": {
+                                "ChannelSelection": {
+                                    "RedChannel": {"SourceChannelName": str(red)},
+                                    "GreenChannel": {"SourceChannelName": str(green)},
+                                    "BlueChannel": {"SourceChannelName": str(blue)},
+                                }
+                            }
+                        }
+                    },
+                },
+            }
+        }
+    }
+
+    sldOrder = {
+        sldRoot                : ["sld:NamedLayer"],
+        "sld:NamedLayer"       : ["sld:Name", "sld:UserStyle"],
+        "sld:UserStyle"        : ["sld:Name", "sld:IsDefault", "sld:FeatureTypeStyle"],
+        "sld:FeatureTypeStyle" : ["sld:Rule"],
+        "sld:Rule"             : ["sld:RasterSymbolizer"],
+        "sld:RasterSymbolizer" : ["ChannelSelection"],
+        "ChannelSelection"     : ["RedChannel", "GreenChannel", "BlueChannel"],
+        "RedChannel"           : ["SourceChannelName"],
+        "GreenChannel"         : ["SourceChannelName"],
+        "BlueChannel"          : ["SourceChannelName"],
+    }
+
+    # Write SLD file
+    write_xml_tree(sldTree, outSld, nodes_order=sldOrder)
+
+    return outSld
+
+
+
+def random_sld(shp, col, out_sld, geom='Polygon'):
+    """
+    Generate SLD using random colors
+
+    TODO: only works for CATEGORICAL DATA
+    """
+
+    import numpy as np
+    import random
+
+    from glass.pys.clr import rgb_to_hex
+    from glass.rd.shp import shp_to_obj
+
+    df = shp_to_obj(shp)
+
+    val = list(np.unique(df[col]))
+
+    symb = [{
+        'cat' : v, 
+        'color' : rgb_to_hex(
+            random.randrange(255),
+            random.randrange(255), random.randrange(255)
+        ),
+        'opacity' : 0.95, 'stroke_h' : '#000000'
+    } for v in val]
+
+    ATTR_COLS = {
+        'hex' : 'color', 'category' : 'cat',
+        'opacity' : 'opacity', 'stroke_hex' : 'stroke_h'
+    }
+
+    write_sld(
+        col, symb, ATTR_COLS, out_sld,
+        geometry=geom, DATA="CATEGORICAL"
+    )
+
+    return out_sld
 

@@ -11,11 +11,11 @@ def distance_between_catpoints(srcShp, facilitiesShp, nd, speedLimitCol,
     """
     
     import os
-    from glass.pys.oss   import fprop
-    from glass.pys.tm import now_as_str
-    from glass.wenv.grs  import run_grass
-    from glass.dtt.mge    import shps_to_shp
-    from glass.prop.feat import feat_count
+    from glass.pys.oss  import fprop
+    from glass.pys.tm   import now_as_str
+    from glass.wenv.grs import grass_session
+    from glass.dtt.mge  import shps_to_shp
+    from glass.prop.shp import feat_count
     
     # Merge Source points and Facilities into the same Feature Class
     SRC_NFEAT      = feat_count(srcShp, gisApi='pandas')
@@ -29,20 +29,17 @@ def distance_between_catpoints(srcShp, facilitiesShp, nd, speedLimitCol,
     )
     
     # Open an GRASS GIS Session
-    gbase = run_grass(ws,location=loc, srs=nd)
-    
-    import grass.script.setup as gsetup
-    gsetup.init(gbase, ws, loc, 'PERMANENT')
+    gbase = grass_session(ws, loc=loc, srs=nd)
     
     # Import GRASS GIS Module
     from glass.it.shp          import shp_to_grs, grs_to_shp
     from glass.tbl.attr        import geomattr_to_db
-    from glass.dtt.cp.grs       import copy_insame_vector
+    from glass.dtt.cp.grs      import copy_insame_vector
     from glass.tbl             import category
     from glass.tbl.grs         import add_table, cols_calc
     from glass.mob.grstbx.vnet import network_from_arcs
-    from glass.mob.grstbx.vnet import add_pnts_to_network
-    from glass.mob.grstbx.vnet import netpath
+    from glass.mob.grstbx.vnet import pnts_to_net
+    from glass.mob.grstbx.anls import netpath
     
     # Add Data to GRASS GIS
     rdvMain = shp_to_grs(nd)
@@ -50,7 +47,7 @@ def distance_between_catpoints(srcShp, facilitiesShp, nd, speedLimitCol,
     
     """Get closest facility layer:"""
     # Connect Points to Network
-    newNetwork = add_pnts_to_network(rdvMain, pntShp, "rdv_points")
+    newNetwork = pnts_to_net(rdvMain, pntShp, "rdv_points")
     
     # Sanitize Network Table and Cost Columns
     newNetwork = category(

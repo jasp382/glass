@@ -22,21 +22,17 @@ def snap_points_to_near_line(lineShp, pointShp, epsg, workGrass,
         import os;          import numpy
         from geopandas      import GeoDataFrame
         from glass.pys.oss  import fprop
-        from glass.wenv.grs import run_grass
+        from glass.wenv.grs import grass_session
         from glass.rd.shp   import shp_to_obj
         from glass.wt.shp   import df_to_shp
     
         # Create GRASS GIS Location
-        grassBase = run_grass(workGrass, location=location, srs=epsg)
-    
-        import grass.script as grass
-        import grass.script.setup as gsetup
-        gsetup.init(grassBase, workGrass, location, 'PERMANENT')
+        grassBase = grass_session(workGrass, loc=location, srs=epsg)
     
         # Import some GRASS GIS tools
-        from glass.gp.prox      import grs_near as near
-        from glass.tbl.attr  import geomattr_to_db
-        from glass.it.shp import shp_to_grs, grs_to_shp
+        from glass.gp.prox  import grs_near as near
+        from glass.tbl.attr import geomattr_to_db
+        from glass.it.shp   import shp_to_grs, grs_to_shp
     
         # Import data into GRASS GIS
         grsLines = shp_to_grs(

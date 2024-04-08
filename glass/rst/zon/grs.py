@@ -60,12 +60,13 @@ def grs_rst_stats_by_feat(vec, rst, ncol, method, as_cmd=True):
 
     from glass.pys import obj_to_lst
 
+    rst    = obj_to_lst(rst)
     ncol   = obj_to_lst(ncol)
     method = obj_to_lst(method)
 
     if as_cmd:
         rcmd = execmd((
-            f"v.rast.stats map={vec} raster={rst} "
+            f"v.rast.stats map={vec} raster={','.join(rst)} "
             f"column_prefix={','.join(ncol)} "
             f" method={','.join(method)} -c --quiet"
         ))
@@ -74,7 +75,7 @@ def grs_rst_stats_by_feat(vec, rst, ncol, method, as_cmd=True):
         from grass.pygrass.modules import Module
 
         m = Module(
-            'v.rst.stats', map=vec, raster=rst, column_prefix=ncol,
+            'v.rast.stats', map=vec, raster=rst, column_prefix=ncol,
             method=method, flags='c', quiet=True, run_=False
         )
 

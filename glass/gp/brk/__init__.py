@@ -16,7 +16,7 @@ def shply_break_lines_on_points(lineShp, pointShp, lineIdInPntShp, splitedShp):
     from shapely.ops      import split
     from shapely.geometry import Point, LineString
     from glass.rd.shp     import shp_to_obj
-    from glass.pd.dagg    import col_list_val_to_row
+    from glass.dtt.pd.dagg    import col_list_val_to_row
     from glass.prop.prj   import shp_epsg
     from glass.wt.shp     import df_to_shp
     from glass.pd         import dict_to_df
@@ -129,18 +129,14 @@ def v_break_at_points(workspace, loc, lineShp, pntShp, db, srs, out_correct,
     import os
     from glass.it.db    import shp_to_psql
     from glass.it.shp   import dbtbl_to_shp
-    from glass.wenv.grs import run_grass
+    from glass.wenv.grs import grass_session
     from glass.pys.oss  import fprop
     from glass.sql.db   import create_pgdb
     from glass.sql.q    import q_to_ntbl
     
     tmpFiles = os.path.join(workspace, loc)
     
-    gbase = run_grass(workspace, location=loc, srs=srs)
-
-    import grass.script.setup as gsetup
-    
-    gsetup.init(gbase, workspace, loc, 'PERMANENT')
+    gbase = grass_session(workspace, loc=loc, srs=srs)
     
     from glass.it.shp import shp_to_grs, grs_to_shp
     
@@ -156,7 +152,7 @@ def v_break_at_points(workspace, loc, lineShp, pntShp, db, srs, out_correct,
     # Sanitize output of v.edit.break using PostGIS
     create_pgdb(db, overwrite=True)
     
-    lt = shp_to_psql(db, LINES, srs=srs, api="shp2pgsql")
+    lt = shp_to_psql(db, LINES, srs=srs, api="ogr2ogr")
     
     # Delete old/original lines and stay only with the breaked one
     Q = (
@@ -230,8 +226,8 @@ def break_lines_on_points(lineShp, pntShp, outShp, lnhidonpnt,
                 db = create_pgdb(db)
         
         # Send Data to BD
-        lnhTbl = shp_to_psql(db, lineShp, api="shp2pgsql")
-        pntTbl = shp_to_psql(db,  pntShp, api="shp2pgsql")
+        lnhTbl = shp_to_psql(db, lineShp, api="ogr2ogr")
+        pntTbl = shp_to_psql(db,  pntShp, api="ogr2ogr")
         
         # Get result
         outTbl = split_lines_on_pnt(

@@ -13,14 +13,14 @@ def osm_to_sqdb(osmXml, osmSQLITE):
         osmXml, osmSQLITE, gapi='ogr', spatialite=True)
 
 
-def osm_to_gpkg(osm, gpkg):
+def osm_to_gpkg(osm, gpkg, oepsg=None):
     """
     Convert OSM file to GeoPackage
     """
 
     from glass.it.shp import shp_to_shp
 
-    return shp_to_shp(osm, gpkg)
+    return shp_to_shp(osm, gpkg, oepsg=oepsg)
 
 
 def osm_to_featcls(xmlOsm, output, fileFormat='.shp', useXmlName=None,

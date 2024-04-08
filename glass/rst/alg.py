@@ -2,6 +2,7 @@
 Algebra tools
 """
 
+import os
 import numpy as np
 from osgeo import gdal
 
@@ -125,9 +126,9 @@ def rstcalc(expression, output, api='saga', grids=None):
         saga_to_tif(SAGA_RASTER, output)
     
     elif api == 'grass' or api == "pygrass":
-        from glass.wenv.grs import run_grass
+        from glass.wenv.grs import grass_session
         from glass.pys      import obj_to_lst
-        from glass.pys.tm import now_as_str
+        from glass.pys.tm   import now_as_str
         
         or_name = fprop(output, 'fn')
 
@@ -135,11 +136,7 @@ def rstcalc(expression, output, api='saga', grids=None):
 
         rsts = obj_to_lst(grids)
 
-        gb = run_grass(ws, grassBIN="grass78", location=loc, srs=rsts[0])
-
-        import grass.script.setup as gsetup
-
-        gsetup.init(gb, ws, loc, 'PERMANENT')
+        gb = grass_session(ws, loc=loc, srs=rsts[0])
 
         from glass.it.rst import rst_to_grs, grs_to_rst
 
@@ -153,7 +150,7 @@ def rstcalc(expression, output, api='saga', grids=None):
         )
 
         # Export
-        grs_to_rst(or_name, output, as_cmd=None, rtype=float)
+        grs_to_rst(or_name, output, as_cmd=None, dtype="Float32")
     
     else:
         raise ValueError(f"{api} is not available!")
@@ -193,4 +190,54 @@ def repnd_by_rstval(ref_rst, val_rst, out_rst):
     )
 
     return out_rst
+
+
+
+def cells_with_changes_to_null(folder, orst, ndval=0, rst_format='.tif'):
+    """
+    Cells with different values in different rasters
+    are converted to NULl
+    """
+
+    from glass.pys.oss  import lst_ff
+    from glass.pys.tm   import now_as_str
+    from glass.wenv.grs import grass_session
+    from glass.it.rst   import rst_to_grs, grs_to_rst
+    #from glass.rst.alg import grsrstcalc
+    from glass.prop.rst import rst_dtype
+
+    # List rasters in folder
+    irsts = lst_ff(folder, file_format=rst_format)
+
+    # Get Rasters Data type
+    dtype = np.dtype(rst_dtype(irsts[0]))
+
+    # Create GRASS GIS Location
+    ws = os.path.dirname(orst)
+    loc = f"loc_{now_as_str(utc=True)}"
+    gb = grass_session(ws, loc=loc, srs=irsts[0])
+
+    # Import data to GRASS GIS
+    grst = [rst_to_grs(r) for r in irsts]
+
+    # ID Null Cells
+    expres = []
+
+    for i in range(len(grst)):
+        if not i:
+            expres.append(grst[i])
+            continue
+
+        exp = f'if({grst[i-1]} == {grst[i]}, {grst[i]}, null())'
+
+        tres = grsrstcalc(exp, f'res_{str(i)}')
+
+        expres.append(tres)
+
+    fres = expres[-1]
+
+    # Export result
+    grs_to_rst(fres, orst, dtype=dtype.name, nodata=ndval)
+
+    return orst
 

@@ -4,8 +4,10 @@ Open Route Service constants
 
 MAIN_URL = "https://api.openrouteservice.org/v2/"
 
+ISOCHRONES_URL = 'https://api.openrouteservice.org/v2/isochrones/'
 
-def get_ors_token():
+
+def ors_token():
     """
     Return Open Route Service Token
     """
@@ -17,5 +19,5 @@ def get_ors_token():
         'api-keys.json'
     ), 'r'))
 
-    return d["OPEN_ROUTE_SERVICE"]
+    return d["ORS"]
 

@@ -2,6 +2,10 @@
 Generalization tools using SpatiaLite or PostGIS
 """
 
+from glass.prop.sql import cols_name
+from glass.pys import obj_to_lst
+
+
 def st_dissolve(db, table, geomcol, outTable, whrClause=None,
                 diss_cols=None, outTblIsFile=None,
                 valascol=None, olyr=None,
@@ -14,8 +18,6 @@ def st_dissolve(db, table, geomcol, outTable, whrClause=None,
     * sqlite
     * psql
     """
-    
-    from glass.pys import obj_to_lst
     
     diss_cols = obj_to_lst(diss_cols) if diss_cols else None
     sel_cols = "" if not diss_cols else f' {", ".join(diss_cols)},'
@@ -35,7 +37,7 @@ def st_dissolve(db, table, geomcol, outTable, whrClause=None,
     dumpe = ")).geom" if not multipart else ""
     
     sql = (
-        f"SELECT{sel_cols}{excols} "
+        f"SELECT ROW_NUMBER() OVER(ORDER BY (SELECT NULL)) AS tfid,{sel_cols}{excols} "
         f"{dumps}ST_UnaryUnion(ST_Collect({geomcol})){dumpe} AS {gout} "
         f"FROM {table}{whr}{gby}"
     )
@@ -64,4 +66,119 @@ def st_dissolve(db, table, geomcol, outTable, whrClause=None,
         )
     
     return outTable
+
+
+
+def st_diss_adjacentpoly(db, tbl, pk, geom, otbl=None, areathreshold=1000,
+                         dissrule='length', cols=None, multipart=True):
+    """
+    Dissolve adjacent polygons
+
+    Polygons above the thereshold not touching with other polygons
+    are removed
+    """
+
+    from glass.sql.q import q_to_ntbl, exec_write_q
+    from glass.prop.sql import cols_type2, check_last_id
+
+    _cols = obj_to_lst(cols) if cols else cols_name(db, tbl, api='psql')
+
+    jcols = ", ".join([c for c in _cols if c != pk and c != geom])
+
+    tcols = ", ".join([f"j.{c}" for c in _cols if c != pk and c != geom])
+
+    foo = ", ".join([f"foo.{c}" for c in _cols if c != pk and c != geom])
+
+    foo2 = ", ".join([f"foo2.{c}" for c in _cols if c != pk and c != geom])
+    foo3 = ", ".join([f"foo3.{c}" for c in _cols if c != pk and c != geom])
+
+    tblcolstype = cols_type2(db, tbl)
+
+    smallcols = [f"NULL::{tblcolstype[c]} AS {c}" for c in _cols if c!= pk and c != geom]
+
+    lastid = check_last_id(db, pk, tbl)
+
+    whr_rule = "foo.lenval = foo.lenmax" if dissrule == 'length' else \
+        "foo.toucharea = foo.tareamax"
+
+    # Aggregate small polygons
+    small = (
+        f"SELECT ROW_NUMBER() OVER(ORDER BY {geom}) AS {pk}, "
+        f'{", ".join(smallcols)}, '
+        f"ST_UnaryUnion(small.{geom}) AS geom "
+        "FROM ("
+            f"SELECT unnest(ST_ClusterIntersecting({geom})) AS {geom} "
+            "FROM ("
+                f"SELECT {geom} FROM {tbl} "
+                f"WHERE ST_Area({geom}) < {str(areathreshold)}"
+            ") AS tsm"
+        ") AS small "
+        f"GROUP BY small.{geom}"
+    )
+
+    mpoly = (
+        f"SELECT {pk}, {jcols}, {geom} "
+        f"FROM {tbl} "
+        f"WHERE ST_Area({geom}) > {str(areathreshold)}"
+    )
+
+    touchq = (
+        f"SELECT t.{pk} AS oldpk, j.{pk}, {tcols}, "
+        f"ST_Length(ST_Intersection(t.{geom}, j.{geom})) AS lenval, "
+        f"MAX(ST_Length(ST_Intersection(t.{geom}, j.{geom}))) "
+            f"OVER(PARTITION BY t.{pk} ORDER BY t.{pk}) AS lenmax, "
+        f"ST_Area(j.{geom}) AS toucharea, "
+        f"MAX(ST_Area(j.{geom})) "
+            f"OVER(PARTITION BY t.{pk} ORDER BY t.{pk}) AS tareamax, "
+        f"t.{geom} "
+        f"FROM ("
+            f"SELECT sml.{pk}, sml.{geom} FROM ({small}) AS sml "
+            f"WHERE ST_Area(sml.{geom}) < {str(areathreshold)}"
+        ") AS t "
+        f"LEFT JOIN ({mpoly}) AS j "
+        f"ON ST_Touches(t.{geom}, j.{geom}) "
+        f"WHERE ST_Length(ST_Intersection(t.{geom}, j.{geom})) IS NOT NULL"
+    )
+
+    mq = (
+        f"SELECT {pk}, {foo2}, "
+        f"ST_UnaryUnion(ST_Collect(foo2.{geom})) AS {geom} "
+        f"FROM ("
+            f"{mpoly} "
+            "UNION ALL "
+            f"SELECT foo.{pk}, {foo}, foo.{geom} "
+            f"FROM ({touchq}) AS foo "
+            f"WHERE {whr_rule} "
+            "UNION ALL "
+            f"SELECT {str(lastid)} + foo3.{pk} AS {pk}, {foo3}, foo3.{geom} "
+            f"FROM ({small}) AS foo3 "
+            f"WHERE ST_Area(foo3.{geom}) > {str(areathreshold)}"
+        ") AS foo2 "
+        f"GROUP BY {pk}, {foo2}"
+    )
+
+    if not multipart:
+        _mq = (
+            f"SELECT ROW_NUMBER() OVER(ORDER BY {pk}) AS {pk}, "
+            f"(ST_Dump({geom})).geom AS {geom} "
+            f"FROM ({mq}) AS foo3"
+        )
+    
+    else:
+        _mq = mq
+
+    if otbl:
+        ntbl = q_to_ntbl(db, otbl, _mq, api='psql')
+
+        exec_write_q(db, [(
+            f"ALTER TABLE {ntbl} ADD CONSTRAINT "
+            f"{ntbl}_pk PRIMARY KEY ({pk})"
+        ), (
+            f"CREATE INDEX {ntbl}_geom_idx ON "
+            f"{ntbl} USING gist ({geom})"
+        )], api='psql')
+
+        return otbl
+
+    return mq
 

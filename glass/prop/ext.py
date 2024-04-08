@@ -89,10 +89,12 @@ def featext_to_dfcols(df, geomCol):
     )
 
 
-def get_dfext(df, geomCol):
+def get_dfext(df, geomCol="geometry"):
     """
     Add minx, miny, maxx, maxy to dataframe
     """
+
+    geomCol = "geometry" if not geomCol else geomCol
 
     ndf = featext_to_dfcols(df, geomCol)
 

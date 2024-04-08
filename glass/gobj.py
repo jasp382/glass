@@ -1,7 +1,5 @@
 from osgeo import ogr
 
-#from django.contrib.gis.geos import GEOSGeometry
-
 from glass.prj.obj import prj_ogrgeom
 
 """
@@ -84,12 +82,16 @@ def polygon_to_multipolygon(wkt):
     return ngeom if not ngeom else ngeom.wkt
 
 
-def gext_to_polygon(wkt):
+def gext_to_polygon(igeom, outiswkt=True):
     """
     Geometry bounding box to Polygon
     """
 
-    g = ogr.CreateGeometryFromWkt(wkt)
+    if type(igeom) == str:
+        g = ogr.CreateGeometryFromWkt(igeom)
+    
+    else:
+        g = igeom
 
     left, right, bottom, top = g.GetEnvelope()
 
@@ -101,13 +103,15 @@ def gext_to_polygon(wkt):
         (left, top)
     ], api='ogr')
 
-    return ext_geom.ExportToWkt()
+    return ext_geom.ExportToWkt() if outiswkt else ext_geom
 
 
 def get_centroid(wkt, epsg=None, reprj=None, rgeos=None):
     """
     Get Geometry Centroid
     """
+
+    from django.contrib.gis.geos import GEOSGeometry
 
     geom = wkt_to_geom(wkt)
 
@@ -142,6 +146,8 @@ def wkt_sanitize(wkt, epsg=None, reprj=None, rgeos=None):
     """
     Sanitize Geometries - Make it good to django models
     """
+
+    from django.contrib.gis.geos import GEOSGeometry
 
     geom = wkt_to_geom(wkt)
 

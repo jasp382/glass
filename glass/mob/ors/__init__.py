@@ -3,9 +3,10 @@ Open Route Service Related
 """
 
 import requests as rq
+import json
 
 from glass.cons.ors import MAIN_URL
-from glass.cons.ors import get_ors_token
+from glass.cons.ors import ors_token
 from glass.pys.web import http_to_json
 
 
@@ -44,7 +45,7 @@ def directions(lat_o, lng_o, lat_d, lng_d, modeTransportation='foot-walking'):
     DOC: https://openrouteservice.org/documentation/#/authentication/UserSecurity
     """
 
-    key = get_ors_token()
+    key = ors_token()
     
     URL = (
         f"{MAIN_URL}directions?api_key={key}&"
@@ -58,9 +59,8 @@ def directions(lat_o, lng_o, lat_d, lng_d, modeTransportation='foot-walking'):
     return data
 
 
-def isochrones(locations, range, range_type='time',
-               modeTransportation='foot-walking',
-               intervals=None, useKey=None):
+def isochrones(locations, range, interval,
+               modeTransportation='foot-walking', range_type='time'):
     """
     Obtain areas of reachability from given locations
     
@@ -72,27 +72,35 @@ def isochrones(locations, range, range_type='time',
     to obtain a more detailed reachability area response.
     """
 
-    key = get_ors_token()
+    from glass.cons.ors import ISOCHRONES_URL
+
+    key = ors_token()
+
+    range_type = 'time' if range_type != 'time' and \
+        range_type != 'distance' else range_type
     
-    url_intervals = f"&interval={str(intervals)}" if intervals \
-        else ""
+    headers = {
+        'Accept'        : 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8',
+        'Authorization' : key,
+        'Content-Type'  : 'application/json; charset=utf-8'
+    }
+
+    furl = f"{ISOCHRONES_URL}{modeTransportation}"
+
+    body = {
+        "locations"  : locations,
+        "range"      : range if type(range) == list else [range],
+        "interval"   : interval,
+        "range_type" : range_type
+    }
+
+    #print(body)
+    print(furl)
     
-    API_KEY_TO_USE = key if not useKey else useKey
+    rsp = rq.post(furl, json=body, headers=headers)
     
-    URL = (
-        "{_url_}isochrones?api_key={apik}&"
-        "locations={loc}&profile={transport}&range_type={rng_type}&"
-        "range={rng}{_int}"
-    ).format(
-        _url_=MAIN_URL, apik=API_KEY_TO_USE,
-        loc=locations, transport=modeTransportation,
-        rng_type=range_type, rng=range,
-        _int=url_intervals
-    )
-    
-    data = http_to_json(URL)
-    
-    return data
+    return rsp
+
 
 def isochrones_to_file(locations, range, outFile,
                modeTransportation='foot-walking',
@@ -118,7 +126,7 @@ def matrix_od(locations, idx_src="all", idx_dest="all",
     Execute Matrix Service
     """
     
-    key = get_ors_token()
+    key = ors_token()
 
     body = {
         "locations"    : locations,
@@ -199,7 +207,7 @@ def servarea_from_points(pntShp, inEPSG, range, outShp,
     from glass.rd         import tbl_to_obj
     from glass.pd.split   import df_split
     from glass.dtt.mge.pd import merge_df
-    from glass.prop.feat  import get_gtype
+    from glass.prop.shp   import get_gtype
     from glass.prj        import proj
     from glass.pd         import df_to_dict
     from glass.wt.shp     import df_to_shp
@@ -293,7 +301,7 @@ def cost_od(shpOrigins, shpDestinations, epsgOrigins, epsgDestinations,
     from glass.tbl.col    import pointxy_to_cols
     from glass.prj        import proj
     from glass.dtt.mge.pd import merge_df
-    from glass.prop.feat  import get_gtype
+    from glass.prop.shp   import get_gtype
     from glass.wt         import obj_to_tbl
     
     origensDf = tbl_to_obj(     shpOrigins)

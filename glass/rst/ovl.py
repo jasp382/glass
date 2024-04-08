@@ -50,7 +50,7 @@ def grscliprst(in_rst, clip_ext, outrst):
 
     import os
     from glass.pys.oss    import fprop
-    from glass.wenv.grs import run_grass
+    from glass.wenv.grs import grass_session
     from glass.wenv.grs import rst_to_region
     from glass.prop.prj import get_epsg
 
@@ -66,11 +66,7 @@ def grscliprst(in_rst, clip_ext, outrst):
     loc = 'loc_' + fprop(outrst, 'fn')
 
     # Create GRASS GIS Session
-    gbase = run_grass(workspace, location=loc, srs=EPSG)
-
-    import grass.script.setup as gsetup
-
-    gsetup.init(gbase, workspace, loc, 'PERMANENT')
+    gbase = grass_session(workspace, loc=loc, srs=EPSG)
 
     # GRASS GIS modules
     from glass.it.rst import rst_to_grs, grs_to_rst, grs_to_mask

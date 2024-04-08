@@ -4,24 +4,15 @@ Copy data
 
 import arcpy
 
-def copy_feat(inshp, outshp):
-    """
-    Copy features
-    """
-
-    arcpy.management.CopyFeatures(inshp, outshp)
-
-    return outshp
-
 
 def merge(lst, outShp):
     """
     Merge Feature Classes into one
     """
+
+    mlyr = arcpy.management.Merge(lst, outShp, "", "ADD_SOURCE_INFO")
     
-    arcpy.Merge_management(';'.join(lst), outShp)
-    
-    return outShp
+    return outShp, mlyr
 
 
 def append(inShp, targetShp):
@@ -44,8 +35,8 @@ def del_empty_files(folder, file_format):
     0 features
     """
     
-    from glass.pys.oss   import lst_ff
-    from glass.prop.feat import feat_count
+    from glass.pys.oss  import lst_ff
+    from glass.prop.shp import feat_count
     
     fc = lst_ff(folder, file_format=file_format)
     

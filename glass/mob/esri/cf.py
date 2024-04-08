@@ -19,7 +19,7 @@ from glass.pd.split   import df_split
 from glass.wt.js      import dict_to_json
 from glass.wt.shp     import df_to_shp
 from glass.dtt.mge.pd import merge_df
-from glass.prop.prj   import shp_epsg
+from glass.prop.prj   import df_epsg, shp_epsg
 from glass.it.pd      import df_to_geodf
 from glass.it.pd      import json_obj_to_geodf
 
@@ -41,9 +41,12 @@ def closest_facility(incidents, incidents_id, facilities, output,
     fdf = shp_to_obj(facilities) if type(facilities) != gp.GeoDataFrame else facilities
     idf = shp_to_obj(incidents) if type(incidents) != gp.GeoDataFrame else incidents
 
+    # Get original EPSG
+    ocrs = df_prj(fdf)
+
     # Re-project to WGS84
-    fdf = df_prj(fdf, 4326)
-    idf = df_prj(idf, 4326)
+    #fdf = df_prj(fdf, 4326)
+    #idf = df_prj(idf, 4326)
 
     # Geometries to Str - inputs for requests
     fdf['coords'] = fdf.geometry.x.astype(str) + ',' + fdf.geometry.y.astype(str)
@@ -181,10 +184,10 @@ def closest_facility(incidents, incidents_id, facilities, output,
     fgdf.drop([iauxid, 'rn'], axis=1, inplace=True)
 
     # Re-project to original SRS
-    epsg = crs if crs else shp_epsg(facilities) \
-        if type(facilities) != gp.GeoDataFrame else 4326
+    epsg = crs if crs else ocrs
     
-    fgdf = df_prj(fgdf, epsg)
+    if epsg != 4326:
+        fgdf = df_prj(fgdf, epsg)
 
     # Export result
     df_to_shp(fgdf, output)

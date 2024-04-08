@@ -2,7 +2,15 @@
 Text Classification
 """
 
-def txt_to_num_representation(df, txtCol, __lang, returnTfiDf=None):
+import re
+
+def osm_tokenizer(s):
+    # divide por = ; : / - _ . , | e espaços ; retorna tokens lowercase
+    tokens = re.split(r'[=\s;:/\-\._\|,]+', str(s))
+    return [t.lower() for t in tokens if t]
+
+
+def txt_to_num_representation(df, txtCol, __lang, returnTfiDf=None, osm_use_case=None):
     """
     Sanitize text representation
 
@@ -24,12 +32,26 @@ def txt_to_num_representation(df, txtCol, __lang, returnTfiDf=None):
     """
     
     from sklearn.feature_extraction.text import TfidfVectorizer
+
+    if not osm_use_case:
     
-    tfidf = TfidfVectorizer(
-        sublinear_tf=True, min_df=5,
-        norm='l2', encoding='latin-1',
-        ngram_range=(1,2), stop_words=__lang
-    )
+        tfidf = TfidfVectorizer(
+            sublinear_tf=True, min_df=5,
+            norm='l2', encoding='latin-1',
+            ngram_range=(1,2), stop_words=__lang
+        )
+    
+    else:
+        tfidf = TfidfVectorizer(
+            tokenizer=osm_tokenizer,
+            ngram_range=(1, 2),
+            min_df=2,
+            max_df=0.95,
+            sublinear_tf=True,
+            use_idf=True,
+            norm='l2',
+            lowercase=True
+        )
     
     features = tfidf.fit_transform(df[txtCol]).toarray()
     

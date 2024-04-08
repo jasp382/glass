@@ -50,3 +50,10 @@ def rst_epsg(img, isproj=None):
                 return epsg, True
         else:
             return epsg, None
+
+
+def img_geoprop(rstsrc):
+    left, cellx, z, top, c, celly = rstsrc.GetGeoTransform()
+
+    return left, cellx, top, celly
+

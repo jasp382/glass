@@ -55,10 +55,13 @@ def get_categorical_rules(attr_val_color, attr_name, geometry, map_keys):
     for cls in attr_val_color:
         # Get Color, Stroke color, Stroke Width Opacity
         __hex, __stroke, __width, __opacity = style_prop(cls, map_keys)
+
+        title = str(cls[map_keys['label']]) if 'label' in map_keys \
+            else str(cls[map_keys['category']])
         
         sldRules[(nr_rules, 'sld:Rule')] = {
-            'sld:Name'   : 'rule{}'.format(str(nr_rules)),
-            'sld:Title'  : str(cls[map_keys['category']]),
+            'sld:Name'   : f'rule{str(nr_rules)}',
+            'sld:Title'  : title,
             'ogc:Filter' : {
                 'ogc:PropertyIsEqualTo' : {
                     'ogc:PropertyName': str(attr_name),
@@ -102,10 +105,10 @@ def get_quantitative_rules(colorIntervals, attr_name, geometry, map_keys):
 
         # Create rule tree
         sldRules[(nr_rules, 'sld:Rule')] = {
-            'sld:Name'   : 'rule{}'.format(str(nr_rules)),
-            'sld:Title'  : '{}..{}'.format(
-                str(cls[map_keys['interval_min']]),
-                str(cls[map_keys['interval_max']])
+            'sld:Name'   : f'rule{str(nr_rules)}',
+            'sld:Title'  : (
+                f'{str(cls[map_keys["interval_min"]])}..'
+                f'{str(cls[map_keys["interval_max"]])}'
             ),
             'ogc:Filter' : {
                 'ogc:And' : {
@@ -132,7 +135,7 @@ def get_quantitative_rules(colorIntervals, attr_name, geometry, map_keys):
         nr_rules += 1
     
     sldRules[(nr_rules, 'sld:Rule')] = {
-        'sld:Name'   : 'rule{}'.format(str(nr_rules)),
+        'sld:Name'   : f'rule{str(nr_rules)}',
         'sld:Title'  : 'minimum',
         'ogc:Filter' : {
             'ogc:PropertyIsEqualTo' : {

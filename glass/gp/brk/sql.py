@@ -18,27 +18,24 @@ def split_lines_on_pnt(db, inTbl, pntTbl, outTbl, idlnhPnt,
     
     # Force MultiLineString to LineString
     sanQ = (
-        "SELECT {lid}, {cln}, (ST_Dump(geom)).geom AS geom "
-        "FROM {t}) AS mtbl"
-    ).format(lid=lnhid, cln=cols, t=inTbl)
+        f"SELECT {lnhid}, {cols}, (ST_Dump(geom)).geom AS geom "
+        f"FROM {inTbl}) AS mtbl"
+    )
     
     # Split Query
     Q = (
-        "SELECT {lid}, {cln}, (ST_Dump(geom)).geom AS geom FROM ("
-            "SELECT mtbl.{lid}, {cln}, "
-            "CASE "
-                "WHEN jtbl.{pid} IS NULL THEN mtbl.geom "
+        f"SELECT {lnhid}, {cols}, (ST_Dump(geom)).geom AS geom FROM ("
+            f"SELECT mtbl.{lnhid}, {cols}, "
+            f"CASE "
+                f"WHEN jtbl.{idlnhPnt} IS NULL THEN mtbl.geom "
                 "ELSE ST_Split(mtbl.geom, jtbl.geom) "
             "END AS geom "
-            "FROM {lnh_tbl} LEFT JOIN ("
-                "SELECT {pid}, ST_Collect(geom) AS geom "
-                "FROM {pnt_tbl} "
-                "GROUP BY {pid}"
-            ") AS jtbl on mtbl.{lid} = jtbl.{pid}"
+            f"FROM {sanQ} LEFT JOIN ("
+                f"SELECT {idlnhPnt}, ST_Collect(geom) AS geom "
+                f"FROM {pntTbl} "
+                f"GROUP BY {idlnhPnt}"
+            f") AS jtbl on mtbl.{lnhid} = jtbl.{idlnhPnt}"
         ") AS foo"
-    ).format(
-        lid=lnhid, cln=cols, pid=idlnhPnt,
-        lnh_tbl=sanQ, pnt_tbl=pntTbl
     )
     
     # Produce new table and return it

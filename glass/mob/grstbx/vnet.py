@@ -44,12 +44,12 @@ def network_from_arcs(networkFC, networkOUT):
     return networkOUT
 
 
-def pnts_to_net(network, pntLyr, outNetwork, __threshold=200, asCMD=None):
+def pnts_to_net(network, pntLyr, outNetwork, __threshold=200, ascmd=None):
     """
     Connect points to GRASS GIS Network
     """
     
-    if not asCMD:
+    if not ascmd:
         from grass.pygrass.modules import Module
     
         m = Module(
@@ -63,9 +63,10 @@ def pnts_to_net(network, pntLyr, outNetwork, __threshold=200, asCMD=None):
         from glass.pys import execmd
         
         rcmd = execmd((
-            "v.net input={} points={} operation=connect threshold={} "
-            "output={} --overwrite --quiet"
-        ).format(network, pntLyr, __threshold, outNetwork))
+            f"v.net input={network} points={pntLyr} operation=connect "
+            f"threshold={__threshold} "
+            f"output={outNetwork} --overwrite --quiet"
+        ))
     
     return outNetwork
 

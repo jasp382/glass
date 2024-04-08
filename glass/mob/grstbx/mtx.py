@@ -20,7 +20,7 @@ def prod_matrix(origins, destinations, networkGrs, speedLimitCol, onewayCol,
     from glass.dtt.cp.grs      import copy_insame_vector
     from glass.tbl.attr        import geomattr_to_db
     from glass.dtt.mge         import shps_to_shp
-    from glass.prop.feat       import feat_count
+    from glass.prop.shp        import feat_count
     from glass.it.shp          import shp_to_grs
     
     # Merge Origins and Destinations into the same Feature Class
@@ -125,16 +125,12 @@ def matrix_od(origins, destinations, rdv, speedLimitCol, onewayCol,
     """
     
     from glass.pys.oss  import fprop
-    from glass.wenv.grs import run_grass
+    from glass.wenv.grs import grass_session
 
     ws, loc = os.path.dirname(oshp), f"loc_{fprop(oshp, 'fn')}"
     
     # Open an GRASS GIS Session
-    gbase = run_grass(ws, location=loc, srs=rdv)
-    
-    import grass.script.setup as gsetup
-    
-    gsetup.init(gbase, ws, loc, 'PERMANENT')
+    gbase = grass_session(ws, loc=loc, srs=rdv)
     
     # Import GRASS GIS Module
     from glass.it.shp import shp_to_grs, grs_to_shp
@@ -161,7 +157,7 @@ def thrd_matrix_od(origins, destinationShp, network, costCol, oneway, output):
     """
     
     from threading      import Thread
-    from glass.wenv.grs import run_grass
+    from glass.wenv.grs import grass_session
     from glass.pys.oss  import fprop, mkdir
     from glass.dtt.mge   import shps_to_shp
     from glass.dtt.split import splitShp_by_range
@@ -174,11 +170,7 @@ def thrd_matrix_od(origins, destinationShp, network, costCol, oneway, output):
     
     originsList = splitShp_by_range(origins, 100, originsFld)
     
-    gbase = run_grass(ws, location=loc, srs=network)
-    
-    import grass.script.setup as gsetup
-    
-    gsetup.init(gbase, ws, loc, 'PERMANENT')
+    gbase = grass_session(ws, loc=loc, srs=network)
     
     from glass.it.shp import shp_to_grs
 
@@ -225,8 +217,8 @@ def bash_matrix_od(origins, destinationShp, network, costCol, oneway,
     Produce matrix OD using GRASS GIS - BASH MODE
     """
     
-    from glass.wenv.grs import run_grass
-    from glass.pys.oss  import fprop, mkdir
+    from glass.wenv.grs  import grass_session
+    from glass.pys.oss   import fprop, mkdir
     from glass.dtt.split import splitShp_by_range
     from glass.dtt.mge   import shps_to_shp
     
@@ -235,18 +227,15 @@ def bash_matrix_od(origins, destinationShp, network, costCol, oneway,
     
     originsList = splitShp_by_range(origins, 100, originsFld)
     
-    # Open an GRASS GIS Session
-    gbase = run_grass(grsWork, location='location', srs=network)
-
-    import grass.script.setup as gsetup
-    
     RESULTS = []
     R_FOLDER = mkdir(os.path.join(grsWork, 'res_parts'))
     
     for e in range(len(originsList)):
-        gsetup.init(gbase, grsWork, f"grs_loc_{e}", 'PERMANENT')
-        
-        from glass.it.shp import shp_to_grs, grs_to_shp
+        # Open an GRASS GIS Session
+        gbase = grass_session(grsWork, loc=f'grs_loc_{e}', srs=network)
+
+        if not e:
+            from glass.it.shp import shp_to_grs, grs_to_shp
     
         # Add Data to GRASS GIS
         rdvMain = shp_to_grs(network, fprop(

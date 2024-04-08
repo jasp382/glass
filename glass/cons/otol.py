@@ -5,6 +5,7 @@ OSM2LULC constants
 import os
 
 import json as js
+import pandas as pd
 
 from glass.sql.q import q_to_obj
 
@@ -156,6 +157,35 @@ def module_osmtags(nomid):
     return q_to_obj(OSM2LULC_DB, q, db_api='sqlite')
 
 
+def tags_module2_and5(nomslug: str) -> pd.DataFrame:
+    """
+    Return OSM tags of module 2 and 5
+    Return also buffer distances
+
+    return:::
+    pd.DataFrame
+    osm_key | osm_value | buffer_dist
+    """
+
+    q = (
+        "SELECT clsosm.key AS osm_key, clsosm.value AS osm_value, "
+        "clsosm.buffer_dist AS bfdist " 
+        "FROM lulc_classes AS lcls "
+        "LEFT JOIN nomenclatures AS nom "
+        "ON lcls.nomenclature = nom.fid "
+        "LEFT JOIN ("
+            "SELECT * "
+            "FROM class_osm "
+            "LEFT JOIN osm_features "
+            "ON class_osm.osm_id = osm_features.id"
+        ") AS clsosm "
+        "ON lcls.fid = clsosm.lulc_id "
+        f"WHERE nom.slug = '{nomslug}' AND (clsosm.module = 2 OR clsosm.module = 5)"
+    )
+
+    return q_to_obj(OSM2LULC_DB, q, db_api='sqlite')
+
+
 def get_legend(nomenclature, fid_col='fid', leg_col='leg'):
     """
     Return legend
@@ -174,4 +204,31 @@ def get_legend(nomenclature, fid_col='fid', leg_col='leg'):
     ), db_api='sqlite')
 
     return leg
+
+
+
+def osm_feat_bylulc_class(nomenclature):
+    """
+    Retrieve OSM features by class of a specific nomenclature
+    """
+
+    q = (
+        "SELECT lulc.fid, lulc.code, lulc.name, lulc.level, "
+        "osmfeat.osm_id, osmfeat.key AS osm_key, osmfeat.value AS osm_value, osmfeat.geom "
+        "FROM lulc_classes AS lulc "
+        "LEFT JOIN nomenclatures AS nom "
+        "ON lulc.nomenclature = nom.fid "
+        "INNER JOIN ("
+	        "SELECT cosm.osm_id, cosm.lulc_id, osmf.* "
+	        "FROM class_osm AS cosm "
+	        "INNER JOIN osm_features AS osmf "
+	        "ON cosm.osm_id = osmf.id"
+        ") AS osmfeat "
+        "ON lulc.fid = osmfeat.lulc_id "
+        f"WHERE nom.slug='{nomenclature}'"
+    )
+
+    res = q_to_obj(OSM2LULC_DB, q, db_api='sqlite')
+
+    return res
 
