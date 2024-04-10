@@ -60,6 +60,21 @@ def sel_by_attr(inShp, sql, outShp, geomType="area", lyrN=1, api_gis='ogr',
             f"where={sql} output={outShp} --overwrite --quiet"
         ))
     
+    elif api_gis == 'qgis':
+        """
+        Use native:extractbyexpression available on QGIS
+        """
+
+        from qgis import processing
+
+        params = {
+            'INPUT'      : inShp,
+            'EXPRESSION' : sql,
+            'OUTPUT'     : outShp
+        }
+
+        processing.run("native:extractbyexpression", params)
+    
     else:
         raise ValueError(f'API {api_gis} is not available')
     

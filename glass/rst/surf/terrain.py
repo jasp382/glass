@@ -275,7 +275,7 @@ def thrd_dem(countours_folder, ref_folder, dem_folder, attr,
     # Delete rows when dem already exists
     def check_dem_exists(row):
         # Get DEM name
-        dem_f = 'dem_{}{}'.format(str(row.fid), demFormat)
+        dem_f = f'dem_{str(row.fid)}{demFormat}'
         
         row['exists'] = 1 if dem_f in dems else 0
         
@@ -292,11 +292,11 @@ def thrd_dem(countours_folder, ref_folder, dem_folder, attr,
     def prod_dem(_df):
         for idx, row in _df.iterrows():
             # Get DEM name
-            dem_f = 'dem_{}{}'.format(str(row.fid), demFormat)
+            dem_f = f'dem_{str(row.fid)}{demFormat}'
 
             # Get GRASS GIS Workspace
             gw = mkdir(os.path.join(
-                ref_folder, 'gw_{}'.format(str(row.fid))
+                ref_folder, f'gw_{str(row.fid)}'
             ), overwrite=True)
             
             # Get mask
@@ -312,7 +312,7 @@ def thrd_dem(countours_folder, ref_folder, dem_folder, attr,
     
     # Produce DEM
     thrds = [mp.Process(
-        target=prod_dem, name='th-{}'.format(str(i+1)),
+        target=prod_dem, name=f'th-{str(i+1)}',
         args=(dfs[i],)
     ) for i in range(len(dfs))]
 
@@ -321,4 +321,63 @@ def thrd_dem(countours_folder, ref_folder, dem_folder, attr,
     
     for t in thrds:
         t.join()
+
+
+
+def geomorphometry(dem, out, meth='geomorphon'):
+    """
+    Geomorphometry
+
+    Geomorphometry is the quantitative analysis of topography. Geomorphometric analyses include slope, aspect, 
+    curvature, topographic indices, and landforms. GRASS GIS includes many modules and addons 
+    for geomorphometric analysis including:
+    
+    
+    r.param.scale
+    r.slope.aspect
+    r.geomorphon
+    r.topidx
+    r.convergence
+    r.terrain.texture
+    r.vector.ruggedness
+    r.northerness.easterness
+    """
+
+    from glass.rst.surf.grs import paramscale, geomorphon
+    from glass.pys.oss import fprop
+    from glass.pys.tm import now_as_str
+    from glass.wenv.grs import run_grass
+    from glass.it.rst   import rst_to_grs, grs_to_rst
+
+    meths = ['geomorphon', 'paramscale']
+
+    meth = 'geomorphon' if meth not in meths else meth
+
+    ws, loc = os.path.dirname(out), now_as_str(utc=True)
+
+    # Create GRASS GIS session
+    gb = run_grass(ws, location=loc, srs=dem)
+
+    import grass.script.setup as gsetup
+    gsetup.init(gb, ws, loc, 'PERMANENT')
+
+    # import dem
+    gdem = rst_to_grs(dem)
+
+    # calculate geomorphometry
+    if meth == 'geomorphon':
+        search = 36
+        skip = 0 #6
+        flat = 1 #12
+        gout = geomorphon(
+            gdem, fprop(out, 'fn'),
+            search, skip, flat, ascmd=True
+        )
+    
+    else:
+        gout = paramscale(gdem, 33, fprop(out, 'fn'), ascmd=True)
+    
+    grs_to_rst(gout, out, as_cmd=True, rtype=int, dtype='Int16', nodata=-1)
+
+    return out
 

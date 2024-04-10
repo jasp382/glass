@@ -3,6 +3,9 @@ Terrain GRASS GIS tools
 """
 
 
+from glass.pys import execmd
+
+
 def slope(demRst, slopeRst, data=None, api="pygrass"):
     """
     Get Slope Raster
@@ -26,8 +29,6 @@ def slope(demRst, slopeRst, data=None, api="pygrass"):
         sl()
     
     elif api == "grass":
-        from glass.pys import execmd
-        
         rcmd = execmd((
             f"r.slope.aspect elevation={demRst} "
             f"slope={slopeRst} format={dataf} "
@@ -59,8 +60,6 @@ def aspect(dem, rst_aspect, from_north=None, api="pygrass"):
         m()
     
     elif api == 'grass':
-        from glass.pys import execmd
-
         rcmd = execmd((
             f"r.slope.aspect elevation={dem} aspect={aspect_tmp} "
             f"precision=FCELL --overwrite --quiet"
@@ -88,8 +87,6 @@ def curvature(dem, profile, tangential, ascmd=None):
     """
 
     if ascmd:
-        from glass.pys import execmd
-
         rmcd = execmd((
             f"r.slope.aspect elevation={dem} "
             f"pcurvature={profile} tcurvature="
@@ -108,4 +105,59 @@ def curvature(dem, profile, tangential, ascmd=None):
         m()
 
     return profile, tangential
+
+
+
+def paramscale(dem, size, out, ascmd=None):
+    """
+    Run r.param.scale
+    """
+
+    if ascmd:
+        res = execmd((
+            f"r.param.scale input={dem} output={out} "
+            f"size={str(size)} method=feature "
+            "--overwrite --quiet"
+        ))
+    
+    else:
+        from grass.pygrass.modules import Module
+
+        m = Module(
+            'r.param.scale', input=dem, output=out,
+            size=size, method='feature',
+            overwrite=True, run_=False, quiet=True
+        )
+
+        m()
+    
+
+    return out
+
+
+
+def geomorphon(dem, out, search, skip, flat, ascmd=None):
+    """
+    Run r.geomorphon
+    """
+
+    if ascmd:
+        res = execmd((
+            f"r.geomorphon elevation={dem} forms={out} "
+            f"search={search} skip={skip} flat={flat} "
+            "--overwrite --quiet"
+        ))
+    
+    else:
+        from grass.pygrass.modules import Module
+
+        m = Module(
+            'r.geomorphon', elevation=dem, forms=out,
+            search=search, skip=skip, flat=flat,
+            overwrite=True, run_=False, quiet=True
+        )
+
+        m()
+    
+    return out
 

@@ -9,6 +9,7 @@ from glass.pys.char import random_str
 from glass.pys.oss import del_file
 from glass.pys.Xml import write_xml_tree
 
+
 def add_pgstore(dbname, ws, store):
     """
     Create new PSQL store
@@ -96,15 +97,13 @@ def add_rststore(raster, ws, st):
     )
 
     # Create obj with data to be written in the xml
-    xmlTree = {
-        "coverageStore" : {
-            "name"      : st,
-            "workspace" : ws,
-            "enabled"   : "true",
-            "type"      : "GeoTIFF",
-            "url"       : raster
-        }
-    }
+    xmlTree = {"coverageStore" : {
+        "name"      : st,
+        "workspace" : ws,
+        "enabled"   : "true",
+        "type"      : "GeoTIFF",
+        "url"       : raster
+    }}
 
     treeOrder = {"coverageStore" : [
         "name", "workspace", "enabled", "type", "url"

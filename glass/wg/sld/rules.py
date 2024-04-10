@@ -102,10 +102,10 @@ def get_quantitative_rules(colorIntervals, attr_name, geometry, map_keys):
 
         # Create rule tree
         sldRules[(nr_rules, 'sld:Rule')] = {
-            'sld:Name'   : 'rule{}'.format(str(nr_rules)),
-            'sld:Title'  : '{}..{}'.format(
-                str(cls[map_keys['interval_min']]),
-                str(cls[map_keys['interval_max']])
+            'sld:Name'   : f'rule{str(nr_rules)}',
+            'sld:Title'  : (
+                f'{str(cls[map_keys["interval_min"]])}..'
+                f'{str(cls[map_keys["interval_max"]])}'
             ),
             'ogc:Filter' : {
                 'ogc:And' : {
@@ -132,7 +132,7 @@ def get_quantitative_rules(colorIntervals, attr_name, geometry, map_keys):
         nr_rules += 1
     
     sldRules[(nr_rules, 'sld:Rule')] = {
-        'sld:Name'   : 'rule{}'.format(str(nr_rules)),
+        'sld:Name'   : f'rule{str(nr_rules)}',
         'sld:Title'  : 'minimum',
         'ogc:Filter' : {
             'ogc:PropertyIsEqualTo' : {

@@ -117,3 +117,6 @@ settings.json
 # Visual studio artefacts
 *.code-workspace
 .history/*
+
+glass/wg/gsrv/gsrvtmp/
+!glass/wg/gsrv/gsrvtmp/README.md

@@ -4,36 +4,92 @@ import os
 import pandas as pd
 import geopandas as gp
 
+import time
+
+import threading as th
+
 from glass.cons.sat import con_datahub
-from glass.gp.cnv import ext_to_polygon
-from glass.pys.oss import fprop
-from glass.wt.shp import df_to_shp
+from glass.gp.cnv   import ext_to_polygon
+from glass.pys.oss  import fprop
+from glass.wt.shp   import df_to_shp
 
 class APISentinel:
-    def get_keycloak(self, username: str, password: str) -> str:
+
+    def get_keycloak(self):
         data = {
-            "client_id": "cdse-public",
-            "username": username,
-            "password": password,
-            "grant_type": "password",
+            "client_id"  : "cdse-public",
+            "username"   : self.user,
+            "password"   : self.passw,
+            "grant_type" : "password",
         }
         try:
-            r = requests.post(
-                "https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token",
-                data=data,
-            )
+            r = requests.post(self.token_url, data=data)
             r.raise_for_status()
+        
         except Exception as e:
             raise Exception(
                 f"Keycloak token creation failed. Reponse from the server was: {r.json()}"
             )
-        return r.json()["access_token"]
+        return r.json()
+    
+    def refresh_token(self):
+        data = {
+            "client_id"     : "cdse-public",
+            "refresh_token" : self.reftoken,
+            "grant_type"    : "refresh_token"
+        }
+
+        try:
+            r = requests.post(self.token_url, data=data)
+
+            r.raise_for_status()
+
+        except Exception as e:
+            raise Exception(
+                f"Keycloak token refresh failed. Reponse from the server was: {r.json()}"
+            )
+        
+        return r.json()
+    
+    def update_token(self):
+        while True:
+            if self.stop_token:
+                break
+
+            time.sleep(1)
+            self.token_life += 1
+
+            if self.token_life > self.expires - 10:
+                # We need to update the token
+                self.tokendata = self.refresh_token()
+                self.reftoken  = self.tokendata['refresh_token']
+                self.expires   = self.tokendata['expires_in']
+
+                self.token_life = 1
+    
+                print(self.token_life)
+
+    
+    def close(self):
+        self.stop_token = True
+        self.token_th.join()
 
     def __init__(self):
         cred = con_datahub()
         self.user, self.passw = cred["USER"], cred["PASSWORD"]
 
-        self.token = self.get_keycloak(self.user, self.passw)
+        self.token_url = 'https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token'
+        
+        self.tokendata = self.get_keycloak()
+        self.token     = self.tokendata['access_token']
+        self.reftoken  = self.tokendata['refresh_token']
+        self.expires   = self.tokendata['expires_in']
+
+        self.token_life = 1
+        self.stop_token = None
+
+        self.token_th = th.Thread(target=self.update_token)
+        self.token_th.start()
     
     def products_query(self, geofile, date, collection,
                        cloud_cover=None, prodtype=None):
@@ -125,6 +181,7 @@ class APISentinel:
         """
 
         oimg = os.path.join(out_folder, f'{img_name}.zip')
+        oerro = os.path.join(out_folder, f'{img_name}.txt')
 
         session = requests.Session()
 
@@ -139,8 +196,18 @@ class APISentinel:
 
         file = session.get(url, verify=False, allow_redirects=True)
 
+        if file.status_code != 200:
+            with open(oerro, 'wb') as _p:
+                _p.write(file.content)
+            
+            session.close()
+            
+            return oerro
+
         with open(oimg, "wb") as p:
             p.write(file.content)
+        
+        session.close()
 
         return oimg
 

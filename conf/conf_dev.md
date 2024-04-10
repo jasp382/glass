@@ -47,6 +47,7 @@ echo "/home/$USER/glass" | sudo tee ~/.virtualenvs/gs/lib/python$pone.$ptwo/site
 # Setup QGIS Python dependencies
 ln -s /usr/lib/python3/dist-packages/qgis* ~/.virtualenvs/gs/lib/python3.10/site-packages
 ln -s /usr/lib/python3/dist-packages/PyQt5* ~/.virtualenvs/gs/lib/python3.10/site-packages
+ln -s /usr/share/qgis/python/plugins/processing* ~/.virtualenvs/gs/lib/python3.10/site-packages
 ```
 
 

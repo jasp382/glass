@@ -138,3 +138,50 @@ def dissolve(inShp, outShp, fld,
     
     return outShp
 
+
+
+def diss_adjacent(shp, col, value, dissolve_type, out):
+    """
+    Dissolve adjancent polygons
+
+    dissolve_type options:
+    0 - Largest adjacent polygon;
+    1 - Smallest adjacent polygon;
+    2 - Largest common boundary'
+
+    Dependencies:
+    * QGIS
+    """
+
+    from qgis import processing
+
+    from glass.rd.shp import shp_to_qgslyr
+
+    doptions = [0, 1, 2]
+
+    dtype = 0 if dissolve_type not in doptions else dissolve_type
+
+    ilyr = shp_to_qgslyr(shp)
+
+    # Select by attributes
+    sp = {
+        "FIELD"    : col,
+        "INPUT"    : ilyr,
+        'METHOD'   : 0,
+        "OPERATOR" : 5,
+        "VALUE"    : value
+    }
+
+    sel_lyr = processing.run('qgis:selectbyattribute', sp)
+
+    # Dissolve
+    dp = {
+        'INPUT'  : sel_lyr['OUTPUT'],
+        'MODE'   : dtype,
+        'OUTPUT' : out
+    }
+
+    processing.run('qgis:eliminateselectedpolygons', dp)
+
+    return out
+

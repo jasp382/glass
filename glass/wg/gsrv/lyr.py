@@ -5,13 +5,35 @@ Tools to manage Layers in Geoserver
 import requests as rq
 import os
 
-from glass.firecons.gsrv import con_gsrv
+from glass.cons.gsrv import con_gsrv
 from glass.prop.prj  import epsg_to_wkt
 from glass.pys.Xml   import write_xml_tree
 
-def addlyr(tbl, ws, st, epsg, outepsg=None):
+
+def lst_lyr():
     """
-    Add new layer to GeoServer
+    List all layers in the geoserver
+    """
+
+    conf = con_gsrv()
+
+    _p, h, p = conf['PROTOCOL'], conf['HOST'], conf['PORT']
+
+    url = f'{_p}://{h}:{p}/geoserver/rest/layers'
+
+    r = rq.get(
+        url, headers={'Accept': 'application/json'},
+        auth=(conf['USER'], conf['PASSWORD'])
+    )
+
+    layers = r.json()
+
+    return [l['name'] for l in layers['layers']['layer']]
+
+
+def add_pglyr(tbl, ws, st, epsg, outepsg=None):
+    """
+    Add new PostGIS layer to GeoServer
     """
 
     G = con_gsrv()
@@ -70,14 +92,12 @@ def pub_rst_lyr(layer, store, ws, epsg_code):
     )
     
     # Create obj with data to be written in the xml
-    xmlTree = {
-        "coverage" : {
-            "name"      : layer,
-            "title"     : layer,
-            "nativeCRS" : str(epsg_to_wkt(epsg_code)),
-            "srs"       : f'EPSG:{str(epsg_code)}'
-        }
-    }
+    xmlTree = {"coverage" : {
+        "name"      : layer,
+        "title"     : layer,
+        "nativeCRS" : str(epsg_to_wkt(epsg_code)),
+        "srs"       : f'EPSG:{str(epsg_code)}'
+    }}
     
     # Write XML
     xml_file = write_xml_tree(xmlTree, os.path.join(
@@ -98,4 +118,25 @@ def pub_rst_lyr(layer, store, ws, epsg_code):
         
         except:
             return None, None
+
+
+def dellyr(lyr):
+    """
+    Delete Layer
+    """
+
+    G = con_gsrv()
+
+    url = (
+        f"{G['PROTOCOL']}://{G['HOST']}:{G['PORT']}/"
+        f"geoserver/rest/layers/{lyr}"
+    )
+
+    try:
+        r = rq.delete(url, auth=(G["USER"], G["PASSWORD"]))
+
+    except:
+        r = None
+    
+    return r
 

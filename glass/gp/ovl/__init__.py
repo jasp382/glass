@@ -112,6 +112,7 @@ def union_all(shp_folder, ref, out):
     """
 
     from glass.pys.oss import lst_ff
+    from glass.gp.ovl.grs import grsunion
 
     shps = lst_ff(shp_folder, file_format='.shp')
 
@@ -356,6 +357,71 @@ def optimized_union_anls(lyr_a, lyr_b, outShp, ref_boundary,
     MERGED_SHP = shps_to_shp(_UNION_SHP, outShp, api="ogr2ogr")
     
     return MERGED_SHP
+
+
+def multi_thrd_union(indata, epsg, outfolder):
+    """
+    Run Union using Multiprocessing
+
+    indata = [
+        (shp_a, shp_b),
+        (shp_aa, shp_bb), ...
+    ]
+    """
+
+    def multi_run(ti, df, ofolder, _epsg):
+        if not df.shape[0]: return
+    
+        loc_name = f'loc_{str(ti)}'
+        grsbase = run_grass(ofolder, location=loc_name, srs=_epsg)
+    
+        import grass.script.setup as gsetup
+
+        gsetup.init(grsbase, ofolder, loc_name, 'PERMANENT')
+    
+        from glass.it.shp     import shp_to_grs, grs_to_shp
+        from glass.gp.ovl.grs import grsunion
+    
+        for idx, row in df.iterrows():
+            # Import data into GRASS GIS
+            lyr_a = shp_to_grs(row.shp_a, fprop(row.shp_a, 'fn'), asCMD=True)
+            lyr_b = shp_to_grs(row.shp_b, fprop(row.shp_b, 'fn'), asCMD=True)
+        
+            # Run Union
+            shpUnion = grsunion(
+                lyr_a, lyr_b, f"{lyr_a[:10]}_{lyr_b[:10]}",
+                cmd=True
+            )
+        
+            # Export data
+            result = grs_to_shp(shpUnion, os.path.join(ofolder, shpUnion + '.shp'), "area")
+
+    import multiprocessing as mp
+    import pandas as pd
+
+    from glass.pys.oss import cpu_cores
+    from glass.pd.split import df_split
+
+
+    ncpu = cpu_cores() / 2
+
+    df_shp = pd.DataFrame(indata, columns=["shp_a", "shp_b"])
+
+    dfs = df_split(df_shp, ncpu)
+
+    thrds = [mp.Process(
+        target=multi_run, name=f'th-{str(i+1)}',
+        args=(i+1, dfs[i], outfolder, epsg)
+    ) for i in range(len(dfs))]
+
+    for t in thrds:
+        t.start()
+    
+    for t in thrds:
+        t.stop()
+    
+    return outfolder
+
 
 
 def intersection(inShp, intersectShp, outShp, api='geopandas'):

@@ -2,22 +2,24 @@
 Tools for Geoserver styles management
 """
 
+import os
+import requests as rq
+
+from glass.cons.gsrv import con_gsrv
+
 
 def lst_styles():
     """
     List Styles in Geoserver
     """
     
-    import requests
-    from glass.cons.gsrv import con_gsrv
-
     conf = con_gsrv()
+
+    _p, h, p = conf['PROTOCOL'], conf['HOST'], conf['PORT']
     
-    url = '{pro}://{host}:{port}/geoserver/rest/styles'.format(
-        host=conf['HOST'], port=conf['PORT'], pro=conf['PROTOCOL']
-    )
+    url = f'{_p}://{h}:{p}/geoserver/rest/styles'
     
-    r = requests.get(
+    r = rq.get(
         url, headers={'Accept': 'application/json'},
         auth=(conf['USER'], conf['PASSWORD'])
     )
@@ -35,21 +37,15 @@ def del_style(name):
     """
     Delete a specific style
     """
-    
-    import requests; import json
-    from glass.cons.gsrv import con_gsrv
 
     conf = con_gsrv()
     
     url = (
-        '{pro}://{host}:{port}/geoserver/rest/styles/{stl}?'
-        'recurse=true'
-    ).format(
-        host=conf['HOST'], port=conf['PORT'],
-        stl=name, pro=conf['PROTOCOL']
+        f'{conf["PROTOCOL"]}://{conf["HOST"]}:{conf["PORT"]}/'
+        f'geoserver/rest/styles/{name}?recurse=true'
     )
     
-    r = requests.delete(url, auth=(conf['USER'], conf['PASSWORD']))
+    r = rq.delete(url, auth=(conf['USER'], conf['PASSWORD']))
     
     return r
 
@@ -59,10 +55,9 @@ def create_style(name, sld, overwrite=None):
     Import SLD into a new Geoserver Style
     """
 
-    import requests;    import os
-    from glass.cons.gsrv import con_gsrv
-
     conf = con_gsrv()
+
+    _p, h, p = conf['PROTOCOL'], conf['HOST'], conf['PORT']
     
     if overwrite:
         GEO_STYLES = lst_styles()
@@ -70,27 +65,24 @@ def create_style(name, sld, overwrite=None):
         if name in GEO_STYLES:
             del_style(name)
 
-    url = '{pro}://{host}:{port}/geoserver/rest/styles'.format(
-        host=conf['HOST'], port=conf['PORT'], pro=conf['PROTOCOL']
+    url = f'{_p}://{h}:{p}/geoserver/rest/styles'
+
+    xml = (
+        f"<style><name>{name}</name><filename>"
+        f"{os.path.basename(sld)}</filename></style>"
     )
 
-    xml = '<style><name>{n}</name><filename>{filename}</filename></style>'.format(
-        n=name, filename=os.path.basename(sld)
-    )
-
-    r = requests.post(
+    r = rq.post(
         url,
         data=xml,
         headers={'content-type': 'text/xml'},
         auth=(conf['USER'], conf['PASSWORD'])
     )
 
-    url = '{pro}://{host}:{port}/geoserver/rest/styles/{n}'.format(
-        host=conf['HOST'], port=conf['PORT'], n=name, pro=conf['PROTOCOL']
-    )
+    url = f'{_p}://{h}:{p}/geoserver/rest/styles/{name}'
 
     with open(sld, 'rb') as f:
-        r = requests.put(
+        r = rq.put(
             url,
             data=f,
             headers={'content-type': 'application/vnd.ogc.sld+xml'},
@@ -105,17 +97,15 @@ def assign_style_to_layer(style, layer):
     Add a style to a geoserver layer
     """
 
-    import requests;    import json
-    from glass.cons.gsrv import con_gsrv
+    import json
 
     conf = con_gsrv()
 
-    url = '{pro}://{host}:{port}/geoserver/rest/layers/{lyr}/styles'.format(
-        host=conf['HOST'], port=conf['PORT'],
-        lyr=layer, pro=conf['PROTOCOL']
-    )
+    _p, h, p = conf['PROTOCOL'], conf['HOST'], conf['PORT']
 
-    r = requests.post(
+    url = f'{_p}://{h}:{p}/geoserver/rest/layers/{layer}/styles'
+
+    r = rq.post(
         url,
         data=json.dumps({'style' : {'name': style}}),
         headers={'content-type': 'application/json'},
@@ -130,7 +120,7 @@ def add_style_to_layers_basename(style, basename):
     Add a style to all layers with the same basename
     """
     
-    from glass.wg.gsrv.lyrs import lst_lyr
+    from glass.wg.gsrv.lyr import lst_lyr
 
     # List layers that starts with a certain basename
     layers = lst_lyr()

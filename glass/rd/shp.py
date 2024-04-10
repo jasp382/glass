@@ -115,3 +115,18 @@ def points_to_list(pntShp, listVal='tuple', inEpsg=None, outEpsg=None):
     
     return coords
 
+
+
+def shp_to_qgslyr(shp, name=None):
+    """
+    OGR Compilant file to QGIS Vector Layer
+    """
+
+    from qgis.core import QgsVectorLayer
+
+    from glass.pys.oss import fprop
+
+    lyr = QgsVectorLayer(shp, name if name else fprop(shp, 'fn'), 'ogr')
+
+    return lyr
+

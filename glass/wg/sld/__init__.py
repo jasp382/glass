@@ -2,6 +2,8 @@
 Write SLD with Python
 """
 
+from glass.pys.Xml      import write_xml_tree
+
 
 def write_sld(attr_name, attr_colors, mapAttrKeys, sld_path,
               geometry=None, DATA='CATEGORICAL'):
@@ -67,7 +69,6 @@ def write_sld(attr_name, attr_colors, mapAttrKeys, sld_path,
     """
 
     import os
-    from glass.pys.Xml      import write_xml_tree
     from glass.pys.oss      import fprop
     from glass.wg.sld.rules import get_categorical_rules
     from glass.wg.sld.rules import get_quantitative_rules
@@ -280,5 +281,63 @@ def write_raster_sld(attrProp, outSld, dataType="CATEGORICAL"):
     # Write SLD file
     write_xml_tree(sldTree, outSld, nodes_order=sldOrder)
     
+    return outSld
+
+
+def write_composite_sld(red, green, blue, outSld):
+    """
+    Write an SLD for a raster that allows to combine bands
+    """
+
+    # SLD Basic Structure
+    sldRoot = (
+        "sld:StyledLayerDescriptor",
+        "xmlns", "http://www.opengis.net/sld",
+        "xmlns:sld", "http://www.opengis.net/sld",
+        "xmlns:gml", "http://www.opengis.net/gml",
+        "xmlns:ogc", "http://www.opengis.net/ogc",
+        "version", "1.0.0",
+    )
+
+    # Create SLD Tree
+    sldTree = {
+        sldRoot: {
+            "sld:NamedLayer": {
+                "sld:Name": "Default Styler",
+                "sld:UserStyle": {
+                    "sld:Name": "Default Styler",
+                    "sld:IsDefault": "1",
+                    "sld:FeatureTypeStyle": {
+                        "sld:Rule": {
+                            "sld:RasterSymbolizer": {
+                                "ChannelSelection": {
+                                    "RedChannel": {"SourceChannelName": str(red)},
+                                    "GreenChannel": {"SourceChannelName": str(green)},
+                                    "BlueChannel": {"SourceChannelName": str(blue)},
+                                }
+                            }
+                        }
+                    },
+                },
+            }
+        }
+    }
+
+    sldOrder = {
+        sldRoot                : ["sld:NamedLayer"],
+        "sld:NamedLayer"       : ["sld:Name", "sld:UserStyle"],
+        "sld:UserStyle"        : ["sld:Name", "sld:IsDefault", "sld:FeatureTypeStyle"],
+        "sld:FeatureTypeStyle" : ["sld:Rule"],
+        "sld:Rule"             : ["sld:RasterSymbolizer"],
+        "sld:RasterSymbolizer" : ["ChannelSelection"],
+        "ChannelSelection"     : ["RedChannel", "GreenChannel", "BlueChannel"],
+        "RedChannel"           : ["SourceChannelName"],
+        "GreenChannel"         : ["SourceChannelName"],
+        "BlueChannel"          : ["SourceChannelName"],
+    }
+
+    # Write SLD file
+    write_xml_tree(sldTree, outSld, nodes_order=sldOrder)
+
     return outSld
 

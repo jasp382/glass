@@ -5,8 +5,8 @@ Overlay operations using OSM Data
 import os
 
 
-def osm_extraction(boundary, osmdata: str, output: str,
-    each_feat=None, epsg=None, outbasename=None, api="osmosis"):
+def osm_extraction(boundary:str|list[str], osmdata: str, output: str,
+    each_feat:None|bool=None, epsg:None|int=None, outbasename:None|str=None, api: str="osmosis") -> str:
     """
     Extract OSM Data from a xml file with osmosis
     
@@ -19,7 +19,7 @@ def osm_extraction(boundary, osmdata: str, output: str,
     from glass.prop.df import is_rst
     from glass.gp.cnv  import ext_to_polygon, featext_to_polygon
 
-    apis = ['osmosis', 'osmconvert']
+    apis: list[str] = ['osmosis', 'osmconvert']
     api = 'osmosis' if api not in apis else 'osmosis'
 
     outbasename = 'osmexct' if not outbasename else outbasename
@@ -148,13 +148,13 @@ def osm_extraction(boundary, osmdata: str, output: str,
     return output
 
 
-def osmextract_foreachshp(osmfile, clipshps, outfolder, bname='osmpart'):
+def osmextract_foreachshp(osmfile, clipshps, outfolder, idatend=True, bname='osmpart', _api='osmosis'):
     """
     Clip OSM File for each shapefile in one folder
     """
 
     import pandas as pd
-    from glass.pys.oss import lst_ff
+    from glass.pys.oss import lst_ff, fprop
 
     # List clip shapes and get their id's
 
@@ -162,19 +162,23 @@ def osmextract_foreachshp(osmfile, clipshps, outfolder, bname='osmpart'):
     # {filename}_{id}.shp
     # id must be an integer
 
+    shps = lst_ff(clipshps, rfilename=True, file_format='.shp')
+
     cshps = pd.DataFrame([{
-        'fid' : int(f.split('.')[0].split('_')[-1]),
-        'shp' : f
-    } for f in lst_ff(
-        clipshps, rfilename=True, file_format='.shp'
-    )])
+        'fid' : int(shps[f].split('.')[0].split('_')[-1]) if idatend else f + 1,
+        'shp' : shps[f]
+    } for f in range(len(shps))])
 
     for i, row in cshps.iterrows():
         # Run method
+        name = f'{bname}_{str(row.fid)}' if bname else fprop(row.shp, 'fn')
+        ff   = '.xml' if _api == 'osmosis' else '.pbf'
+        clip_osm = os.path.join(outfolder, f'{name}{ff}')
+
         osm_extraction(
             os.path.join(clipshps, row.shp),
-            osmfile,
-            os.path.join(outfolder, f'{bname}_{str(row.fid)}.xml')
+            osmfile, clip_osm,
+            api=_api
         )
     
     return outfolder

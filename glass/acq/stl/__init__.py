@@ -325,6 +325,8 @@ def down_imgs(inshp, imgid_col, img_name_col, outfolder):
             continue
         else:
             api.download(row[imgid_col], row[img_name_col], outfolder)
+    
+    api.close()
 
 
 def down_imgs_v2(itbl, idcol, ofolder=None):
