@@ -13,20 +13,10 @@ def month_representative(img_folder, refimg, ofolder, bname, fformat='.tif'):
     same folder
     """
 
-    from glass.cons.sat import get_ibands, get_lwibands
     from glass.pys.oss  import lst_ff, fprop
     from glass.pys.tm   import now_as_str
     from glass.wenv.grs import run_grass
-    from glass.rst.rcls.grs import rcls_rules
-
-    # Constants
-    bands = [
-        'b02', 'b03', 'b04', 'b05', 'b06', 'b07',
-        'b08', 'b8a', 'b09', 'b11', 'b12'
-    ]
-    ibands, lwbands = get_ibands(), get_lwibands()
-
-    _ibands = {ibands[i] : lwbands[i] for i in range(len(ibands))}
+    from glass.rst.rcls.grs import rcls_rules, grs_rcls
 
     # List Images
     tifs = lst_ff(img_folder, file_format=fformat)
@@ -36,14 +26,12 @@ def month_representative(img_folder, refimg, ofolder, bname, fformat='.tif'):
     for img in tifs:
         name = fprop(img, 'fn')
     
-        np = name.split('_')
-        _b = f"{np[-2]}_{np[-1]}"
-        _d = np[-3].split('T')[0]
+        _b, _d = name.split('_')
     
         if _d not in imgs:
             imgs[_d] = {}
         
-        imgs[_d][_ibands[_b]] = img
+        imgs[_d][_b] = img
     
     # Create GRASS GIS Session
     ws, loc = ofolder, f"loc_{now_as_str()}"
@@ -55,10 +43,9 @@ def month_representative(img_folder, refimg, ofolder, bname, fformat='.tif'):
     gsetup.init(grsb, ws, loc, 'PERMANENT')
 
     # GRASS GIS methods
-    from glass.it.rst   import rst_to_grs, grs_to_rst
-    from glass.rst.rcls import rcls_rst
-    from glass.rst.mos  import rsts_to_mosaic, rseries
-    from glass.rst.alg  import grsrstcalc
+    from glass.it.rst  import rst_to_grs, grs_to_rst
+    from glass.rst.mos import rsts_to_mosaic, rseries
+    from glass.rst.alg import grsrstcalc
 
     # For each image
     # Get only cells with data
@@ -73,26 +60,26 @@ def month_representative(img_folder, refimg, ofolder, bname, fformat='.tif'):
         11 : 0
     }, os.path.join(ws, loc, 'only_data.txt'))
 
-    for img in imgs:
+    for day in imgs:
         # Import all bands
-        for b in imgs[img]:
-            if b == 'aot':
-                continue
-        
-            imgs[img][b] = rst_to_grs(imgs[img][b], f'{b}_{img}')
+        for b in imgs[day]:
+            imgs[day][b] = rst_to_grs(imgs[day][b])
     
         # Reclassify SCL
-        rcls = rcls_rst(
-            imgs[img]['scl'], scl_rules,
-            f'dmask_{img}', api='grass'
+        rcls = grs_rcls(
+            imgs[day]['scl'], scl_rules,
+            f'dmask_{day}', as_cmd=True
         )
-        _rs = grsrstcalc(rcls, f'dmaskcp_{img}')
+        _rs = grsrstcalc(rcls, f'dmaskcp_{day}')
     
         # Get only cells with data
-        for b in bands:
+        for b in imgs[day]:
+            if b == 'scl':
+                continue
+
             nb = grsrstcalc(
-                f'{imgs[img][b]} + {_rs}',
-                f'd_{imgs[img][b]}'
+                f'{imgs[day][b]} + {_rs}',
+                f'd_{imgs[day][b]}'
             )
         
             if b not in timeseries:
@@ -113,13 +100,19 @@ def month_representative(img_folder, refimg, ofolder, bname, fformat='.tif'):
     
         grs_to_rst(patch_i, os.path.join(
             ofolder, f'{bname}_{patch_i}.tif'
-        ), rtype=int)
+        ), as_cmd=True, rtype=int, dtype="UInt16", nodata=0)
+
+        series_i = rseries(timeseries[b], f'{b}_median', 'median', as_cmd=True)
+
+        grs_to_rst(series_i, os.path.join(
+            ofolder, f'{bname}_{series_i}.tif'
+        ), as_cmd=True, rtype=int, dtype="UInt16", nodata=0)
     
-        for s in stats:
-            orst = rseries(timeseries[b], f'{b}_{s}', stats[s],as_cmd=True)
-            grs_to_rst(orst, os.path.join(
-                ofolder, f'{bname}_{orst}.tif'
-            ), rtype=int if s != 'avg' and s != 'ddev' else float)
+        #for s in stats:
+            #orst = rseries(timeseries[b], f'{b}_{s}', stats[s],as_cmd=True)
+            #grs_to_rst(orst, os.path.join(
+                #ofolder, f'{bname}_{orst}.tif'
+            #), rtype=int if s != 'avg' and s != 'ddev' else float)
 
     return ofolder
 
