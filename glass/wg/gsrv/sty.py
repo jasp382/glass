@@ -19,18 +19,36 @@ def lst_styles():
     
     url = f'{_p}://{h}:{p}/geoserver/rest/styles'
     
-    r = rq.get(
-        url, headers={'Accept': 'application/json'},
-        auth=(conf['USER'], conf['PASSWORD'])
-    )
+    out = None
+
+    try:
+        r = rq.get(
+            url, headers={'Accept': 'application/json'},
+            auth=(conf['USER'], conf['PASSWORD'])
+        )
     
-    styles = r.json()
+    except Exception as e:
+        out = {"status" : -1, "http" : None, "data" : e}
     
-    if 'style' in styles['styles']:
-        return [style['name'] for style in styles['styles']['style']]
+    if not out:
+        out = {"http" : r.status_code}
+
+        if r.status_code == 200:
+            out["status"] = 1
+
+            styles = r.json()
+
+            if 'style' in styles['styles']:
+                out["data"] = [style['name'] for style in styles['styles']['style']]
+            
+            else:
+                out["data"] = []
+        
+        else:
+            out["data"] = r.content
+            out["status"] = 0
     
-    else:
-        return []
+    return out
 
 
 def del_style(name):
@@ -39,15 +57,33 @@ def del_style(name):
     """
 
     conf = con_gsrv()
+
+    _p, h, p = conf['PROTOCOL'], conf['HOST'], conf['PORT']
     
     url = (
-        f'{conf["PROTOCOL"]}://{conf["HOST"]}:{conf["PORT"]}/'
-        f'geoserver/rest/styles/{name}?recurse=true'
+        f'{_p}://{h}:{p}/geoserver/rest/styles/{name}?'
+        'recurse=true'
     )
+
+    out = None
+
+    try:
+        r = rq.delete(url, auth=(conf['USER'], conf['PASSWORD']))
     
-    r = rq.delete(url, auth=(conf['USER'], conf['PASSWORD']))
+    except Exception as e:
+        out = {"status" : -1, "http" : None, "data" : str(e)}
     
-    return r
+    if not out:
+        out = {"http" : r.status_code, "data" : None}
+
+        if r.status_code == 200:
+            out["status"] = 1
+        
+        else:
+            out["status"] = 0
+            out["data"] = str(r.content)
+    
+    return out
 
 
 def create_style(name, sld, overwrite=None):
@@ -58,38 +94,63 @@ def create_style(name, sld, overwrite=None):
     conf = con_gsrv()
 
     _p, h, p = conf['PROTOCOL'], conf['HOST'], conf['PORT']
+
+    out = None
     
     if overwrite:
-        GEO_STYLES = lst_styles()
+        rstyl = lst_styles()
+
+        if rstyl["status"] < 1:
+            out = rstyl
         
-        if name in GEO_STYLES:
-            del_style(name)
+        if not out and name in rstyl["data"]:
+            rdel = del_style(name)
 
-    url = f'{_p}://{h}:{p}/geoserver/rest/styles'
+            if rdel["status"] < 1:
+                out = rdel
+    
+    if not out:
+        url = f'{_p}://{h}:{p}/geoserver/rest/styles'
 
-    xml = (
-        f"<style><name>{name}</name><filename>"
-        f"{os.path.basename(sld)}</filename></style>"
-    )
-
-    r = rq.post(
-        url,
-        data=xml,
-        headers={'content-type': 'text/xml'},
-        auth=(conf['USER'], conf['PASSWORD'])
-    )
-
-    url = f'{_p}://{h}:{p}/geoserver/rest/styles/{name}'
-
-    with open(sld, 'rb') as f:
-        r = rq.put(
-            url,
-            data=f,
-            headers={'content-type': 'application/vnd.ogc.sld+xml'},
-            auth=(conf['USER'], conf['PASSWORD'])
+        xml = (
+            f"<style><name>{name}</name><filename>"
+            f"{os.path.basename(sld)}</filename></style>"
         )
 
-        return r
+        try:
+            r = rq.post(
+                url, data=xml,
+                headers={'content-type': 'text/xml'},
+                auth=(conf['USER'], conf['PASSWORD'])
+            )
+
+            if r.status_code != 201:
+                out = {"status" : 0, "http" : r.status_code, "data" : str(r.content)}
+        
+        except Exception as e:
+            out = {"status" : -1, "http" : None, "data" : e}
+    
+    if not out:
+        url = f'{_p}://{h}:{p}/geoserver/rest/styles/{name}'
+
+        try:
+            with open(sld, 'rb') as f:
+                r = rq.put(
+                    url, data=f,
+                    headers={'content-type': 'application/vnd.ogc.sld+xml'},
+                    auth=(conf['USER'], conf['PASSWORD'])
+                )
+
+                if r.status_code == 200:
+                    out = {"status" : 1, "http" : r.status_code, "data" : {"style" : name}}
+                
+                else:
+                    out = {"status" : 0, "http" : r.status_code, "data" : str(r.content)}
+        
+        except Exception as e:
+            out = {"status" : -1, "http" : None, "data" : e}
+    
+    return out
 
 
 def assign_style_to_layer(style, layer):
@@ -105,14 +166,28 @@ def assign_style_to_layer(style, layer):
 
     url = f'{_p}://{h}:{p}/geoserver/rest/layers/{layer}/styles'
 
-    r = rq.post(
-        url,
-        data=json.dumps({'style' : {'name': style}}),
-        headers={'content-type': 'application/json'},
-        auth=(conf['USER'], conf['PASSWORD'])
-    )
+    try:
+        r = rq.post(
+            url,
+            data=json.dumps({'style' : {'name': style}}),
+            headers={'content-type': 'application/json'},
+            auth=(conf['USER'], conf['PASSWORD'])
+        )
 
-    return r
+        out = {"http" : r.status_code}
+
+        if r.status_code == 201:
+            out["status"] = 1
+            out["data"]   = {"style" : style, "layer" : layer}
+        
+        else:
+            out["status"] = 0
+            out["data"] = str(r.content)
+    
+    except Exception as e:
+        out = {"status" : -1, "http" : None, "data" : e}
+
+    return out
 
 
 def add_style_to_layers_basename(style, basename):

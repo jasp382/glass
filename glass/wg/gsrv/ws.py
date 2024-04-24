@@ -2,57 +2,74 @@
 Tools for Geoserver workspaces management
 """
 
+import requests
+
+from glass.cons.gsrv import con_gsrv
+
 
 def lst_ws():
     """
     Return a list with all avaiable workspaces in the GeoServer
     """
+
+    G = con_gsrv()
+
+    url = (
+        f'{G["PROTOCOL"]}://{G["HOST"]}'
+        f':{G["PORT"]}/geoserver/rest/workspaces'
+    )
+
+    try:
+        r = requests.get(
+            url, headers={'Accept': 'application/json'},
+            auth=(G['USER'], G['PASSWORD'])
+        )
+
+        if r.status_code == 200:
+            workspaces = r.json()
+
+            if 'workspace' in workspaces['workspaces']:
+                ws = [w['name'] for w in workspaces['workspaces']['workspace']]
+            else:
+                ws = []
+            
+            return {"status" : 1, "http" : r.status_code, "data" : ws}
+        
+        else:
+            return {"status" : 0, "http" : r.status_code, "data" : str(r.content)}
+
     
-    import requests
-    from glass.cons.gsrv import con_gsrv
-
-    conf = con_gsrv()
-
-    url = '{pro}://{host}:{port}/geoserver/rest/workspaces'.format(
-        host=conf['HOST'], port=conf['PORT'], pro=conf['PROTOCOL']
-    )
-
-    r = requests.get(
-        url, headers={'Accept': 'application/json'},
-        auth=(conf['USER'], conf['PASSWORD'])
-    )
-
-    workspaces = r.json()
-    if 'workspace' in workspaces['workspaces']:
-        return [w['name'] for w in workspaces['workspaces']['workspace']]
-    else:
-        return []
+    except Exception as e:
+        return {"status" : -1, 'http' : None, "data" : str(e)}
+    
 
 
 def del_ws(name):
     """
     Delete an existing GeoServer Workspace 
     """
-    
-    import requests;    import json
-    from glass.cons.gsrv import con_gsrv
 
     conf = con_gsrv()
 
     url = (
-        '{pro}://{host}:{port}/geoserver/rest/workspaces/{work}?'
-        'recurse=true'
-    ).format(
-        host=conf['HOST'], port=conf['PORT'], work=name,
-        pro=conf['PROTOCOL']
+        f'{conf["PROTOCOL"]}://{conf["HOST"]}:{conf["PORT"]}/'
+        f'geoserver/rest/workspaces/{name}?recurse=true'
     )
 
-    r = requests.delete(
-        url,
-        auth=(conf['USER'], conf['PASSWORD'])
-    )
+    try:
+        r = requests.delete(
+            url,
+            auth=(conf['USER'], conf['PASSWORD'])
+        )
 
-    return r
+        if r.status_code == 200:
+            return {"status" : 1, "http" : r.status_code, "data" : None}
+        
+        else:
+            return {"status" : 0, "http" : r.status_code, "data" : r.content}
+    
+    except Exception as e:
+        return {"status" : -1, "http" : None, "data" : e}
 
 
 def create_ws(name, overwrite=True):
@@ -60,26 +77,43 @@ def create_ws(name, overwrite=True):
     Create a new Geoserver Workspace
     """
     
-    import requests;     import json
-    from glass.cons.gsrv import con_gsrv
+    import json
 
     conf = con_gsrv()
 
-    url = '{pro}://{host}:{port}/geoserver/rest/workspaces'.format(
-        host=conf['HOST'], port=conf['PORT'], pro=conf['PROTOCOL']
+    url = (
+        f"{conf['PROTOCOL']}://{conf['HOST']}:{conf['PORT']}/"
+        "geoserver/rest/workspaces"
     )
     
     if overwrite:
-        GEO_WORK = lst_ws()
-        if name in GEO_WORK:
-            del_ws(name)
+        status= lst_ws()
 
-    r = requests.post(
-        url,
-        data=json.dumps({'workspace': {'name' : name}}),
-        headers={'content-type': 'application/json'},
-        auth=(conf['USER'], conf['PASSWORD'])
-    )
+        if not status["status"]:
+            return status
+        
+        geows = status["data"]
+        
+        if name in geows:
+            dstatus = del_ws(name)
 
-    return r
+            if not dstatus["status"]:
+                return dstatus
+    
+    try:
+        r = requests.post(
+            url,
+            data=json.dumps({'workspace': {'name' : name}}),
+            headers={'content-type': 'application/json'},
+            auth=(conf['USER'], conf['PASSWORD'])
+        )
+
+        if r.status_code == 201:
+            return {"status" : 1, "http" : r.status_code, "data" : {"workspace" : name}}
+        
+        else:
+            return {"status" : 0, "http" : r.status_code, "data" : str(r.content)}
+    
+    except Exception as e:
+        return {"status" : -1, "http" : None, "data" : str(e)}
 

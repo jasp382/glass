@@ -341,3 +341,43 @@ def write_composite_sld(red, green, blue, outSld):
 
     return outSld
 
+
+
+def random_sld(shp, col, out_sld, geom='Polygon'):
+    """
+    Generate SLD using random colors
+
+    TODO: only works for CATEGORICAL DATA
+    """
+
+    import numpy as np
+    import random
+
+    from glass.pys.clr import rgb_to_hex
+    from glass.rd.shp import shp_to_obj
+
+    df = shp_to_obj(shp)
+
+    val = list(np.unique(df[col]))
+
+    symb = [{
+        'cat' : v, 
+        'color' : rgb_to_hex(
+            random.randrange(255),
+            random.randrange(255), random.randrange(255)
+        ),
+        'opacity' : 0.95, 'stroke_h' : '#000000'
+    } for v in val]
+
+    ATTR_COLS = {
+        'hex' : 'color', 'category' : 'cat',
+        'opacity' : 'opacity', 'stroke_hex' : 'stroke_h'
+    }
+
+    write_sld(
+        col, symb, ATTR_COLS, out_sld,
+        geometry=geom, DATA="CATEGORICAL"
+    )
+
+    return out_sld
+
