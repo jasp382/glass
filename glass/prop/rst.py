@@ -35,11 +35,11 @@ def rst_geoprop(rst):
     Return Geometric properties of a raster file
     """
 
+    from glass.prop.img import img_geoprop
+
     img = gdal.Open(rst)
 
-    left, cellx, z, top, c, celly = img.GetGeoTransform()
-
-    return left, cellx, top, celly
+    return img_geoprop(img)
 
 
 def rst_fullprop(rst):

@@ -121,6 +121,8 @@ def gdal_slope(dem, srs, slope, unit='DEGREES'):
     arr_neigh = convolve(with_data, mask, mode='constant')
     numpy.place(arr_dem, arr_dem==NoData, 0.0)
     # The rate of change in the x direction for the center cell e is:
+    # TODO: update slope formula
+    # TODO: is right less left and not left less right
     kernel_dz_dx_left = numpy.array([[0,0,1],
                                      [0,0,2],
                                      [0,0,1]])
