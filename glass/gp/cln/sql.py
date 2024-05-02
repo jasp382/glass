@@ -3,12 +3,57 @@ Clean Geometries
 """
 
 
-def fix_geom(db, table, geom, out_tbl, colsSelect=None, whr=None):
+def fix_geom(db, table, geom, out=None, colsSelect=None, whr=None, 
+             method='linework', keepcollapsed=False):
     """
     Remove some topological incorrections on the PostGIS data
+
+    the function attempts to create a valid representation of a given invalid 
+    geometry without losing any of the input vertices. Valid geometries are returned 
+    unchanged.
+
+    Supported inputs are: POINTS, MULTIPOINTS, LINESTRINGS, MULTILINESTRINGS, 
+    POLYGONS, MULTIPOLYGONS and GEOMETRYCOLLECTIONS containing any mix of them.
+
+    In case of full or partial dimensional collapses, the output geometry may 
+    be a collection of lower-to-equal dimension geometries, or a geometry of 
+    lower dimension.
+
+    Single polygons may become multi-geometries in case of self-intersections.
+
+    The params argument can be used to supply an options string to select the 
+    method to use for building valid geometry. The options string is in the 
+    format "method=linework|structure keepcollapsed=true|false". If no "params" 
+    argument is provided, the "linework" algorithm will be used as the default.
+
+    The "method" key has two values.
+
+    "linework" is the original algorithm, and builds valid geometries by first 
+    extracting all lines, noding that linework together, then building a value 
+    output from the linework.
+
+    "structure" is an algorithm that distinguishes between interior and 
+    exterior rings, building new geometry by unioning exterior rings, and 
+    then differencing all interior rings.
+
+    The "keepcollapsed" key is only valid for the "structure" algorithm, and 
+    takes a value of "true" or "false". When set to "false", geometry components 
+    that collapse to a lower dimensionality, for example a one-point linestring 
+    would be dropped. 
     """
     
     from glass.sql.q import q_to_ntbl
+
+    methods = ['linework', "structure"]
+    method = method if method in methods else methods[0]
+    if method == 'structure':
+        keep = ' keepcollapsed=true' if keepcollapsed else \
+            'keepcollapsed=false'
+    
+    else:
+        keep = ''
+    
+    methodstr = f'{method}{keep}'
     
     if not colsSelect:
         from glass.prop.sql import cols_name
@@ -28,11 +73,14 @@ def fix_geom(db, table, geom, out_tbl, colsSelect=None, whr=None):
     q = (
         f"SELECT {c}, "
             f"CASE WHEN ST_IsValid({geom}) THEN {geom} "
-            f"ELSE  ST_MakeValid({geom}) END "
+            f"ELSE  ST_MakeValid({geom}, '{methodstr}') END "
         f"AS {geom} FROM {table}{w}"
         )
     
-    ntbl = q_to_ntbl(db, out_tbl, q, api='psql')
+    if not out:
+        return q
+    
+    ntbl = q_to_ntbl(db, out, q, api='psql')
     
     return ntbl
 
@@ -85,13 +133,13 @@ def rm_deadend(db, in_tbl, out_tbl):
         # Get Lines without dead-end
         Q = (
             "SELECT mtbl.* "
-            "FROM {mtbl} AS mtbl LEFT JOIN {ptbl} AS st_tbl "
+            f"FROM {_t} AS mtbl LEFT JOIN {delpnt} AS st_tbl "
             "ON mtbl.pnt_start = st_tbl.txtgeom "
-            "LEFT JOIN {ptbl} AS end_tbl "
+            f"LEFT JOIN {delpnt} AS end_tbl "
             "ON mtbl.pnt_end = end_tbl.txtgeom "
             "WHERE st_tbl.txtgeom IS NULL AND "
             "end_tbl.txtgeom IS NULL"
-        ).format(cls=cols, mtbl=_t, ptbl=delpnt)
+        )
         
         _t = q_to_ntbl(db, f"rows_{str(i)}", Q)
         

@@ -422,11 +422,19 @@ def shp_to_psql(dbname, shps, api="pandas", tnames=None,
                 'ogr2ogr -f PostgreSQL "PG:dbname='
                 f'\'{dbname}\' host=\'{con["HOST"]}\' port=\'{con["PORT"]}\' '
                 f'user=\'{con["USER"]}\' password=\'{con["PASSWORD"]}\'" '
-                f'-nln {s["tbl"]} {shp}{lstr}{ssrs} -unsetFid '
-                f'-lco GEOMETRY_NAME=geom'
+                f'-nln {s["tbl"]} {s["src"]}{lstr}{ssrs} -unsetFid '
+                f'-lco GEOMETRY_NAME=geom -nlt PROMOTE_TO_MULTI'
             )
 
             ocmd = execmd(cmd)
+
+            rep = os.path.join(os.path.dirname(s["src"]), 'psqlimport.txt')
+
+            with open(rep, 'w') as _rep:
+                _rep.write(cmd)
+                _rep.write('\n\n\n=======================\n\n\n\n')
+
+                _rep.write(ocmd)
         
         else:
             ss = os.path.join(
