@@ -151,7 +151,8 @@ def calc_confusion_measures(d):
     return eval_measures
 
 
-def mtx_binary_class(tbl, refcol, tstcol, posval, negval, outmtx):
+def mtx_binary_class(tbl, refcol, tstcol, posval, negval, outmtx,
+                     clstable=None, tbl_pk=None, tbl_fk=None):
     """
     Produce a confusion matrix for a binary classification
 
@@ -177,6 +178,27 @@ def mtx_binary_class(tbl, refcol, tstcol, posval, negval, outmtx):
         df = tbl_to_obj(tbl)
 
     df['rid'] = df.index +1
+
+    # Check if classification results are in another table
+    if clstable and tbl_pk and tbl_fk:
+        if is_shp(clstable):
+            cls_df = shp_to_obj(clstable)
+
+            cls_df.drop('geometry', axis=1, inplace=True)
+        else:
+            cls_df = tbl_to_obj(clstable)
+
+        if tbl_pk == tbl_fk:
+            cls_df.rename(columns={tbl_fk : f'{tbl_fk}_fk'}, inplace=True)
+
+            tbl_fk = f'{tbl_fk}_fk'
+        
+        if refcol == tstcol:
+            df.rename(columns={tstcol : f'{tstcol}_test'}, inplace=True)
+
+            tstcol = f'{tstcol}_test'
+        
+        df = df.merge(cls_df, how='inner', left_on=tbl_pk, right_on=tbl_fk)
 
     # Get Confusion field
     # Get TP, TN, FP, FN
@@ -209,6 +231,8 @@ def mtx_binary_class(tbl, refcol, tstcol, posval, negval, outmtx):
         [d['TP'], d['FP']],
         [d['FN'], d['TN']]
     ], columns=[posval, negval])
+
+    mtx.insert(0, 'class', pd.Series([posval, negval]))
 
     # Get evaluation measures
     emeas = calc_confusion_measures(d)

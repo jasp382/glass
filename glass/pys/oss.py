@@ -70,8 +70,8 @@ def fprop(__file, prop, forceLower=None, fs_unit=None):
         return result
 
 
-def lst_ff(w:str, file_format:None|str=None, filename:None|bool=None,
-           fnpart:None|str=None, rfilename:None|bool=None) -> list[str]:
+def lst_ff(w:str, file_format=None, filename=None,
+           fnpart=None, rfilename=None) -> list[str]:
     """
     List the abs path of all files with a specific extension on a folder
     """
@@ -150,7 +150,7 @@ def lst_ff(w:str, file_format:None|str=None, filename:None|bool=None,
         return _t
 
 
-def lst_fld(w:str, name:None|bool=None, namepart:None|str|list[str]=None) -> list[str]:
+def lst_fld(w:str, name=None, namepart=None) -> list[str]:
     """
     List folders path or name in one folder
     """
