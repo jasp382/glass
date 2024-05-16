@@ -5,6 +5,20 @@ Get Raster properties
 import arcpy
 import os
 
+def rst_geoprop(raster):
+    """
+    Return lowerLeft and cellsize
+    """
+
+    irst = arcpy.Raster(raster)
+
+    lwleft = arcpy.Point(irst.extent.XMin, irst.extent.YMin)
+
+    csize = irst.meanCellWidth
+
+    return lwleft, csize
+
+
 def checkIfRstIsLayer(obj):
     """
     Check if an object is a Raster Layer

@@ -23,3 +23,20 @@ def tbl_to_tbl(inTable, outTable):
     
     return outTable
 
+
+
+def obj_to_rst(obj, out, lower_left, cellsize, ndval):
+    """
+    Write Numpy Array in File
+    """
+
+
+    nrst = arcpy.NumPyArrayToRaster(
+        obj, lower_left, cellsize,
+        value_to_nodata=ndval
+    )
+
+    nrst.save(out)
+
+    return out
+

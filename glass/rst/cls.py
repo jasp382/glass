@@ -192,7 +192,7 @@ def train_to_mdl(train_rst, imgs, outmdl, ntrees=1000, fileformat='.tif',
             f += 1
     
     # if random train
-    if randomtrain:
+    if randomtrain and sample_dim:
         # Produce Random Samples for each class in Y
         # Mantain class proportion in random samples
         val = list(np.unique(Y)) # Get Classes

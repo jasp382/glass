@@ -5,6 +5,36 @@ Sampling ArcGIS tools
 import arcpy
 import os
 
+
+def ag_split_rst_randomly(inrst, proportion, random_rst, other_rst, min_sample=None):
+    """
+    Extract some cells of one raster and save them into a new raster
+
+    The cells not selected for extraction will be exported to other raster.
+    """
+
+    from glass.esri.rd.rst import ag_rst_to_refarray
+    from glass.esri.prop.rst import rst_geoprop
+    from glass.pys.sampling import split_binparray_randomly
+    from glass.esri.wt import obj_to_rst
+
+    # Get raster geoproperties
+    lfeft, csize = rst_geoprop(inrst)
+
+    # Read raster
+    rnum, nd, rshp = ag_rst_to_refarray(inrst, rshp='flatten', rmnd=None)
+
+    # Select cells randomly
+    sel, nsel = split_binparray_randomly(
+        rnum, nd, rshp, proportion, min_sample=min_sample
+    )
+
+    obj_to_rst(sel, random_rst, lfeft, csize, nd)
+    obj_to_rst(nsel, other_rst, lfeft, csize, nd)
+
+    return random_rst, other_rst
+
+
 def rnd_points(rndPntShp, NPoints, whereShp, distTolerance=None):
     """
     Create NRandom Points inside some area
