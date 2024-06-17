@@ -1,4 +1,4 @@
-urllib3==2.1.0
+urllib3==2.2.2
 numpy==1.26.2
 psycopg2-binary==2.9.9
 sqlalchemy==2.0.23
