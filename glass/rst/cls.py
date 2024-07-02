@@ -12,6 +12,7 @@ from joblib import load
 from glass.prop.img import rst_epsg
 from glass.rd.rst   import rsts_to_featarray, rst_to_refarray
 from glass.wt.rst   import obj_to_rst
+from glass.pys.oss import lst_ff
 
 
 def img_clustering(imgs, out, method="k-means", n_cls=8):
@@ -137,7 +138,6 @@ def train_to_mdl(train_rst, imgs, outmdl, ntrees=1000, fileformat='.tif',
         # Check if it is a folder
         if os.path.isdir(imgs):
             # List images in folder
-            from glass.pys.oss import lst_ff
 
             imgs = lst_ff(
                 imgs,
@@ -277,7 +277,6 @@ def imgcls_from_mdl(mdl, imgvar, outrst, fileformat='.tif', newmodel=None, probr
     if type(imgvar) != list:
         # Check if it is a folder
         if os.path.isdir(imgvar):
-            from glass.pys.oss import lst_ff
 
             imgvar = lst_ff(
                 imgvar,
@@ -334,12 +333,12 @@ def imgcls_from_mdl(mdl, imgvar, outrst, fileformat='.tif', newmodel=None, probr
 
         # Place NoData Value and export
         for i in range(len(_res)):
-            np.place(_res[i], tmp==nd_val, 2)
+            np.place(_res[i], tmp==nd_val, 101)
 
             obj_to_rst(
                 _res[i],
                 os.path.join(probrst, f'prob_{str(_classes[i])}.tif'),
-                gtrans, srs, noData=2
+                gtrans, srs, noData=101
             )
     
 
@@ -363,7 +362,6 @@ def bincls_basedonprob(mdl, feat, prob_range, mixcls, orst, fileformat='.tif'):
     if type(feat) != list:
         # Check if it is a folder
         if os.path.isdir(feat):
-            from glass.pys.oss import lst_ff
 
             feat = lst_ff(
                 feat,
@@ -431,4 +429,76 @@ def bincls_basedonprob(mdl, feat, prob_range, mixcls, orst, fileformat='.tif'):
     )
 
     return orst
+
+
+
+def trainfeat_to_npy(train_rst, imgs, yfile, xfile):
+    """
+    Train data to Numpy files
+    """
+
+    num_ref, nd_val, ref_shp = rst_to_refarray(train_rst, rmnd=None)
+
+    img_var = [gdal.Open(i, gdal.GA_ReadOnly) for i in imgs]
+
+    # Get band number for each raster
+    img_bnd = [i.RasterCount for i in img_var]
+
+    # Check images shape
+    # Return error if the shapes are different
+    for r in img_var:
+        rst_shp = (r.RasterYSize, r.RasterXSize)
+
+        if ref_shp != rst_shp:
+            raise ValueError((
+                'There are at least two raster '
+                'files with different shape'
+            ))
+
+    # Get Number of features
+    nvar = sum(img_bnd)
+
+    # Get Y - train data without nodata value
+    Y = num_ref[num_ref != nd_val]
+
+    # Get X - var data to array, delete nodata and reshape
+    X = np.zeros((
+        Y.shape[0], nvar),
+        np.float32
+    )
+
+    f = 0
+    for r in range(len(img_var)):
+        for b in range(img_bnd[r]):
+            a = img_var[r].GetRasterBand(b + 1).ReadAsArray()
+            a = a.reshape((-1, 1))
+            a = a[num_ref != nd_val]
+
+            X[:, f] = a
+
+            f += 1
+    
+    np.save(yfile, Y)
+    np.save(xfile, X)
+
+    return yfile, xfile
+
+
+def npy_to_mdl(yfile, xfile, omdl, trees=1000, samples=None):
+    from sklearn.ensemble import RandomForestRegressor
+
+    y = np.load(open(yfile, 'rb'))
+    x = np.load(open(xfile, 'rb'))
+
+    m = RandomForestRegressor(
+        n_estimators=trees, random_state=0, n_jobs=-1,
+        max_samples=samples
+    )
+
+    m.fit(x, y)
+
+    # Save model
+    joblib.dump(m, omdl)
+
+    return omdl
 

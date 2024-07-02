@@ -151,9 +151,7 @@ def rsts_to_featarray(imgvar):
     # Convert feature images to array
     X = np.zeros(
         (ref_shp[0], ref_shp[1], nvar),
-        gdal_array.GDALTypeCodeToNumericTypeCode(
-            img_var[0].GetRasterBand(1).DataType
-        )
+        np.float32
     )
 
     f = 0

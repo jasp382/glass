@@ -93,13 +93,18 @@ def count_region_in_shape(folder, ref, out, returnprob=None, nprob=None):
         rsts.append(rshp)
     
     # Sum all rasters
-    exp = " + ".join(rsts) if not returnprob else \
-        f"{' + '.join(rsts)} / {str(len(shps)) if not nprob else str(nprob)}.0"
+    sumrst = " + ".join(rsts)
+    deno = "" if not returnprob else \
+        f" / {str(len(shps)) if not nprob else str(nprob)}.0"
+    exp = f"({sumrst}){deno}"
     
     frst = grsrstcalc(exp, orst_name)
 
     # Export final raster
-    grs_to_rst(frst, out, rtype=int)
+    grs_to_rst(
+        frst, out,
+        rtype=int if not returnprob else float,
+        dtype="UInt16" if not returnprob else "Float32")
 
     return out
 
