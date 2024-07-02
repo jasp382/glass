@@ -12,12 +12,12 @@ def euclidean_distance(shpRst, cellsize, outRst, template=None,
     """
     
     import os
-    from arcpy import env
-    from arcpy.sa import *
+    from arcpy.sa import EucDistance
     
+    from glass.pys.tm import now_as_str
     from glass.pys.oss import fprop
     
-    arcpy.CheckOutExtension('Spatial')
+    #arcpy.CheckOutExtension('Spatial')
     
     from glass.prop.df import vector_formats, raster_formats
     from glass.esri.rd.rst  import rst_to_lyr
@@ -32,10 +32,10 @@ def euclidean_distance(shpRst, cellsize, outRst, template=None,
     
     inputFormat = os.path.splitext(shpRst)[1]
     if inputFormat in vector_formats():
-        inLyr = shp_to_lyr(shpRst)
+        inLyr = shp_to_lyr(shpRst, lyrname=f'ilyr_{now_as_str(utc=True)}')
     
     elif inputFormat in raster_formats():
-        inLyr = rst_to_lyr(shpRst)
+        inLyr = rst_to_lyr(shpRst, lyrname=f'ilyr_{now_as_str(utc=True)}')
     
     else:
         raise ValueError(
@@ -43,27 +43,30 @@ def euclidean_distance(shpRst, cellsize, outRst, template=None,
         )
     
     if template:
-        tempEnvironment0 = env.extent
-        env.extent = template
+        arcpy.env.extent = template
     
     if snap:
-        tempSnap = env.snapRaster
-        env.snapRaster = snap
+        arcpy.env.snapRaster = snap
     
     outEucDistance = EucDistance(inLyr, "", cellsize, "")
     outEucDistance.save(path_to_output)
     
-    if template: env.extent = tempEnvironment0
-    
-    if snap: env.snapRaster = tempSnap
-    
     if boundary:
-        from glass.cpu.arcg.mng.rst.proc import clip_raster
+        from glass.esri.rst.ovl import clip_rst
         
-        clipLyr = shp_to_lyr(boundary)
+        clipLyr = shp_to_lyr(boundary, lyrname=now_as_str(utc=True))
         
-        clip_raster(path_to_output, clipLyr, outRst,
-                    template=template, snap=snap)
+        clip_rst(
+            path_to_output, clipLyr, outRst,
+            template=template, snap=snap)
+    
+    if template:
+        arcpy.env.extent = None
+    
+    if snap:
+        arcpy.env.snapRaster = None
+    
+    return outRst
 
 
 def euclidean_dist_for_multiple_extent(inFeatRst, FolderextentShp,

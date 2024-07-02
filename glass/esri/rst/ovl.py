@@ -10,11 +10,9 @@ def clip_rst(rst, feat_clip, out, template=None, snap=None, clipGeom=True):
     """
     
     if template:
-        tempEnvironment0 = arcpy.env.extent
         arcpy.env.extent = template
     
     if snap:
-        tempSnap = arcpy.env.snapRaster
         arcpy.env.snapRaster = snap
     
     clipGeom = "ClippingGeometry" if clipGeom else "NONE"
@@ -24,10 +22,10 @@ def clip_rst(rst, feat_clip, out, template=None, snap=None, clipGeom=True):
     )
     
     if template:
-        arcpy.env.extent = tempEnvironment0
+        arcpy.env.extent = None
     
     if snap:
-        arcpy.env.snapRaster = tempSnap
+        arcpy.env.snapRaster = None
     
     return out
 

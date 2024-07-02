@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 MODULE: arcgis surface
 PURPOSE: Tools for modelling surface with arcgis
@@ -7,16 +6,126 @@ PURPOSE: Tools for modelling surface with arcgis
 
 import arcpy
 
-def slope(demRst, slopeRst, data=None):
+
+def dem_from_tin(
+    countors, col, bbox_dem,
+    cellsize, outdem, bbox_tin=None, hidrology=None,
+    snapRst=None, prj=None, out_tin=None):
+    """
+    Create a Digital Elevation Model based on a TIN
+    """
+    
+    import os
+    from glass.pys.oss      import fprop, mkdir
+    from glass.pys.tm       import now_as_str
+    from glass.esri.rd.shp  import shp_to_lyr
+    from glass.esri.ddd.tin import countours_to_tin
+    from glass.esri.it      import tin_to_raster
+    from glass.esri.rst.ovl import clip_rst
+    
+    ws = mkdir(os.path.join(
+        os.path.dirname(outdem),
+        now_as_str(utc=True)
+    ), overwrite=True)
+
+    oprop = fprop(outdem, ['fn', 'ff'])
+    oname, of = oprop['filename'], oprop['fileformat']
+    cname = fprop(countors, 'fn')
+    tmpdem = outdem if not bbox_tin else os.path.join(ws, f'tmp_{oname}{of}')
+
+    otin = out_tin if out_tin else os.path.join(ws, f'tin_{oname}')
+    
+    # Check Extension
+    #arcpy.CheckOutExtension("3D")
+    srs = arcpy.SpatialReference(f'{os.path.splitext(countors)[0]}.prj') \
+        if not prj else arcpy.SpatialReference(prj) if type(prj) == int \
+        else None
+    
+    if not srs:
+        raise ValueError('Unknown Spatial Reference System')
+    
+    # Create TIN
+    tin = countours_to_tin(
+        countors, col,
+        bbox_tin if bbox_tin else bbox_dem,
+        prj, otin, hidrology
+    )
+
+    # TIN2Raster
+    rst_tin = tin_to_raster(
+        tin, cellsize, tmpdem,
+        snap_rst=snapRst
+    )
+
+    if bbox_tin:
+        # Clip Raster
+        lmt_clip = shp_to_lyr(bbox_dem)
+        dem_clip = clip_rst(rst_tin, lmt_clip, outdem, snap=snapRst)
+    
+    return outdem
+
+
+def loop_dem_from_tin(countors_fld, elevField, bound_tin_fld, bound_mdt_fld,
+                 cellsize, w, fld_outputs, snapRst=None, prj=None,
+                 shpFormat='.shp', rstFormat='.tif'):
+    """
+    Create a Digital Elevation Model based on a TIN in loop
+    
+    NOTES:
+    * Related countours and boundaries should have the same name in the
+    respective folder
+    
+    * elevField should be the same in all countors_fld
+    """
+    
+    import os
+    from glass.pys.oss import lst_ff
+    
+    # List files
+    countours = lst_ff(countors_fld, file_format=shpFormat)
+    
+    rstFormat = rstFormat if rstFormat[0] == '.' else '.' + rstFormat
+    shpFormat = shpFormat if shpFormat[0] == '.' else '.' + shpFormat
+    
+    for shp in countours:
+        shpFilename = os.path.basename(shp)
+        
+        dem_from_tin(
+            shp, elevField,
+            os.path.join(bound_tin_fld, shpFilename),
+            os.path.join(bound_mdt_fld, shpFilename),
+            cellsize,
+            w,
+            os.path.join(
+                fld_outputs,
+                os.path.splitext(shpFilename)[0] + rstFormat
+            ),
+            snapRst=snapRst,
+            prj=prj
+        )
+
+
+def slope(dem, sloperst, data=None):
     """
     Run Slope
+
+    data OPTIONS:
+    * DEGREE
+    * PERCENT RISE
     """
+
+    from arcpy.sa import Slope
     
-    data = "PERCENT_RISE" if not data else data
+    data = "DEGREE" if not data else data
+
+    arcpy.env.extent = dem
+    arcpy.env.snapRaster = dem
     
-    arcpy.gp.Slope_sa(demRst, slopeRst, data)
+    slp = Slope(dem, data)
+
+    slp.save(sloperst)
     
-    return slopeRst
+    return sloperst, slp
 
 
 def hillshade(dem, out):
@@ -32,37 +141,29 @@ def aspect(dem, aspect, reclass=None):
     """
     Return Aspect raster reclassified or not
     """
-    
-    import os
 
-    n, f = os.path.splitext(os.path.basename(aspect))
+    from arcpy.sa import Aspect
     
-    outAspect = aspect if not reclass else os.path.join(
-        os.path.dirname(aspect),
-        f'{n}_original{f}'
-    )
-    
-    arcpy.gp.Aspect_sa(dem, outAspect)
+    asp = Aspect(dem)
     
     if reclass:
-        from glass.esri.rd.rst          import rst_to_lyr
-        from glass.cpu.arcg.spanlst.rcls import reclassify
-        from glass.esri.tbl.col      import add_col
+        from glass.esri.rst.rcls import rcls_rst
+        from glass.esri.tbl.col  import add_col
+
+        _rules = [
+            [-1, 0, 1],
+            [0, 22.5, 2],
+            [22.5, 67.5, 3],
+            [67.5, 112.5, 4],
+            [112.5, 157.5, 5],
+            [157.5, 202.5, 6],
+            [202.5, 247.5, 7],
+            [247.5, 292.5, 8],
+            [292.5, 337.5, 9],
+            [337.5, 360, 2],
+        ]
         
-        __rules = (
-            "-1 0 1;"
-            "0 22,5 2;"
-            "22,5 67,5 3;"
-            "67,5 112,5 4;"
-            "112,5 157,5 5;"
-            "157,5 202,5 6;"
-            "202,5 247,5 7;"
-            "247,5 292,5 8;"
-            "292,5 337,5 9;"
-            "337,5 360 2"
-        )
-        
-        reclassify(outAspect, "Value", __rules, aspect, template=outAspect)
+        aspect, asp = rcls_rst(asp, "Value", _rules, aspect, dem, isrange=True)
         
         d = {
             1: 'Flat', 2: 'North', 3: 'Northeast', 4: 'East',
@@ -70,9 +171,9 @@ def aspect(dem, aspect, reclass=None):
             9: 'Northwest'
         }
         
-        add_col(aspect, 'aspect', "TEXT", "15")
+        alyr = add_col(aspect, 'aspect', "TEXT", "15")
         
-        cursor = arcpy.UpdateCursor(rst_to_lyr(aspect))
+        cursor = arcpy.UpdateCursor(alyr)
         for lnh in cursor:
             __val = int(lnh.getValue("Value"))
             
@@ -81,6 +182,11 @@ def aspect(dem, aspect, reclass=None):
             cursor.updateRow(lnh)
         
         del cursor, lnh
+    
+    else:
+        asp.save(aspect)
+    
+    return aspect, asp
 
 
 def viewshed(inRaster, observerFeat, output,

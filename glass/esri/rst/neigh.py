@@ -17,6 +17,19 @@ def focal_statistics(irst, orst, neigh_type, neigh_val, statistic):
     - Wedge
     - Irregular
     - Weight
+
+    statistic:
+    - MEAN
+    - MAJORITY
+    - MAXIMUM
+    - MINIMUM
+    - MEDIAN
+    - MINORITY
+    - RUM
+    - RANGE
+    - etc
+
+    https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/focal-statistics.htm
     """
 
     if neigh_type == 'Annulus':
@@ -29,5 +42,5 @@ def focal_statistics(irst, orst, neigh_type, neigh_val, statistic):
 
     ofocal.save(orst)
 
-    return orst
+    return orst, ofocal
 

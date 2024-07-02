@@ -23,6 +23,7 @@ def train_to_mdl(trst, feat_folder, outmdl, ntrees=1000, mxsamples=None):
     from sklearn.ensemble     import RandomForestClassifier
 
     from glass.esri.rd.rst import ag_rst_to_refarray, rst_to_array
+    from glass.esri.prop.rst import get_nodata
 
     # List feature rasters
     feats = lst_ff(feat_folder, file_format='.tif')
@@ -31,6 +32,9 @@ def train_to_mdl(trst, feat_folder, outmdl, ntrees=1000, mxsamples=None):
     refnum, refnd, refshp = ag_rst_to_refarray(trst, rmnd=None)
 
     fnums = [rst_to_array(r) for r in feats]
+
+    # Get NoData Values
+    nds = [get_nodata(r) for r in feats]
 
     # Check shapes
     for i in range(len(fnums)):
@@ -41,6 +45,9 @@ def train_to_mdl(trst, feat_folder, outmdl, ntrees=1000, mxsamples=None):
             ))
     
     # Get Y - train data without nodata value
+    for i in range(len(nds)):
+        np.place(refnum, fnums[i] == nds[i], refnd)
+    
     Y = refnum[refnum != refnd]
 
     # Get X - var data to array, delete nodata and reshape
@@ -88,10 +95,14 @@ def imgcls_from_mdl(mdl, featfolder, orst, probrst=None):
     # Get feature data
     fnums = [rst_to_array(r) for r in feats]
 
+    # Get NoData Values
+    nds = [get_nodata(r) for r in feats]
+
     # Verify rasters shape
     refshp = fnums[0].shape
 
     for i in range(1, len(fnums)):
+        np.place(fnums[i], fnums[i] == nds[i], -9999)
         if refshp != fnums[i].shape:
             raise ValueError((
                 f'The file {feats[i]} has a '
@@ -117,15 +128,12 @@ def imgcls_from_mdl(mdl, featfolder, orst, probrst=None):
     # Reshape result
     res = y_cls.reshape(X[:, :, 0].shape)
 
-    # Get NoData Value
-    nds = [get_nodata(r) for r in feats]
-
     # Get geo properties
     lwleft, csize = rst_geoprop(feats[0])
 
     # Place nodata values
     for i in range(len(feats)):
-        np.place(res, fnums[i] == nds[i], 255)
+        np.place(res, fnums[i] == -9999, 255)
     
     # Export result
     obj_to_rst(res, orst, lwleft, csize, 255)

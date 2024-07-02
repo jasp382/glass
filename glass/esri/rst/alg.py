@@ -4,21 +4,25 @@ Raster calculator options
 
 import arcpy
 
-def rstcalc(expression, output, template=None):
+def rstcalc(rasters, names, expression, output, template=None):
     """
     Basic Raster Calculator
     """
+
+    from arcpy.sa import RasterCalculator
     
     if template:
-        tempEnvironment0 = arcpy.env.extent
         arcpy.env.extent = template
+        arcpy.env.snapRaster = template
     
-    arcpy.gp.RasterCalculator_sa(expression, output)
+    calcres = RasterCalculator(rasters, names, expression, "FirstOf", "FirstOf")
+    calcres.save(output)
     
     if template:
-        arcpy.env.extent = tempEnvironment0
+        arcpy.env.extent = None
+        arcpy.env.snapRaster = None
     
-    return output
+    return output, calcres
 
 
 def floatRst_to_IntegerRst(inFolder, outFolder):
