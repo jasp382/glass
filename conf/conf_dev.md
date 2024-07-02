@@ -42,7 +42,7 @@ read -a pvva <<< "$pvv"
 pone="${pvva[0]}"
 ptwo="${pvva[1]}"
 
-echo "/home/$USER/glass" | sudo tee ~/.virtualenvs/gs/lib/python$pone.$ptwo/site-packages/glass.pth
+echo "/home/$USER/code/glass" | sudo tee ~/.virtualenvs/gs/lib/python$pone.$ptwo/site-packages/glass.pth
 
 # Setup QGIS Python dependencies
 ln -s /usr/lib/python3/dist-packages/qgis* ~/.virtualenvs/gs/lib/python3.10/site-packages

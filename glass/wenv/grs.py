@@ -234,9 +234,7 @@ def run_grass(workspace, grassBIN=GRASS_BIN, location=None, srs=None):
         )
     
     if not base:
-        raise ValueError((
-            'Could not identify operating system'
-        ))
+        raise ValueError('Could not identify operating system')
     
     return base
 
