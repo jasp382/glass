@@ -126,18 +126,14 @@ def rsts_to_shps(rstfolder, outfolder, rsttemplate):
 
     import os
     from glass.pys.oss  import lst_ff, fprop
-    from glass.wenv.grs import run_grass
+    from glass.wenv.grs import grass_session
 
     # List Raster Files
     rsts = lst_ff(rstfolder, file_format='tif')
 
     # Start GRASS GIS Session
     loc='convrst'
-    grsbase = run_grass(outfolder, location=loc, srs=rsttemplate)
-
-    import grass.script.setup as gsetup
-
-    gsetup.init(grsbase, outfolder, loc, 'PERMANENT')
+    grsbase = grass_session(outfolder, loc=loc, srs=rsttemplate)
 
     from glass.it.rst import rst_to_grs
     from glass.it.shp import grs_to_shp

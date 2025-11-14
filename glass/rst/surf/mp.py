@@ -7,7 +7,7 @@ import pandas as pd
 import re
 import multiprocessing as mp
 
-from glass.wenv.grs import run_grass
+from glass.wenv.grs import grass_session
 from glass.pys.oss  import cpu_cores, lst_ff
 from glass.pys.oss  import fprop
 from glass.pd.split import df_split
@@ -24,15 +24,9 @@ def rstfld_to_slope(rst_folder, dclv_folder, out_name, perc_folder=None):
 
         iirsts = inrsts.mdt.tolist()
 
-        # Create GRASS GIS Location
-        loc_name = f'thread_{str(tid)}'
-        gbase = run_grass(
-            outfolder, location=loc_name, srs=iirsts[0]
-        )
-
         # Start GRASS GIS Session
-        import grass.script.setup as gsetup
-        gsetup.init(gbase, outfolder, loc_name, 'PERMANENT')
+        loc_name = f'thread_{str(tid)}'
+        gbase = grass_session(outfolder, loc=loc_name, srs=iirsts[0])
 
         from glass.it.rst   import rst_to_grs, grs_to_rst
         from glass.rst.surf.grs import slope
@@ -106,15 +100,11 @@ def rstfld_to_aspect(rst_folder, expo_folder, oname):
     
         # Create GRASS GIS location
         loc_name = f'thread_{str(tid)}'
-        gbase = run_grass(outfolder, location=loc_name, srs=iirsts[0])
+        gbase = grass_session(outfolder, loc=loc_name, srs=iirsts[0])
     
-        # Start GRASS GIS Session
-        import grass.script.setup as gsetup
-        gsetup.init(gbase, outfolder, loc_name, 'PERMANENT')
-    
-        from glass.it.rst   import rst_to_grs, grs_to_rst
+        from glass.it.rst       import rst_to_grs, grs_to_rst
         from glass.rst.surf.grs import aspect
-        from glass.wenv.grs import rst_to_region
+        from glass.wenv.grs     import rst_to_region
     
         for rst in iirsts:
             # Import data

@@ -23,9 +23,9 @@ def confmtx_fmrst(ref_rst, cls_rst, class_labels=None):
 
     if refshp != clsshp:
         raise ValueError((
-                'Reference Raster and Classification '
-                'Raster have different shape'
-            ))
+            'Reference Raster and Classification '
+            'Raster have different shape'
+        ))
 
     ref_nd = ref_img.GetRasterBand(1).GetNoDataValue()
     cls_nd = cls_img.GetRasterBand(1).GetNoDataValue()
@@ -114,7 +114,7 @@ def bin_confmxt_fmrst(ref_rst, cls_rst):
     negatives = 0
     """
 
-    from glass.cls.eval import calc_confusion_measures
+    from glass.cls.eval.obj import calc_confusion_measures
 
     l = ['TP', 'TN', 'FP', 'FN']
 

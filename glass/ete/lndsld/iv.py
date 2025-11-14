@@ -11,15 +11,15 @@ def infovalue(landslides, variables, iv_rst):
     import os
     import math
     import numpy
-    from glass.rd.rst    import rst_to_array
-    from glass.rd        import tbl_to_obj
-    from glass.prop.feat import get_gtype
-    from glass.prop.prj  import rst_epsg
-    from glass.prop.rst  import rst_shape, count_cells
-    from glass.prop.rst  import rst_geoprop, rst_cellsize
-    from glass.prop.rst  import frequencies
-    from glass.pys.oss   import mkdir
-    from glass.wt.rst    import obj_to_rst
+    from glass.rd.rst   import rst_to_array
+    from glass.rd       import tbl_to_obj
+    from glass.prop.shp import get_gtype
+    from glass.prop.prj import rst_epsg
+    from glass.prop.rst import rst_shape, count_cells
+    from glass.prop.rst import rst_geoprop, rst_cellsize
+    from glass.prop.rst import frequencies
+    from glass.pys.oss  import mkdir
+    from glass.wt.rst   import obj_to_rst
     
     # Create Workspace for temporary files
     workspace = mkdir(os.path.join(
@@ -165,10 +165,11 @@ def grs_infovalue(movs, _var, refrst, out):
     import os
     import math as m
     from glass.dtt.rst.torst import rstext_to_rst
-    from glass.prop.df  import is_rst
-    from glass.prop.rst import rst_shape, frequencies
-    from glass.wenv.grs import run_grass
-    from glass.pys.oss  import lst_ff, fprop
+    from glass.prop.df       import is_rst
+    from glass.prop.rst      import rst_shape, frequencies
+    from glass.wenv.grs      import grass_session
+    from glass.pys.oss       import lst_ff, fprop
+    from glass.pys.tm        import now_as_str
 
     # Get reference raster
     ws = os.path.dirname(out)
@@ -193,16 +194,7 @@ def grs_infovalue(movs, _var, refrst, out):
             ))
     
     # Start GRASS GIS Session
-    # Get name for GRASS GIS location
-    loc = fprop(movs, 'fn', forceLower=True)[:7] + '_loc'
-
-    # Create GRASS GIS location
-    gbase = run_grass(ws, location=loc, srs=refrst)
-
-    # Start GRASS GIS Session
-    import grass.script.setup as gsetup
-
-    gsetup.init(gbase, ws, loc, 'PERMANENT')
+    gbase = grass_session(ws, loc=f'mov_{now_as_str()}', srs=refrst)
 
     # Import GRASS GIS modules
     from glass.dtt.rst.torst import grsshp_to_grsrst
@@ -348,7 +340,7 @@ def grs_infovalue(movs, _var, refrst, out):
     # Sum results
     virstfinal = grsrstcalc(" + ".join(virst), fprop(out, 'fn'))
 
-    fffinal = grs_to_rst(virstfinal, out)
+    fffinal = grs_to_rst(virstfinal, out, dtype="Float32")
 
     return out
 

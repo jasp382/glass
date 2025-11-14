@@ -6,7 +6,8 @@ import os
 
 from glass.pys import execmd
 
-def shp_to_shp(inshp, outshp, gapi='ogr', spatialite=None, lyrname=None):
+def shp_to_shp(inshp, outshp, gapi='ogr', spatialite=None,
+               lyrname=None, oepsg=None, olyr=None):
     """
     Convert a vectorial file to another with other file format
     
@@ -18,8 +19,10 @@ def shp_to_shp(inshp, outshp, gapi='ogr', spatialite=None, lyrname=None):
     a sqlite db and if you want SpatialLite support for that database.
     """
     
-    if gapi == 'ogr':
+    if gapi == 'ogr' or gapi == 'ogr2ogr':
         from glass.prop.df import drv_name
+        from glass.prop.prj import get_epsg
+        from glass.pys.oss import fprop
         
         drv = drv_name(outshp)
     
@@ -27,10 +30,24 @@ def shp_to_shp(inshp, outshp, gapi='ogr', spatialite=None, lyrname=None):
             splite = ' -dsco "SPATIALITE=YES"'
         else:
             splite = ''
+        
+        srs = ''
+        if oepsg:
+            ff = fprop(inshp, 'ff')
+
+            if ff == '.pbf' or ff == '.xml':
+                iepsg = 4326
+            
+            else:
+                iepsg = get_epsg(inshp, lyrname=lyrname)
+
+            if iepsg != oepsg:
+               srs = f' -s_srs EPSG:{str(iepsg)} -t_srs EPSG:{str(oepsg)}' 
 
         lstr = "" if not lyrname else f' {lyrname}'
+        olyrstr = "" if not olyr else f" -nln \"{olyr}\""
     
-        cmd = f'ogr2ogr -f "{drv}" {outshp} {inshp}{lstr}{splite}'
+        cmd = f'ogr2ogr -f "{drv}" {outshp} {inshp}{lstr}{splite}{srs}{olyrstr}'
     
         # Run command
         cmdout = execmd(cmd)
@@ -39,7 +56,7 @@ def shp_to_shp(inshp, outshp, gapi='ogr', spatialite=None, lyrname=None):
         # TODO identify input geometry type
         
         from glass.pys.oss  import fprop
-        from glass.wenv.grs import run_grass
+        from glass.wenv.grs import grass_session
         from glass.prop.prj import get_epsg
 
         # Start GRASS GIS Session
@@ -47,11 +64,7 @@ def shp_to_shp(inshp, outshp, gapi='ogr', spatialite=None, lyrname=None):
         loc = f'loc_{fprop(outshp, "fn")}'
         epsg = get_epsg(inshp)
 
-        gbase = run_grass(ws, location=loc, srs=epsg)
-
-        import grass.script.setup as gsetup
-
-        gsetup.init(gbase, ws, loc, 'PERMANENT')
+        gbase = grass_session(ws, loc=loc, srs=epsg)
 
         from glass.it.shp import grs_to_shp, shp_to_grs
 
@@ -157,7 +170,8 @@ GRASS GIS conversions
 def shp_to_grs(ilyr: str, olyr:str|None=None,
                filterByReg: bool|None=None,
                lyrname: str|None=None,
-               asCMD: bool|None=None):
+               asCMD: bool|None=None,
+               whr:str|None=None):
     """
     Add Shape to GRASS GIS
     """
@@ -174,7 +188,7 @@ def shp_to_grs(ilyr: str, olyr:str|None=None,
         
         m = Module(
             "v.in.ogr", input=ilyr, layer=lyrname,
-            output=olyr, flags=f,
+            output=olyr, flags=f, where=whr,
             overwrite=True, run_=False, quiet=True
         )
         
@@ -185,10 +199,11 @@ def shp_to_grs(ilyr: str, olyr:str|None=None,
 
         f = " -r" if filterByReg else ""
         lyr = '' if not lyrname else f" layer={lyrname}"
+        _whr = '' if not whr else f" where=\"{whr}\""
         
         rcmd = execmd((
             f"v.in.ogr input={ilyr}{lyr} "
-            f"output={olyr} -o{f} --overwrite --quiet"
+            f"output={olyr} -o{f}{_whr} --overwrite --quiet"
         ))
     
     return olyr
@@ -232,7 +247,7 @@ def grs_to_shp(ilyr, olyr, geomtype, lyrn=1,
         
         mp    = " -m" if asMultiPart else ""
         up    = " -u" if _update else ""
-        olyrn = '' if not lname else f"output_layer={lname}"
+        olyrn = '' if not lname else f" output_layer={lname}"
  
         rcmd = execmd((
             f"v.out.ogr input={ilyr} type={geomtype} "
@@ -396,28 +411,39 @@ def shps_to_gpkg(in_shps, gpkg, shp_ff='.shp', tbl_name=None):
     return gpkg
 
 
-def db_to_gpkg(db, itbl, gpkg, otbl=None):
+def db_to_gpkg(db, gpkg, otbl=None, tbls=None):
     """
     Database table to GeoPackage
     """
 
     from glass.cons.psql import con_psql
+    from glass.prop.sql  import lst_tbl
+    from glass.pys       import obj_to_lst
 
     cdb = con_psql()
 
-    otbl = itbl if not otbl else otbl
+    tbls = lst_tbl(db, excludeViews=True, api='psql') \
+        if not tbls else obj_to_lst(tbls)
+
+    otbl = tbls if not otbl else [otbl] if len(tbls) == 1 and \
+        type(otbl) == str else otbl if type(otbl) == list and\
+        len(otbl) == len(tbls) else tbls
 
     up = " -update -append" if os.path.exists(gpkg) \
         else ""
+    
+    for i in range(len(tbls)):
+        if i == 1:
+            up = " -update -append"
+        
+        cmd = (
+            f"ogr2ogr{up} -f \"GPKG\" {gpkg} -nln \"{otbl[i]}\" "
+            f"PG:\"dbname='{db}' host='{cdb['HOST']}' port='{cdb['PORT']}' "
+            f"user='{cdb['USER']}' password='{cdb['PASSWORD']}'\" "
+            f"\"{tbls[i]}\""
+        )
 
-    cmd = (
-        f"ogr2ogr{up} -f \"GPKG\" {gpkg} -nln \"{otbl}\" "
-        f"PG:\"dbname='{db}' host='{cdb['HOST']}' port='{cdb['PORT']}' "
-        f"user='{cdb['USER']}' password='{cdb['PASSWORD']}'\" "
-        f"\"{itbl}\""
-    )
-
-    ocmd = execmd(cmd)
+        ocmd = execmd(cmd)
 
     return gpkg
 
@@ -436,7 +462,7 @@ def gdb_to_gpkg(gdb, layers, gpkg):
 
         cmd = (
             f"ogr2ogr{up} -f \"GPKG\" {gpkg} -nln \"{lyrs[i]}\" "
-            f"{gdb} -dialect sqlite -sql \"SELECT * FROM {lyrs[i]}\""
+            f"{gdb} {lyrs[i]} -dsco DRIVER=FileGDB"
         )
 
         rcmd = execmd(cmd)

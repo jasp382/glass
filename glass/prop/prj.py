@@ -6,7 +6,7 @@ import os
 from osgeo import gdal, osr, ogr
 
 
-def df_epsg(df, geom_col):
+def df_epsg(df, geom_col='geometry'):
     """
     Return df EPSG
     """

@@ -92,9 +92,9 @@ def ctbs_to_obslocal(ctbs, output, tmax=30*60,
     import pandas as pd
     import os
 
-    from glass.pys.oss  import fprop
-    from glass.wenv.grs import run_grass
-    from glass.prop.rst import rst_ext
+    from glass.pys.oss       import fprop
+    from glass.wenv.grs      import grass_session
+    from glass.prop.rst      import rst_ext
     from glass.dtt.rst.torst import ext_to_rst
 
     ws = os.path.dirname(output)
@@ -145,11 +145,7 @@ def ctbs_to_obslocal(ctbs, output, tmax=30*60,
     )
 
     # Start GRASS GIS Session
-    gb = run_grass(ws, location=loc, srs=ref)
-
-    import grass.script.setup as gsetup
-
-    gsetup.init(gb, ws, loc, 'PERMANENT')
+    gb = grass_session(ws, loc=loc, srs=ref)
 
     from glass.it.rst  import rst_to_grs, grs_to_rst
     from glass.rst.alg import grsrstcalc
@@ -169,8 +165,7 @@ def ctbs_to_obslocal(ctbs, output, tmax=30*60,
     # Export result
     grs_to_rst(
         res, output,
-        rtype=float, dtype="Float32",
-        nodata=0
+        dtype="Float32", nodata=0
     )
 
     return output

@@ -303,7 +303,7 @@ def predict_fm_mdl(mdlFile, vFile, data, txtCol, method='NaiveBayes'):
     Text classification using file with fit data
     """
     
-    from joblib   import load
+    from joblib  import load
     import pandas as pd
     from glass.rd import tbl_to_obj
     

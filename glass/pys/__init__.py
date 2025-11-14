@@ -24,7 +24,7 @@ def obj_to_lst(obj):
     return obj if type(obj) == list else [obj] if obj != None else None
 
 
-def execmd(cmd):
+def execmd(cmd, raiseError=True):
     """
     Execute a command and provide information about the results
     """
@@ -36,12 +36,19 @@ def execmd(cmd):
     out, err = p.communicate()
     
     if p.returncode != 0:
-        raise ValueError((
+
+        error = (
             'Message: Command execution ended with error\n'
             f'Command was: {cmd}\n'
             f'Output: {out.decode("utf-8")}\n'
             f'Error: {err.decode("utf-8")}'
-        ))
+        )
+        if raiseError:
+            raise ValueError(error)
+        
+        else:
+            print(error)
+            return None
     
     else:
         return out.decode('utf-8')

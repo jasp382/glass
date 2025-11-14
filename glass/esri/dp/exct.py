@@ -13,7 +13,7 @@ def split_shp_by_two_attr(s, f1, f2, w):
     combinacoes podem-se repetir em varias features 
     """
     
-    from gesri.rd.shp import shp_to_lyr
+    from glass.esri.rd.shp import shp_to_lyr
     
     arcpy.env.workspace = w;
     lyr = shp_to_lyr(s)

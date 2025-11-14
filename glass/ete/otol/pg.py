@@ -6,7 +6,8 @@ import os
 import datetime as dt
 
 
-def osm_to_lulc(osm, nomenclature, epsg, outfile, savedb=None, tmpfld=None, overwrite_temp=None):
+def osm_to_lulc(osm, nomenclature, epsg, outfile, savedb=None, tmpfld=None,
+                overwrite_temp=None, tmpfilesres=None):
     """
     Convert OSM Data into Land Use/Land Cover Information
 
@@ -20,7 +21,7 @@ def osm_to_lulc(osm, nomenclature, epsg, outfile, savedb=None, tmpfld=None, over
     from glass.cons.otol    import get_legend
     from glass.dtt.mge      import shps_to_shp
     from glass.ete.otol.vec import module_1, module_2, module_3_and_4, module_5
-    from glass.ete.otol.vec import module_6
+    from glass.ete.otol.vec import module_6, priority_rule
     from glass.it.db        import osm_to_psql
     from glass.pys.oss      import fprop, mkdir
     from glass.pys.tm       import now_as_str
@@ -169,16 +170,36 @@ def osm_to_lulc(osm, nomenclature, epsg, outfile, savedb=None, tmpfld=None, over
 
     lulc_df.drop('fid', axis=1, inplace=True)
 
-    df_to_shp(lulc_df, outfile, layername='osmtolulc_v2')
+    tmplyr = 'osmtolulc_v2'
+    df_to_shp(lulc_df, outfile, layername=tmplyr)
+    time_j = dt.datetime.now().replace(microsecond=0)
+
+    # Apply priority rule
+    priority_rule(
+        outfile, nom_id, tmplyr, epsg, "lulc", osm_db, "osmtolulc_v3",
+        tmpfiles=tmpfilesres
+    )
+    time_l = dt.datetime.now().replace(microsecond=0)
+
+    # Export database if requested
+    if savedb:
+        from glass.sql.bkup import dump_db
+
+        dump_db(osm_db, savedb, api='psql')
+    
+    # Delete database
+    drop_db(osm_db)
 
     return outfile, {
-        0  : ('get_modules_tags_classes', time_b - time_a),
-        1  : ('osm_to_db', time_c - time_b),
-        2  : ('module_1', time_d - time_c, log1),
-        3  : ('module_2', time_e - time_d, log2),
-        4  : None if not log3 else ('module_3', time_f - time_e, log3),
-        5  : None if not log4 else ('module_4', time_g - time_f, log4),
-        6  : ('module_5', time_h - time_g, log5),
-        7  : None if not log6 else ('module_6', time_i - time_h, log5),
+        0 : ('get_modules_tags_classes', time_b - time_a),
+        1 : ('osm_to_db', time_c - time_b),
+        2 : ('module_1', time_d - time_c, log1),
+        3 : ('module_2', time_e - time_d, log2),
+        4 : None if not log3 else ('module_3', time_f - time_e, log3),
+        5 : None if not log4 else ('module_4', time_g - time_f, log4),
+        6 : ('module_5', time_h - time_g, log5),
+        7 : None if not log6 else ('module_6', time_i - time_h, log5),
+        8 : ('merge_classes', time_j - time_i),
+        9 : ('priority_rule', time_l - time_j) 
     }
 

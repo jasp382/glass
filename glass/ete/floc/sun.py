@@ -64,7 +64,7 @@ def get_declination_asdf(ano, mes, dia):
     df = pd.DataFrame(cc[1:-1], columns=['data'])
     
     # One column to several
-    df[cols] = df['data'].str.split(',', -1, expand=True)
+    df[cols] = df['data'].str.split(pat=',', n=-1, expand=True)
 
     # Get datetime column
     df['datehour'] = df["date"] + ' ' + df["time"]

@@ -2,7 +2,9 @@
 Overlay operations using SQL
 """
 
-from glass.sql.q import q_to_ntbl
+from glass.prop.sql import cols_name
+from glass.pys      import obj_to_lst
+from glass.sql.q    import q_to_ntbl, exec_write_q
 
 
 def feat_within(db, left_tbl, left_geom, within_tbl, within_geom, out=None,
@@ -85,7 +87,7 @@ def feat_not_within(db, inTbl, inGeom, withinTbl, withinGeom, outTbl,
     * POSTGIS.
     """
     
-    from glass.pys import obj_to_lst
+    
 
     selcols = "*" if not inTblCols else ", ".join(obj_to_lst(inTblCols))
     
@@ -237,7 +239,7 @@ def del_topoerror_shps(db, shps, epsg, outfolder):
     
     shps = obj_to_lst(shps)
     
-    TABLES = shp_to_psql(db, shps, srs=epsg, api="shp2pgsql")
+    TABLES = shp_to_psql(db, shps, srs=epsg, api="ogr2ogr")
     
     NTABLE = [q_to_ntbl(
         db, "nt_{}".format(t),
@@ -254,8 +256,9 @@ def del_topoerror_shps(db, shps, epsg, outfolder):
             outfolder, TABLES[t]), tableIsQuery=None, api='pgsql2shp')
 
 
-def intersection(dbname, aShp, bShp, pk, aGeom, bGeom, output,
-                 primitive, priority, new_pk='fid_pk', new_geom='geom'):
+def st_pgintersection(db, atbl, btbl, apk, lgeom, rgeom, primitive, output=None,
+                 new_pk='fid_pk', new_geom='geom',
+                 aselcols=None, bselcols=None, outisfile=None, olyr=None):
     """
     Intersect two layers
 
@@ -266,81 +269,87 @@ def intersection(dbname, aShp, bShp, pk, aGeom, bGeom, output,
     The user could giver a list (with fields for selection) as value for the
     priority argument.
     """
-    
-    from glass.sql.c import sqlcon
-    from glass.prop.sql import cols_name
 
-    if priority == 'a':
-        cols_tbl = cols_name(dbname, aShp)
-        cols_tbl.remove(aGeom)
-    elif priority == 'b':
-        cols_tbl = cols_name(dbname, bShp)
-        cols_tbl.remove(bGeom)
-    elif type(priority) == type([0]):
-        cols_tbl = priority
+    _acols = obj_to_lst(aselcols) if aselcols else \
+        cols_name(db, atbl, api='psql')
+    _bcols = obj_to_lst(bselcols) if bselcols else \
+        cols_name(db, btbl, api='psql')
     
-    cols_tbl.remove(pk)
-    conn = sqlcon(dbname, sqlAPI='psql')
-    cursor = conn.cursor()
+    bcols_ = {c : c if c not in _acols and c != apk and c != lgeom else f"{c}_y" for c in _bcols}
+    
+    acols = ", ".join([f"tbla.{x}" for x in _acols if x != lgeom and x != apk])
+    bcols = ", ".join([f"tblb.{y} AS {bcols_[y]}" for y in bcols_ if y != rgeom])
 
     if primitive == 'point':
-        cols_tbl = [f'{aShp}.{x}' for x in cols_tbl]
 
-        if priority == 'a':
-            sel_geom = f"{aShp}.{aGeom}"
-        elif priority == 'b' or type(priority) == type([]):
-            sel_geom = f"{bShp}.{bGeom}"
+        q = (
+            f"SELECT ROW_NUMBER() OVER(ORDER BY tbla.{apk}) AS {new_pk}, "
+            f"tbla.{apk} AS {apk if apk != new_pk else f'{apk}_1'}, "
+            f"{acols}, {bcols}, {lgeom} AS {new_geom} "
+            f"FROM {atbl} AS tbla "
+            f"INNER JOIN {btbl} AS tblb "
+            f"ON ST_Within(tbla.{lgeom}, tblb.{rgeom})"
+        )
         
-        cursor.execute((
-            f"CREATE TABLE {output} AS "
-            f"SELECT {','.join(cols_tbl)}, "
-            f"{sel_geom} AS {new_geom} FROM {aShp} "
-            f"INNER JOIN {bShp} ON ST_Within({aShp}.{aGeom}, "
-            f"{bShp}.{bGeom});"
-        ))
 
     elif primitive == 'line':
-        cols_tbl = [f'{output}.{x}' for x in cols_tbl]
 
-        cols_tbl.append(new_geom)
-
-        cursor.execute((
-            f"CREATE TABLE {output} AS "
-            f"SELECT {','.join(cols_tbl)} FROM ("
-                f"SELECT {aShp}.*, "
+        q = (
+            f"SELECT ROW_NUMBER() OVER(ORDER BY {apk}) AS {new_pk}, * "
+            "FROM ("
+                f"SELECT tbla.{apk}, {acols}, {bcols}, "
                 f"(ST_DUMP(ST_Intersection("
-                    f"{bShp}.geom, {aShp}.{aGeom}))).geom "
-                f"FROM {bShp} "
-                f"INNER JOIN {aShp} "
-                f"ON ST_Intersects({bShp}.geom, "
-                f"{aShp}.{aGeom})"
-            f") As {output} "
-            f"WHERE ST_Dimension({output}.geom) = 1;"
-        ))
+                    f"tblb.{rgeom}, tbla.{lgeom}))).geom AS {new_geom} "
+                f"FROM {btbl} AS tblb "
+                f"INNER JOIN {atbl} AS tbla "
+                f"ON ST_Intersects(tblb.{rgeom}, "
+                f"tbla.{lgeom})"
+            f") As foo "
+            f"WHERE ST_Dimension(foo.{new_geom}) = 1;"
+        )
 
     elif primitive == 'polygon':
-        cols_tbl = ['{t}.{c}'.format(t=aShp, c=x) for x in cols_tbl]
-        cursor.execute((
-            'CREATE TABLE {out} AS SELECT {cols}, ST_Multi(ST_Buffer'
-            '(ST_Intersection({shp_b}.geom, {shp_a}.{geom_fld}), 0.0)) As '
-            '{ngeom} FROM {shp_b} INNER JOIN {shp_a} ON ST_Intersects({shp_b}.geom, '
-            '{shp_a}.{geom_fld}) WHERE Not ST_IsEmpty(ST_Buffer('
-            'ST_Intersection({shp_b}.geom, {shp_a}.{geom_fld}), 0.0));').format(
-                out=output,
-                cols=','.join(cols_tbl),
-                shp_a=aShp,
-                shp_b = bShp,
-                geom_fld=aGeom, ngeom=new_geom
-        ))
 
-    cursor.execute(
-        f"ALTER TABLE {output} ADD COLUMN {new_pk} BIGSERIAL PRIMARY KEY;")
+        q = (
+            f'SELECT ROW_NUMBER() OVER(ORDER BY tbla.{apk}) AS {new_pk}, '
+            f'tbla.{apk} AS {apk if apk != new_pk else f"{apk}_1"}, {acols}, {bcols}, '
+            'ST_Multi(ST_Buffer(ST_Intersection('
+                f'tbla.{lgeom}, tblb.{rgeom}'
+            f'), 0.0)) As {new_geom} '
+            f'FROM {atbl} AS tbla '
+            f'INNER JOIN {btbl} AS tblb '
+            f'ON ST_Intersects(tbla.{lgeom}, tblb.{rgeom}) '
+            'WHERE Not ST_IsEmpty(ST_Buffer(ST_Intersection('
+                f'tbla.{lgeom}, tblb.{rgeom}'
+            '), 0.0))'
+        )
+    
+    if output and not outisfile:
+        ntbl = q_to_ntbl(db, output, q, api='psql')
 
-    conn.commit()
-    cursor.close()
-    conn.close()
+        exec_write_q(db, [(
+            f"ALTER TABLE {ntbl} ADD CONSTRAINT "
+            f"{ntbl}_pk PRIMARY KEY ({new_pk})"
+        ), (
+            f"CREATE INDEX {ntbl}_geom_idx ON "
+            f"{ntbl} USING gist ({new_geom})"
+        )], api='psql')
 
-    return output, new_pk, new_geom
+        return output
+    
+    elif output and outisfile:
+        from glass.it.shp import dbtbl_to_shp
+
+        dbtbl_to_shp(
+            db, q, new_geom, output,
+            api='ogr2ogr', tableIsQuery=True,
+            olyr=olyr
+        )
+
+        return output
+    
+    else:
+        return q
 
 
 def check_autofc_overlap(checkShp, epsg, dbname, outOverlaps):
@@ -449,8 +458,6 @@ def st_erase_opt(db, itbl, ipk, erase_tbl, igeom, erase_geom, otbl=None):
     Optimize ST_Difference with ST_Subdivide result
     """
 
-    from glass.prop.sql import cols_name
-
     cols = ", ".join([f"tbla.{x}" for x in cols_name(
         db, itbl, api='psql'
     ) if x != igeom and x != ipk])
@@ -493,85 +500,105 @@ def st_erase_opt(db, itbl, ipk, erase_tbl, igeom, erase_geom, otbl=None):
     return q
 
 
-"""
-OGR Overlay with SpatialLite
-"""
-
-def intersect_point_with_polygon(sqDB, pntTbl, pntGeom,
-                                 polyTbl, polyGeom, outTbl,
-                                 pntSelect=None, polySelect=None,
-                                 pntQuery=None, polyQuery=None,
-                                 outTblIsFile=None):
+def st_pgerase(db, itbl, ipk, erase_tbl, igeom, egeom, otbl=None, selcols=None):
     """
-    Intersect Points with Polygons
-    
-    What TODO with this?
+    Erase tool implemented in PostgreSQL/PostGIS
     """
-    
-    if not pntSelect and not polySelect:
-        raise ValueError("You have to select something")
-    
-    pnt_tq  = pntTbl if not pntQuery else pntQuery
-    poly_tq = polyTbl if not polyQuery else polyQuery
 
-    col_pnt = pntSelect if pntSelect else ""
-    col_ply = polySelect if polySelect and not pntSelect else \
-        ", " + polySelect if polySelect and pntSelect else ""
+    # Get columns to be selected
+    clst = obj_to_lst(selcols) if selcols else \
+        cols_name(db, itbl, api='psql')
     
-    sql = (
-        f"SELECT {col_pnt}{col_ply} FROM {pnt_tq} "
-        f"INNER JOIN {poly_tq} ON "
-        f"ST_Within({pntTbl}.{pntGeom}, {polyTbl}.{polyGeom})"
+    cols = ", ".join([f"tbla.{x}" for x in clst if x != igeom and x != ipk])
+
+    valopk, opk, nk = None, '', 0
+    while not valopk:
+        opk = f"ori_{ipk}" if not nk else f"ori_{ipk}_{str(nk)}"
+
+        if opk not in cols:
+            valopk = True
+        
+        nk += 1
+
+    q = (
+        f"SELECT ROW_NUMBER() OVER(ORDER BY tbla.{ipk}) AS {ipk}, "
+        f"tbla.{ipk} AS {opk}, {cols}, {igeom} "
+        "FROM ("
+            f"SELECT tbla.{ipk}, {cols}, "
+            f"(ST_Dump(tbla.{igeom})).geom AS {igeom} "
+            "FROM ("
+                f"SELECT tbla.{ipk}, {cols}, "
+                "CASE "
+                    f"WHEN tblb.{ipk} IS NOT NULL THEN "
+                    f"ST_Difference(tbla.{igeom}, tblb.{egeom}) "
+                    f"ELSE tbla.{igeom} "
+                f"END AS {igeom} "
+                f"FROM {itbl} AS tbla "
+                "LEFT JOIN ("
+                    f"SELECT j.{ipk}, "
+                    f"ST_UnaryUnion(ST_Collect(r.{egeom})) AS {egeom} "
+                    f"FROM {erase_tbl} AS r "
+                    f"INNER JOIN {itbl} AS j "
+                    f"ON ST_Intersects(r.{egeom}, j.{igeom}) "
+                    f"GROUP BY j.{ipk}"
+                ") AS tblb "
+                f"ON tbla.{ipk} = tblb.{ipk}"
+            ") AS tbla"
+        ") AS tbla"
     )
+
+    if otbl:
+        ntbl = q_to_ntbl(db, otbl, q, api='psql')
+
+        exec_write_q(db, [(
+            f"ALTER TABLE {ntbl} ADD CONSTRAINT "
+            f"{ntbl}_pk PRIMARY KEY ({ipk})"
+        ), (
+            f"CREATE INDEX {ntbl}_geom_idx ON "
+            f"{ntbl} USING gist ({igeom})"
+        )], api='psql')
+
+        return otbl
     
-    if outTblIsFile:
-        from glass.dtt.filter import sel_by_attr
-        
-        sel_by_attr(sqDB, sql, outTbl, api_gis='ogr')
-    
-    else:
-        from glass.sql.q import q_to_ntbl
-        
-        q_to_ntbl(sqDB, outTbl, sql, api='ogr2ogr')
+    return q
 
 
-def disjoint_polygons_rel_points(sqBD, pntTbl, pntGeom,
-                                polyTbl, polyGeom, outTbl,
-                                polySelect=None,
-                                pntQuery=None, polyQuery=None,
-                                outTblIsFile=None):
+def st_touching(db, atbl, ageom, btbl, bgeom, otbl=None, acols=None, bcols=None,
+                awhr=None, bwhr=None):
     """
-    Get Disjoint relation
-    
-    What TODO with this?
+    Get lines where two polygons touches
     """
-    
-    if not polySelect:
-        raise ValueError("Man, select something!")
-    
 
-    selcols ="*" if not polySelect else polySelect
-    ply_tbl = polyTbl if not polyQuery else polyQuery
-    pnt_tbl = pntTbl if not pntQuery else pntQuery,
+    _acols = obj_to_lst(acols) if acols else cols_name(db, atbl, api='psql')
+    _bcols = obj_to_lst(bcols) if bcols else cols_name(db, btbl, api='psql')
     
-    sql = (
-        f"SELECT {selcols} FROM {ply_tbl} WHERE ("
-        f"{polyTbl}.{polyGeom} not in ("
-            f"SELECT {polyTbl}.{polyGeom} FROM {pnt_tbl} "
-            f"INNER JOIN {ply_tbl} ON "
-            f"ST_Within({pntTbl}.{pntGeom}, {polyTbl}.{polyGeom})"
-        "))"
+    acstr = ", ".join([f"t.{x}" for x in _acols if x != ageom])
+    bcstr = ", ".join([f"j.{y}" for y in _bcols if y != bgeom])
+
+    _atbl = f"{atbl} AS t" if not awhr else (
+        f"(SELECT * FROM {atbl} WHERE {awhr}) AS t"
     )
-    
-    if outTblIsFile:
-        from glass.dtt.filter import sel_by_attr
-        
-        sel_by_attr(sqBD, sql, outTbl, api_gis='ogr')
-    
-    else:
-        from glass.sql.q import q_to_ntbl
-        
-        q_to_ntbl(sqBD, outTbl, sql, api='ogr2ogr')
+
+    _btbl = f"{btbl} AS j" if not bwhr else (
+        f"(SELECT * FROM {btbl} WHERE {bwhr}) AS j"
+    )
+
+    q = (
+        f"SELECT {acstr}, {bcstr}, "
+        f"ST_Intersection(t.{ageom}, j.{bgeom}) AS {ageom} "
+        f"FROM {_atbl} "
+        f"LEFT JOIN {_btbl} "
+        f"ON ST_Touches(t.{ageom}, j.{bgeom}) "
+        f"WHERE ST_Intersection(t.{ageom}, j.{bgeom}) IS NOT NULL"
+    )
+
+    if otbl:
+        ntbl = q_to_ntbl(db, otbl, q, api='psql')
+
+        return ntbl
+
+    return q
+
 
 
 def points_in_polygons(db, pnt, pnt_geom, poly, poly_attr, poly_geom,
@@ -609,4 +636,63 @@ def points_in_polygons(db, pnt, pnt_geom, poly, poly_attr, poly_geom,
     
     return _out
 
+
+
+def st_pgleft_union(db, left_tbl, right_tbl, lpk, lgeom, rgeom, out=None, left_cols=None):
+    """
+    Intersect left table with right table
+
+    Return intersection results
+    Return left geometries were there are no intersection
+
+    Intersection + Erase
+    """
+
+    left_cols = obj_to_lst(left_cols) if left_cols else \
+        cols_name(db, left_tbl, api='psql')
+    
+    lcols = [x for x in left_cols if x != lgeom and x != lpk]
+
+    strcols = ", ".join(lcols)
+    
+
+    # Query intersection
+    qint = st_pgintersection(
+        db, left_tbl, right_tbl, lpk,
+        lgeom, rgeom, 'polygon', new_geom=lgeom,
+        aselcols=lcols
+    )
+
+    # Query erase
+    qerase = st_pgerase(
+        db, left_tbl, lpk, right_tbl,
+        lgeom, rgeom, selcols=lcols
+    )
+
+    # Final query
+    q = (
+        f"SELECT ROW_NUMBER() OVER(ORDER BY {lpk}) AS {lpk}, "
+        f"{lpk} AS {lpk}_0, {strcols}, {lgeom} FROM ("
+            f"SELECT {lpk}, {strcols}, {lgeom} "
+            f"FROM ({qerase}) AS foo "
+            "UNION ALL "
+            f"SELECT {lpk}, {strcols}, {lgeom} "
+            f"FROM ({qint}) AS tst"
+        ") AS fq"
+    )
+
+    if out:
+        ntbl = q_to_ntbl(db, out, q, api='psql')
+
+        exec_write_q(db, [(
+            f"ALTER TABLE {ntbl} ADD CONSTRAINT "
+            f"{ntbl}_pk PRIMARY KEY ({lpk})"
+        ), (
+            f"CREATE INDEX {ntbl}_geom_idx ON "
+            f"{ntbl} USING gist ({lgeom})"
+        )], api='psql')
+
+        return ntbl
+    
+    return q
 

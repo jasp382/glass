@@ -2,6 +2,8 @@
 Python data to SHP
 """
 
+import os
+
 def df_to_shp(indf, outShp, layername=None):
     """
     Pandas Dataframe to Geospatial file
@@ -12,7 +14,8 @@ def df_to_shp(indf, outShp, layername=None):
     drv = drv_name(outShp)
 
     if drv == 'GPKG' and layername:
-        indf.to_file(outShp, driver=drv, layer=layername)
+        _mode = 'a' if os.path.exists(outShp) else 'w'
+        indf.to_file(outShp, driver=drv, layer=layername, mode=_mode)
     
     else:
         indf.to_file(outShp)

@@ -8,7 +8,7 @@ import multiprocessing as mp
 
 from glass.pys.oss  import mkdir, fprop, cpu_cores
 from glass.pd.split import df_split
-from glass.wenv.grs import run_grass
+from glass.wenv.grs import grass_session
 from glass.gp.gen   import dissolve
 
 
@@ -25,17 +25,13 @@ def lulc_by_cell(tid, boundary, lulc_shps, fishnet, result, workspace):
     
     # Create GRASS GIS Session
     loc_name = 'loc_' + bname
-    gbase = run_grass(workspace, location=loc_name, srs=ref_rst)
-    
-    import grass.script.setup as gsetup
-    
-    gsetup.init(gbase, workspace, loc_name, 'PERMANENT')
+    gbase = grass_session(workspace, loc=loc_name, srs=ref_rst)
     
     # GRASS GIS Modules
     from glass.it.shp     import shp_to_grs, grs_to_shp
     from glass.gp.ovl.grs import grsintersection
     from glass.tbl.attr   import geomattr_to_db
-    from glass.prop.feat  import feat_count
+    from glass.prop.shp   import feat_count
     
     # Send Fishnet to GRASS GIS
     fnet = shp_to_grs(fishnet, fprop(fishnet, 'fn'), asCMD=True)
@@ -244,18 +240,14 @@ def fishnet_to_train(tid, ref, _lulcs, output, ws):
     
     # Start GRASS GIS Session
     loc = f'loc_{str(tid)}'
-    gb = run_grass(ws, location=loc, srs=ref)
+    gb = grass_session(ws, loc=loc, srs=ref)
     
-    import grass.script.setup as gsetup
-    
-    gsetup.init(gb, ws, loc, 'PERMANENT')
-    
-    from glass.smp.fish   import grass_fishnet
-    from glass.it.shp     import shp_to_grs, grs_to_shp
-    from glass.gp.ovl.grs import grsintersection
-    from glass.prop.feat  import feat_count
-    from glass.tbl.attr   import geomattr_to_db
-    from glass.tbl.joins  import join_table
+    from glass.smp.fish      import grass_fishnet
+    from glass.it.shp        import shp_to_grs, grs_to_shp
+    from glass.gp.ovl.grs    import grsintersection
+    from glass.prop.shp      import feat_count
+    from glass.tbl.attr      import geomattr_to_db
+    from glass.tbl.joins.grs import join_table
     
     # Create Fishnet
     fishnet = grass_fishnet(f'fishnet_{str(tid)}', ascmd=True)

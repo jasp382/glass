@@ -5,26 +5,45 @@ GRASS GIS Tools for table management
 from glass.pys import execmd
 
 
-def cols_calc(shp, col, v, onde, lyrN=1, ascmd=None):
+def cols_calc(shp, col, v, onde=None, lyrN=1, ascmd=None, qcol=None):
     """
     Update Table
     """
     
     if not ascmd:
         from grass.pygrass.modules import Module
-        
-        fc = Module(
-            'v.db.update', map=shp, column=col, value=v, where=onde,
-            layer=lyrN, run_=False, quiet=True
-        )
+
+        if not qcol:
+            fc = Module(
+                'v.db.update', map=shp, column=col,
+                value=str(v), where=onde,
+                layer=lyrN, run_=False, quiet=True
+            )
+        else:
+            fc = Module(
+                'v.db.update', map=shp, column=col,
+                query_column=v, where=onde,
+                layer=lyrN, run_=False, quiet=True
+            )
         fc()
     
     else:
-        from glass.pys import execmd
+
+        if not qcol:
+            vqcol = f"value=\"{str(v)}\""
+        
+        else:
+            vqcol = f"query_column=\"{v}\""
+        
+        if not onde:
+            whr = ''
+        
+        else:
+            whr = f' where={onde}'
         
         rcmd = execmd((
             f"v.db.update map={shp} column={col} "
-            f"value=\"{v}\" where={onde} "
+            f"{vqcol}{whr} "
             f"layer={str(lyrN)} --quiet"
         ))
 

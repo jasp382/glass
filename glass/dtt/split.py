@@ -12,14 +12,14 @@ def splitShp_by_range(shp, nrFeat, outFolder):
     Split one feature class by range
     """
     
-    from glass.prop.feat  import feat_count, lst_fld
+    from glass.prop.shp   import feat_count, lst_shpcols
     from glass.dtt.filter import sel_by_attr
     
     rowsN = feat_count(shp, gisApi='ogr')
     
     nrShp = int(rowsN / float(nrFeat)) + 1 if nrFeat != rowsN else 1
     
-    fields = lst_fld(shp)
+    fields = lst_shpcols(shp)
     
     offset = 0
     exportedShp = []
@@ -54,10 +54,10 @@ def eachfeat_to_newshp(inShp, outFolder, epsg=None, idCol=None, idIsName=None):
     Export each feature in inShp to a new/single File
     """
     
-    from osgeo           import ogr
-    from glass.prop.df   import drv_name
-    from glass.prop.feat import get_gtype, lst_fld
-    from glass.lyr.fld   import copy_flds
+    from osgeo          import ogr
+    from glass.prop.df  import drv_name
+    from glass.prop.shp import get_gtype, lst_shpcols
+    from glass.lyr.fld  import copy_flds
     
     inDt = ogr.GetDriverByName(
         drv_name(inShp)).Open(inShp)
@@ -66,15 +66,15 @@ def eachfeat_to_newshp(inShp, outFolder, epsg=None, idCol=None, idIsName=None):
     
     # Get SRS for the output
     if not epsg:
-        from glass.prop.prj import shp_ref
-        srs = shp_ref(lyr)
+        from glass.prop.prj import shp_sref
+        srs = shp_sref(lyr)
     
     else:
         from glass.prop.prj import sref_from_epsg
         srs = sref_from_epsg(epsg)
     
     # Get fields name
-    fields = lst_fld(lyr)
+    fields = lst_shpcols(lyr)
     
     # Get Geometry type
     geomCls = get_gtype(inShp, gisApi='ogr', name=None, py_cls=True)

@@ -4,108 +4,350 @@ Apply Indexes to highligh LULC types in Satellite Imagery
 Use GDAL to apply index
 """
 
-import numpy      as np
-from osgeo        import gdal
+import os
+import numpy        as np
+from osgeo          import gdal
+from glass.wenv.grs import grass_session
+from glass.pys.tm   import now_as_str
 
 from glass.prop.img import rst_epsg
 from glass.wt.rst import obj_to_rst
+from glass.rst.alg import grsrstcalc
+from glass.it.rst import grs_to_rst
 
 
-def calc_ndwi(green, nir_swir, outRst):
+class CalcIndexes:
     """
-    Apply Normalized Difference Water Index
-    
-    In Sentinel L2 Products, the raster value is the Reflectance
-    multiplied by 10000, so to get the real reflectance, we have to apply:
-    rst / 10000... toReflectance are the 10000 value in this example
-    
-    EXPRESSION: ((green / toReflectance) - (nir /toReflectance)) / 
-    ((green / toReflectance) + (nir /toReflectance))
-    """
+    Apply radiometric indexes
 
-    api, nir = 'gdal', nir_swir
-
-    if api == 'gdal':
-        srcg   = gdal.Open(green, gdal.GA_ReadOnly)
-        srcnir = gdal.Open(nir, gdal.GA_ReadOnly)
-
-        # To Array
-        num_green = srcg.GetRasterBand(1).ReadAsArray().astype(float)
-        num_nir   = srcnir.GetRasterBand(1).ReadAsArray().astype(float)
-
-        # Calculation
-        den = num_green + num_nir
-        ndwir = np.where(
-            den == 0, 100,
-            (num_green - num_nir) / den
-        )
-
-        # Place NoData Value
-        gnd = srcg.GetRasterBand(1).GetNoDataValue()
-        nnd = srcnir.GetRasterBand(1).GetNoDataValue()
-
-        nd = np.amin(ndwir) - 1
-
-        np.place(ndwir, num_green == 0, nd)
-        np.place(ndwir, num_nir == 0, nd)
-
-        np.place(ndwir, num_green==gnd, nd)
-        np.place(ndwir, num_nir==nnd, nd)
-    
-        # Export Result
-        outrst = obj_to_rst(
-            ndwir, outRst, srcg.GetGeoTransform(),
-            rst_epsg(srcg), noData=nd
-        )
-    
-    else:
-        raise ValueError(f'Sorry, API {api} is not available')
-    
-    return outrst
-
-
-def calc_ndvi(nir, red, outRst):
-    """
-    Apply Normalized Difference NIR/Red Normalized Difference
+    - NDVI: Normalized Difference NIR/Red Normalized Difference
     Vegetation Index, Calibrated NDVI - CDVI
-    
+
     https://www.indexdatabase.de/db/i-single.php?id=58
     
     EXPRESSION: (nir - red) / (nir + red)
     """
-    
-    # Open Images
-    src_nir = gdal.Open(nir, gdal.GA_ReadOnly)
-    src_red = gdal.Open(red, gdal.GA_ReadOnly)
-    
-    # To Array
-    num_nir = src_nir.GetRasterBand(1).ReadAsArray().astype(float)
-    num_red = src_red.GetRasterBand(1).ReadAsArray().astype(float)
-    
-    # Do Calculation
-    den = (num_nir + num_red)
-    ndvir = np.where(
-        den == 0, 100,
-        (num_nir - num_red) / den
-    )
-    
-    # Place NoData Value
-    nirNdVal = src_nir.GetRasterBand(1).GetNoDataValue()
-    redNdVal = src_red.GetRasterBand(1).GetNoDataValue()
-    
-    ndNdvi = np.amin(ndvir) - 1
 
-    np.place(ndvir, num_nir == 0, ndNdvi)
-    np.place(ndvir, num_red == 0, ndNdvi)
+    sensors = ["sentinel-2", "landsat-8"]
+    apis = ["grass", "pygdal"]
+    avl_idxs = [
+        # Water Indexes
+        "ndwi", "swi",
+        # Vegetation Indexes
+        "ndvi", "nbr", "evi",
+        "savi_regular", "savi_adjusted", "savi_modified",
+        "ndre", "ngrdi", "chlrd", "ndci",
+        "gndvi", "coloration",
+        # Built up
+        "ndbi",
+        # Snow
+        "ndsi",
+        # Normalized Burn Ratio
+        "nbr",
+        "mndwi",
+        "savi"
+    ]
+    sensors_bands = {
+        "sentinel-2" : ['B02', 'B03', 'B04', 'B05', 'B06', 'B07', 'B08', 'B11', 'B12'],
+        "landsat-8"  : []
+    }
+    bands_ref = {
+        'blue'  : {'sentinel-2' : 'B02'},
+        'green' : {'sentinel-2' : 'B03'},
+        'red'   : {'sentinel-2' : 'B04'},
+        'nir'   : {'sentinel-2' : 'B08'},
+        'swir1' : {'sentinel-2' : 'B11'},
+        'swir2' : {'sentinel-2' : 'B12'}
+    }
+
+    idxs = {}
+    idxs_nd = {}
+
+    def __init__(self, sensor: str, api: str):
+
+        if sensor not in self.sensors:
+            raise ValueError("Sensor value is not valid - options are: sentinel-2 and landsat-8")
+        
+        if api not in self.apis:
+            raise ValueError("API value is not valid - options are: grass and pygdal")
+
+        self.sensor = sensor
+        self.api    = api
+        self.avlbnd = self.sensors_bands[self.sensor]
     
-    np.place(ndvir, num_nir==nirNdVal, ndNdvi)
-    np.place(ndvir, num_red==redNdVal, ndNdvi)
+    def get_band_data(self, bandname: str):
+        
+        if self.bands_ref[bandname][self.sensor] not in self.bands_data:
+            raise ValueError(f'{bandname} band is not available')
+            
+        return self.bands_data[self.bands_ref[bandname][self.sensor]]
     
-    # Export Result
-    return obj_to_rst(
-        ndvir, outRst, src_nir.GetGeoTransform(),
-        rst_epsg(src_nir), noData=ndNdvi
-    )
+    def get_band_nd(self, bandname: str):
+        if self.bands_ref[bandname][self.sensor] not in self.nodata_val:
+            raise ValueError(f'{bandname} band is not available')
+        
+        return self.nodata_val[self.bands_ref[bandname][self.sensor]]
+    
+    def gdal_read_data(self, _bands:dict[str, str]):
+        """
+        Read bands using PyGDAL
+        """
+
+        data, nds = {}, {}
+
+        c = 0
+        for band in self.avlbnd:
+            if band not in _bands:
+                continue
+
+            src = gdal.Open(_bands[band], gdal.GA_ReadOnly)
+
+            if not c:
+                self.geotrans = src.GetGeoTransform()
+                self.epsg = rst_epsg(src)
+                c += 1
+
+            num = src.GetRasterBand(1).ReadAsArray().astype(float)
+            nd = src.GetRasterBand(1).GetNoDataValue()
+
+            #srcs[band] = src
+            data[band] = num
+            nds[band] = nd
+        
+        return data, nds
+    
+    def grass_read_data(self, _bands:dict[str, str]):
+        data = {}
+
+        # Create GRASS GIS Session
+        rb = list(_bands.values())[0]
+
+        ws = os.path.dirname(rb)
+        loc = now_as_str(utc=True)
+
+        gb = grass_session(ws, loc=loc, srs=rb)
+
+        # Import data into GRASS GIS
+        from glass.it.rst import rst_to_grs
+
+        for band in self.avlbnd:
+            if band not in _bands:
+                continue
+
+            data[band] = rst_to_grs(_bands[band])
+        
+        return data
+    
+    def read_data(self, bands: dict[str, str]):
+        """
+        Read Bands
+        """
+
+        if self.api == 'pygdal':
+            self.bands_data, self.nodata_val = self.gdal_read_data(bands)
+        
+        elif self.api == 'grass':
+            self.bands_data = self.grass_read_data(bands)
+        
+        else:
+            return False
+        
+        return True
+    
+    def gdal_calc_idx(self, idx: str):
+        """
+        Calculate Index using PyGDAL
+        """
+
+        bdata, nds = [], []
+
+        if idx == 'ndwi':
+            nir   = self.get_band_data('nir')
+            green = self.get_band_data("green")
+
+            bdata.append(nir)
+            bdata.append(green)
+
+            nds.append(self.get_band_nd('nir'))
+            nds.append(self.get_band_nd('green'))
+
+            den = green + nir
+            result = np.where(
+                den == 0, 100,
+                (green - nir) / den
+            )
+        
+        elif idx == 'ndvi':
+            nir = self.get_band_data('nir')
+            red = self.get_band_data('red')
+
+            bdata.append(nir)
+            bdata.append(red)
+
+            nds.append(self.get_band_nd('nir'))
+            nds.append(self.get_band_nd('red'))
+
+            den = (nir + red)
+            result = np.where(
+                den == 0, 100,
+                (nir - red) / den
+            )
+        
+        elif idx == 'swi':
+            swir = self.get_band_data('swir1')
+            blue = self.get_band_data('blue')
+
+            bdata.append(swir)
+            bdata.append(blue)
+
+            nds.append(self.get_band_nd('swir1'))
+            nds.append(self.get_band_nd('blue'))
+
+            den = np.sqrt(blue - swir)
+
+            result = np.where(
+                den == 0, 100,
+                1 / den
+            )
+        
+        elif idx == 'evi':
+            nir = self.get_band_data('nir')
+            red = self.get_band_data('red')
+            blu = self.get_band_data('blue')
+
+            deno = (nir + 6.0 * red - 7.5 * blu + 1)
+
+            result = np.where(
+                deno == 0, 100,
+                2.5 * (nir - red) / (deno)
+            )
+
+        # Place NoData Value
+        nd = np.amin(result) - 1
+
+        for b in bdata:
+            np.place(result, b == 0, nd)
+        
+        for v in nds:
+            np.place(result, b == v, nd)
+        
+        np.place(result, result == 100, nd)
+        
+        self.idxs[idx] = result
+        self.idxs_nd[idx] = nd
+    
+    def grass_calc_idx(self, idx: str):
+        exp = ''
+
+        if idx == 'ndwi':
+            nir = self.get_band_data('nir')
+            green = self.get_band_data('green')
+
+            exp = f'({green} - float({nir})) / ({green} + float({nir}))'
+
+            nd = -2
+        
+        elif idx == 'ndvi':
+            nir = self.get_band_data('nir')
+            red = self.get_band_data('red')
+
+            exp = f'({nir} - float({red})) / ({nir} + float({red}))'
+
+            nd = -2
+        
+        elif idx == 'swi':
+            swir = self.get_band_data('swir1')
+            blue = self.get_band_data('blue')
+
+            exp = f'1 / sqrt({blue} - {swir})'
+
+            nd = -1
+        
+        elif idx == 'evi':
+            nir = self.get_band_data('nir')
+            red = self.get_band_data('red')
+            blu = self.get_band_data('blue')
+
+            deno = f"({nir} + 6.0 * {red} - 7.5 * {blu} + 1)"
+
+            exp = f"2.5 * ({nir} - {red}) / {deno}"
+
+            nd = -1000000
+        
+        elif idx == 'nbr':
+            nir = self.get_band_data('nir')
+            swir = self.get_band_data('swir2')
+
+            exp = f'({nir} - float({swir})) / ({nir} + float({swir}))'
+
+            nd = -2
+        
+        elif idx == 'ndbi':
+            nir = self.get_band_data('nir')
+            swir = self.get_band_data('swir1')
+
+            exp = f'({swir} - float({nir})) / ({swir} + float({nir}))'
+
+            nd = -2
+        
+        elif idx == 'mndwi':
+            green = self.get_band_data('green')
+            swir = self.get_band_data('swir1')
+
+            exp = f'({green} - float({swir})) / ({green} + float({swir}))'
+
+            nd = -2
+        
+        elif idx == 'savi':
+            L = 0.428 # L varies from -0,9 and 1,6
+
+            red = self.get_band_data('red')
+            nir = self.get_band_data('nir')
+
+            exp = f'(({nir} - {red}) / ({nir} + {red} + {str(L)})) * (1 + {str(L)})'
+
+            nd = -1000000
+
+        self.idxs[idx] = grsrstcalc(exp, f'rst_{idx}', ascmd=True)
+        self.idxs_nd[idx] = nd
+    
+    def calc_idx(self, idx_name: str):
+
+        if idx_name not in self.avl_idxs:
+            raise ValueError((
+                f"{idx_name} is not a valid option. "
+                f"Valid options are: {', '.join(self.avl_idxs)}"
+            ))
+        
+        if self.api == 'pygdal':
+            self.gdal_calc_idx(idx_name)
+        
+        elif self.api == 'grass':
+            self.grass_calc_idx(idx_name)
+        
+        else:
+            return False
+        
+        return True
+    
+    def export_result(self, idx: str, out: str):
+        if self.api == 'pygdal':
+            obj_to_rst(
+                self.idxs[idx], out,
+                self.geotrans, self.epsg,
+                noData=self.idxs_nd[idx]   
+            )
+        
+        elif self.api == 'grass':
+            grs_to_rst(
+                self.idxs[idx], out, as_cmd=True,
+                dtype="Float64", nodata=self.idxs_nd[idx]
+            )
+
+        else:
+            return None
+        
+        return out
 
 
 def calc_nbr(nir, swir, outrst):

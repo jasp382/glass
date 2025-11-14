@@ -7,7 +7,7 @@ import pandas as pd
 
 def pop_within_area(mapunits, mapunits_id, outcol, subunits,
     subunits_id, pop_col, mapunits_fk,
-    area_shp, output, res_areas=None, res_areas_fk=None):
+    area_shp, output, res_areas=None, res_areas_fk=None, api='psql'):
     """
     Used to calculate % pop exposta a ruidos
     superiores a 65db
@@ -15,59 +15,84 @@ def pop_within_area(mapunits, mapunits_id, outcol, subunits,
     de equipamento
 
     Retuns population % living inside some polygons
+
+    api options:
+    * grass
+    * psql
     """
 
     import os
-    from glass.rd.shp     import shp_to_obj
+    from glass.rd.shp        import shp_to_obj
     from glass.dtt.rst.torst import shpext_to_rst
-    from glass.wt.shp     import obj_to_shp
-    from glass.pys.oss    import mkdir, fprop
-    from glass.gp.ovl.grs import grsintersection
-    from glass.prop.prj   import get_epsg
-    from glass.wenv.grs   import run_grass
+    from glass.wt.shp        import obj_to_shp
+    from glass.pys.oss       import mkdir, fprop
+    from glass.gp.ovl.grs    import grsintersection
+    from glass.prop.prj      import get_epsg
+    from glass.wenv.grs      import grass_session
+    from glass.gp.ovl        import ExcIntersection
 
-    # Prepare GRASS GIS Workspace configuration
+    api = 'psql' if api == 'psql' else 'grass'
+
+    inres = res_areas if res_areas and res_areas_fk else subunits
+
     oname = fprop(output, 'fn')
+
     gw = mkdir(os.path.join(
         os.path.dirname(output), f'ww_{oname}'
     ), overwrite=True)
 
-    # Boundary to Raster
     w_epsg = get_epsg(area_shp)
-    ref_rst = shpext_to_rst(
-        mapunits, os.path.join(gw, 'extent.tif'),
-        cellsize=10, epsg=w_epsg
-    )
 
-    # Create GRASS GIS Session
-    loc = 'loc_' + oname
-    gbase = run_grass(gw, location=loc, srs=ref_rst)
+    if api == 'grass':
+        # Prepare GRASS GIS Workspace configuration
 
-    import grass.script.setup as gsetup
+        # Boundary to Raster
+        ref_rst = shpext_to_rst(
+            mapunits, os.path.join(gw, 'extent.tif'),
+            cellsize=10, epsg=w_epsg
+        )
 
-    gsetup.init(gbase, gw, loc, 'PERMANENT')
+        # Create GRASS GIS Session
+        loc = f'loc_{oname}'
+        gbase = grass_session(gw, loc=loc, srs=ref_rst)
 
-    from glass.it.shp import shp_to_grs, grs_to_shp
+        from glass.it.shp import shp_to_grs, grs_to_shp
 
-    # Send data to GRASS GIS
-    inres = res_areas if res_areas and res_areas_fk else subunits
-    grs_res = shp_to_grs(inres, fprop(inres, 'fn'), asCMD=True)
-    grs_ash = shp_to_grs(area_shp, fprop(area_shp, 'fn'), asCMD=True)
+        # Send data to GRASS GIS
+        grs_res = shp_to_grs(inres, asCMD=True)
+        grs_ash = shp_to_grs(area_shp, asCMD=True)
 
-    # Run intersection
-    int_ = grsintersection(
-        grs_res, grs_ash, f'i_{grs_res}_{grs_ash}',
-        cmd=True
-    )
+        # Run intersection
+        int_ = grsintersection(
+            grs_res, grs_ash, f'i_{grs_res}_{grs_ash}',
+            cmd=True
+        )
 
-    # Export result
-    res_int = grs_to_shp(int_, os.path.join(
-        gw, int_ + '.shp'
-    ), 'area')
+        # Export result
+        res_int = grs_to_shp(int_, os.path.join(
+            gw, int_ + '.shp'
+        ), 'area')
+    
+    else:
+        intersect = ExcIntersection(api='psql')
+
+        res_int = intersect.run_tool(
+            inres, area_shp,
+            os.path.join(
+                gw,
+                f'{fprop(inres, "fn")}_{fprop(area_shp, "fn")}.shp'
+            )
+        )
 
     # Compute new indicator
     mapunits_df = shp_to_obj(mapunits)
+
     subunits_df = shp_to_obj(subunits)
+
+    if pop_col in mapunits_df.columns.values:
+        subunits_df.rename(columns={pop_col : f'z{pop_col}'}, inplace=True)
+        pop_col = f'z{pop_col}'
+    
     if res_areas and res_areas_fk:
         resareas_df = shp_to_obj(res_areas)
     int______df = shp_to_obj(res_int)
@@ -94,8 +119,14 @@ def pop_within_area(mapunits, mapunits_id, outcol, subunits,
     # For each subunit, get area intersecting area_shp
     int______df['gtarea'] = int______df.geometry.area
 
-    int_id = 'a_' + res_areas_fk if res_areas and res_areas_fk else \
-        'a_' + subunits_id
+    if api == 'grass':
+        int_id = 'a_' + res_areas_fk if res_areas and res_areas_fk else \
+            'a_' + subunits_id
+    
+    else:
+        int_id = res_areas_fk if res_areas and res_areas_fk else \
+            subunits_id
+    
     area_int = pd.DataFrame({
         'areai' : int______df.groupby([int_id])['gtarea'].agg('sum')
     }).reset_index()
@@ -279,7 +310,7 @@ def shparea_by_mapunitpopulation(polygons, mapunits, units_id, outcol, output,
     from glass.pys.oss    import mkdir, fprop
     from glass.gp.ovl.grs import grsintersection
     from glass.prop.prj   import get_epsg
-    from glass.wenv.grs   import run_grass
+    from glass.wenv.grs   import grass_session
     from glass.rd.shp     import shp_to_obj
     from glass.wt.shp     import obj_to_shp
 
@@ -313,25 +344,28 @@ def shparea_by_mapunitpopulation(polygons, mapunits, units_id, outcol, output,
         gw, 'popunits.shp'
     ))
 
+    poly_df_tmp = shp_to_obj(polygons) if type(polygons) != gp.GeoDataFrame \
+        else polygons.copy(deep=True)
+    
+    drop_cols = [c for c in poly_df_tmp.columns.values if c != 'geometry']
+    poly_df_tmp.drop(drop_cols, axis=1, inplace=True)
+
+    poly_df_tmp['catid'] = poly_df_tmp.index + 1
+
+    polygons_i = obj_to_shp(poly_df_tmp, 'geometry', w_epsg, os.path.join(
+        gw, 'our_polygons.shp'
+    ))
+
     # Create GRASS GIS Session
     _l = 'loc_' + oname
 
-    gbase = run_grass(gw, location=_l, srs=ref_rst)
-
-    import grass.script.setup as gsetup
-
-    gsetup.init(gbase, gw, _l, 'PERMANENT')
+    gbase = grass_session(gw, loc=_l, srs=ref_rst)
 
     from glass.it.shp import shp_to_grs, grs_to_shp
 
     # Data to GRASS GIS
-    g_popunits = shp_to_grs(
-        popunits_i,
-        fprop(mapunits, 'fn') if type(mapunits) != gp.GeoDataFrame \
-            else 'mapunits_gdf',
-        asCMD=True
-    )
-    g_polygons = shp_to_grs(polygons, fprop(polygons, 'fn'), asCMD=True)
+    g_popunits = shp_to_grs(popunits_i, asCMD=True)
+    g_polygons = shp_to_grs(polygons_i, asCMD=True)
 
     # Run intersection
     i_shp = grsintersection(
@@ -365,6 +399,8 @@ def shparea_by_mapunitpopulation(polygons, mapunits, units_id, outcol, output,
     dc = [f'a_{units_id}', areacol] if units_pop and delareacol else [f'a_{units_id}']
     
     mapunits_df.drop(dc, axis=1, inplace=True)
+
+    mapunits_df[outcol] = mapunits_df[outcol].fillna(value=0)
 
     obj_to_shp(mapunits_df, 'geometry', w_epsg, output)
 

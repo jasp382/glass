@@ -29,20 +29,20 @@ def grsshp_to_grsrst(inshp, src, outrst, cmd=None):
     that same value.
     """
 
-    __USE = "cat" if not src else "attr" if type(src) == str \
+    __use = "cat" if src == None or src == "cat" else "attr" if type(src) == str \
         else "val" if type(src) == int or \
             type(src) == float else None
     
-    if not __USE:
+    if not __use:
         raise ValueError('\'source\' parameter value is not valid')
     
     if not cmd:
         from grass.pygrass.modules import Module
             
         m = Module(
-            "v.to.rast", input=inshp, output=outrst, use=__USE,
-            attribute_column=src if __USE == "attr" else None,
-            value=src if __USE == "val" else None,
+            "v.to.rast", input=inshp, output=outrst, use=__use,
+            attribute_column=src if __use == "attr" else None,
+            value=src if __use == "val" else None,
             overwrite=True, run_=False, quiet=True
         )
             
@@ -51,12 +51,12 @@ def grsshp_to_grsrst(inshp, src, outrst, cmd=None):
     else:
         from glass.pys import execmd
 
-        ac_val = "" if __USE == "cat" else f" attribute_column={src}" \
-            if __USE == "attr" else f" val={src}"
+        ac_val = "" if __use == "cat" else f" attribute_column={src}" \
+            if __use == "attr" else f" val={src}"
             
         rcmd = execmd((
             f"v.to.rast input={inshp} output={outrst} "
-            f"use={__USE}{ac_val} --overwrite --quiet"
+            f"use={__use}{ac_val} --overwrite --quiet"
         ))
 
     return outrst
@@ -197,19 +197,14 @@ def shp_to_rst(shp, inSource, cellsize, nodata, outRaster, epsg=None,
         
         import os
         from glass.pys.oss  import fprop
-        from glass.wenv.grs import run_grass
+        from glass.wenv.grs import grass_session
         from glass.prop.prj import get_epsg
 
         # Create GRASS GIS Session
         ws = os.path.dirname(outRaster)
-        loc = fprop(outRaster, 'fn')
         epsg = get_epsg(shp)
 
-        gbase = run_grass(ws, location=loc, srs=epsg)
-
-        import grass.script.setup as gsetup
-
-        gsetup.init(gbase, ws, loc, 'PERMANENT')
+        gbase = grass_session(ws, loc=fprop(outRaster, 'fn'), srs=epsg)
 
         # Import Packages
         from glass.it.shp   import shp_to_grs
@@ -226,7 +221,7 @@ def shp_to_rst(shp, inSource, cellsize, nodata, outRaster, epsg=None,
         grst = grsshp_to_grsrst(gshp, inSource, f"{gshp}__rst", api="grass")
 
         # Export
-        grs_to_rst(grst, outRaster, as_cmd=True)
+        grs_to_rst(grst, outRaster, as_cmd=True, dtype=dtype)
     
     else:
         raise ValueError(f'API {api} is not available')
@@ -404,11 +399,12 @@ def rstext_to_rst(inrst, outrst, cellsize=None, epsg=None, rstval=None):
 
         epsg = rst_epsg(inrst)
     
+    csize = cellsize if cellsize else get_cellsize(inrst)[0]
+    
     # Create raster
     ext_to_rst(
         (left, top), (right, bottom), outrst,
-        cellsize=get_cellsize(inrst) if not cellsize else cellsize,
-        epsg=epsg, rstvalue=rstval
+        cellsize=csize, epsg=epsg, rstvalue=rstval
     )
 
     return outrst
@@ -497,4 +493,45 @@ def geomext_to_rst_wShapeCheck(inGeom, maxCellNumber, desiredCellsizes, outRst,
         )
         
         return outRst
+
+
+
+def bands_to_rst(inrst, out, bname=None, api='gdaltranslate'):
+    """
+    Export all bands of a raster to a new dataset
+    """
+
+    import os
+
+    from glass.pys import execmd
+    from glass.pys.oss import fprop
+
+    rst = gdal.Open(inrst)
+
+    outrsts = []
+
+    if api == 'gdaltranslate':
+        # Get number of bands
+        nbands = rst.RasterCount
+
+        # Get outputs base name
+        bname = fprop(inrst, 'fn') if not bname else bname
+
+        cmd = (
+            "gdal_translate {} {} -b {}"
+            "-co COMPRESS=DEFLATE"
+        )
+
+        for i in range(nbands):
+            oname = f"{bname}_{str(i+1)}.tif"
+
+            orst = os.path.join(out, oname)
+            rcmd = execmd(cmd.format(
+                inrst, orst,
+                str(i+1)
+            ))
+
+            outrsts.append(orst)
+    
+    return outrsts
 

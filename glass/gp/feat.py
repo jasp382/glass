@@ -115,8 +115,8 @@ def id_some_lines(shp, oshp):
 
     # Send data to db
     intbl = shp_to_psql(
-        db, shp, api="shp2pgsql",
-        srsEpsgCode=epsg, encoding="LATIN1"
+        db, shp, api="ogr2ogr",
+        srs=epsg,
     )
 
     # Run Query

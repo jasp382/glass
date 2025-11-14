@@ -87,18 +87,14 @@ def rcls_rst(inrst, rclsRules, outrst, api='gdal', maintain_ext=True):
             )
     
     elif api == "grass":
-        from glass.pys.oss import fprop
-        from glass.pys.tm import now_as_str
-        from glass.wenv.grs import run_grass
+        from glass.pys.oss      import fprop
+        from glass.pys.tm       import now_as_str
+        from glass.wenv.grs     import grass_session
         from glass.rst.rcls.grs import rcls_rules
 
         ws, loc = os.path.dirname(outrst), f"loc_{now_as_str()}"
 
-        gb = run_grass(ws, location=loc, srs=inrst)
-
-        import grass.script.setup as gsetup
-    
-        gsetup.init(gb, ws, loc, 'PERMANENT')
+        gb = grass_session(ws, loc=loc, srs=inrst)
 
         from glass.it.rst import rst_to_grs, grs_to_rst
         from glass.rst.rcls.grs import grs_rcls
@@ -108,7 +104,7 @@ def rcls_rst(inrst, rclsRules, outrst, api='gdal', maintain_ext=True):
         grsrst = rst_to_grs(inrst)
         rclsrst = grs_rcls(grsrst, rules, fprop(outrst, 'fn'), as_cmd=True)
 
-        grs_to_rst(rclsrst, outrst, as_cmd=True, rtype=int)
+        grs_to_rst(rclsrst, outrst, as_cmd=True, dtype="Int32")
     
     else:
         raise ValueError(f"API {api} is not available")

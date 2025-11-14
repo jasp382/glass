@@ -4,6 +4,8 @@ Open Route Service constants
 
 MAIN_URL = "https://api.openrouteservice.org/v2/"
 
+ISOCHRONES_URL = 'https://api.openrouteservice.org/v2/isochrones/'
+
 
 def get_ors_token():
     """
@@ -14,8 +16,8 @@ def get_ors_token():
 
     d = json.load(open(os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
-        'api-keys.json'
+        'open-route-service.json'
     ), 'r'))
 
-    return d["OPEN_ROUTE_SERVICE"]
+    return d["key"]
 

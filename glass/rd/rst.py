@@ -7,6 +7,41 @@ import numpy as np
 
 from osgeo import gdal, gdal_array
 
+import rioxarray as rio
+
+
+def rst_to_dset(rsts: str|list[str], chunks: tuple[int]|None=None, api:str='rio'):
+    """
+    Open Raster files and return datasets
+
+    API Options:
+    * gdal
+    * rio (rioxarray)
+    """
+
+    from glass.pys import obj_to_lst
+
+    rsts = obj_to_lst(rsts)
+
+    if api == 'gdal':
+        ds = [gdal.Open(r) for r in rsts]
+    
+    elif api == 'rio':
+        if chunks:
+            cx, cy = chunks 
+            ck = {'x': cx, 'y': cy}
+        
+        else:
+            ck = None
+        
+        ds = [rio.open_rasterio(
+            r, chunks=ck, masked=True
+        ).squeeze() for r in rsts]
+    
+    else:
+        raise ValueError(f'{api} API is not available')
+    
+    return ds if len(rsts) > 1 else ds[0]
 
 
 def rst_to_array(r, flatten=False, with_nodata=True):
@@ -31,9 +66,9 @@ def rst_to_geodf(in_rst):
     """
 
     import pandas       as pd
-    from glass.pd.dagg  import dfcolstorows
-    from glass.it.pd    import pnt_dfwxy_to_geodf
-    from glass.prop.prj import rst_epsg
+    from glass.dtt.pd.dagg import dfcolstorows
+    from glass.it.pd       import pnt_dfwxy_to_geodf
+    from glass.prop.prj    import rst_epsg
         
     src = gdal.Open(in_rst)
     num = src.ReadAsArray()
@@ -65,7 +100,7 @@ def array_to_geodf(np_arr, geo_params, epsg, ndval):
     """
 
     import pandas as pd
-    from glass.pd.dagg import dfcolstorows
+    from glass.dtt.pd.dagg import dfcolstorows
     from glass.it.pd   import pnt_dfwxy_to_geodf
 
     left, cellx, z, top, c, celly = geo_params
@@ -151,9 +186,7 @@ def rsts_to_featarray(imgvar):
     # Convert feature images to array
     X = np.zeros(
         (ref_shp[0], ref_shp[1], nvar),
-        gdal_array.GDALTypeCodeToNumericTypeCode(
-            img_var[0].GetRasterBand(1).DataType
-        )
+        np.float32
     )
 
     f = 0

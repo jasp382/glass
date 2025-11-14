@@ -19,29 +19,44 @@ def fill(mdt, output, template=None):
 
 
 def flow_direction(mdt, output):
-    if template:
-        tempEnvironment0 = arcpy.env.extent
-        arcpy.env.extent = template
+    """
+    Run Flow Direction
+
+    https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/flow-direction.htm
+    """
+
+    from arcpy.sa import FlowDirection
+
+    arcpy.env.extent = mdt
+    arcpy.env.snapRaster = mdt
+
+    odir = FlowDirection(mdt, "NORMAL", "", "D8")
+
+    odir.save(output)
     
-    arcpy.gp.FlowDirection_sa(mdt, output, "NORMAL", "")
+    arcpy.env.extent = None
+    arcpy.env.snapRaster = None
     
-    if template:
-        arcpy.env.extent = tempEnvironment0
-    
-    return output
+    return output, odir
 
 
 def flow_accumulation(direction, output):
-    if template:
-        tempEnvironment0 = arcpy.env.extent
-        arcpy.env.extent = template
+    """
+    Run Flow Accumulation
+
+    https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/flow-accumulation.htm
+    """
+
+    from arcpy.sa import FlowAccumulation
+
+    arcpy.env.extent = direction
+    arcpy.env.snapRaster = direction
+
+    acc = FlowAccumulation(direction, "", "FLOAT", "D8")
+
+    acc.save(output)
     
-    arcpy.gp.FlowAccumulation_sa(direction, output, "", "FLOAT")
-    
-    if template:
-        arcpy.env.extent = tempEnvironment0
-    
-    return output
+    return output, acc
 
 
 def stream_to_feature(hydro, direction, output):
