@@ -38,6 +38,11 @@ class CalcIndexes:
         "savi_regular", "savi_adjusted", "savi_modified",
         "ndre", "ngrdi", "chlrd", "ndci",
         "gndvi", "coloration",
+        # Burn areas
+        "mirbi",
+        "sani",
+        "sasi",
+        "anir",
         # Built up
         "ndbi",
         # Snow
@@ -60,10 +65,19 @@ class CalcIndexes:
         'swir2' : {'sentinel-2' : 'B12'}
     }
 
+    bands_center = {
+        'red'   : {'sentinel-2' : '665'},
+        'nir'   : {'sentinel-2' : '842'},
+        'swir1' : {'sentinel-2' : '1610'},
+        'swir2' : {'sentinel-2' : '2190'}
+    }
+
     idxs = {}
     idxs_nd = {}
 
-    def __init__(self, sensor: str, api: str):
+    ws = None
+
+    def __init__(self, sensor: str, api: str, gws:None|str=None):
 
         if sensor not in self.sensors:
             raise ValueError("Sensor value is not valid - options are: sentinel-2 and landsat-8")
@@ -74,6 +88,14 @@ class CalcIndexes:
         self.sensor = sensor
         self.api    = api
         self.avlbnd = self.sensors_bands[self.sensor]
+
+        self.ws = gws
+    
+    def get_band_center(self, bandname: str):
+        if bandname not in self.bands_center or self.sensor not in self.bands_center[bandname]:
+            raise ValueError(f'{bandname} center value is not available')
+    
+        return self.bands_center[bandname][self.sensor]
     
     def get_band_data(self, bandname: str):
         
@@ -122,7 +144,10 @@ class CalcIndexes:
         # Create GRASS GIS Session
         rb = list(_bands.values())[0]
 
-        ws = os.path.dirname(rb)
+        ws = os.path.dirname(rb) if not self.ws else \
+            self.ws
+        
+        print(ws)
         loc = now_as_str(utc=True)
 
         gb = grass_session(ws, loc=loc, srs=rb)
@@ -299,13 +324,77 @@ class CalcIndexes:
             nd = -2
         
         elif idx == 'savi':
-            L = 0.428 # L varies from -0,9 and 1,6
+            #L = 0.428 # L varies from -0,9 and 1,6
+            L = 0.5
 
             red = self.get_band_data('red')
             nir = self.get_band_data('nir')
 
             exp = f'(({nir} - {red}) / ({nir} + {red} + {str(L)})) * (1 + {str(L)})'
 
+            nd = -1000000
+        
+        elif idx == 'mirbi':
+            sswir = self.get_band_data("swir1")
+            lswir = self.get_band_data("swir2")
+
+            exp = f'10 * {lswir} - 9.8 * {sswir} + 2'
+
+            nd = -1000000
+        
+        elif idx == 'sani':
+            nir   = self.get_band_data("nir")
+            sswir = self.get_band_data("swir1")
+            lswir = self.get_band_data("swir2")
+
+            nir_center   = self.get_band_center('nir')
+            sswir_center = self.get_band_center('swir1')
+            lswir_center = self.get_band_center('swir2')
+
+            a = f'sqrt(pow({nir_center} - {sswir_center}, 2) + pow({nir} - {sswir}, 2))'
+            b = f'sqrt(pow({sswir_center} - {lswir_center}, 2) + pow({sswir} - {lswir}, 2))'
+            c = f'sqrt(pow({lswir_center} - {nir_center}, 2) + pow({lswir} - {nir}, 2))'
+
+            exp = f'(({lswir} - {nir}) / ({lswir} + {nir})) * ' + \
+                f"(acos(((pow({a}, 2) + pow({b}, 2) - pow({c}, 2)) / (2 * {a} * {b}))) " + \
+                    "* (3.141592653589793 / 180))"
+            
+            nd = -1000000
+        
+        elif idx == 'sasi':
+            nir   = self.get_band_data("nir")
+            sswir = self.get_band_data("swir1")
+            lswir = self.get_band_data("swir2")
+
+            nir_center   = self.get_band_center('nir')
+            sswir_center = self.get_band_center('swir1')
+            lswir_center = self.get_band_center('swir2')
+
+            a = f'sqrt(pow({nir_center} - {sswir_center}, 2) + pow({nir} - {sswir}, 2))'
+            b = f'sqrt(pow({sswir_center} - {lswir_center}, 2) + pow({sswir} - {lswir}, 2))'
+            c = f'sqrt(pow({lswir_center} - {nir_center}, 2) + pow({lswir} - {nir}, 2))'
+
+            exp = f"(acos(((pow({a}, 2) + pow({b}, 2) - pow({c}, 2)) / (2 * {a} * {b}))) " + \
+                f"* (3.141592653589793 / 180)) * ({sswir} - {nir})"
+            
+            nd = -1000000
+        
+        elif idx == 'anir':
+            nir   = self.get_band_data("nir")
+            sswir = self.get_band_data("swir1")
+            red   = self.get_band_data("red")
+
+            nir_center   = self.get_band_center('nir')
+            sswir_center = self.get_band_center('swir1')
+            red_center = self.get_band_center('red')
+
+            a = f'sqrt(pow({red_center} - {nir_center}, 2) + pow({red} - {nir}, 2))'
+            b = f'sqrt(pow({nir_center} - {sswir_center}, 2) + pow({nir} - {sswir}, 2))'
+            c = f'sqrt(pow({sswir_center} - {red_center}, 2) + pow({sswir} - {red}, 2))'
+
+            exp = f"(acos(((pow({a}, 2) + pow({b}, 2) - pow({c}, 2)) / (2 * {a} * {b}))) " + \
+                f"* (3.141592653589793 / 180))"
+            
             nd = -1000000
 
         self.idxs[idx] = grsrstcalc(exp, f'rst_{idx}', ascmd=True)
