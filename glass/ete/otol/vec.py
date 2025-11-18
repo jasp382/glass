@@ -751,7 +751,7 @@ def osmlines_buffer(osmdb, tags, epsg, gpkg, layer):
                 "THEN CAST(round((CAST(osmkeyval.lanes AS integer) * 3), 0) AS integer) "
                 "ELSE CASE "
                     "WHEN bfdist.bfdist IS NULL "
-                    "THEN 2 ELSE CAST(ROUND(bfdist.bfdist / 2) AS integer) "
+                    "THEN 1 ELSE CAST(ROUND(bfdist.bfdist / 2) AS integer) "
                 "END "
             "END "
         f"END {bfcol}, osmkeyval.osmk, osmkeyval.osmv, osmkeyval.{OTOL_GEOM} "

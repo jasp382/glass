@@ -19,6 +19,10 @@ git clone https://github.com/jasp382/glass ~/glass
 # Create new virtual env
 mkvirtualenv gs
 
+# OR for ubuntu 24 
+
+mkvirtualenv gs --system-site-packages
+
 workon gs
 
 # Install GLASS

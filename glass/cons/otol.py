@@ -205,3 +205,30 @@ def get_legend(nomenclature, fid_col='fid', leg_col='leg'):
 
     return leg
 
+
+
+def osm_feat_bylulc_class(nomenclature):
+    """
+    Retrieve OSM features by class of a specific nomenclature
+    """
+
+    q = (
+        "SELECT lulc.fid, lulc.code, lulc.name, lulc.level, "
+        "osmfeat.osm_id, osmfeat.key AS osm_key, osmfeat.value AS osm_value, osmfeat.geom "
+        "FROM lulc_classes AS lulc "
+        "LEFT JOIN nomenclatures AS nom "
+        "ON lulc.nomenclature = nom.fid "
+        "INNER JOIN ("
+	        "SELECT cosm.osm_id, cosm.lulc_id, osmf.* "
+	        "FROM class_osm AS cosm "
+	        "INNER JOIN osm_features AS osmf "
+	        "ON cosm.osm_id = osmf.id"
+        ") AS osmfeat "
+        "ON lulc.fid = osmfeat.lulc_id "
+        f"WHERE nom.slug='{nomenclature}'"
+    )
+
+    res = q_to_obj(OSM2LULC_DB, q, db_api='sqlite')
+
+    return res
+

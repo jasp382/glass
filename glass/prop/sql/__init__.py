@@ -240,6 +240,28 @@ def cols_type(dbname, table, sanitizeColName=True, pyType=True):
     return coltypes
 
 
+def cols_type2(db, tbl):
+    """
+    Return types of columns in a PostgreSQL table
+    """
+
+    c = sqlcon(db)
+
+    cursor = c.cursor()
+
+    sql = """
+    SELECT column_name, udt_name 
+    FROM information_schema.columns
+    WHERE table_name = %s
+    ORDER BY ordinal_position;
+    """
+
+    cursor.execute(sql, (tbl,))
+    cols = cursor.fetchall()
+
+    return {t[0] : t[1] for t in cols}
+
+
 """
 Table Meta
 """
