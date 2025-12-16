@@ -12,6 +12,7 @@ git clone https://github.com/jasp382/glass ~/glass
 ## Install dependencies
 
 * [Ubuntu 22.04](dep/ub22.md);
+* [Ubuntu 24.04](dep/ub24.md);
 
 ## Setup Python virtual environment
 
