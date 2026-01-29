@@ -118,64 +118,54 @@ def bin_confmxt_fmrst(ref_rst, cls_rst):
 
     l = ['TP', 'TN', 'FP', 'FN']
 
-    ref_img = gdal.Open(ref_rst, gdal.GA_ReadOnly)
-    cls_img = gdal.Open(cls_rst, gdal.GA_ReadOnly)
+    ref_ds = gdal.Open(ref_rst, gdal.GA_ReadOnly)
+    cls_ds = gdal.Open(cls_rst, gdal.GA_ReadOnly)
 
-    ref_nd = ref_img.GetRasterBand(1).GetNoDataValue()
-    cls_nd = cls_img.GetRasterBand(1).GetNoDataValue()
+    ref_band = ref_ds.GetRasterBand(1)
+    cls_band = cls_ds.GetRasterBand(1)
 
-    # Data to Array
-    ref_num = ref_img.GetRasterBand(1).ReadAsArray()
-    cls_num = cls_img.GetRasterBand(1).ReadAsArray()
+    ref_nd = ref_band.GetNoDataValue()
+    cls_nd = cls_band.GetNoDataValue()
 
-    # Reshape Array
-    ref_num = ref_num.reshape(ref_num.shape[0] * ref_num.shape[1])
-    cls_num = cls_num.reshape(cls_num.shape[0] * cls_num.shape[1])
+    xsize, ysize = ref_band.XSize, ref_band.YSize
 
-    # Delete NoData Values from both array's
-    ref_num_ = ref_num[ref_num != ref_nd]
-    cls_num_ = cls_num[ref_num != ref_nd]
+    block_x, block_y = ref_band.GetBlockSize()
 
-    _ref_num = ref_num_[cls_num_ != cls_nd]
-    _cls_num = cls_num_[cls_num_ != cls_nd]
+    # Counters
+    d = {"TP" : 0, "TN" : 0, 'FP': 0, 'FN' : 0}
 
-    df = pd.DataFrame(_ref_num, columns=['ref'])
+    # Iterate over each raster block
+    for y in range(0, ysize, block_y):
+        rows = min(block_y, ysize - y)
 
-    df['classi'] = _cls_num
+        for x in range(0, xsize, block_x):
+            cols = min(block_x, xsize - x)
 
-    df['rid'] = df.index + 1
+            # Data to Array
+            ref_arr = ref_band.ReadAsArray(x, y, cols, rows)
+            cls_arr = cls_band.ReadAsArray(x, y, cols, rows)
 
-    # Get Confusion field
-    # Get TP, TN, FP, FN
-    df["confusion"] = np.where(
-        (df.ref == 1) & (df.classi == 1), 'TP', np.where(
-            (df.ref == 0) & (df.classi == 0), 'TN', np.where(
-                (df.ref == 0) & (df.classi == 1), 'FP', 'FN'
+            # Mask
+            mask = (
+                (ref_arr != ref_nd) &
+                (cls_arr != cls_nd)
             )
-        )
+
+            ref_valid = ref_arr[mask]
+            cls_valid = cls_arr[mask]
+
+            d['TP'] += np.sum((ref_valid == 1) & (cls_valid == 1))
+            d['TN'] += np.sum((ref_valid == 0) & (cls_valid == 0))
+            d['FP'] += np.sum((ref_valid == 0) & (cls_valid == 1))
+            d['FN'] += np.sum((ref_valid == 1) & (cls_valid == 0))
+    
+    # Get confusion table
+    mtx = pd.DataFrame(
+        [[d['TP'], d['FP']],
+         [d['FN'], d['TN']]],
+        columns=['positives', 'negatives'],
+        index=['positives', 'negatives']
     )
-
-    # Table with TP, TN, FP, FN frequencies
-    conftbl = pd.DataFrame()
-
-    conftbl['nrows'] = df.groupby(['confusion'])['rid'].nunique()
-
-    conftbl.reset_index(inplace=True)
-
-    d = {}
-
-    for idx, row in conftbl.iterrows():
-        d[row['confusion']] = row.nrows
-    
-    for i in l:
-        if i not in d:
-            d[i] = 0
-    
-    # Get confusion matrix
-    mtx = pd.DataFrame([
-        [d['TP'], d['FP']],
-        [d['FN'], d['TN']]
-    ], columns=['positives', 'negatives'])
 
     # Get evaluation measures
     emeas = calc_confusion_measures(d)
