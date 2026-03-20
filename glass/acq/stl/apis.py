@@ -305,11 +305,11 @@ def search_images_for_multipledatetimes(bboxfile, dates, collection, max_cloud, 
 
     search_body = {
         "collections": [collection],
-        "bbox": list(bbox),
-        "query": {
-            "eo:cloud_cover": {"lte": max_cloud}
-        }
+        "bbox": list(bbox)
     }
+
+    if max_cloud:
+        search_body["query"] = {"eo:cloud_cover": {"lte": max_cloud}}
 
     for k in dates:
         search_body["datetime"] = dates[k]

@@ -51,10 +51,10 @@ def rest_token():
 
     data = json.load(open(os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
-        'api-esri.json'
+        'api-keys.json'
     ), 'r'))
 
-    return data["token"]
+    return data["ESRI"]
 
 """
 Travel modes

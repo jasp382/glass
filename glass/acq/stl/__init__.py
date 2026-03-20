@@ -320,7 +320,7 @@ def download_sentinel_products(imglist:str, img_id:str, downcol:str, outfolder:s
     start = time.time()
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         futures = {
-            executor.submit(download_scene, row, token_mgr): idx
+            executor.submit(download_scene, row): idx
             for idx, row in imgdf.iterrows()
         }
 
