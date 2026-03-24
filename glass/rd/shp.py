@@ -5,7 +5,7 @@ Shape To some Python Object
 import os
 
 def shp_to_obj(shp, geom_col=None, fields=None, output='df', srs_to=None,
-    colsAsArray=None, geom_as_wkt=None, lyr=None, outgeom=None, force2D=None):
+    colsAsArray=None, geom_as_wkt=None, lyr=None, outgeom=None, force2D=None, organize_polygons=None):
     """
     Feature Class to Python Object
 
@@ -13,10 +13,15 @@ def shp_to_obj(shp, geom_col=None, fields=None, output='df', srs_to=None,
     - df;
     - dict;
     - array;
+
+    organize_polygons: 'SKIP', 'ONLY_CCW' ou None
     """
 
     import geopandas as gp
     from glass.prop.prj import df_epsg
+
+    if organize_polygons:
+        os.environ['OGR_ORGANIZE_POLYGONS'] = organize_polygons
 
     if '.gdb' in shp and not lyr:
         lyr = os.path.basename(shp)
