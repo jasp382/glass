@@ -3,6 +3,18 @@ Shape To some Python Object
 """
 
 import os
+import unicodedata
+
+from glass.prop.df import lst_layers
+
+def normalizar_string(texto):
+    """Remove acentos e força minúsculas para comparação segura."""
+    if not isinstance(texto, str):
+        texto = str(texto)
+    # Transforma "Rede Viária" em "rede viaria"
+    nfkd_form = unicodedata.normalize('NFKD', texto)
+    return "".join([c for c in nfkd_form if not unicodedata.combining(c)]).lower().strip()
+
 
 def shp_to_obj(shp, geom_col=None, fields=None, output='df', srs_to=None,
     colsAsArray=None, geom_as_wkt=None, lyr=None, outgeom=None, force2D=None, organize_polygons=None):
@@ -30,9 +42,22 @@ def shp_to_obj(shp, geom_col=None, fields=None, output='df', srs_to=None,
         if shp[-4:] != '.gdb':
             shp = os.path.dirname(shp)
 
+    if not lyr:
+        df = gp.read_file(shp, engine="pyogrio")
+    else:
+        lyrs = lst_layers(shp)
 
-    df = gp.read_file(shp) if not lyr else \
-        gp.read_file(shp, layer=lyr)
+        lyr_alvo = None
+        lyrnorm = normalizar_string(lyr)
+
+        for lyr_real in lyrs:
+            if normalizar_string(lyr_real) == lyrnorm:
+                lyr_alvo = lyr_real
+        
+        if lyr_alvo is None:
+            lyr_alvo = lyr
+
+        df = gp.read_file(shp, layer=lyr_alvo, engine="pyogrio")
 
     # Get name of geometry col
     if not geom_col:
