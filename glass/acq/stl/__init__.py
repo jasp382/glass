@@ -7,6 +7,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from sentinelsat    import SentinelAPI, geojson_to_wkt
+from glass.acq.stl.apis import APISentinel
 from glass.cons.sat import con_datahub
 from glass.pys      import obj_to_lst
 from glass.pys.oss  import mkdir
