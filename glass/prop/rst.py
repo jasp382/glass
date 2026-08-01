@@ -237,19 +237,40 @@ def count_cells(raster, countNodata=None):
     
     from glass.rd.rst  import rst_to_array
     from glass.pys.num import count_where
+
+    src = gdal.Open(raster)
     
-    a = rst_to_array(raster)
+    #a = rst_to_array(raster)
     
-    lnh, col = a.shape
+    lnh, col = int(src.RasterYSize), int(src.RasterXSize)
     nrcell   = lnh * col
     
     if countNodata:
         return nrcell
     
     else:
-        NoDataValue = get_nodata(raster)
-        NrNodata = count_where(a, a == NoDataValue)
-        return nrcell - NrNodata
+        band = src.GetRasterBand(1)
+
+        mask_band = band.GetMaskBand()
+
+        ndcount = 0
+
+        block_x, block_y = mask_band.GetBlockSize()
+
+        for y in range(0, lnh, block_y):
+            rows = min(block_y, lnh - y)
+            for x in range(0, col, block_x):
+                cols = min(block_x, col - x)
+
+                data = mask_band.ReadRaster(
+                    x, y, cols, rows,
+                    buf_xsize=cols, buf_ysize=rows,
+                    buf_type=gdal.GDT_Byte
+                )
+
+                ndcount += data.count(b'\x00')
+
+        return nrcell - ndcount
 
 
 def get_nodata(r):

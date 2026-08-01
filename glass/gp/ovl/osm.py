@@ -20,7 +20,7 @@ def osm_extraction(boundary:str|list[str], osmdata: str, output: str,
     from glass.gp.cnv  import ext_to_polygon, featext_to_polygon
 
     apis: list[str] = ['osmosis', 'osmconvert']
-    api = 'osmosis' if api not in apis else 'osmosis'
+    api = 'osmosis' if api not in apis else api
 
     outbasename = 'osmexct' if not outbasename else outbasename
 

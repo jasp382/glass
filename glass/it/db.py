@@ -547,13 +547,14 @@ def rst_to_psql(rst, srs, dbname, sql_script=None):
     return rst_name
 
 
-def osm_to_psql(osmXml, osmdb, dbsetup='default'):
+def osm_to_psql(osmXml, osmdb, dbsetup='default', schema=None):
     """
     Use GDAL to import osmfile into PostGIS database
     """
     
     from glass.cons.psql import con_psql
     from glass.prop.sql  import db_exists
+    from glass.sql.q import exec_write_q
 
     is_db = db_exists(osmdb, dbset=dbsetup)
 
@@ -563,12 +564,20 @@ def osm_to_psql(osmXml, osmdb, dbsetup='default'):
         create_pgdb(osmdb, dbset=dbsetup)
 
     con = con_psql(db_set=dbsetup)
+
+    #_schema  = '' if not schema else f' active_schema={schema}'
+    schema_  = '' if not schema else f'-lco SCHEMA={schema} '
+
+    if schema:
+        exec_write_q(osmdb, f"CREATE SCHEMA IF NOT EXISTS {schema}")
     
     cmd = (
         f"ogr2ogr -f PostgreSQL \"PG:dbname="
         f"'{osmdb}' host='{con['HOST']}' port='{con['PORT']}' "
-        f"user='{con['USER']}' password='{con['PASSWORD']}'\" {osmXml} "
-        "-lco COLUM_TYPES=other_tags=hstore"
+        f"user='{con['USER']}' password='{con['PASSWORD']}'\" "
+        #f"{_schema}\" "
+        f"{osmXml} {schema_}"
+        "-lco COLUMN_TYPES=other_tags=hstore"
     )
     
     cmdout = execmd(cmd)

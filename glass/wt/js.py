@@ -23,7 +23,8 @@ def df_to_json(df, outjson):
 
     df.to_json(
         path_or_buf=outjson,
-        orient='records'
+        orient='records', indent=2,
+        force_ascii=False
     )
 
     return outjson

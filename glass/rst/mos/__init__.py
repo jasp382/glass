@@ -19,20 +19,43 @@ from glass.dtt.rst.torst import grsshp_to_grsrst as shp_to_rst
 
 
 
-def fullgrass_rseries(ifolder, refrst, method, orst):
+def fullgrass_rseries(inrst:str|list[str], refrst:str, method:str|list[str], orst:str|list[str],
+                      rst_type=None, nd=None, loc_bname=None):
     """
     R. Series using grass
     """
 
-    loc = now_as_str()
+    loc = now_as_str() if not loc_bname else f'{loc_bname}_{now_as_str()}'
 
-    gbase = grass_session(ifolder, loc=loc, srs=refrst)
+    if type(inrst) == str and os.path.isdir(inrst):
+        ws = inrst
 
-    rsts = [rst_to_grs(r) for r in lst_ff(ifolder, file_format='.tif')]
+        rfiles = lst_ff(inrst, file_format='.tif')
+    
+    else:
+        rfiles = inrst
+        ws = os.path.dirname(rfiles[0])
+
+    gbase = grass_session(ws, loc=loc, srs=refrst)
+
+    rsts = [rst_to_grs(r) for r in rfiles]
+
+    if type(method) == list and type(orst) == list:
+        if len(method) != len(orst):
+            raise ValueError('When applied several methods, orst should be a list')
+        
+        res = []
+        for i, meth in enumerate(method):
+            rs = rseries(rsts, fprop(orst[i], 'fn'), meth, as_cmd=True)
+
+            _orst = grs_to_rst(rs, orst[i], dtype=rst_type, nodata=nd)
+            res.append(_orst)
+        
+        return res
 
     prst = rseries(rsts, fprop(orst, 'fn'), method, as_cmd=True)
 
-    grs_to_rst(prst, orst)
+    grs_to_rst(prst, orst, dtype=rst_type, nodata=nd)
 
     return orst
 

@@ -3,6 +3,23 @@ Resampling methods for Satellite images
 """
 
 import os
+from joblib import Parallel, delayed
+
+from glass.cons.sat  import get_lwibands
+from glass.dtt.stl   import unzip_img
+from glass.pys.oss   import fprop, mkdir, lst_ff, cpu_cores
+from glass.prop.df   import is_shp
+from glass.pys.tm    import now_as_str
+from glass.prop.ext  import get_ext
+from glass.prop.prj  import get_epsg
+from glass.dtt.toshp import coords_to_boundshp
+from glass.wenv.grs  import grass_session
+from glass.rst.alg   import grsrstcalc
+from glass.it.rst        import rst_to_grs, grs_to_rst, grs_to_mask
+from glass.it.shp        import shp_to_grs
+from glass.wenv.grs      import shp_to_region, align_region, rst_to_region
+from glass.rst.rcls.grs  import set_null
+from glass.dtt.rst.torst import grsshp_to_grsrst as shp_to_rst
 
 from glass.cons.sat  import get_lwibands
 from glass.dtt.stl   import unzip_img
@@ -220,4 +237,43 @@ def resample_s2img_shp(shp, folder, ofolder, refgeo=None):
                 del_folder(zfolder)
 
     return ofolder
+
+
+def rsp_s2img_parallel(imgs: str, clipshp: str, band: list[str], out: str, maskfile:str|None=None) -> str:
+    """
+    Unzip and resample Sentinel-2 images in parallel
+    """
+
+    imgfiles = lst_ff(imgs, file_format='.zip')
+
+    if not os.path.exists(out):
+        mkdir(out)
+    
+    tasks, idates = [], []
+    for img in imgfiles:
+        iname = fprop(img, 'fn')
+        _idate = iname.split('_')[2]
+        idate = _idate.split('T')[0]
+
+        if idate in idates:
+            idate = f'{idate}_{_idate.split('T')[1]}'
+
+        r_out = os.path.join(
+            out, f'img_{idate}'
+        )
+        tasks.append((
+            img, clipshp, r_out,
+            None, band, True, 'B02', maskfile
+        ))
+
+        idates.append(idate)
+    
+    cpus = cpu_cores() - 10
+
+    Parallel(n_jobs=cpus)(
+        delayed(resample_s2img)(*task)
+        for task in tasks
+    )
+
+    return out
 

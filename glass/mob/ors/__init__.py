@@ -6,7 +6,7 @@ import requests as rq
 import json
 
 from glass.cons.ors import MAIN_URL
-from glass.cons.ors import get_ors_token
+from glass.cons.ors import ors_token
 from glass.pys.web import http_to_json
 
 
@@ -45,7 +45,7 @@ def directions(lat_o, lng_o, lat_d, lng_d, modeTransportation='foot-walking'):
     DOC: https://openrouteservice.org/documentation/#/authentication/UserSecurity
     """
 
-    key = get_ors_token()
+    key = ors_token()
     
     URL = (
         f"{MAIN_URL}directions?api_key={key}&"
@@ -74,7 +74,7 @@ def isochrones(locations, range, interval,
 
     from glass.cons.ors import ISOCHRONES_URL
 
-    key = get_ors_token()
+    key = ors_token()
 
     range_type = 'time' if range_type != 'time' and \
         range_type != 'distance' else range_type
@@ -126,7 +126,7 @@ def matrix_od(locations, idx_src="all", idx_dest="all",
     Execute Matrix Service
     """
     
-    key = get_ors_token()
+    key = ors_token()
 
     body = {
         "locations"    : locations,

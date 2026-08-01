@@ -8,6 +8,8 @@ from osgeo import gdal
 
 from glass.wt.rst   import obj_to_rst
 from glass.prop.img import rst_epsg
+from glass.pys     import execmd
+from glass.prop.df import drv_name
 
 
 
@@ -19,9 +21,6 @@ def rst_to_rst(inRst, outRst):
     """
     Convert a raster file to another raster format
     """
-    
-    from glass.pys     import execmd
-    from glass.prop.df import drv_name
     
     outDrv = drv_name(outRst)
     cmd = f'gdal_translate -of {outDrv} {inRst} {outRst}'
@@ -36,7 +35,6 @@ def rsts_to_gpkg(in_rsts, gpkg, rst_ff='.tif', basename=None):
     Raster Files to GeoPackage
     """
 
-    from glass.pys      import execmd
     from glass.pys.oss  import fprop
     from glass.prop.rst import rst_dtype
 

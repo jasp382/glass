@@ -299,6 +299,19 @@ class HeuristicLri:
         
         if aspect:
             self.varaspect = rst_to_grs(aspect)
+    
+    def import_raw_topo(self, rawslope:str|None=None, rawaspect:str|None=None):
+        """
+        Import Raw topographic variables
+        """
+
+        from glass.it.rst import rst_to_grs
+
+        if rawslope:
+            self.slope = rst_to_grs(rawslope)
+        
+        if rawaspect:
+            self.aspect = rst_to_grs(rawaspect)
         
     def import_lulc_vars(self, vars_lulc:list[str], weights:list[int], 
                          burnareas:list[str]):
@@ -306,8 +319,8 @@ class HeuristicLri:
         Import Land Use/Land Cover data
         """
 
-        from glass.it.rst        import rst_to_grs
-        from glass.rst.alg     import grsrstcalc
+        from glass.it.rst  import rst_to_grs
+        from glass.rst.alg import grsrstcalc
 
         for i, lulc in enumerate(vars_lulc):
             # Import Raster
