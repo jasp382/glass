@@ -37,7 +37,7 @@ def get_ext(shp, lyrname=None):
     return list(extent)
 
 
-def feat_count(shp, gisApi='pandas', work=None, loc=None):
+def feat_count(shp, gisApi='pandas', layer_name=None, work=None, loc=None):
     """
     Count the number of features in a feature class
     
@@ -75,7 +75,7 @@ def feat_count(shp, gisApi='pandas', work=None, loc=None):
     elif gisApi == 'pandas':
         from glass.rd.shp import shp_to_obj
         
-        gdf = shp_to_obj(shp)
+        gdf = shp_to_obj(shp, lyr=layer_name)
         
         fcnt = int(gdf.shape[0])
         

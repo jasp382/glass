@@ -319,8 +319,8 @@ class HeuristicLri:
         Import Land Use/Land Cover data
         """
 
-        from glass.it.rst        import rst_to_grs
-        from glass.rst.alg     import grsrstcalc
+        from glass.it.rst  import rst_to_grs
+        from glass.rst.alg import grsrstcalc
 
         for i, lulc in enumerate(vars_lulc):
             # Import Raster
