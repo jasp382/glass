@@ -41,7 +41,7 @@ geopy==2.4.1
 rioxarray
 #mysqlclient==1.4.6
 #rpy2==3.5.10
-django==5.1.4
+django==5.2.16
 mercantile==1.2.1
 toml==0.10.2
 pytest-runner==6.0.1
