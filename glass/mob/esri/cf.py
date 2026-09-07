@@ -42,11 +42,12 @@ def closest_facility(incidents, incidents_id, facilities, output,
     idf = shp_to_obj(incidents) if type(incidents) != gp.GeoDataFrame else incidents
 
     # Get original EPSG
-    ocrs = df_prj(fdf)
+    fcrs = df_epsg(fdf)
+    icrs = df_epsg(idf)
 
     # Re-project to WGS84
-    #fdf = df_prj(fdf, 4326)
-    #idf = df_prj(idf, 4326)
+    fdf = df_prj(fdf, 4326) if fcrs != 4326 else fdf
+    idf = df_prj(idf, 4326) if icrs != 4326 else idf
 
     # Geometries to Str - inputs for requests
     fdf['coords'] = fdf.geometry.x.astype(str) + ',' + fdf.geometry.y.astype(str)
@@ -184,7 +185,7 @@ def closest_facility(incidents, incidents_id, facilities, output,
     fgdf.drop([iauxid, 'rn'], axis=1, inplace=True)
 
     # Re-project to original SRS
-    epsg = crs if crs else ocrs
+    epsg = crs if crs else fcrs
     
     if epsg != 4326:
         fgdf = df_prj(fgdf, epsg)
