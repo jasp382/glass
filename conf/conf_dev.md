@@ -39,7 +39,7 @@ pip install GDAL=="`gdal-config --version`.*"
 
 OR 
 
-ln -s /usr/lib/python3/dist-packages/osgeo* ~/.virtualenvs/gs/lib/python3.10/site-packages
+ln -s /usr/lib/python3/dist-packages/osgeo* ~/.virtualenvs/gs/lib/python3.12/site-packages
 
 pv=$(/usr/bin/python3 --version)
 IFS=' '

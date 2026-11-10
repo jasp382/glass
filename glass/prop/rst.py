@@ -296,7 +296,7 @@ def get_nodata(r):
     return ndVal
 
 
-def rst_distinct(rst):
+def rst_unique(rst):
     """
     Export a list with the values of a raster
     

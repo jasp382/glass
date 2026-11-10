@@ -75,7 +75,7 @@ def generalize_obs_points_forFolder(FolderRst, refCell, outFolder):
     import os
     from glass.pys.oss  import fprop
     from glass.pys.oss  import mkdir
-    from glass.prop.rst import rst_distinct
+    from glass.prop.rst import rst_unique
     
     arcpy.env.workspace = FolderRst
     
@@ -85,7 +85,7 @@ def generalize_obs_points_forFolder(FolderRst, refCell, outFolder):
     
     for r in rasters:
         # Check if raster has data
-        val = rst_distinct(r, gisApi='arcpy')
+        val = rst_unique(r, gisApi='arcpy')
         if not len(val):
             continue
         
@@ -312,7 +312,7 @@ def viewshed_by_feat_class(inRaster, observerDataset, feat_class_folder,
     
     from glass.pys.oss               import mkdir
     from glass.prop.df               import vector_formats, raster_formats
-    from glass.prop.rst              import get_cellsize, rst_distinct
+    from glass.prop.rst              import get_cellsize, rst_unique
     from glass.anls.prox.bf          import _buffer
     from glass.cpu.arcg.mng.rst.proc import clip_raster
     from glass.cpu.arcg.spanlst.surf import viewshed

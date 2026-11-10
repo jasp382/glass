@@ -167,7 +167,7 @@ def mk_costsuf(dem, lulc, luw_col, rdv, kph, barr, out, dissolve_lu=None):
     #minval = []
     #for r in cmbrsts:
         #tifr = grs_to_rst(r, os.path.join(ws, f"{r}.tif"), as_cmd=True)
-        #rv = rst_distinct(tifr)
+        #rv = rst_unique(tifr)
 
         #minval.append(min(rv))
     
