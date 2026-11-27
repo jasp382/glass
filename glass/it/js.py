@@ -2,6 +2,7 @@
 Data to JSON Files
 """
 
+import pandas as pd
 
 
 def xls_to_json(xls, jsf, sheet=None):
@@ -20,3 +21,19 @@ def xls_to_json(xls, jsf, sheet=None):
 
     return jsf
 
+
+def json_to_xls(jsf, xls, sheet=None):
+    """
+    JSON to XLSx
+    """
+
+    from glass.wt import obj_to_tbl
+
+    df = pd.read_json(jsf, orient='records')
+
+    obj_to_tbl(
+        df, xls,
+        sheetsName='data' if not sheet else sheet
+    )
+
+    return xls
